@@ -19,7 +19,7 @@ $Rids = @('win-x64', 'linux-x64', 'osx-x64', 'osx-arm64')
 
 function Get-XdvdfsPublishDir {
     param([Parameter(Mandatory)][string]$ExtensionRoot)
-    Join-Path $ExtensionRoot 'external\xdvdfs\out\publish'
+    Join-Path $ExtensionRoot 'vendor\xdvdfs\publish'
 }
 
 function Find-XdvdfsTool {
@@ -81,7 +81,7 @@ function Publish-RidTools([string]$Root, [string]$Rid, [string]$OutDir) {
     } else {
         $xdvdfsSource = Find-XdvdfsTool -ExtensionRoot $ExtensionRoot -Rid $Rid
         if (-not $xdvdfsSource) {
-            throw "xdvdfs$xdvdfsExt not found for $Rid (run scripts/build-xdvdfs.ps1)"
+            throw "xdvdfs$xdvdfsExt not found for $Rid (run scripts/fetch-xdvdfs.ps1)"
         }
         Copy-Item -LiteralPath $xdvdfsSource -Destination $xdvdfsDest -Force
         Write-Host "OK: $Rid/xdvdfs$xdvdfsExt <= $xdvdfsSource" -ForegroundColor Green

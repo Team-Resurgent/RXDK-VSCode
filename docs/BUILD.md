@@ -13,16 +13,14 @@ Not shipped in the VSIX. End-user docs: [INSTALL.md](INSTALL.md).
 Host tools live under `external/`:
 
 ```powershell
-git submodule update --init external/RXDK-Tools external/xdvdfs
+git submodule update --init external/RXDK-Tools
 ```
 
 | Dependency | Provides |
 |------------|----------|
 | [RXDK-SDK](https://github.com/Team-Resurgent/RXDK-SDK) | Consumer headers/libs — **git-cloned on extension activate** to `%ProgramData%\RXDK\sdk` (Windows) or XDG equivalent |
 | [RXDK-Tools](https://github.com/Team-Resurgent/RXDK-Tools) | Managed host tools (`xbcp`, `imagebld`, `xbox-launch`, `xboxdbg-bridge`) — published on CI via `dotnet` |
-| [xdvdfs](https://github.com/antangelo/xdvdfs) | XISO packer — built with Rust + Zig for `win-x64`, `linux-x64`, `osx-x64`, `osx-arm64` |
-
-**Do not commit changes inside `external/xdvdfs`.** Builds write to `external/xdvdfs/out/publish/` (gitignored). The parent repo only records the submodule commit SHA. If upstream needs a fix, bump the submodule pointer or add a patch under `patches/` and apply it in `scripts/build-xdvdfs.ps1` — do not fork the submodule in place.
+| [xdvdfs](https://github.com/Team-Resurgent/xdvdfs/releases/latest) | XISO packer — **downloaded** at build time for `win-x64`, `linux-x64`, `osx-x64`, `osx-arm64` (no submodule, no Rust/Zig) |
 
 ## Build output (repo root)
 
@@ -32,9 +30,8 @@ Generated artifacts (gitignored):
 |------|----------|
 | `dist/extension/` | Compiled extension host (`tsc` from `src/`) |
 | `dist/debug/` | Compiled Xbox debug adapter (`tsc` from `debug/src/`) — entry point `./dist/debug/adapter.js` in `package.json` |
-| `sdk/` | Assembled SDK scripts + host tools for the VSIX (including `xboxdbg-bridge`) |
-
-Source for the debug adapter is under `debug/src/` (dev only; not included in the VSIX).
+| `sdk/` | Assembled SDK scripts + host tools for the VSIX |
+| `vendor/xdvdfs/publish/` | Cached xdvdfs release binaries per RID |
 
 User Xbox projects still use their own `out/` folder for `.exe`/`.pdb` build output — that is unrelated to the extension install layout.
 
@@ -47,8 +44,8 @@ SDK build scripts are **source** under `scripts/sdk/` (tracked). `assemble-sdk.p
 1. Copy `scripts/sdk/` → `sdk/scripts/`
 2. Gather host tools into `sdk/tools/`:
    - `dotnet publish` from RXDK-Tools (default on CI and `build-vsix.ps1`)
-   - `cargo build` from [antangelo/xdvdfs](https://github.com/antangelo/xdvdfs) (`scripts/build-xdvdfs.ps1`; requires Rust + Zig)
-3. Write `sdk/VERSION.txt` with tool submodule SHA
+   - `scripts/fetch-xdvdfs.ps1` — downloads [Team-Resurgent/xdvdfs](https://github.com/Team-Resurgent/xdvdfs/releases/latest) release zips
+3. Write `sdk/VERSION.txt` with tool submodule SHA and xdvdfs release tag
 
 Headers/libs are **not** bundled — the extension clones [RXDK-SDK](https://github.com/Team-Resurgent/RXDK-SDK) on first launch.
 
@@ -73,19 +70,22 @@ Full sync path (assemble + compile + package):
 .\scripts\sync-all.ps1 -Package -CrossPlatformTools -BuildTools
 ```
 
+Fetch xdvdfs only:
+
+```powershell
+.\scripts\fetch-xdvdfs.ps1
+```
+
 ### CI
 
 GitHub Actions workflow [`.github/workflows/build-vsix.yml`](../.github/workflows/build-vsix.yml):
 
 | Job | Runner | Purpose |
 |-----|--------|---------|
-| `build-xdvdfs` | `macos-latest` | Build all four `xdvdfs` RIDs (native mac + Zig cross-compile for win/linux) |
-| `build` | `windows-latest` | Download xdvdfs artifact, publish managed tools, package VSIX |
+| `build` | `windows-latest` | Fetch xdvdfs release, publish managed tools, package VSIX |
 | `release` | `ubuntu-latest` | Attach VSIX to GitHub Release when applicable |
 
-**xdvdfs on CI:** the macOS job runs `scripts/build-xdvdfs-ci.sh` (Rust + Zig + cargo-zigbuild). The Windows job passes `-SkipXdvdfsBuild` and stages the downloaded binaries. Local Windows builds can still use `scripts/build-xdvdfs.ps1` (Zig cross-compiles all RIDs). On a Mac locally, run `scripts/build-xdvdfs-ci.sh` for the same layout as CI.
-
-**No MSVC on CI.** Xbox headers and `.lib` files are installed from [RXDK-SDK](https://github.com/Team-Resurgent/RXDK-SDK) when the user activates the extension.
+**No Rust/Zig on CI.** xdvdfs comes from [Team-Resurgent/xdvdfs releases](https://github.com/Team-Resurgent/xdvdfs/releases/latest).
 
 Triggers: push/PR to `main`/`master`, version tags `v*`, and **Actions → Run workflow**.
 

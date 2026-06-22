@@ -2,8 +2,7 @@
 param(
     [string]$ExtensionRoot = (Join-Path $PSScriptRoot '..'),
     [switch]$BuildTools,
-    [switch]$CrossPlatformTools,
-    [switch]$SkipXdvdfsBuild
+    [switch]$CrossPlatformTools
 )
 $ErrorActionPreference = 'Stop'
 $ExtensionRoot = [IO.Path]::GetFullPath($ExtensionRoot)
@@ -12,7 +11,6 @@ try {
     $assembleArgs = @{ ExtensionRoot = $ExtensionRoot }
     if ($BuildTools) { $assembleArgs['BuildTools'] = $true }
     if ($CrossPlatformTools) { $assembleArgs['CrossPlatformTools'] = $true }
-    if ($SkipXdvdfsBuild) { $assembleArgs['SkipXdvdfsBuild'] = $true }
     & (Join-Path $PSScriptRoot 'assemble-sdk.ps1') @assembleArgs
     if ($LASTEXITCODE -ne 0) { throw 'assemble-sdk.ps1 failed' }
 

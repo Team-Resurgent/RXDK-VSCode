@@ -1,11 +1,10 @@
-# Assemble sdk/ for the extension: scripts from scripts/sdk, tools from RXDK-Tools + xdvdfs submodule.
+# Assemble sdk/ for the extension: scripts from scripts/sdk, tools from RXDK-Tools + xdvdfs release.
 # Headers/libs are cloned from RXDK-SDK on extension activate (not bundled in the VSIX).
 param(
     [string]$RxdkToolsRoot = (Join-Path $PSScriptRoot '..\external\RXDK-Tools'),
     [string]$ExtensionRoot = (Join-Path $PSScriptRoot '..'),
     [switch]$BuildTools,
-    [switch]$CrossPlatformTools,
-    [switch]$SkipXdvdfsBuild
+    [switch]$CrossPlatformTools
 )
 $ErrorActionPreference = 'Stop'
 $RxdkToolsRoot = [IO.Path]::GetFullPath($RxdkToolsRoot)
@@ -87,11 +86,11 @@ function Resolve-ToolSource {
         [string]$ExtensionRoot
     )
     if ($Name -eq 'xdvdfs') {
-        $candidate = Join-Path $ExtensionRoot 'external\xdvdfs\out\publish\win-x64\xdvdfs.exe'
+        $candidate = Join-Path $ExtensionRoot 'vendor\xdvdfs\publish\win-x64\xdvdfs.exe'
         if (Test-Path -LiteralPath $candidate) {
             return $candidate
         }
-        throw "Missing xdvdfs.exe - run scripts/build-xdvdfs.ps1 (requires Rust + Zig)"
+        throw "Missing xdvdfs.exe - run scripts/fetch-xdvdfs.ps1"
     }
     $managed = $ManagedTools | Where-Object { $_.Name -eq $Name } | Select-Object -First 1
     if (-not $managed) {
@@ -118,20 +117,11 @@ Run: git submodule update --init external/RXDK-Tools
 "@
 }
 
-$xdvdfsRoot = Join-Path $ExtensionRoot 'external\xdvdfs'
-if (-not (Test-Path -LiteralPath $xdvdfsRoot)) {
-    throw @"
-xdvdfs submodule not found at $xdvdfsRoot
-Run: git submodule update --init external/xdvdfs
-"@
-}
-
 Write-Host '=== xdvdfs ===' -ForegroundColor Cyan
-$xdvdfsArgs = @{ XdvdfsRoot = $xdvdfsRoot }
-if ($BuildTools) { $xdvdfsArgs['Force'] = $true }
-if ($SkipXdvdfsBuild) { $xdvdfsArgs['SkipBuild'] = $true }
-& (Join-Path $PSScriptRoot 'build-xdvdfs.ps1') @xdvdfsArgs
-if ($LASTEXITCODE -ne 0) { throw 'build-xdvdfs.ps1 failed' }
+$fetchArgs = @{ ExtensionRoot = $ExtensionRoot }
+if ($BuildTools) { $fetchArgs['Force'] = $true }
+& (Join-Path $PSScriptRoot 'fetch-xdvdfs.ps1') @fetchArgs
+if ($LASTEXITCODE -ne 0) { throw 'fetch-xdvdfs.ps1 failed' }
 
 $scriptsDest = Join-Path $sdkRoot 'scripts'
 foreach ($stale in @('include', 'lib')) {
@@ -188,10 +178,16 @@ finally {
 
 $libsSha = 'n/a'
 $toolsSha = 'unknown'
+$xdvdfsTag = 'unknown'
 try { $toolsSha = (git -C $RxdkToolsRoot rev-parse --short HEAD 2>$null) } catch { }
+try {
+    $headers = @{ Accept = 'application/vnd.github+json'; 'X-GitHub-Api-Version' = '2022-11-28' }
+    $xdvdfsTag = (Invoke-RestMethod -Uri 'https://api.github.com/repos/Team-Resurgent/xdvdfs/releases/latest' -Headers $headers).tag_name
+} catch { }
 @"
 rxdk-sdk=cloned-on-activate
 rxdk-tools=$toolsSha
+xdvdfs=$xdvdfsTag
 staged=$(Get-Date -Format 'yyyy-MM-ddTHH:mm:ss')
 "@ | Set-Content -LiteralPath (Join-Path $sdkRoot 'VERSION.txt') -Encoding ASCII
 

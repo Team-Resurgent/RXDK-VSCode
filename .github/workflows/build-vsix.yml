@@ -25,48 +25,8 @@ env:
   NODE_VERSION: '22'
 
 jobs:
-  build-xdvdfs:
-    name: Build xdvdfs (all platforms)
-    runs-on: macos-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-        with:
-          submodules: recursive
-          token: ${{ secrets.SUBMODULES_TOKEN }}
-
-      - name: Setup Zig
-        uses: mlugg/setup-zig@v2
-        with:
-          version: 0.16.0
-
-      - name: Setup Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: x86_64-apple-darwin,aarch64-apple-darwin,x86_64-unknown-linux-musl,x86_64-pc-windows-msvc
-
-      - name: Install cargo-zigbuild
-        run: cargo install cargo-zigbuild --locked
-
-      - name: Build xdvdfs for all RIDs
-        run: |
-          chmod +x scripts/build-xdvdfs-ci.sh
-          ./scripts/build-xdvdfs-ci.sh
-
-      - name: Upload xdvdfs artifact
-        uses: actions/upload-artifact@v5
-        with:
-          name: xdvdfs-all
-          path: |
-            external/xdvdfs/out/publish/win-x64
-            external/xdvdfs/out/publish/linux-x64
-            external/xdvdfs/out/publish/osx-x64
-            external/xdvdfs/out/publish/osx-arm64
-          if-no-files-found: error
-
   build:
     name: Build cross-platform VSIX
-    needs: build-xdvdfs
     runs-on: windows-latest
     defaults:
       run:
@@ -77,12 +37,6 @@ jobs:
         with:
           submodules: recursive
           token: ${{ secrets.SUBMODULES_TOKEN }}
-
-      - name: Download xdvdfs artifact
-        uses: actions/download-artifact@v5
-        with:
-          name: xdvdfs-all
-          path: external/xdvdfs/out/publish
 
       - name: Setup Node.js
         uses: actions/setup-node@v5
@@ -99,7 +53,7 @@ jobs:
         run: npm ci
 
       - name: Build VSIX
-        run: ./scripts/build-vsix.ps1 -ExtensionRoot $env:GITHUB_WORKSPACE -SkipXdvdfsBuild
+        run: ./scripts/build-vsix.ps1 -ExtensionRoot $env:GITHUB_WORKSPACE
 
       - name: Upload VSIX artifact
         uses: actions/upload-artifact@v5
@@ -127,7 +81,7 @@ jobs:
             "| ``$($vsix.Name)`` | ${sizeMb} MB |",
             '',
             'Host tools are bundled for `win-x64`, `linux-x64`, `osx-x64`, and `osx-arm64` under `sdk/tools/<rid>/`.',
-            'All `xdvdfs` binaries are built on `macos-latest`; the Windows job assembles the VSIX only.',
+            '`xdvdfs` is downloaded from [Team-Resurgent/xdvdfs releases](https://github.com/Team-Resurgent/xdvdfs/releases/latest).',
             'Xbox headers/libs are cloned from [RXDK-SDK](https://github.com/Team-Resurgent/RXDK-SDK) on first extension launch.',
             'Compiling Xbox titles still requires **Windows + Visual Studio (x86)** locally.',
             '',

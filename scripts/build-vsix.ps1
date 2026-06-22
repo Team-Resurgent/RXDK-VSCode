@@ -2,8 +2,7 @@
 param(
     [string]$ExtensionRoot = (Join-Path $PSScriptRoot '..'),
     [switch]$SkipToolsBuild,
-    [switch]$Install,
-    [switch]$SkipXdvdfsBuild
+    [switch]$Install
 )
 $ErrorActionPreference = 'Stop'
 $ExtensionRoot = [IO.Path]::GetFullPath($ExtensionRoot)
@@ -15,9 +14,6 @@ $syncArgs = @{
 }
 if (-not $SkipToolsBuild) {
     $syncArgs['BuildTools'] = $true
-}
-if ($SkipXdvdfsBuild) {
-    $syncArgs['SkipXdvdfsBuild'] = $true
 }
 if ($Install) {
     $syncArgs['InstallExtension'] = $true
