@@ -121,7 +121,6 @@ Write-Host '=== xdvdfs ===' -ForegroundColor Cyan
 $fetchArgs = @{ ExtensionRoot = $ExtensionRoot }
 if ($BuildTools) { $fetchArgs['Force'] = $true }
 & (Join-Path $PSScriptRoot 'fetch-xdvdfs.ps1') @fetchArgs
-if ($LASTEXITCODE -ne 0) { throw 'fetch-xdvdfs.ps1 failed' }
 
 $scriptsDest = Join-Path $sdkRoot 'scripts'
 foreach ($stale in @('include', 'lib')) {
@@ -152,7 +151,6 @@ if ($CrossPlatformTools) {
     }
     if ($BuildTools) { $crossArgs['BuildTools'] = $true }
     & (Join-Path $PSScriptRoot 'stage-cross-platform-tools.ps1') @crossArgs
-    if ($LASTEXITCODE -ne 0) { throw 'stage-cross-platform-tools.ps1 failed' }
     Test-RequiredTools $toolsDest
 } else {
 $tempTools = Join-Path ([IO.Path]::GetTempPath()) "rxdk-vscode-tools-$([Guid]::NewGuid().ToString('n'))"

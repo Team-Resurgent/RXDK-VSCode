@@ -12,7 +12,6 @@ try {
     if ($BuildTools) { $assembleArgs['BuildTools'] = $true }
     if ($CrossPlatformTools) { $assembleArgs['CrossPlatformTools'] = $true }
     & (Join-Path $PSScriptRoot 'assemble-sdk.ps1') @assembleArgs
-    if ($LASTEXITCODE -ne 0) { throw 'assemble-sdk.ps1 failed' }
 
     # Xbox SDK HTML docs: source tree in git; VSIX ships docs/xboxsdk.tar.gz only.
     $docsToc = Join-Path $ExtensionRoot 'docs\xboxsdk\toc.json'

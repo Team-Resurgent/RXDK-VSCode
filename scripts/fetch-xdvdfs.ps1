@@ -37,16 +37,16 @@ function Find-ReleaseAsset {
         [object]$Release,
         [string]$Prefix
     )
-    $matches = @($Release.assets | Where-Object {
+    $assets = @($Release.assets | Where-Object {
         $_.name -like "$Prefix*.zip" -and $_.name -notlike 'xdvdfs-fsd-*'
     })
-    if ($matches.Count -eq 0) {
+    if ($assets.Count -eq 0) {
         throw "No release asset matching ${Prefix}*.zip in $($Release.tag_name)"
     }
-    if ($matches.Count -gt 1) {
-        $matches = @($matches | Sort-Object name -Descending | Select-Object -First 1)
+    if ($assets.Count -gt 1) {
+        $assets = @($assets | Sort-Object name -Descending | Select-Object -First 1)
     }
-    return $matches[0]
+    return $assets[0]
 }
 
 function Expand-ReleaseZip {
@@ -70,7 +70,7 @@ function Expand-ReleaseZip {
         Copy-Item -LiteralPath $binary.FullName -Destination $DestPath -Force
     } finally {
         if (Test-Path -LiteralPath $extractDir) {
-            Remove-Item -LiteralPath $extractDir -Recurse -Force -ErrorAction SilentlyContinue
+            Remove-Item -LiteralPath $extractDir -Recurse -Force -ErrorAction SilentlyContinue | Out-Null
         }
     }
 }
@@ -96,7 +96,7 @@ function Fetch-XdvdfsRid {
         Write-Host "OK: $dest <= $($Release.tag_name)/$($asset.name)" -ForegroundColor Green
     } finally {
         if (Test-Path -LiteralPath $zipPath) {
-            Remove-Item -LiteralPath $zipPath -Force -ErrorAction SilentlyContinue
+            Remove-Item -LiteralPath $zipPath -Force -ErrorAction SilentlyContinue | Out-Null
         }
     }
 }
@@ -119,3 +119,4 @@ foreach ($spec in $RidSpecs) {
 }
 
 Write-Host "OK: xdvdfs staged under $PublishRoot ($($release.tag_name))" -ForegroundColor Green
+exit 0
