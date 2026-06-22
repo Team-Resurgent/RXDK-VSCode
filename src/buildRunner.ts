@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { getSdkRoot, getSdkScriptsDir, getSdkIncludeDir, getSdkLibDir } from './sdkPath';
 import { isStagedSdkPresent, getStagedSdkRoot } from './sdkStaging';
+import { isDotNetRuntimeInstalled, ensureDotNetRuntime } from './dotnetRuntime';
 import { findProjectManifest } from './projectManager';
 import { getActiveXboxAddress } from './xboxConsole';
 import { isPrebuiltManifest } from './projectTypes';
@@ -25,6 +26,13 @@ export async function runRxdkTask(
             `RXDK SDK not installed. Reload the window to trigger clone, or: git clone --depth 1 https://github.com/Team-Resurgent/RXDK-SDK.git "${sdkPath}"`
         );
         return false;
+    }
+
+    if (kind !== 'build' && !(await isDotNetRuntimeInstalled())) {
+        const ok = await ensureDotNetRuntime(context, output);
+        if (!ok) {
+            return false;
+        }
     }
 
     const scripts = getSdkScriptsDir(context);

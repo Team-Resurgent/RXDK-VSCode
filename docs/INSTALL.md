@@ -3,7 +3,8 @@
 ## Prerequisites
 
 - **Windows 10/11 x64** — required to **compile** Xbox titles (`cl.exe` / VS2022 x86)
-- **macOS / Linux** — deploy and debug only (host tools bundled per platform; install [.NET 8 runtime](https://dotnet.microsoft.com/download) if tools fail to start)
+- **macOS / Linux** — deploy and debug only (host tools bundled per platform; the extension installs [.NET 8 runtime](https://dotnet.microsoft.com/download/dotnet/8.0) automatically when missing)
+- **Windows** — build requires Visual Studio; deploy/debug host tools also need the .NET 8 runtime (installed automatically by the extension when missing)
 - [Visual Studio 2022](https://visualstudio.microsoft.com/) with **Desktop development with C++** and **MSVC v143** (x86 build tools) — Windows build only
 - Original Xbox devkit on the network
 - PowerShell 5.1+ (Windows) or PowerShell 7+ (macOS/Linux install script)

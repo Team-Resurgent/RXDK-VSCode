@@ -6,6 +6,7 @@ import { createProject, findProjectManifest } from './projectManager';
 import { runRxdkTask } from './buildRunner';
 import { getBridgePath } from './sdkPath';
 import { ensureSdkStaging, openStagedSdkFolder, fetchLatestSdk } from './sdkStaging';
+import { ensureDotNetRuntime, isDotNetRuntimeInstalled } from './dotnetRuntime';
 import { ensureSdkDocsStaging } from './sdkDocsStaging';
 import { ensureVscodeForWorkspace, generateVscodeFolder } from './vscodeGenerator';
 import { RxdkTemplateId } from './projectTypes';
@@ -25,6 +26,7 @@ export function activate(context: vscode.ExtensionContext): void {
     sidebarProvider = new RxdkSidebarProvider(context);
     void ensureSdkStaging(context, rxdkOutput).then(() => sidebarProvider.refresh());
     void ensureSdkDocsStaging(context, rxdkOutput).then(() => sidebarProvider.refresh());
+    void ensureDotNetRuntime(context, rxdkOutput);
     const treeView = vscode.window.createTreeView('rxdk.explorer', {
         treeDataProvider: sidebarProvider,
         showCollapseAll: false,
@@ -108,6 +110,13 @@ export function activate(context: vscode.ExtensionContext): void {
             if (ok) {
                 sidebarProvider.refresh();
             }
+        }),
+        vscode.commands.registerCommand('rxdk.installDotNetRuntime', async () => {
+            if (await isDotNetRuntimeInstalled()) {
+                vscode.window.showInformationMessage('RXDK: .NET 8 runtime is already installed.');
+                return;
+            }
+            await ensureDotNetRuntime(context, rxdkOutput);
         }),
         vscode.commands.registerCommand('xbox.pickConsole', () => promptSetXboxIp())
     );
