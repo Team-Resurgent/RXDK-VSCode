@@ -7,13 +7,35 @@
 - **Windows** — build requires Visual Studio; deploy/debug host tools also need the .NET 8 runtime (installed automatically by the extension when missing)
 - [Visual Studio 2022](https://visualstudio.microsoft.com/) with **Desktop development with C++** and **MSVC v143** (x86 build tools) — Windows build only
 - Original Xbox devkit on the network
-- PowerShell 5.1+ (Windows) or PowerShell 7+ (macOS/Linux install script)
+- PowerShell 5.1+ (Windows) or bash + `code`/`cursor` CLI (macOS/Linux install script)
 
 The extension clones [RXDK-SDK](https://github.com/Team-Resurgent/RXDK-SDK) headers and libraries on first launch (see **RXDK: Open SDK Folder**). Host tools ship in the VSIX.
 
 ## Install the extension
 
-### Quick install (VS Code + Cursor)
+### GitHub Release (recommended)
+
+Download `rxdk-vscode-<version>.zip` from [Releases](https://github.com/Team-Resurgent/RXDK-VSCode/releases). It contains the VSIX plus install scripts for Windows, macOS, and Linux.
+
+```cmd
+REM Windows — extract zip, then double-click or run:
+install-extension.cmd
+```
+
+```powershell
+# Windows PowerShell
+.\install-extension.ps1 -Target both
+```
+
+```bash
+# macOS / Linux — extract zip, then (uses code/cursor CLI; no PowerShell)
+chmod +x install-extension.sh
+./install-extension.sh -Target both
+```
+
+See `README-INSTALL.txt` inside the zip for details.
+
+### Quick install from a repo clone
 
 From a clone of this repo:
 
@@ -23,7 +45,7 @@ From a clone of this repo:
 ```
 
 ```bash
-# macOS / Linux (requires PowerShell 7+ or Windows PowerShell via package manager)
+# macOS / Linux (native bash; -Build still needs PowerShell to run build-vsix.ps1)
 ./scripts/install-extension.sh -Build -Target both
 ```
 

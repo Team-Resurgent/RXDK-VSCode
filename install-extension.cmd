@@ -1,12 +1,17 @@
 @echo off
 REM Install rxdk-vscode VSIX into VS Code and/or Cursor.
-REM   install-extension.cmd              Install newest rxdk-vscode-*.vsix
-REM   install-extension.cmd -Build       Build cross-platform VSIX first, then install
+REM   install-extension.cmd              Install newest rxdk-vscode-*.vsix in this folder
+REM   install-extension.cmd -Build       Build cross-platform VSIX first, then install (repo dev only)
 REM   install-extension.cmd -Target vscode|cursor|both
 
 set "ROOT=%~dp0"
-set "REPO=%ROOT%.."
-set "ARGS=-ExtensionRoot \"%REPO%\" -Target auto"
+set "ARGS=-ExtensionRoot \"%ROOT%\" -Target auto"
+
+if exist "%ROOT%scripts\install-extension.ps1" (
+    set "PS1=%ROOT%scripts\install-extension.ps1"
+) else (
+    set "PS1=%ROOT%install-extension.ps1"
+)
 
 if /i "%~1"=="-Build" (
     set "ARGS=%ARGS% -Build"
@@ -25,7 +30,7 @@ shift
 goto parse
 
 :run
-powershell -NoProfile -ExecutionPolicy Bypass -File "%ROOT%scripts\install-extension.ps1" %ARGS%
+powershell -NoProfile -ExecutionPolicy Bypass -File "%PS1%" %ARGS%
 set "EXITCODE=%ERRORLEVEL%"
 echo.
 set /p "DONE=Press Enter to close... "

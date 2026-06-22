@@ -1,6 +1,6 @@
 # Install rxdk-vscode VSIX into VS Code and/or Cursor.
 param(
-    [string]$ExtensionRoot = (Join-Path $PSScriptRoot '..'),
+    [string]$ExtensionRoot = '',
     [string]$VsixPath = '',
     [ValidateSet('auto', 'vscode', 'cursor', 'both')]
     [string]$Target = 'auto',
@@ -8,7 +8,24 @@ param(
     [switch]$Build
 )
 $ErrorActionPreference = 'Stop'
-$ExtensionRoot = [IO.Path]::GetFullPath($ExtensionRoot)
+
+function Resolve-ExtensionRootPath {
+    param([string]$ScriptRoot, [string]$Explicit)
+    if ($Explicit) {
+        return [IO.Path]::GetFullPath($Explicit)
+    }
+    foreach ($dir in @($ScriptRoot, (Split-Path -Parent $ScriptRoot))) {
+        $full = [IO.Path]::GetFullPath($dir)
+        $vsix = Get-ChildItem -LiteralPath $full -Filter 'rxdk-vscode-*.vsix' -ErrorAction SilentlyContinue |
+            Select-Object -First 1
+        if ($vsix) {
+            return $full
+        }
+    }
+    return [IO.Path]::GetFullPath((Split-Path -Parent $ScriptRoot))
+}
+
+$ExtensionRoot = Resolve-ExtensionRootPath -ScriptRoot $PSScriptRoot -Explicit $ExtensionRoot
 
 function Resolve-VsixPath {
     param([string]$Root, [string]$Explicit)

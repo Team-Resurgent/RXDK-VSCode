@@ -32,6 +32,8 @@ Generated artifacts (gitignored):
 | `dist/debug/` | Compiled Xbox debug adapter (`tsc` from `debug/src/`) — entry point `./dist/debug/adapter.js` in `package.json` |
 | `sdk/` | Assembled SDK scripts + host tools for the VSIX |
 | `vendor/xdvdfs/publish/` | Cached xdvdfs release binaries per RID |
+| `rxdk-vscode-*.vsix` | Packaged extension |
+| `rxdk-vscode-*.zip` | Release bundle: VSIX + `install-extension.*` + `README-INSTALL.txt` |
 
 User Xbox projects still use their own `out/` folder for `.exe`/`.pdb` build output — that is unrelated to the extension install layout.
 
@@ -64,6 +66,8 @@ cd D:\Git\RXDK-VSCode
 .\scripts\build-vsix.ps1
 ```
 
+Produces `rxdk-vscode-<version>.vsix` and `rxdk-vscode-<version>.zip` (VSIX + cross-platform install scripts).
+
 Full sync path (assemble + compile + package):
 
 ```powershell
@@ -82,8 +86,8 @@ GitHub Actions workflow [`.github/workflows/build-vsix.yml`](../.github/workflow
 
 | Job | Runner | Purpose |
 |-----|--------|---------|
-| `build` | `windows-latest` | Fetch xdvdfs release, publish managed tools, package VSIX |
-| `release` | `ubuntu-latest` | Attach VSIX to GitHub Release when applicable |
+| `build` | `windows-latest` | Fetch xdvdfs release, publish managed tools, package VSIX + release zip |
+| `release` | `ubuntu-latest` | Attach `rxdk-vscode-*.zip` and `.vsix` to GitHub Release when applicable |
 
 **No Rust/Zig on CI.** xdvdfs comes from [Team-Resurgent/xdvdfs releases](https://github.com/Team-Resurgent/xdvdfs/releases/latest).
 
@@ -99,11 +103,7 @@ Triggers: push/PR to `main`/`master`, version tags `v*`, and **Actions → Run w
 .\scripts\install-extension.ps1 -Build -Target both
 ```
 
-Installs into **VS Code** and **Cursor** when both are present. On macOS/Linux:
-
-```bash
-./scripts/install-extension.sh -Build -Target both
-```
+Installs into **VS Code** and **Cursor** when both are present. On macOS/Linux the shell script uses the `code` / `cursor` CLI directly (no PowerShell). Use `-Build` from a repo clone only if PowerShell 7+ is installed.
 
 ## Platform notes
 

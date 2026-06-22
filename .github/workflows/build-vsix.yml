@@ -63,31 +63,52 @@ jobs:
           if-no-files-found: error
           compression-level: 0
 
+      - name: Upload release zip artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: rxdk-vscode-release-zip
+          path: rxdk-vscode-*.zip
+          if-no-files-found: error
+          compression-level: 0
+
       - name: Write job summary
         run: |
           $ErrorActionPreference = 'Stop'
           $vsix = Get-ChildItem -Path $env:GITHUB_WORKSPACE -Filter 'rxdk-vscode-*.vsix' |
             Sort-Object LastWriteTime -Descending |
             Select-Object -First 1
+          $zip = Get-ChildItem -Path $env:GITHUB_WORKSPACE -Filter 'rxdk-vscode-*.zip' |
+            Sort-Object LastWriteTime -Descending |
+            Select-Object -First 1
           if (-not $vsix) {
             throw 'VSIX not found after build'
           }
+          if (-not $zip) {
+            throw 'Release zip not found after build'
+          }
           $sizeMb = [math]::Round($vsix.Length / 1MB, 2)
+          $zipMb = [math]::Round($zip.Length / 1MB, 2)
           @(
             '### RXDK VSIX build',
             '',
             '| Artifact | Size |',
             '|----------|------|',
             "| ``$($vsix.Name)`` | ${sizeMb} MB |",
+            "| ``$($zip.Name)`` (VSIX + install scripts) | ${zipMb} MB |",
             '',
             'Host tools are bundled for `win-x64`, `linux-x64`, `osx-x64`, and `osx-arm64` under `sdk/tools/<rid>/`.',
             '`xdvdfs` is downloaded from [Team-Resurgent/xdvdfs releases](https://github.com/Team-Resurgent/xdvdfs/releases/latest).',
             'Xbox headers/libs are cloned from [RXDK-SDK](https://github.com/Team-Resurgent/RXDK-SDK) on first extension launch.',
             'Compiling Xbox titles still requires **Windows + Visual Studio (x86)** locally.',
             '',
-            'Install locally:',
+            'Install from release zip:',
             '```powershell',
-            './scripts/install-extension.ps1 -Target both',
+            '# Windows: extract zip, then',
+            '.\install-extension.cmd',
+            '```',
+            '```bash',
+            '# macOS / Linux: extract zip, then',
+            'chmod +x install-extension.sh && ./install-extension.sh',
             '```'
           ) | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8
 
@@ -116,6 +137,12 @@ jobs:
           name: rxdk-vscode-vsix
           path: dist
 
+      - name: Download release zip artifact
+        uses: actions/download-artifact@v5
+        with:
+          name: rxdk-vscode-release-zip
+          path: dist
+
       - name: Resolve release tag
         id: meta
         shell: bash
@@ -139,9 +166,9 @@ jobs:
         run: |
           set -euo pipefail
           shopt -s nullglob
-          files=(dist/*.vsix)
+          files=(dist/*.zip dist/*.vsix)
           if [[ ${#files[@]} -eq 0 ]]; then
-            echo "No VSIX files in dist/" >&2
+            echo "No release files in dist/" >&2
             exit 1
           fi
           args=(
@@ -162,5 +189,5 @@ jobs:
             echo ""
             echo "- Tag: \`${{ steps.meta.outputs.tag }}\`"
             echo "- Pre-release: \`${{ steps.meta.outputs.prerelease }}\`"
-            echo "- Artifact: \`rxdk-vscode-*.vsix\`"
+            echo "- Artifacts: \`rxdk-vscode-*.zip\` (recommended), \`rxdk-vscode-*.vsix\`"
           } >> "$GITHUB_STEP_SUMMARY"

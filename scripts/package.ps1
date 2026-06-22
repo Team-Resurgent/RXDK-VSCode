@@ -68,9 +68,12 @@ try {
     npm run package
     if ($LASTEXITCODE -ne 0) { throw "vsce package failed (exit $LASTEXITCODE)" }
     $vsix = Get-ChildItem -LiteralPath $ExtensionRoot -Filter 'rxdk-vscode-*.vsix' | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-    if ($vsix) {
-        Write-Host "OK: $($vsix.FullName)" -ForegroundColor Green
+    if (-not $vsix) {
+        throw 'vsce package did not produce rxdk-vscode-*.vsix'
     }
+    Write-Host "OK: $($vsix.FullName)" -ForegroundColor Green
+
+    & (Join-Path $PSScriptRoot 'stage-release-zip.ps1') -ExtensionRoot $ExtensionRoot -VsixPath $vsix.FullName
 } finally {
     Pop-Location
 }
