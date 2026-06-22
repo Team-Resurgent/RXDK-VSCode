@@ -7,7 +7,7 @@ param(
     [switch]$Package,
     [switch]$CrossPlatformTools,
     [switch]$InstallExtension,
-    [switch]$SkipXdvdfsMac
+    [switch]$SkipXdvdfsBuild
 )
 $ErrorActionPreference = 'Stop'
 $RxdkToolsRoot = [IO.Path]::GetFullPath($RxdkToolsRoot)
@@ -44,7 +44,7 @@ $assembleArgs = @{
 }
 if ($BuildTools) { $assembleArgs['BuildTools'] = $true }
 if ($CrossPlatformTools) { $assembleArgs['CrossPlatformTools'] = $true }
-if ($SkipXdvdfsMac) { $assembleArgs['SkipXdvdfsMac'] = $true }
+if ($SkipXdvdfsBuild) { $assembleArgs['SkipXdvdfsBuild'] = $true }
 & (Join-Path $ExtensionRoot 'scripts\assemble-sdk.ps1') @assembleArgs
 Test-StepExitCode -StepName 'assemble-sdk.ps1'
 
@@ -76,7 +76,7 @@ Next: open RXDK-VSCode in VS Code, or run with -Package to build VSIX.
 if ($Package) {
     $packageArgs = @{ ExtensionRoot = $ExtensionRoot; BuildTools = [bool]$BuildTools }
     if ($CrossPlatformTools) { $packageArgs['CrossPlatformTools'] = $true }
-    if ($SkipXdvdfsMac) { $packageArgs['SkipXdvdfsMac'] = $true }
+    if ($SkipXdvdfsBuild) { $packageArgs['SkipXdvdfsBuild'] = $true }
     & (Join-Path $ExtensionRoot 'scripts\package.ps1') @packageArgs
 }
 

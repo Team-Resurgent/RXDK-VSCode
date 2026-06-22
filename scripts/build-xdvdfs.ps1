@@ -2,7 +2,8 @@
 param(
     [string]$XdvdfsRoot = (Join-Path $PSScriptRoot '..\external\xdvdfs'),
     [switch]$Force,
-    [switch]$SkipMac
+    [switch]$SkipMac,
+    [switch]$SkipBuild
 )
 $ErrorActionPreference = 'Stop'
 $XdvdfsRoot = [IO.Path]::GetFullPath($XdvdfsRoot)
@@ -133,12 +134,24 @@ function Build-XdvdfsTarget {
     $destDir = Join-Path $PublishRoot $RidSpec.Rid
     $dest = Join-Path $destDir "xdvdfs$ext"
 
+    if ($SkipBuild) {
+        if (-not (Test-Path -LiteralPath $dest)) {
+            throw @"
+xdvdfs missing at $dest (SkipBuild).
+CI: run the macOS xdvdfs job first, or download its artifact into external/xdvdfs/out/publish/.
+Local: run scripts/build-xdvdfs.ps1 without -SkipBuild.
+"@
+        }
+        Write-Host "OK: using prebuilt $dest (SkipBuild)" -ForegroundColor DarkGray
+        return
+    }
+
     if ($SkipMac -and $RidSpec.Rid -like 'osx-*') {
         if (-not (Test-Path -LiteralPath $dest)) {
             throw @"
 macOS xdvdfs missing at $dest (SkipMac).
 CI: run the macOS xdvdfs job first, or download its artifact into external/xdvdfs/out/publish/.
-Local: omit -SkipMac to cross-build with Zig, or run scripts/build-xdvdfs-macos.sh on macOS.
+Local: omit -SkipMac to cross-build with Zig, or run scripts/build-xdvdfs-ci.sh on macOS.
 "@
         }
         Write-Host "OK: using macOS xdvdfs from $dest (SkipMac)" -ForegroundColor DarkGray
@@ -178,7 +191,9 @@ Run: git submodule update --init external/xdvdfs
 "@
 }
 
-Test-CargoAvailable
+if (-not $SkipBuild) {
+    Test-CargoAvailable
+}
 Write-Host '=== xdvdfs (antangelo/xdvdfs) ===' -ForegroundColor Cyan
 New-Item -ItemType Directory -Force -Path $PublishRoot | Out-Null
 

@@ -5,7 +5,7 @@ param(
     [string]$ExtensionRoot = (Join-Path $PSScriptRoot '..'),
     [switch]$BuildTools,
     [switch]$CrossPlatformTools,
-    [switch]$SkipXdvdfsMac
+    [switch]$SkipXdvdfsBuild
 )
 $ErrorActionPreference = 'Stop'
 $RxdkToolsRoot = [IO.Path]::GetFullPath($RxdkToolsRoot)
@@ -129,7 +129,7 @@ Run: git submodule update --init external/xdvdfs
 Write-Host '=== xdvdfs ===' -ForegroundColor Cyan
 $xdvdfsArgs = @{ XdvdfsRoot = $xdvdfsRoot }
 if ($BuildTools) { $xdvdfsArgs['Force'] = $true }
-if ($SkipXdvdfsMac) { $xdvdfsArgs['SkipMac'] = $true }
+if ($SkipXdvdfsBuild) { $xdvdfsArgs['SkipBuild'] = $true }
 & (Join-Path $PSScriptRoot 'build-xdvdfs.ps1') @xdvdfsArgs
 if ($LASTEXITCODE -ne 0) { throw 'build-xdvdfs.ps1 failed' }
 

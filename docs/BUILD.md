@@ -5,7 +5,7 @@ Not shipped in the VSIX. End-user docs: [INSTALL.md](INSTALL.md).
 ## Prerequisites
 
 - Windows 10/11 x64
-- Node.js 18+ and npm
+- Node.js 22+ and npm
 - .NET 8 SDK (to publish managed host tools during VSIX build)
 
 ## Submodules
@@ -79,11 +79,11 @@ GitHub Actions workflow [`.github/workflows/build-vsix.yml`](../.github/workflow
 
 | Job | Runner | Purpose |
 |-----|--------|---------|
-| `build-xdvdfs-macos` | `macos-latest` | Build `xdvdfs` for `osx-x64` and `osx-arm64` (Xcode SDK) |
-| `build` | `windows-latest` | Download macOS xdvdfs artifact, build win/linux xdvdfs (Zig), publish managed tools, package VSIX |
+| `build-xdvdfs` | `macos-latest` | Build all four `xdvdfs` RIDs (native mac + Zig cross-compile for win/linux) |
+| `build` | `windows-latest` | Download xdvdfs artifact, publish managed tools, package VSIX |
 | `release` | `ubuntu-latest` | Attach VSIX to GitHub Release when applicable |
 
-**macOS xdvdfs on CI:** the Windows job passes `-SkipXdvdfsMac` and uses the artifact from `build-xdvdfs-macos`. Local Windows/Linux builds can still cross-compile macOS xdvdfs with Zig (omit `-SkipXdvdfsMac`), or run `scripts/build-xdvdfs-macos.sh` on a Mac.
+**xdvdfs on CI:** the macOS job runs `scripts/build-xdvdfs-ci.sh` (Rust + Zig + cargo-zigbuild). The Windows job passes `-SkipXdvdfsBuild` and stages the downloaded binaries. Local Windows builds can still use `scripts/build-xdvdfs.ps1` (Zig cross-compiles all RIDs). On a Mac locally, run `scripts/build-xdvdfs-ci.sh` for the same layout as CI.
 
 **No MSVC on CI.** Xbox headers and `.lib` files are installed from [RXDK-SDK](https://github.com/Team-Resurgent/RXDK-SDK) when the user activates the extension.
 

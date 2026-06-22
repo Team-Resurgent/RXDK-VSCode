@@ -22,58 +22,18 @@ concurrency:
 
 env:
   DOTNET_VERSION: '8.0.x'
-  NODE_VERSION: '20'
+  NODE_VERSION: '22'
 
 jobs:
-  build-xdvdfs-macos:
-    name: Build xdvdfs (macOS)
+  build-xdvdfs:
+    name: Build xdvdfs (all platforms)
     runs-on: macos-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: recursive
           token: ${{ secrets.SUBMODULES_TOKEN }}
-
-      - name: Setup Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: x86_64-apple-darwin,aarch64-apple-darwin
-
-      - name: Build xdvdfs for osx-x64 and osx-arm64
-        run: |
-          chmod +x scripts/build-xdvdfs-macos.sh
-          ./scripts/build-xdvdfs-macos.sh
-
-      - name: Upload macOS xdvdfs artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: xdvdfs-macos
-          path: |
-            external/xdvdfs/out/publish/osx-x64
-            external/xdvdfs/out/publish/osx-arm64
-          if-no-files-found: error
-          retention-days: 7
-
-  build:
-    name: Build cross-platform VSIX
-    needs: build-xdvdfs-macos
-    runs-on: windows-latest
-    defaults:
-      run:
-        shell: pwsh
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-          token: ${{ secrets.SUBMODULES_TOKEN }}
-
-      - name: Download macOS xdvdfs artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: xdvdfs-macos
-          path: external/xdvdfs/out/publish
 
       - name: Setup Zig
         uses: goto-bus-stop/setup-zig@v2
@@ -83,19 +43,55 @@ jobs:
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: x86_64-pc-windows-msvc,x86_64-unknown-linux-musl
+          targets: x86_64-apple-darwin,aarch64-apple-darwin,x86_64-unknown-linux-musl,x86_64-pc-windows-msvc
 
       - name: Install cargo-zigbuild
         run: cargo install cargo-zigbuild --locked
 
+      - name: Build xdvdfs for all RIDs
+        run: |
+          chmod +x scripts/build-xdvdfs-ci.sh
+          ./scripts/build-xdvdfs-ci.sh
+
+      - name: Upload xdvdfs artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: xdvdfs-all
+          path: |
+            external/xdvdfs/out/publish/win-x64
+            external/xdvdfs/out/publish/linux-x64
+            external/xdvdfs/out/publish/osx-x64
+            external/xdvdfs/out/publish/osx-arm64
+          if-no-files-found: error
+
+  build:
+    name: Build cross-platform VSIX
+    needs: build-xdvdfs
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+          token: ${{ secrets.SUBMODULES_TOKEN }}
+
+      - name: Download xdvdfs artifact
+        uses: actions/download-artifact@v5
+        with:
+          name: xdvdfs-all
+          path: external/xdvdfs/out/publish
+
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
       - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
@@ -103,16 +99,15 @@ jobs:
         run: npm ci
 
       - name: Build VSIX
-        run: ./scripts/build-vsix.ps1 -ExtensionRoot $env:GITHUB_WORKSPACE -SkipXdvdfsMac
+        run: ./scripts/build-vsix.ps1 -ExtensionRoot $env:GITHUB_WORKSPACE -SkipXdvdfsBuild
 
       - name: Upload VSIX artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: rxdk-vscode-vsix
           path: rxdk-vscode-*.vsix
           if-no-files-found: error
           compression-level: 0
-          retention-days: 90
 
       - name: Write job summary
         run: |
@@ -132,7 +127,7 @@ jobs:
             "| ``$($vsix.Name)`` | ${sizeMb} MB |",
             '',
             'Host tools are bundled for `win-x64`, `linux-x64`, `osx-x64`, and `osx-arm64` under `sdk/tools/<rid>/`.',
-            'macOS `xdvdfs` binaries are built on `macos-latest`; win/linux on `windows-latest`.',
+            'All `xdvdfs` binaries are built on `macos-latest`; the Windows job assembles the VSIX only.',
             'Xbox headers/libs are cloned from [RXDK-SDK](https://github.com/Team-Resurgent/RXDK-SDK) on first extension launch.',
             'Compiling Xbox titles still requires **Windows + Visual Studio (x86)** locally.',
             '',
@@ -157,12 +152,12 @@ jobs:
       contents: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
       - name: Download VSIX artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: rxdk-vscode-vsix
           path: dist
