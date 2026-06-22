@@ -1,0 +1,90 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Competition Configuration</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Competition Configuration"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Competition Configuration</h1>
+<p>Before you can offer a competition on Xbox <i>Live</i>, you must define a configuration for it. Configurations contain one or more templates. Each template defines the characteristics of a competition. You create configurations for competitions using the <a href="xbox_tool_xlast.htm">XLAST</a> tool provided in the XDK.</p><p>You begin the process of creating a competition by starting the XLAST <a href="xbox_tool_xlast_competitions_wizard.htm">New Competitions Project Wizard</a>. The wizard creates a configuration project to which you can add competition templates. Each template defines one type of competition. You can create as many competitions from a template as you need.</p><p>Define the characteristics of a competition by 
+		<a href="xbox_tool_xlast_competitions_adding_attributes.htm">adding attributes</a> to its template. You can also 
+		<a href="xbox_tool_xlast_competitions_adding_constants.htm">add constants</a> to the template that define the values that can be assigned to the attributes.</p><p>The Xbox <i>Live</i> service uses the templates from your configuration package to create a database containing information about each competition. As the competition progresses, your game updates the contents of the database using the competitions functions. These functions perform their tasks by sending queries to the competition's database. You can use the XLAST tool to <a href="xbox_tool_xlast_competitions_queries.htm">define your own queries</a> that your title can send to the competition's database.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;In the competitions functions, the <i>dwTemplateID</i> parameter is used to reference the appropriate competition template.</p><p>The database for your competitions is also called a <i>dataset</i>. The dataset's information is kept in the following three tables.</p><dl>
+		<dt><i>Competitions table</i> </dt> 
+		<dd>The competitions currently running, open for registration, or scheduled for cleanup. The list is limited to the set of all competitions based on the selected template.</dd>
+		<dt><i>Entrants list</i> </dt> 
+		<dd>The players or teams enrolled in each competition.</dd>
+		<dt><i>Events list</i> </dt> 
+		<dd>All events in each competition. This include events already played, currently in progress, and scheduled for the future.</dd>
+	</dl>
+<p>These three tables are referred to as the "targets" of the queries that update the dataset. These queries are configured via the Queries node in the XLAST Competition Configuration tool.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Dataset schemas and indices cannot be modified in production, that is, after they have been released to Xbox <i>Live</i>. The procedure required for production is to submit a new dataset and autoupdate for the client to use the new dataset. This new dataset replaces the one in production. Although the dataset and autoupdate <i>can</i> be in PartnerNet, this results in the loss of existing competitions in those datasets. Constants and queries can be updated for a dataset in production.</p><p>To provide maximum flexibility for title developers, the competitions and events targets can be configured to store title-specific custom attributes. You <b>define these attributes</b> in XLAST by including them in the various queries associated with the competition template.</p><p>It is also possible to add title-specific custom attributes to the entrants target. However, you cannot do this through XLAST. You must add them to XLAST's XQS output. The following example adds the competition name to the entrants dataset.</p>
+<pre class="clsCode">
+&lt;dataset id="2" quota="-1" name="elimination entrants" typeid="0"&gt;
+    &lt;schema&gt;
+        &lt;!-- note: entity_id, creator_puid, etc that are "globals" and part of every dataset.
+        &lt;attribute name="entity_id"    hexid="0x80000000" kind="int" /&gt;
+        &lt;attribute name="owner_id"    hexid="0x80000001" kind="int" /&gt;
+        --&gt;
+        &lt;!-- Standard competition attributes --&gt;
+        &lt;attribute name="att_comp_id" hexid="0x80010000" kind="int" default="0"/&gt;
+        &lt;attribute name="att_comp_status" hexid="0x8001001D" kind="int" default="0" /&gt;
+        &lt;attribute name="att_puid" hexid="0x80020000" kind="int" default="0" /&gt;
+        &lt;attribute name="att_status" hexid="0x80020001" kind="int" default="0" /&gt;
+        &lt;attribute name="att_current_round" hexid="0x80020003" kind="int" default="0" /&gt;
+        &lt;attribute name="att_current_event" hexid="0x80020007" kind="int" default="0" /&gt;
+        &lt;attribute name="att_current_start" hexid="0x80020008" kind="int" default="0" /&gt;
+        &lt;attribute name="att_sort" hexid="0x80020009" kind="int" default="0" /&gt;
+        &lt;attribute name="att_private_slot" hexid="0x80020004" kind="int" default="0" /&gt;
+        &lt;attribute name="att_seed" hexid="0x80020005" kind="int" default="0" /&gt;
+        &lt;attribute name="att_comp_name" hexid="0x8011000E" kind="string" maxlen="32" default="" /&gt;
+    &lt;/schema&gt;
+    ...
+&lt;/dataset&gt;
+</pre>
+    <p>The custom attribute in the preceding example is called att_comp_name. If you used this attribute in your game, your queries would need to be manually modified to return the attribute value. The "My Competitions" query, for instance, would resemble the following.</p>
+<pre class="clsCode">
+
+&lt;query hexid="0x1" op="search" name="My Competitions"&gt;
+    &lt;params&gt;
+        &lt;param name="p_puid" hexid="0x82020000" kind="int" /&gt;
+        &lt;param name="p_comp_status" hexid="0x8201001D" kind="int" /&gt;
+    &lt;/params&gt;
+    &lt;filters&gt;
+        &lt;filter left="0x80020000" op="==" right="0x82020000" /&gt;
+        &lt;filter left="0x8001001D" op="==" right="0x8201001D" /&gt;
+    &lt;/filters&gt;
+    &lt;sortops&gt;
+        &lt;sortop hexid="0x80020009" dir="ascending" /&gt;
+    &lt;/sortops&gt;
+    &lt;returns&gt;
+        &lt;return name="att_comp_id" hexid="0x80010000" /&gt;
+        &lt;return name="att_comp_status" hexid="0x8001001D" /&gt;
+        &lt;return name="att_status" hexid="0x80020001" /&gt;
+        &lt;return name="att_current_round" hexid="0x80020003" /&gt;
+        &lt;return name="att_current_event" hexid="0x80020007" /&gt;
+        &lt;return name="att_current_start" hexid="0x80020008" /&gt;
+        &lt;return name="att_sort" hexid="0x80020009" /&gt;
+        &lt;return name="att_comp_name" hexid="0x8011000E"  /&gt;
+    &lt;/returns&gt;
+&lt;/query&gt;
+
+
+</pre>
+    <p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;If you regenerate your queries with XLAST, XLAST overwrites the custom attributes for the entrants dataset. You must manually edit them to reinsert the custom attributes.</p><p>Once the attributes have been added to the schema for the entrants dataset, your game must set them using <a href="XOnlineCompetitionManageEntrant.htm">XOnlineCompetitionManageEntrant</a> to execute to join (XONLINE_COMP_ACTION_JOIN) the player into a competition. At this time, the title retrieves any attributes based on other tables (for example, competition dataset attributes such as competition name, start time, and so forth) and then set those for the player. </p><p>When duplicating attributes from other datasets, the custom attributes in the entrants dataset are not joined between datasets. If the values change in another dataset, the changes are reflected in the entrants dataset. Therefore, the technique show here for inserting custom attributes is mainly for static attributes that are typically initialized once and then not changed for the lifetime of the competition.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

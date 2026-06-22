@@ -1,0 +1,203 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>D3DPRESENT_PARAMETERS</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="D3DPRESENT_PARAMETERS">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="D3DPRESENT_PARAMETERS"/>
+<MSHelp:Keyword Index="F" Term="D3DPRESENT_PARAMETERS"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_d3dpresent_parameters_graphics"></A>D3DPRESENT_PARAMETERS</H1>
+
+<P>Describes the presentation parameters.</P>
+
+<PRE class=syntax>typedef struct _D3DPRESENT_PARAMETERS_
+{
+    UINT                BackBufferWidth;
+    UINT                BackBufferHeight;
+    D3DFORMAT           BackBufferFormat;
+    UINT                BackBufferCount;
+    D3DMULTISAMPLE_TYPE MultiSampleType;
+    D3DSWAPEFFECT       SwapEffect;
+    HWND                hDeviceWindow;
+    BOOL                Windowed;
+    BOOL                EnableAutoDepthStencil;
+    D3DFORMAT           AutoDepthStencilFormat;
+    DWORD               Flags;
+    UINT                FullScreen_RefreshRateInHz; 
+    UINT                FullScreen_PresentationInterval;
+    D3DSurface         *BufferSurfaces[3];
+    D3DSurface         *DepthStencilSurface;
+
+} D3DPRESENT_PARAMETERS;
+</PRE>
+
+<H4>Members</H4>
+
+<DL>
+<DT><B>BackBufferWidth</B> and <B>BackBufferHeight</B></DT>
+
+<DD>Width and height of the new screen. These must equal the width and height of one of the enumerated display modes found through <A HREF="_dx_idirect3d8_enumadaptermodes_graphics.htm">IDirect3D8::EnumAdapterModes</A>.</DD>
+
+<DT><B>BackBufferFormat</B></DT>
+
+<DD>Member of the <A HREF="_dx_d3dformat_graphics.htm">D3DFORMAT</A> enumerated type.
+</DD>
+
+<DT><B>BackBufferCount</B></DT>
+
+<DD>This value can be 0, 1, or 2. Note that 0 is treated as 1.
+
+<P>One back buffer is considered the minimum number of back buffers. The method call fails if 1 back buffer cannot be created.</p>
+</DD>
+
+<DT><B>MultiSampleType</B></DT>
+
+<DD>Member of the <A HREF="_dx_d3dmultisample_type_graphics.htm">D3DMULTISAMPLE_TYPE</A> enumerated type.</dd>
+
+<DT><B>SwapEffect</B></DT>
+
+<DD>Describes how the swap chain is handled. This value can be any member of the <a href="_dx_d3dswapeffect_graphics.htm">D3DSWAPEFFECT</A> enumeration</DD>; however, D3DSWAPEFFECT_FLIP is treated the same as D3DSWAPEFFECT_DISCARD.</dd>
+
+<DT><B>hDeviceWindow</B></DT>
+
+<DD>Ignored; use zero.</dd>
+</DD>
+
+<DT><B>Windowed</B></DT>
+
+<DD>Must be FALSE. On Xbox, all applications run full-screen.</DD>
+
+<DT><B>EnableAutoDepthStencil</B></DT>
+
+<DD>If this value is TRUE, Microsoft&#174; Direct3D&#174; will manage depth buffers for the application. The device will create a depth-stencil buffer when it is created. The depth-stencil buffer will be automatically set as the render target of the device. When the device is reset, the depth-stencil buffer will be automatically destroyed and recreated in the new size.
+
+<P>If <B>EnableAutoDepthStencil</B> is TRUE, then <B>AutoDepthStencilFormat</B> must be a valid depth-stencil format.
+</DD>
+
+<DT><B>AutoDepthStencilFormat</B></DT>
+
+<DD>Member of the <B>D3DFORMAT</B> enumerated type. The format of the automatic depth-stencil surface that the device will create. This member is ignored unless <B>EnableAutoDepthStencil</B> is TRUE. </DD>
+
+<DT><B>Flags</B></DT>
+
+<DD>This member can be set to 0, or to one or more of the following flags ORed together:
+
+<DL>
+<DT>D3DPRESENTFLAG_LOCKABLE_BACKBUFFER</DT>
+
+<DD>This flag is ignored.
+</DD>
+
+<dt>D3DPRESENTFLAG_WIDESCREEN</dt>
+
+<dd>Set this flag if the title is supporting widescreen mode.</dd>
+
+<dt>D3DPRESENTFLAG_INTERLACED</dt>
+
+<dd>Set this flag if the title is rendering to an interlaced display. This flag cannot be ORed with D3DPRESENTFLAG_PROGRESSIVE.</dd>
+
+<dt>D3DPRESENTFLAG_PROGRESSIVE</dt>
+
+<dd>Set this flag if the title is rendering to a progressive display. The only progressive displays that are supported are 480p and 720p HDTV modes. This flag cannot be ORed with D3DPRESENTFLAG_INTERLACED.</dd>
+
+<dt>D3DPRESENTFLAG_FIELD</dt>
+<dd>Set this flag if the title is using field rendering.</dd>
+
+<dt>D3DPRESENTFLAG_10X11PIXELASPECTRATIO</dt>
+
+<dd>Set this flag to center the frame buffer on the display. On a TV that is 704 pixels across, this would leave 32 pixels of black border on the left and 32 pixels of black border on the right.</dd>
+
+<dt>D3DPRESENTFLAG_EMULATE_REFRESH_RATE</dt>
+<dd>Set this flag to allow emulation of refresh rates other than the native display modes refresh rates. For example, to emulate a 50 Hz refresh rate in an NTSC mode, set this flag and set <b>FullScreen_RefreshRateInHz</b> to 50. This flag does not work with 1080i and does not work with overlays.</dd>
+</DL>
+</DD>
+
+<DT><B>FullScreen_RefreshRateInHz</B></DT>
+
+<DD>The rate at which the display adapter refreshes the screen. This value must be one of the refresh rates returned by <A HREF="_dx_idirect3d8_enumadaptermodes_graphics.htm">IDirect3D8::EnumAdapterModes</A> or the following value. 
+
+<DL>
+<DT>D3DPRESENT_RATE_DEFAULT</DT>
+
+<DD>The run-time chooses the presentation rate.</DD>
+
+</DL>
+</DD>
+
+<DT><B>FullScreen_PresentationInterval</B></DT>
+
+<DD>Bit mask of values representing what presentation swap intervals are available. This value must be D3DPRESENT_INTERVAL_DEFAULT or one of the following values:
+
+<DL>
+<DT>D3DPRESENT_INTERVAL_IMMEDIATE</DT>
+
+<DD>The driver supports an immediate presentation swap interval.</DD>
+
+<DT>D3DPRESENT_INTERVAL_ONE</DT>
+
+<DD>The driver supports a presentation swap interval of every screen refresh.</DD>
+
+<dt>D3DPRESENT_INTERVAL_ONE_OR_IMMEDIATE</dt>
+
+<dd>The driver supports a presentation swap interval every screen refresh but it will flip immediately if the rendering has gone over a frame. It otherise behaves like D3DPRESENT_INTERVAL_ONE.</dd>
+
+<DT>D3DPRESENT_INTERVAL_TWO</DT>
+
+<DD>The driver supports a presentation swap interval of every second screen refresh.</DD>
+
+<dt>D3DPRESENT_INTERVAL_TWO_OR_IMMEDIATE</dt>
+
+<dd>The driver supports a presentation swap interval every second screen refresh but will flip immediately if the rendering has gone longer than two screen refreshes. It otherwise behaves like D3DPRESENT_INTERVAL_TWO.</dd>
+
+<DT>D3DPRESENT_INTERVAL_THREE</DT>
+
+<DD>The driver supports a presentation swap inteval every third screen refresh.</DD>
+
+<dt>D3DPRESENT_INTERVAL_THREE_OR_IMMEDIATE</dt>
+
+<dd>The driver supports a presentation swap interval every third screen refresh but it will flip immediately if the rendering has gone longer than three screen refreshes. It otherwise behaves like D3DPRESENT_INTERVAL_THREE.</dd>
+
+<DT>D3DPRESENT_INTERVAL_FOUR</DT>
+
+<DD>Not supported on Xbox.</DD>
+</DL>
+<p>Neither <a href="_dx_idirect3ddevice8_setverticalblankcallback_graphics.htm">IDirect3DDevice8::SetVerticalBlankCallback</A> nor <a href="_dx_idirect3ddevice8_setverticalblankcallback_graphics.htm">IDirect3DDevice8::BlockUntilVerticalBlank</A> are tied to these intervals.</p>
+</DD>
+
+<dt><b>BufferSurfaces</b> and <b>DepthStencilSurface</b></dt>
+<dd>If non-NULL, Direct3D will not allocate its own color and Z surfaces, but rather will use the specified surfaces.  <b>BufferSurfaces[0]</b> will be used as the back-buffer, and <b>BufferSurfaces[1]</b> (and <b>BufferSurfaces[2]</b> if <b>BackBufferCount</b> is 2) will be used as the front-buffers. If antialiasing, <b>BufferSurfaces[0]</b> will be the "big" buffer and can be a different size and format from <b>BufferSurfaces[1]</b>. If not antialiasing, <b>BufferSurfaces[0]</b> must be the same size and format as <b>BufferSurfaces[1]</b>.  If <b>BackBufferCount</b> is 2, <b>BufferSurfaces[2]</b> must be non-NULL and the same size and format as <b>BufferSurfaces[1]</b>. <b>DepthStencilSurface</b> must be at least as large as <b>BufferSurfaces[0]</b>. 
+
+<p>All surfaces should be created in tiled views using <a href="_dx_idirect3ddevice8_settile_graphics.htm">IDirect3DDevice8::SetTile</A>, and the Z-buffer should have a tiling mapping with D3DTILE_FLAGS_ZBUFFER set.  <a href="xbox_dxg_D3D_AllocContiguousMemory.html">D3D_AllocContiguousMemory</A>, <b>SetTile</b>, <a href="xgraphics_xgsetsurfaceheader.htm">XGSetSurfaceHeader</A>, and <a href="xbox_dxg_IDirect3DResource8_Register.htm">Register</A> are the preferred ways to create the surfaces in this case, but <a href="_dx_idirect3ddevice8_createimagesurface_graphics.htm">CreateImageSurface</A> can also be used before calling <a href="_dx_idirect3d8_createdevice_graphics.htm">CreateDevice</A> by using a NULL device interface pointer:</p>
+<pre>((D3DDevice*) NULL)->CreateImageSurface(...)</pre>
+
+<p>Direct3D performs no reference counting on any of the surfaces used in <b>BufferSurfaces</b> or <b>DepthStencilSurface</b>. It is the application's responsibility to ensure that it does not free the contiguous memory until all rendering is done and and the graphics hardware is no longer busy. The state of the graphics hardware can be determined using either <a href="xbox_dxg_IDirect3DDevice8_IsBusy.htm">IDirect3DDevice8::IsBusy</A> or <a href="xbox_dxg_IDirect3DDevice8_BlockUntilIdle.htm">IDirect3DDevice8::BlockUntilIdle</A>.</p>
+</dd>
+
+
+</DL>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in D3d8types.h.</P>
+
+<H4>See Also</H4>
+
+<P><A HREF="_dx_idirect3d8_createdevice_graphics.htm">IDirect3D8::CreateDevice</A>, <A HREF="_dx_idirect3ddevice8_present_graphics.htm">IDirect3DDevice8::Present</A>, <a href="_dx_idirect3ddevice8_swap_graphics.htm">IDirect3DDevice8::Swap</A>, <A HREF="_dx_idirect3ddevice8_reset_graphics.htm">IDirect3DDevice8::Reset</A></P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

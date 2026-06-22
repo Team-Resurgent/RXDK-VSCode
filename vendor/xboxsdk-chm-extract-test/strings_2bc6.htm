@@ -1,0 +1,328 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>wsprintf</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="wsprintf">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="wsprintf"/>
+<MSHelp:Keyword Index="F" Term="wsprintf"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_wsprintf"></A>wsprintf</H1>
+
+<P>The <B>wsprintf</B> function formats and stores a series of characters and values in a buffer. Any arguments are converted and copied to the output buffer according to the corresponding format specification in the format string. The function appends a terminating null character to the characters it writes, but the return value does not include the terminating null character in its character count. </P>
+
+<PRE class=syntax><B>int wsprintf(
+  LPTSTR</B><I> lpOut</I><B>,    </B>// output buffer
+<B>  LPCTSTR</B><I> lpFmt</I><B>,</B>   // format-control string
+<B> </B><I> </I><B>...</B><I>              </I>// optional arguments
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>lpOut</I></DT>
+
+<DD>[out] Pointer to a buffer to receive the formatted output. The maximum size of the buffer is 1024 bytes.</DD>
+
+<DT><I>lpFmt</I></DT>
+
+<DD>[in] Pointer to a null-terminated string that contains the format-control specifications. In addition to ordinary ASCII characters, a format specification for each argument appears in this string. For more information about the format specification, see the Remarks section. </DD>
+
+<DT><I>...</I></DT>
+
+<DD>[in] Specifies one or more optional arguments. The number and type of argument parameters depend on the corresponding format-control specifications in the <I>lpFmt</I> parameter. 
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is the number of characters stored in the output buffer, not counting the terminating null character. </P>
+
+<P>If the function fails, the return value is less than the length of the expected output. To get extended error information, call <A HREF="errors_3uwi.htm">GetLastError</a>. </P>
+
+<H4>Remarks</H4>
+
+<P>The format-control string contains format specifications that determine the output format for the arguments following the <I>lpFmt</I> parameter. Format specifications, discussed below, always begin with a percent sign (%). If a percent sign is followed by a character that has no meaning as a format field, the character is not formatted (for example, %% produces a single percent-sign character). </P>
+
+<P>The format-control string is read from left to right. When the first format specification (if any) is encountered, it causes the value of the first argument after the format-control string to be converted and copied to the output buffer according to the format specification. The second format specification causes the second argument to be converted and copied, and so on. If there are more arguments than format specifications, the extra arguments are ignored. If there are not enough arguments for all of the format specifications, the results are undefined. </P>
+
+<P>A format specification has the following form: </P>
+
+<P><B>%</B>[<B>&#8211;</B>][<B>#</B>][<B>0</B>][<I>width</I>][<B>.</B><I>precision</I>][I64]<I>type</I></P>
+
+<P>Each field is a single character or a number signifying a particular format option. The <I>type</I> characters that appear after the last optional format field determine whether the associated argument is interpreted as a character, a string, or a number. The simplest format specification contains only the percent sign and a type character (for example, <B>%s</B>). The optional fields control other aspects of the formatting. Following are the optional and required fields and their meanings. </P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=15%>Field</TH>
+<TH align=left colspan=2 width=85%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%><B>&#8211;</B></TD>
+<TD colspan=2 width=85%>Pad the output with blanks or zeros to the right to fill the field width, justifying output to the left. If this field is omitted, the output is padded to the left, justifying it to the right.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%><B>#</B></TD>
+<TD colspan=2 width=85%>When used with the o, x, or X format, the # flag prefixes any nonzero output value with 0, 0x, or 0X, respectively.  When used with the e, E, or f format, the # flag forces the output value to contain a decimal point in all cases.  When used with the g or G format, the # flag forces the output value to contain a decimal point in all cases and prevents the truncation of trailing zeros.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%><B>0</B></TD>
+<TD colspan=2 width=85%>Pad the output value with zeros to fill the field width. If this field is omitted, the output value is padded with blank spaces.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%><I>width</I></TD>
+<TD colspan=2 width=85%>Copy the specified minimum number of characters to the output buffer. The <I>width</I> field is a nonnegative integer. The width specification never causes a value to be truncated; if the number of characters in the output value is greater than the specified width, or if the <I>width</I> field is not present, all characters of the value are printed, subject to the precision specification.
+
+<P>If the width specification is an asterisk (*), an int argument from the argument list supplies the value.</P></TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%><B>.</B><I>precision</I></TD>
+<TD colspan=2 width=85%>For doubles, specifies the number of digits to be printed after the decimal point.
+
+<P>For other numbers, copy the specified minimum number of digits to the output buffer. If the number of digits in the argument is less than the specified precision, the output value is padded on the left with zeros. The value is not truncated when the number of digits exceeds the specified precision. If the specified precision is 0 or omitted entirely, or if the period (<B>.</B>) appears without a number following it, the precision is set to 1.</P>
+
+<P>For strings, copy the specified maximum number of characters to the output buffer.</P>
+
+<P>If the precision specification is an asterisk (*), an integer argument from the argument list supplies the value.</P>
+</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%>I64</TD>
+<TD colspan=2 width=85%>Prefix to <I>type</I> that specifies that the value is a 64-bit integer (__int64).  Can be used in front of the types d, i, o, u, x, or X (but not in front of hd, ld, hi, li, and so on).</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%><I>type</I></TD>
+<TD colspan=2 width=85%>Output the corresponding argument as a character, a string, or a number. This field can be any of the following values.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%>&nbsp;</TD>
+<TH align=left width=16%>Value</TH>
+<TH align=left width=69%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%>&nbsp;</TD>
+<TD width=16%>c</TD>
+<TD width=69%>Single character. This value is interpreted as type <B>WCHAR</B> if the calling application defines UNICODE and as type <B>CHAR</B> otherwise.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%>&nbsp;</TD>
+<TD width=16%>C</TD>
+<TD width=69%>Single character. This value is interpreted as type <B>CHAR</B> if the calling application defines UNICODE and as type <B>WCHAR</B> otherwise.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%>&nbsp;</TD>
+<TD width=16%>hc, hC</TD>
+<TD width=69%>Single character. This value is always interpreted as type <B>CHAR</B>, even when the calling application defines UNICODE.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%>&nbsp;</TD>
+<TD width=16%>lc, lC</TD>
+<TD width=69%>Single character. This value is always interpreted as type <B>WCHAR</B>, even when the calling application does not define UNICODE.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%>&nbsp;</TD>
+<TD width=16%>s</TD>
+<TD width=69%>String. This value is interpreted as type <B>LPWSTR</B> when the calling application defines UNICODE and as type <B>LPSTR</B> otherwise.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%>&nbsp;</TD>
+<TD width=16%>S</TD>
+<TD width=69%>String. This value is interpreted as type <B>LPSTR</B> when the calling application defines UNICODE and as type <B>LPWSTR</B> otherwise.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%>&nbsp;</TD>
+<TD width=16%>hs, hS</TD>
+<TD width=69%>String. This value is always interpreted as type <B>LPSTR</B>, even when the calling application defines UNICODE.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%>&nbsp;</TD>
+<TD width=16%>ls, lS</TD>
+<TD width=69%>String. This value is always interpreted as type <B>LPWSTR</B>, even when the calling application does not define UNICODE. This value is equivalent to ws.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%>&nbsp;</TD>
+<TD width=16%>d</TD>
+<TD width=69%>Signed decimal integer. This value is equivalent to i.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%>&nbsp;</TD>
+<TD width=16%>hd</TD>
+<TD width=69%>Signed short integer.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%>&nbsp;</TD>
+<TD width=16%>ld</TD>
+<TD width=69%>Long signed integer. This value is equivalent to li.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%>&nbsp;</TD>
+<TD width=16%>i</TD>
+<TD width=69%>Signed decimal integer. This value is equivalent to d.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%>&nbsp;</TD>
+<TD width=16%>hi</TD>
+<TD width=69%>Signed short integer. This value is equivalent to hd</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%>&nbsp;</TD>
+<TD width=16%>li</TD>
+<TD width=69%>Long signed integer. This value is equivalent to ld.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%>&nbsp;</TD>
+<TD width=16%>u</TD>
+<TD width=69%>Unsigned integer.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%>&nbsp;</TD>
+<TD width=16%>hu</TD>
+<TD width=69%>Unsigned short integer.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%>&nbsp;</TD>
+<TD width=16%>lu</TD>
+<TD width=69%>Long unsigned integer.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%>&nbsp;</TD>
+<TD width=16%>x, X</TD>
+<TD width=69%>Unsigned hexadecimal integer in lowercase or uppercase.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%>&nbsp;</TD>
+<TD width=16%>hx, hX</TD>
+<TD width=69%>Unsigned short hexadecimal integer in lowercase or uppercase.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%>&nbsp;</TD>
+<TD width=16%>lx, lX</TD>
+<TD width=69%>Long unsigned hexadecimal integer in lowercase or uppercase.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%>&nbsp;</TD>
+<TD width=16%>o</TD>
+<TD width=69%>Unsigned octal integer.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%>&nbsp;</TD>
+<TD width=16%>ho</TD>
+<TD width=69%>Unsigned short octal integer.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%>&nbsp;</TD>
+<TD width=16%>lo</TD>
+<TD width=69%>Long unsigned octal integer.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%>&nbsp;</TD>
+<TD width=16%>p</TD>
+<TD width=69%>Pointer. The address is printed using hexadecimal.</TD>
+</TR>
+
+<tr valign=top>
+<TD width=15%>&nbsp;</TD>
+<td width=16%>e</td>
+<td width=69%>Signed double value having the form [ &#8211; ]<i>d</i><b>.</b><i>dddd</i> <b>e</b> [<i>sign</i>]<i>ddd</i>, where <i>d</i> is a single decimal digit, <i>dddd</i> is one or more decimal digits, <i>ddd</i> is exactly three decimal digits, and <i>sign</i> is + or &#8211;.</td>
+</tr>
+
+<tr valign=top>
+<TD width=15%>&nbsp;</TD>
+<td width=16%>E</td>
+<td width=69%>Signed double.  Identical to the <b>e</b> format except that <b>E</b> rather than <b>e</b> introduces the exponent.</td>
+</tr>
+
+<tr valign=top>
+<TD width=15%>&nbsp;</TD>
+<td width=16%>f</td>
+<td width=69%>Signed double value having the form [ &#8211; ]<i>dddd</i><b>.</b><i>dddd</i>, where <i>dddd</i> is one or more decimal digits. The number of digits before the decimal point depends on the magnitude of the number, and the number of digits after the decimal point depends on the requested precision.</td>
+</tr>
+
+<tr valign=top>
+<TD width=15%>&nbsp;</TD>
+<td width=16%>g</td>
+<td width=69%>Signed double value printed in <b>f</b> or <b>e</b> format, whichever is more compact for the given value and precision. The <b>e</b> format is used only when the exponent of the value is less than 4 or greater than or equal to the precision argument. Trailing zeros are truncated, and the decimal point appears only if one or more digits follow it.</td>
+</tr>
+
+<tr valign=top>
+<TD width=15%>&nbsp;</TD>
+<td width=16%>G</td>
+<td width=69%>Signed double.  Identical to the <b>g</b> format, except that <b>E</b>, rather than <b>e</b>, introduces the exponent (where appropriate).</td>
+</tr>
+
+<tr valign=top>
+<TD width=15%>&nbsp;</TD>
+<td width=16%>n</td>
+<td width=69%>Pointer to integer.  The number of characters successfully written so far to the buffer is stored in the integer whose address is given as the argument.</td>
+</tr>
+
+
+</TABLE><BR>
+
+<P class=note><B><I>Note</I></B>&nbsp;&nbsp;<B>wsprintf</B> uses the C calling convention (<B>_cdecl</B>), rather than the standard call (<B>_stdcall</B>) calling convention. As a result, it is the responsibility of the calling process to pop arguments off the stack, and arguments are pushed on the stack from right to left. In C-language modules, the C compiler performs this task automatically, based on the calling convention defined in the function prototype.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winuser.h, for include use Xtl.h.<br>
+<b>Import Library: </b>Use User32.lib<br>
+<b>Unicode: </b>Implemented as both Unicode and ANSI versions.
+</p>
+
+<H4>See Also</H4>
+<P> 
+
+<a href="xbox_mt_xtl_sll_strings_functions.htm">String Functions</a> | 
+<A HREF="strings_92hy.htm">wvsprintf</a> </P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

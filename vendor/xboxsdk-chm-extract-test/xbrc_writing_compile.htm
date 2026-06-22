@@ -1,0 +1,29 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Writing a Compile Function (XbRC)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Writing a Compile Function (XbRC)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Writing a Compile Function (XbRC)</h1>
+<p>After writing the <b>needsCompiling</b> function, the next step to extend XbRC is to write the compile member function for the class derived from <b>XBRCRawData</b>. The compiler takes the data obtained from the parser and stored in the container and changes it into the actual Direct3D resource data needed to use the resource on the Xbox. The system has "built-in" dependency checking but, as with most systems, only if it's coded correctly here! </p><p>The compile function is pretty simple. First, call the <b>needsCompiling</b> function to determine if something has changed. The function returns TRUE if the data needs to be recompiled and FALSE if the data in the intermediate file is good to be linked. If you don't need to compile, return XBRC_COMPILE_NOT_NEEDED to inform <b>CXBParser</b> that you don't need to output the intermediate file. The one you have is just fine. If you do need to compile, do whatever you need to do to compile the data here. When you return from the compile function, <b>CXBParser</b> will write out the intermediate file containing the compiled data. In the case of the cube map, you create a <b>CCubemapCompiler</b> in this function and pass it all of the data received from the XML file. Since XbRC is an extension of the Bundler functionality already included in the XDK, just set up the Bundler classes and let it worry about creating the textures from the external files. The important data for this step is that how the data gets "compiled" is up to the developer. For example, at this point, you could compile the data to a format that would be useful on another platform (Playstation, Game Cube, PC, and so on). It's up to you. We are providing functionality for the Xbox Direct3D resources for you.</p><h4><a name="seealso"></a>See Also</h4>
+<p><a href="xbrc_writing_needscompiling.htm">Previous Step</a>, <a href="xbrc_storing_data_dep_checking.htm">Next Step</a></p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

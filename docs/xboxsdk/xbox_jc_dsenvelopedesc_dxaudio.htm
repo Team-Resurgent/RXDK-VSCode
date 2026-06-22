@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>DSENVELOPEDESC</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="DSLFODESC  [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="DSENVELOPEDESC"/>
+<MSHelp:Keyword Index="F" Term="DSENVELOPEDESC"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="xbox_jc_dsenvelopedesc_dxaudio"></A>DSENVELOPEDESC</H1>
+
+<P>Contains parameters for the envelope generators.</P>
+
+<PRE class="syntax">typedef struct _DSENVELOPEDESC{
+    DWORD dwEG;
+    DWORD dwMode;
+    DWORD dwDelay;
+    DWORD dwAttack;
+    DWORD dwHold;
+    DWORD dwDecay;
+    DWORD dwRelease;
+    DWORD dwSustain;
+    LONG lPitchScale;
+    LONG lFilterCutOff;
+} DSENVELOPEDESC, *LPDSENVELOPEDESC;
+</PRE>
+
+<H4>Members</H4>
+
+<DL>
+<DT><B>dwEG</B></DT>
+<DD>Envelope generator to set data on.  Valid values are:</DD>
+
+<DL>
+<DT>DSEG_AMPLITUDE</DT>
+<DD>Amplitude-only generator generator.</DD>
+<DT>DSEG_MULTI</DT>
+<DD>Multi-function envelope generator.</DD>
+</DL>
+
+<DT><B>dwMode</B></DT>
+    <DD>Value that specifies the envelope mode. Can be one of the following values:</DD>
+    <DL>
+        <DT>DSEG_MODE_DISABLE</DT>
+            <DD>The envelope is disabled and the envelope value is always full-scale.</DD>
+        <DT>DSEG_MODE_DELAY</DT>
+            <DD>Starts with the envelope at zero amplitude with an initial delay.</DD>
+        <DT>DSEG_MODE_ATTACK</DT>
+            <DD>Bypasses the initial delay and goes directly to the attack envelope.</DD>
+        <DT>DSEG_MODE_HOLD</DT>
+            <DD>Bypasses the attack segment and immediatly goes full scale.</DD>        
+    </DL>
+
+
+<DT><B>dwDelay</B></DT>
+<DD>Delay value for envelope.  This 12-bit number is multiplied by 16 and is used as the number of sample frames (32 samples/sample frame) to delay prior to starting the Attack segment.  Valid ranges: [0&#8211;0xfff].  To convert from time to and from seconds, 
+Time (seconds) = (dwDelay*512)/48000 and dwDelay = (Time (Seconds) * 48000)/512.</DD>
+
+<DT><B>dwAttack</B></DT>
+<DD>Attack value for envelope.  This 12-bit number is multiplied by 16 and is used as the number of sample frames (32 samples/sample frame) the Attack segment spans.  Valid ranges: [0&#8211;0xfff].
+To convert from time to and from seconds, Time (seconds) = (dwDelay*512)/48000 and dwAttack = (Time (Seconds) * 48000)/512.</DD>
+
+<DT><B>dwHold</B></DT>
+<DD>Hold value for envelope.  This 12-bit number is multiplied by 16 and is used as the number of sample frames (32 samples/sample frame) to hold after completion of the Attack segment.  Valid ranges: [0&#8211;0xfff]. To convert from time to and from seconds, Time (seconds) = (dwDelay*512)/48000 and dwHold = (Time (Seconds) * 48000)/512.</DD>
+
+<DT><B>dwDecay</B></DT>
+<DD>Decay value for envelope.  This 12-bit number is multiplied by 16 and is used as the number of sample frames (32 samples/sample frame) that the Decay segment spans.  Valid ranges: [0&#8211;0xfff]. To convert from time to and from seconds, Time (seconds) = (dwDecay*512)/48000 and dwDecay = (Time (Seconds) * 48000)/512.</DD>
+
+<p class=note><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;The dwDecay value behaves differently based on the dwSustain level. dwDecay is the time it takes to reach zero sustain. So, if dwSustain is 0, dwDecay will work as expected. If dwSustain is not 0, the hardware voice will decay until it reaches that sustain value and then stop. So a 16 second decay will take 16 seconds only of dwSustain is set to zero. It will take much less time of dwSustain is 30, for example.</p>
+
+<DT><B>dwSustain</B></DT>
+
+<DD>Sustain level.  8-bit value from 0-255, with 255 representing 100% level.</DD>
+
+<DT><B>dwRelease</B></DT>
+<DD>Release value for envelope.  This 12-bit number is multiplied by 16 and is used as the number of sample frames (32 samples/sample frame) the Release segment spans.  Valid ranges: [0&#8211;0xfff]. To convert from time to and from seconds,  Time (seconds) = (dwDelay*512)/48000 and dwRelease = (Time (Seconds) * 48000)/512.</DD>
+
+<DT><B>lPitchScale (multi-function EG only)</B></DT>
+<DD>Value that specifies the amount the frequency envelope modulates the pitch frequency. Can be a value from -128 to 127. A value of 0 specifies that there should be no frequency modulation, while a value of 127 specifies approximately +1 octave of frequency modulation.  This change is linear in terms of pitch.</DD>
+
+<DT><B>lFilterCutOff (multi-function EG only)</B></DT>
+<DD>Value that specifies the amount the frequency envelope modulates the filter cutoff frequency. Can be a value from -128 to 127. A value of -128 specifies that the filter cutoff should be modulated by &#8211;8 octaves. A value of 127 indicates a modulation of approximately +8 octaves.</DD>
+</DL>
+
+
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in Dsound.h.</P>
+
+<H4>See Also</H4>
+
+<P><A HREF="xbox_idirectsoundstream_seteg_dxaudio.htm"><B>IDirectSoundStream::SetEG</B></A></P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

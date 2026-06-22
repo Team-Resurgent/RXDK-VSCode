@@ -1,0 +1,155 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Debugging your DirectMusic Code</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="Debugging Memory Leaks in your DirectMusic Code">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Debugging your DirectMusic Code"/>
+<MSHelp:Keyword Index="F" Term="Debugging your DirectMusic Code"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="xbox_debugging_your_directmusic_code_dxaudio"></A>Debugging your DirectMusic Code</H1>
+
+<P>To help you debug your title, the DirectSound title library provides the following functions:</P>
+
+<UL>
+<LI><A HREF="xbox_directmusicmemcheck_dxaudio.htm"><B>DirectMusicMemCheck</B></A></LI>
+<LI><A HREF="xbox_directmusicmemdump_dxaudio.htm"><B>DirectMusicMemDump</B></A></LI>
+<LI><A HREF="xbox_directmusicsetdebuglevel_dxaudio.htm"><B>DirectMusicSetDebugLevel</B></A></LI>
+</UL>
+
+<P>These functions allow you to control the trace message levels that are written to the debug output, trace message levels that will cause a break in the debugger, and help you track down memory leaks.</P>
+
+<!--<UL>
+	<LI><A HREF="#trace"><B>Controlling Trace Messages</B></A></LI>
+    <LI><A HREF="#leaks"><B>Checking for Memory Leaks</B></A></LI>
+</UL>-->
+
+<H2><A NAME="trace"></A>Controlling Trace Messages</H2>
+
+<P>The DirectMusic title library provides you with the <A HREF="xbox_directmusicsetdebuglevel_dxaudio.htm"><B>DirectMusicSetDebugLevel</B></A>, which allows you to control the trace message levels that are displayed in the debug output and the trace message levels that cause a break in the debugger.</P>
+
+<H2><A NAME="leaks"></A>Checking for Memory Leaks</H2>
+
+<P>Forgetting to release a DirectMusic object is a common mistake that can cause memory leaks in your title. The DirectMusic title library provides two functions, <A HREF="xbox_directmusicmemcheck_dxaudio.htm"><B>DirectMusicMemCheck</B></A> and <A HREF="xbox_directmusicmemdump_dxaudio.htm"><B>DirectMusicMemDump</B></A>, to help you track the DirectMusic objects being used by your title.</P>
+
+<P><B>DirectMusicMemDump</B> can be used to write out a list of all the objects currently allocated to the debug output.</P>
+
+<P>To do comparisons or more selective checking, use the <B>DirectMusicMemCheck</B>. <B>DirectMusicMemCheck</B> allows you to specify an object identifier and retrieve the current number of items that are currently allocated of that type.  Currently, the identifiers are subject to change, so applications should enumerate the objects by calling <B>DirectMusicMemCheck</B> until it returns &#8211;1.</P>
+
+<P>The following example demonstrates a possible usage of the <B>DirectMusicMemCheck</B> function, where <I>MyLog</I> is a made-up function that can be replaced with your own code to track the object count.</P>
+
+<PRE>
+LPSTR szObjectName;
+DWORD dwObjectID = 0;
+long nCount = DirectMusicMemCheck(dwObjectID,&amp;szObjectName);
+
+while(nCount!=-1)
+{
+    MyLog(dwObjectID, szObjectName, nCount);
+    dwObjectID++;
+    nCount = DirectMusicMemCheck(dwObjectID,&amp;szObjectName);
+}
+</PRE>
+
+
+<P>The following is a rough list of the objects that are tracked by <B>DirectMusicMemCheck</B> and <B>DirectMusicMemDump:</B></P>
+
+<UL>
+<LI>File Stream</LI>
+<LI>Memory Stream</LI>
+<LI>Stream Stream</LI>
+<LI>Segment</LI>
+<LI>Segment State</LI>
+<LI>Loader</LI>
+<LI>Performance</LI>
+<LI>Wave Track</LI>
+<LI>Wave</LI>
+<LI>Wave ViewPort</LI>
+<LI>Wave Download</LI>
+<LI>Audio Path</LI>
+<LI>Audio Path Config</LI>
+<LI>Track</LI>
+<LI>Script</LI>
+<LI>Tool Graph</LI>
+<LI>Band</LI>
+<LI>Band Track</LI>
+<LI>DLS Collection</LI>
+<LI>DirectMusic Object</LI>
+<LI>Instrument</LI>
+<LI>Downloaded Instrument</LI>
+<LI>Composer</LI>
+<LI>ChordMap</LI>
+<LI>Template</LI>
+<LI>SignPost Track</LI>
+<LI>ChordMap Track</LI>
+<LI>Buffer</LI>
+<LI>Lyrics Track</LI>
+<LI>Marker Track</LI>
+<LI>Parameter Control Track</LI>
+<LI>Segment Trigger Track</LI>
+<LI>Sequence Track</LI>
+<LI>Song</LI>
+<LI>System Exclusive Track</LI>
+<LI>Tempo Track</LI>
+<LI>Time Signature Track</LI>
+<LI>Container</LI>
+</UL>
+
+<!-- OMIT: 
+They should be there, but you should also write about them under "Advance Topics in DirectMusic".  Maybe call it "debugging memory leaks in your app".  Start with something like "forgetting to release a DirectMusic object is a common mistake which can cause memory leaks.  To help you track your memory leaks, we've provided blah blah blah...."
+
+Here's what I usually do, in CheckForLeaks().
+ 
+ 
+ 
+void GetMemoryStats(LONG *pLongArray, DWORD dwMax)
+{
+    for (DWORD i=0; i<dwMax; i++)
+    {
+        pLongArray[i] = DirectMusicMemCheck(i, NULL);
+    }
+};
+ 
+ 
+void CompareMemoryStats(LONG *pLast, LONG *pCurrent, DWORD dwMax)
+{  
+  LPSTR szObjectName = NULL;
+  for (DWORD i=0; i<dwMax; i++)
+  {
+    if (pLast[i] != pCurrent[i])
+    {
+        DirectMusicMemCheck(i, &szObjectName);
+        Log(ABORTLOGLEVEL, "POSSIBLE MEMORY LEAK");
+        Log(ABORTLOGLEVEL, "%s count went from %u to %u", szObjectName, pLast[i], pCurrent[i]);
+    }
+  }
+};
+
+ 
+void CheckForLeaks(void)
+{
+LONG lLastMemoryArray[MAX_MEMORY_OBJECTS] = {0};
+LONG lCurrentMemoryArray[MAX_MEMORY_OBJECTS]= {0};
+
+GetMemoryStats(lLastMemoryArray, MAX_MEMORY_OBJECTS);
+//Do some DMusic stuff
+GetMemoryStats(lCurrentMemoryArray, MAX_MEMORY_OBJECTS);
+CompareMemoryStats(lLastMemoryArray, lCurrentMemoryArray, MAX_MEMORY_OBJECTS);
+}
+
+-->
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

@@ -1,0 +1,228 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Debugging with Visual Studio .NET</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Debugging with Visual Studio .NET"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+        <MSHelp:Keyword Index="K" Term="Visual Studio .NET, debugger improvements"/>
+        <MSHelp:Keyword Index="K" Term="Xbox crash dumps, debugging with Visual Studio .NET"/>
+        <MSHelp:Keyword Index="K" Term="Visual Studio .NET, known debugging issues"/>
+        <MSHelp:Keyword Index="K" Term="crash dumps, debugging with Visual Studio .NET"/>
+    </xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Debugging with Visual Studio .NET</h1>
+            <p>
+                Visual Studio .NET offers a much richer set of debugging options than were 
+                available in the Visual C++ 6.0 environment.
+            </p>
+        <h2><a name="IDA1KN2"></a>Xbox-Specific Debugger Changes and Improvements</h2>
+<ul>
+                <li>Edit and Continue is now supported for Xbox. You can make changes to your 
+                source code while debugging and have the changes take effect immediately, 
+                without having to restart your Xbox.
+
+                    <p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;If you imported your Xbox project from Visual C++ 6.0, you need to enable 
+                    Edit and Continue support in the project before it is available. See the <a href="x_lrf_vsnet_importing.htm#edit_and_continue">Enabling 
+                    Edit and Continue Support</a> section for more details.</p></li>
+
+                <li>Editor window tool tips and the Watch window support Direct3D data 
+                structures such as <a href="_dx_d3dvector_graphics.htm">D3DVECTOR</a>. While debugging, you can see some of the 
+                values in these structures either by hovering the mouse over a variable name in 
+                the editor or by looking at the appropriate variable description in the Watch 
+                window.</li>
+
+                <li>The Visual Studio .NET debugger has been extended to recognize and debug 
+                Xbox crash dumps. Crash dumps are complete memory images that can be used to 
+                debug Xbox applications after the fact. See the 
+				<a href="x_lrf_vsnet_debugging.htm#crash_dumps">Debugging Crash Dumps</a>
+				section for more details.</li>
+
+                <li>In Visual Studio .NET, it is not necessary for the EXE file to be present on 
+                the development system when debugging to an Xbox console.</li>
+
+                <li>Because <a href="xbox_jbh_tool_xbwatson.htm">XbWatson</a> is itself a 
+                debugger, it interferes with debugging under Visual Studio .NET. Do not run the 
+                XbWatson tool while debugging in Visual Studio .NET.</li>
+            </ul>
+<h2><a name="IDA2LN2"></a>General Debugger Changes and Improvements</h2>
+<ul>
+                <li>You can set or remove breakpoints by simply clicking in the breakpoint 
+                gutter in the left margin of a source file.</li>
+
+                <li>The debugger supports up to four memory windows simultaneously.</li>
+
+                <li>Many of the options previously located in dialog boxes are now located in 
+                docking windows. To open the debugger windows, click the <b>Windows</b> 
+                item on the <b>Debug</b> menu. (This is a bit strange because all of 
+                the other windows in the IDE are located on the <b>View</b> menu.)</li>
+
+                <li>The <b>Registers</b> window allows access to all of the CPU 
+                registers. Right-click the <b>Registers</b> window to retrieve a 
+                menu of registers, and then select the registers that you want to view.</li>
+
+                <li>The <b>Threads</b> window is modeless, making it easier to debug 
+                multithreaded applications.</li>
+
+                <li>The <b>Modules</b> window can be used to reload symbols, making 
+                it easier to debug problems with your symbol path. From the first view, right 
+                click the module for which you want to reload symbols, and then click <b>Reload</b>. 
+                (In Visual Studio 6.0, you had to restart the debugger when you changed your 
+                symbol paths.)</li>
+
+                <li>Visual Studio .NET supports loading symbols from a symbol server. This is 
+                especially useful for larger organizations. You can use a symbol server to share 
+                symbol files for the kernel and for your Xbox games across all your Xbox 
+                consoles. Loading symbols from a symbol server is surprisingly easy to set up (see 
+                the Microsoft Windows Driver Development Kit for more information.)</li>
+
+                <li>The debugger can attach to a running process on an Xbox console. This 
+                feature is controlled through the <b>Attach to Process</b> dialog 
+                box, which you can access from the <b>Debug Process</b> item on the <b>Tools</b> 
+                menu. To attach to a running process on the Xbox console, open the <b>Attach 
+                to Process</b> dialog box, and then click <b>Xbox Console Transport</b>.</li>
+
+                <li>You can customize the way that the debugger's "data tips" display structures. 
+                The Autoexp.dat file found in the C:\Program Files\Microsoft Visual Studio .NET\Common7\Packages\Debugger 
+                directory allows you to customize "data tips" pop-up debug information. This 
+                file also allows you to customize how data is displayed in the watch windows.</li>
+
+                <li>The debugger supports better debugging of template classes. This is because 
+                the debug information format was expanded to support longer mangled names.</li>
+
+                <li>When opening an EXE or XBE to debug in Visual C++ 6.0, you were able to use <b>File.OpenFile</b>
+                    <i>nameofexe</i>. However, in Visual Studio .NET, using <b>File.OpenFile</b>
+                    <i>nameofexe</i> opens the EXE or XBE in the binary editor or 
+                    resource editor. To open an EXE or XBE for debugging in Visual Studio .NET, you 
+                    must click <b>File</b>, <b>Open</b>, <b>Project</b>, 
+                    and then click the name of the EXE to load.</li>
+
+                <li>In Visual Studio .NET, the directories used to search for symbols and source 
+                files have changed slightly. To find the list of directories that the debugger 
+                will use, first right-click the solution node, and then click <b>Properties</b> 
+                on the context menu. Next, to specify where the debugger will search, click 
+                either the <b>Debug Source Files</b> page or the <b>Debug 
+                Symbol Files</b> page. In Visual C++ 6.0, the directories to search for 
+                files were located in the <b>Tools.Options.Directories</b> dialog 
+                box. It is important to note that, although a similar page exists in Visual C++ 
+                7.0, the debugger ignores the settings on that page.</li>
+
+                <li>The Visual Studio .NET debugger was expanded to support simultaneous 
+                debugging of multiple Win32 processes. However, this feature does not work with 
+                Xbox consoles. To simultaneously debug multiple Xbox consoles, you must run 
+                multiple copies of the VS.NET IDE. (You must run one copy of VS.NET IDE for each 
+                Xbox console you wish to debug.)</li>
+            </ul>
+<h2><a name="IDAMON2"></a>Known Issues</h2>
+<p>
+                This section lists known issues with using Visual Studio.NET to debug Xbox 
+                projects.
+            </p><ul>
+                <li>
+                    <p>
+                        After hitting an assert or breakpoint, the debugger in Visual Studio .NET 
+                        sometimes displays incorrect values for local variables in functions on the 
+                        callstack other than the current function. This problem is caused by local 
+                        variables that use __declspec(align()). Xbox developers most commonly encounter 
+                        this issue when using the <a href="xgraphics_xgmatrix.htm">XGMATRIX</a> type. 
+                        There is no workaround for this issue, which affects both the Visual Studio
+						.NET and VC6 debuggers. This issue will be corrected in an upcoming release 
+						of Visual Studio .NET.
+                    </p>
+                </li>
+
+                <li>
+                    <p>
+                        If you use a watch expression in Visual Studio .NET that requires function 
+                        evaluation, and you use Visual Studio .NET rather than XbWatson to save 
+                        minidumps, then the stack flags in the minidump will be incorrect.
+                    </p>
+                </li>
+
+                <li>
+                    <p>
+						A minidump generated while running an XBE that does not contain debug
+						information may fail to load symbols even if the matching PDB file is 
+						present when the minidump is opened for debugging in Visual Studio .NET.  
+						This is not a problem if the <a href="xbox_image_debug_prop.htm">/DEBUG</a>
+						switch was used when the XBE was built.
+                    </p>
+                </li>
+
+            </ul>
+<h2><a name="crash_dumps"></a>Debugging Crash Dumps</h2>
+<p>
+                A crash dump is a 128MB file containing the complete contents of the Xbox 
+                console's RAM at the time of an exception. Both Xbox Development Kits and Debug 
+                consoles can generate crash dumps, provided the consoles have been recovered 
+                with the August 2002 or later recovery disc image (or remote recovery).
+            </p><p>
+                The Xbox debugger run time (XBDM) generates a crash dump when the system reaches 
+                specific stopping events and it is in a state that prevents it from being 
+                debugged via an Ethernet connection. The most common reason for being in such a 
+                state is that the processor is running at a raised Interrupt Request Level (IRQL), 
+                such as <a href="x_mt_softarch_kernel_dpc.htm">DPC</a>. In this state, the 
+                stopping events that generate a crash dump include unhandled exceptions (which 
+                can be thrown by the processor, XTL code, or your source code), assertions, RIPs, 
+                bugchecks, embedded breakpoints, and data breakpoints. Breakpoints set via the 
+                Ethernet port using Visual Studio .NET are not data breakpoints. Therefore, they 
+                do not generate crash dumps. Instead, at the next opportunity, XBDM sends debug 
+                information indicating that the event was missed. If a serial debugger, such as 
+                i386kd or WinDBG, is connected to the development console at the time of the 
+                event, XBDM does not generate a crashdump. Rather, it routes the event to the 
+                serial debugger.
+            </p><p>
+                Because a crash dump occurs at a system-terminating event, the connected 
+                debugger has no way to know that a crash dump is in progress. This can cause the 
+                Xbox console and the debugger to appear hung. When the Xbox console is creating 
+                a crash dump, it stops responding to user input, and its power LED flashes back 
+                and forth between red and yellow lights. It takes the Xbox console up to two 
+                minutes to store a complete memory image to disk, at which point the Xbox 
+                console reboots. While the console is rebooting after a crash dump, the LED 
+                flashes between green and yellow. Once the console has finished booting, the LED 
+                returns to its usual solid green light.
+            </p><p>
+                After the Xbox console has rebooted, the crash dump is available in the root of 
+                the xe: drive on the console. XBDM always writes the crash dump to a file named 
+                CrashDump.xdmp. To work with the crash dump, you need to copy it to your 
+                development machine. This is usually done with the <a href="xbox_jbh_tool_remote_xbcp.htm">XbCp</a> 
+                tool. You should also rename the copy of the file on the development PC so it 
+                has an .xdmp extension, because Visual Studio .NET recognizes this extension as 
+                a crash dump. Renaming the file enables you to double-click it to open the crash 
+                dump in the IDE. To copy the crash dump to your development system and rename it 
+                in one operation, use the following command line:
+            </p>
+<pre class="clsCode">
+xbcp xe:\crashdump.xdmp c:\myfolder\mycrashdump.xdmp
+</pre>
+    <p>
+                Once the crash dump is on your development system, you can open it for debugging 
+                in Visual Studio .NET by double-clicking the .xdmp file in Windows Explorer. 
+                Alternately, you may open it by clicking <b>Open.Project</b> on 
+                Visual Studio's <b>File</b> menu. To debug the crash dump once it is 
+                open, press <b>F5</b>.
+            </p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;If you have one of the early green debug kits, you may encounter problems 
+            when working with crash dumps if you also have an early version of the XDK. To 
+            avoid these problems, ensure that you have the latest version of the XDK.</p><p>
+                The XTL includes a function called <b>DmCrashDump</b> that programs 
+                can use to force an Xbox development console to generate a crash dump at any 
+                time. This function is available via xbdm.dll on the Xbox side. It can also be 
+                called through xboxdbg.dll on the PC side.
+            </p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<TITLE>Using the Xbox Network Conditions Simulator (NetSim)</TITLE>
+
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Using the Xbox Network Conditions Simulator (NetSim)"/>
+<MSHelp:Keyword Index="F" Term="Using the Xbox Network Conditions Simulator (NetSim)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+
+</TABLE>
+
+<H1><A NAME="">Using the Xbox Network Conditions Simulator (NetSim)</A></H1>
+
+<i>Michael Austin - Xbox Advanced Technology Group</i>
+
+<p>Game developers typically develop on a local area network (LAN) where network performance is well-behaved. The bandwidths are high, latencies are low, and packet loss isn't a factor.  Network Conditions Simulator, or NetSim, helps developers by simulating real-world conditions to test game network performance and to prepare for online certification requirements (TCR 6-1-1 and TCR 6-1-2).</p>
+
+<p>NetSim will:</p>
+<ul>
+<li>Intercept and affect network traffic between Xbox <i>Live</i> clients.</li>
+<li>Intercept and affect network traffic between an Xbox <i>Live</i> client and the Xbox <i>Live</i> service.</li>
+<li>Simulate latency, packet loss, and bandwidth limitations.</li>
+<li>Simulate delays due to Network Address Translator (NAT) traversal during security key exchange.</li>
+</ul>
+
+<p>NetSim will <i>not</i>:</p>
+<ul>
+<li>Simulate out of order packets.</li>
+<li>Intercept system link network traffic between two Xbox Development Kits.</li>
+
+<h2>Installation and Setup</h2>
+
+<h3>Installing NetSim</h3>
+
+<p>The Xbox Development Kit installer does not automatically install the Xbox Network Conditions Simulator.</p>
+
+<b>To install NetSim</b>
+<ol>
+<li>Click <b>Start</b>, and then go to the <b>Programs\Microsoft Xbox SDK</b> folder.</li>
+<li>Select the <b>Setup Microsoft Network Simulation Tool for Xbox</b> shortcut, and follow the installation instructions.</li>
+</ol>
+
+<p>If you need to reinstall NetSim, NetSimSetup.exe is located in the $(XDK)/xbox/bin directory.</p>
+
+<h3>Editing the Netsim.ini file</h3>
+
+<p>NetSim will be installed by default to the <b>C:\Program Files\Microsoft Network Simulation Tool</b> for Xbox directory.  Switch to this directory and use any text editor to open the file netsim.ini.  NetSim will not run before you edit this file.</p>
+
+<p>The default netsim.ini file looks like:</p>
+<pre>
+; NAT Settings
+[NetworkInterface.Xbox] 
+IpBegin=10.0.x.1       ; Starting IP 
+IpEnd=10.0.y.1         ; Ending IP <br>
+[NetworkInterface.Internet] 
+Ip=157.56.12.20           ; Static IP address 
+IpMask=255.255.254.0      ; Subnet mask of this interface
+IpGateway=157.56.12.1     ; Gateway of this interface
+DNSServer=157.54.5.109    ; DNS Server of this interface<br>
+</pre>
+
+<p>The first section represents the range of virtual IP addresses NetSim will manage.  NetSim will act as a NAT to manage network conditions for all Xbox Development Kits using addresses in this range as gateways.</p>
+
+<p>There are two things to note when replacing <i>x</i> and <i>y</i> with a proper range.  First, if more than one person on your LAN will be using NetSim at the same time, make sure your ranges do not overlap, or you will start intercepting each others' packets.  Second, some firewalls will block the lower ports (1-1024 typically). NetSim maps client 'x' to the port range (x*256) to (x*256+255); if you have problems with smaller client IPs (10.0.1.*, 10.0.2.*) you may want to start with something higher, such as 10.0.100.*.</p>
+
+<p>For this whitepaper, we'll assume you've decided to use the range 10.0.100.1 to 10.0.115.1. </p>
+
+<p>The second section, beginning with [NetworkInterface.Xbox] represents the TCP/IP settings that NetSim will use to access the Internet.  This section is optional and may be deleted if you are using DHCP.  Note that if you specify it, the IP address should be different from the PC you are running NetSim on; if you use the same IP, NetSim will work but your machine will lose network connectivity. </p>
+
+<p>As an example, if you are using DHCP and the virtual address range listed above, your entire netsim.ini file would be:</p>
+<pre>
+      [NetworkInterface.Xbox] 
+      IpBegin=10.0.100.1       ; Starting IP for client connections
+      IpEnd=10.0.115.1	      ; Ending IP for client connections
+</pre>
+
+<h3>Changing the title IP addresses of your Xbox Development Kits</h3>
+
+<p>Now you need to set up your Xbox Development Kits to route packets through the NetSim tool on your PC rather than through your default gateway.  Adjust these numbers depending on the range of IPs you've selected for NetSim.</p>
+<ul>
+<li>Your first Xbox Development Kit should have a title IP of 10.0.100.2 with a Gateway and DNS of 10.0.100.1</li>
+<li>Your second Xbox Development Kit should have a title IP of 10.0.101.2 with a Gateway and DNS of 10.0.101.1</li>
+<li>Your sixteenth Xbox Development Kit should have a title IP of 10.0.115.2 with a Gateway and DNS of 10.0.115.1</li>
+</ul>
+
+<p>You can have fewer Xbox Development Kits than your range specifies without any problems. These settings can be changed from either the Xbox <i>Live</i> dashboard, or under Network Settings in the regular dashboard.</p>
+
+<p>Here is an example of what your network settings should look like:</p>
+
+<img src="images/wp_NetSims_NetworkSettings.jpg"/>
+
+<p>This does not change your debug IP address, so you won't notice much of a difference except when connecting to Xbox <i>Live</i>.  If you were to run your titles now, they would not be able to connect to anything online, but system link would still work since it relies on the MAC address of the NIC in the Xbox.</p>
+
+<p>If you go into the dashboard and type <b>Y</b> to access the online options and select the top-ping option, you should get the <b>LOGON_CANNOT_ACCESS_SERVICE</b> message.</p>
+
+<h2>Starting NetSim</h2>
+
+<b>To start NetSim</b>
+<ol>
+<li>Click <b>Start</b>, and then select the <b>Programs</b> folder.</li>
+<li>Click <b>Network Simulation Tool for Xbox</b> to start NetSim now.
+</ol>
+<p>You should see the following:</p>
+
+<img src="images/wp_NetSims_NetworkSimulationTool.jpg"/>
+
+<p>Now, if you ping the Xbox <i>Live</i> service from your Xbox, you should get a response.  Before you click <b>Simulate network settings</b> to run a simulation, NetSim will forward all packets from and to your Xbox clients without applying any of the settings.</p>
+
+<h2>Running NetSim</h2>
+
+<p>There are five types of network conditions you can simulate: Bandwidth restrictions, Latency, Drop Rate, Drop Burst, and Key-Exchange Delay.</p>
+<p>Fields that you can set in NetSim for each section are represented by <u><i>underscored italics</i></u>.</p>
+
+<p>To set host settings (in the top section), fill in the fields with an Xbox client IP and the values you would like to simulate.  If you click <b>Apply</b>, it will apply the settings to the IP address you have given.  If you click <b>Apply All</b>, it will apply the settings to all of the Xbox clients currently being NAT'd through NetSim.  After applying your changes, you can change the fields to set up a new client without losing your old changes.  The current properties of all Xbox clients that have had NAT'd traffic to them will be shown in the upper-right corner of the dialog box.
+
+<p>Route settings (in the middle section) are set similarly, except you need to fill in both Xbox client IPs that define the route.  Routes are always symmetrical, so the latency between Xbox clients 10.0.100.2 and 10.0.101.2, for instance, will always be the same from 10.0.100.2 to 10.0.101.2 and from 10.0.101.2 to 10.0.100.2.</p>
+
+<p>None of your settings will actually take effect until you run the simulation with the Simulate network settings button.</p>
+
+<h3>Host Settings</h3>
+
+<p>Bandwidth:</p>
+<ul>
+<li>The bandwidth coming into IP Address will be limited to Downstream kbps.</li>
+<li>The bandwidth out of IP Address will be limited to Upstream kbps.</li>
+<li>Downstream Hysteresis is the size of the buffer to be used for incoming packets.</li>
+<li>Upstream Hysteresis is the size of the buffer to be used for outgoing packets.</li>
+</ul>
+
+<p>For example, assume Upstream Hysteresis was set to 2 seconds and Upstream kbps was set to 64 kbps.  If the application sent 200 kilobits of data, 128 kilobits would be buffered to be sent gradually over the next 2 seconds.  The remaining 72 kilobits would be lost as there wasn't room in the pipe for it.</p>
+
+<p>If you click <b>Apply All</b>, the Bandwidth settings specified will override all current client-specific bandwidth settings.</p>
+
+<h3>Route Settings</h3>
+
+<p><b>Additional Latency:</b></p>
+<p>Delay packets between IP Address #1 and IP Address #2 (both ways) by Additional Latency milliseconds.</P>
+
+<p>Because routes are symmetrical, if you want to simulate round-trip latency of 200ms, you should set this value to 100.</p>
+
+<p><b>Drop Rate:</b></p>
+<p>Discard Drop Rate percent of the packets (randomly) sent between IP Address #1 and IP Address #2.</p>
+
+<p><b>Drop Burst:</b></p>
+<p>A drop burst is a period of Duration seconds where Rate % of packets between IP Address #1 and IP Address #2 are dropped. This overrides any Drop Rate settings between IP Address #1 and IP Address #2 for the given Duration seconds. The first burst will start after Start in seconds, and there will be a total of Repeat Count bursts, each separated by Repeat Delay seconds.</p>
+
+<p>If you click <b>Apply All</b>, the Additional Latency, Drop Rate, and Drop Burst settings will be applied to all routes and override all current route settings.</p>
+
+<h3>Other Settings</h3>
+
+<p><b>Key-Exchange Delay:</b></p>
+<p>When two Xbox clients initially connect to each other, there is a delay while they exchange security keys and attempt to secure a connection through the NATs that may be between them (cable modems, gateways, and so on).  Setting the Key-Exchange Delay will cause a delay of Key-Exchange Delay milliseconds to the initial communication between two machines.  In real world settings, this could be as long as 10 seconds (10000 milliseconds).</p>
+
+<h3>Informational Windows</h3>
+
+<p>The two windows in the upper-right part of the application reflect the current settings.  There are also a few additional fields under the route settings display window which will show the statistics for the overhead associated with packets sent between the two clients.  Payload % is the ratio of just application data to total data sent including IP and Xbox headers.  Padding is the average number of padding bytes used (smaller is better).  Ports is the average number of bytes used to specify a port for traffic that doesn't go over port 1000.</p>
+
+<p>For more information, see Pete Isensee's <i>Xbox Live Networking Best Practices</i> whitepaper on Xbox Central.
+
+<h3>Other Buttons</h3>
+
+<p>The <b>Reset Settings</b> button resets all settings to the default (transparent packet forwarding).</p>
+
+<p>The <b>Load Settings File</b> button lets you load a configuration file instead of entering all the settings manually.  For information on the format of this file, search the Xbox SDK for 'NetSim'.</p>
+
+<p>>The <b>Enable Logging</b> checkmark lets you create a log file of all packets routed through NetSim.  This can be a very useful debugging tool as packet details and timestamps will be logged into the file.</p>
+
+<p>The <b>Simulate Network Settings</b> and <b>Stop Simulation</b> buttons switch from and to transparent mode (immediate packet forwarding, no loss).  The text below these buttons describes the current state of NetSim.</p>
+
+<p>You are now ready to start using NetSim.  If you have any further questions, please check the NetSim Help file and/or e-mail your questions to xboxds@xbox.com.</p>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+
+</HTML>

@@ -1,0 +1,133 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Fix-ups</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="Fix-ups [Graphics]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Fix-ups"/>
+<MSHelp:Keyword Index="F" Term="Fix-ups"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_fixups_graphics"></A>Fix-ups</H1>
+
+<p>Because a push-buffer resource is a direct recording of the Xbox GPU instruction stream, there is no Direct3D object semantic data recorded along with the push-buffer. There are no Direct3D objects recorded in the push-buffer, only physical addresses. Consequently, when a push-buffer is loaded from disk and registered, all resources that were originally referenced by the push-buffer must be explicitly fixed-up to account for potentially new physical addresses of the resources involved.</p>
+
+<p>There are two types of fix-ups that have to be applied to push-buffers: one-time fix-ups and per-call fix-ups. </p>
+
+<p>One-time fix-ups update push-buffer references to resources, such as textures, which are unchanged between calls of the push-buffer. These fix-ups can be written directly to the push-buffer memory.</p>
+
+<p>Per-call fix-ups update push-buffer data that has to be changed on a per-call basis, such as transform data. Because the same push-buffer may be enqueued multiple times for use by the GPU with different per-call fix-ups for each, per-call fix-ups cannot be written to the push-buffer at the time that the push-buffer is enqueued, but rather must be done at the time that the GPU dequeues the push-buffer. Because the fix-up data must persist until the GPU dequeues the push-buffer, per-call fix-ups are specified to the <a href="_dx_idirect3ddevice8_runpushbuffer_graphics.htm"><b>IDirect3DDevice8::RunPushBuffer</b></a> function using a "fix-up object," which is a Direct3D resource that inherits all of the time management facilities associated with Direct3D resources (such as <a href="xbox_dxg_IDirect3DResource8_IsBusy.htm"><b>IDirect3DResource8::IsBusy</b></a>).</p>
+
+<p>Push-buffer fix-up functions are provided to create both types of fix-ups. The only invocation difference is that per-call fix-ups specify a fix-up object to <a href="_dx_idirect3dpushbuffer8_beginfixup_graphics.htm"><b>IDirect3DPushBuffer8::BeginFixup</b></a>, which is automatically appended to when the fix-up functions are called. It's generally recommended that callers employ ping-pong fix-up objects, so that when one fix-up object is full, the other can be appended to without having to flush the whole graphics pipeline. </p>
+
+<p>Fix-ups are identified by their offset location in the push-buffer. While in a <a href="_dx_idirect3ddevice8_beginpushbuffer_graphics.htm"><b>IDirect3DDevice8::BeginPushBuffer</b></a>/<a href="_dx_idirect3ddevice8_endpushbuffer_graphics.htm"><b>IDirect3DDevice8::EndPushBuffer</b></a> bracket to record a push-buffer, <a href="_dx_idirect3ddevice8_getpushbufferoffset_graphics.htm"><b>IDirect3DDevice8::GetPushBufferOffset</b></a> may be called before any Direct3D function call to determine the offset of that Direct3D function call in the recorded push-buffer.</p>
+
+<p>Only a limited subset of Direct3D function calls may be fixed-up, and for each such Direct3D function call there is a corresponding fix-up function. The complete list of the Direct3D functions (that have fix-ups) and their corresponding fix-up function is below.</p>
+
+<table>
+
+<tr>
+<th>Functions that Can Be Fixed-up</th>
+<th>The Corresponding Fix-up</th>
+</tr>
+
+<tr>
+<td><a href="_dx_idirect3ddevice8_copyrects_graphics.htm">IDirect3DDevice8::CopyRects</a></td>
+<td><a href="_dx_idirect3dpushbuffer8_copyrects_graphics.htm">IDirect3DPushBuffer8::CopyRects</a></td>
+</tr>
+
+<tr>
+<td><a href="_dx_idirect3ddevice8_nop_graphics.htm"><b>IDirect3DDevice8::Nop</b></a></td>
+<td><a href="_dx_idirect3dpushbuffer8_jump_graphics.htm"><b>IDirect3DPushBuffer8::Jump</b></a></td>
+</tr>
+
+<tr>
+<td><a href="_dx_idirect3ddevice8_runpushbuffer_graphics.htm"><b>IDirect3DDevice8::RunPushBuffer</b></a></td>
+<td><a href="_dx_idirect3dpushbuffer8_runpushbuffer_graphics.htm"><b>IDirect3DPushBuffer8::RunPushBuffer</b></a></td>
+</tr>
+
+<tr>
+<td><a href="_dx_idirect3ddevice8_setmodelview_graphics.htm"><b>IDirect3DDevice8::SetModelView</b></a></td>
+<td><a href="_dx_idirect3dpushbuffer8_setmodelview_graphics.htm"><b>IDirect3DPushBuffer8::SetModelView</b></a></td>
+</tr>
+
+<tr>
+<td><a href="_dx_idirect3ddevice8_setrendertarget_graphics.htm">IDirect3DDevice8::SetRenderState</a></td>
+<td><a href="_dx_idirect3dpushbuffer8_setrenderstate_graphics.htm">IDirect3DPushBuffer8::SetRenderState</a></td>
+</tr>
+
+<tr>
+<td><a href="_dx_idirect3ddevice8_setvertexblendmodelview_graphics.htm"><b>IDirect3DDevice8::SetVertexBlendModelView</b></a>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td><a href="_dx_idirect3dpushbuffer8_setvertexblendmodelview_graphics.htm"><b>IDirect3DPushBuffer8::SetVertexBlendModelView</b></a></td>
+</tr>
+
+<tr>
+<td><a href="_dx_idirect3ddevice8_setvertexshaderinput_graphics.htm"><b>IDirect3DDevice8::SetVertexShaderInput</b></a></td>
+<td><a href="_dx_idirect3dpushbuffer8_setvertexshaderinput_graphics.htm"><b>IDirect3DPushBuffer8::SetVertexShaderInput</b></a></td>
+</tr>
+
+<tr>
+<td><a href="_dx_idirect3ddevice8_setvertexshaderinputdirect_graphics.htm"><b>IDirect3DDevice8::SetVertexShaderInputDirect</b></a></td>
+<td><a href="_dx_idirect3dpushbuffer8_setvertexshaderinputdirect_graphics.htm"><b>IDirect3DPushBuffer8::SetVertexShaderInputDirect</b></a></td>
+</tr>
+
+<tr>
+<td><a href="_dx_idirect3ddevice8_setrendertarget_graphics.htm"><b>IDirect3DDevice8::SetRenderTarget</b></a></td>
+<td><a href="_dx_idirect3dpushbuffer8_setrendertarget_graphics.htm"><b>IDirect3DPushBuffer8::SetRenderTarget</b></a></td>
+</tr>
+
+<tr>
+<td><a href="_dx_idirect3ddevice8_settexture_graphics.htm"><b>IDirect3DDevice8::SetTexture</b></a></td>
+<td><a href="_dx_idirect3dpushbuffer8_settexture_graphics.htm"><b>IDirect3DPushBuffer8::SetTexture</b></a></td>
+</tr>
+
+<tr>
+<td><a href="_dx_idirect3ddevice8_switchtextures_graphics.htm"><b>IDirect3DDevice8::SwitchTexture</b></a></td>
+<td><a href="_dx_idirect3dpushbuffer8_settexture_graphics.htm"><b>IDirect3DPushBuffer8::SetTexture</b></a></td>
+</tr>
+
+<tr>
+<td><a href="xbox_dxg_Idirect3ddevice8_setpalette.htm"><b>IDirect3DDevice8::SetPalette</b></a></td>
+<td><a href="_dx_idirect3dpushbuffer8_setpalette_graphics.htm"><b>IDirect3DPushBuffer8::SetPalette</b></a></td>
+</tr>
+
+<tr>
+<td><a href="xbox_dxg_idirect3ddevice8_endvisibilitytest.htm"><b>IDirect3DDevice8::EndVisibilityTest</b></a></td>
+<td><a href="_dx_idirect3dpushbuffer8_endvisibilitytest_graphics.htm"><b>IDirect3DPushBuffer8::EndVisibilityTest</b></a></td>
+</tr>
+
+<tr>
+<td><a href="_dx_idirect3ddevice8_setvertexshaderconstant_graphics.htm"><b>IDirect3DDevice8::SetVertexShaderConstant</b></a></td>
+<td><a href="_dx_idirect3dpushbuffer8_setvertexshaderconstant_graphics.htm"><b>IDirect3DPushBuffer8::SetVertexShaderConstant</b></a></td>
+</tr>
+</table>
+
+<p>Note that it is not possible to fix-up <a href="_dx_idirect3ddevice8_setstreamsource_graphics.htm"><b>IDirect3DDevice8::SetStreamSource</b></a> or <a href="_dx_idirect3ddevice8_settransform_graphics.htm"><b>IDirect3DDevice8::SetTransform</b></a> calls. This is because those calls are not self-contained enough to provide all dependent data necessary for Direct3D to program the hardware immediately, and so processing of those function calls is always deferred until the next render call. Consequently, <b>IDirect3DDevice8::SetVertexShaderInput</b> and <b>IDirect3DDevice8::SetModelView</b>/<b>IDirect3DDevice8::SetVertexBlendModelView</b> must be used instead (even in normal use these functions are faster than their equivalents).</p>
+
+<p>The Xbox GPU has no notion of a hardware transform stack, so all transforms must be explicitly fixed-up.</p>
+
+<p>When creating a fix-up object, all the fix-ups must be created in order of increasing offsets.</p>
+
+<p>Fix-ups must have the same push-buffer "signature" as was recorded into the push-buffer. This means that it's not possible to change the type of objects. For example, if <b>IDirect3DDevice8::SetTexture</b> was called with a linear texture while recording, the <b>IDirect3DPushBuffer8::SetTexture</b> fix-up cannot be called with a swizzled texture. (The only exception to this is that <b>IDirect3DDevice8::SwitchTexture</b> has the same signature as <b>IDirect3DDevice8::SetTexture</b>, and so <a href="_dx_idirect3dpushbuffer8_settexture_graphics.htm"><b>IDirect3DPushBuffer8::SetTexture</b></a> may be used to fix-up <b>IDirect3DDevice8::SwitchTexture</b> calls.)</p>
+
+<p>The push-buffer "signature" of functions is not guaranteed to be the same across different builds of Direct3D. This means, for example, that a push-buffer should not be recorded with one build version and fix-ups applied with a different build version. It's best to regenerate static push-buffers from build-to-build if they contain data that needs to be fixed-up.</p>
+
+<p>The <a href="_dx_idirect3dpushbuffer8_verify_graphics.htm"><b>IDirect3DPushBuffer8::Verify</b></a> method is provided as a debug aid for verifying that all resource references are fixed up before the push-buffer is executed (to avoid cases in which a fix-up is missed and the hardware continues to use a stale, invalid address.)
+</p>
+
+<h4>See Also</h4>
+
+<p><a href="_dx_pushbuffer_resources_graphics.htm"><b>Push-Buffer Resources</b></a>, <a href="_dx_recording_state_in_a_pushbuffer_graphics.htm"><b>Recording State in a Push-Buffer</b></a></p>
+
+<DIV CLASS="footer" ID="footer">Unpublished work. &#169 2000 Microsoft Corporation. All rights reserved.</DIV>
+</BODY>
+</HTML>

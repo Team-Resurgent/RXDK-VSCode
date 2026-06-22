@@ -1,0 +1,149 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>XNetStartupParams</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="XNetStartupParams [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XNetStartupParams"/>
+<MSHelp:Keyword Index="F" Term="XNetStartupParams"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="xbox_xnetstartupparams_xsnl"></A>XNetStartupParams</H1>
+
+<P>Contains the initialization settings for the Xbox Secure Network Library (SNL).</P>
+
+<PRE class="syntax">typedef struct {
+    BYTE cfgSizeOfStruct;
+    BYTE cfgFlags;
+    BYTE cfgPrivatePoolSizeInPages;
+    BYTE cfgEnetReceiveQueueLength;
+    BYTE cfgIpFragMaxSimultaneous;
+    BYTE cfgIpFragMaxPacketDiv256;
+    BYTE cfgSockMaxSockets;
+    BYTE cfgSockDefaultRecvBufsizeInK;
+    BYTE cfgSockDefaultSendBufsizeInK;
+    BYTE cfgKeyRegMax;
+    BYTE cfgSecRegMax;
+    BYTE cfgQosDataLimitDiv4;
+} XNetStartupParams;
+</PRE>
+
+<H4>Members</H4>
+
+<DL>
+<DT><B>cfgSizeOfStruct</B></DT>
+    <DD>Size of this structure in bytes.</DD>
+<DT><B>cfgFlags</B></DT>
+    <DD>Configuration flags. This value must be between 0 and 255 inclusive. The default value is zero. Can be a 
+	combination of the following values:
+
+    <DL>
+        <DT>XNET_STARTUP_BYPASS_DHCP</DT>
+            <DD>Skip DHCP and use auto-IP only.  Only relevant on the Xbox development kit. This flag is silently ignored when linking to the secure versions of the library.</DD>
+        <DT>XNET_STARTUP_BYPASS_SECURITY</DT>
+            <DD>Allow unsecured communications.  Only relevant on the Xbox development kit. This flag is silently ignored when linking to the secure versions of the library.</DD>
+    </DL>
+	</DD>
+	
+<DT><B>cfgPrivatePoolSizeInPages</B></DT>
+    <DD>Maximum size, in pages (4,096 bytes per page), of the private pool for the network stack. Valid values for 
+	this member must be in the range of 4-255 inclusive. The default size is 12 pages (48 KB). The private pool is 
+	used in the following situations:
+
+<UL>
+	<LI>Responding to ARP/DHCP/ICMP messages.</LI>
+    <LI>Responding to certain TCP control messages.</LI>
+    <LI>Allocating incoming TCP connection request sockets.</LI>
+    <LI>Buffering outgoing data until it is transmitted (UDP) or until it is acknowledged (TCP).</LI>
+    <LI>Buffering incoming data on a socket that does not have a sufficiently large overlapped read pending.</LI>
+</UL>
+	
+	<P>The private pool is used instead of the system pool in order to have completely deterministic memory behavior. In other words, all memory allocation occurs only when a socket function is called. No allocation happens asynchronously in the background.</P>
+
+	<P>The network stack will not allocate more than this amount of memory except during network function calls by the title. If the entire private pool is already allocated and an asynchronous network event that requires more memory occurs, that network event will be discarded silently.</P>
+
+	</DD>
+	    
+<DT><B>cfgEnetReceiveQueueLength</B></DT>
+    <DD>Length of the Ethernet receive queue (in packets) allocated for the network card's DMA buffer. Each packet 
+	in the Ethernet receive queue takes up about 2 KB of physically contiguous memory. Valid values for this member 
+	must be in the range of 4-255 inclusive. The default is 8 packets (16 KB).</DD>
+
+<DT><B>cfgIpFragMaxSimultaneous</B></DT>
+    <DD>Maximum number of IP datagrams that can be in the process of reassembly at the same time. Valid values for 
+	this member must be in the range of 1-255 inclusive. The default value is 4 packets.</DD>
+    
+<DT><B>cfgIpFragMaxPacketDiv256</B></DT>
+    <DD>Maximum size of an IP datagram (including header) that can be reassembled in units of 256 bytes each. Valid values for 
+	this member must be in the range of 4-255 inclusive. The default value is 8 units (2,048 bytes).
+
+	<P CLASS="note"><B><I>Note</I></B>&nbsp;&nbsp;&nbsp;Be careful when setting this parameter to a large value, because it opens up a potential denial-of-service attack by consuming large amounts of memory in the fixed-size private pool.</P>
+	</DD>
+	
+<DT><B>cfgSockMaxSockets</B></DT>
+    <DD>Maximum number of sockets that can be opened. This includes child sockets that are spawned from listening 
+	sockets due to pending incoming connections. Also remember that a TCP socket may continue to be active for some 
+	period of time even after <A HREF="xbox_closesocket_winsock.htm">closesocket</A> is called to close the socket 
+	gracefully. Valid values for this member must be in the range of 1-232 inclusive.The default is 64 sockets.</DD>
+
+<DT><B>cfgSockDefaultRecvBufsizeInK</B></DT>
+    <DD>Default receive buffer size for a socket in kilobytes. Valid values for this member must be in the range of 
+	1 KB - 63 KB inclusive. The default is 16 KB.</DD>
+    
+<DT><B>cfgSockDefaultSendBufsizeInK</B></DT>
+    <DD>Default send buffer size for a socket in kilobytes. Valid values for this member must be in the range of 
+	1 KB - 63 KB inclusive. The default value is 16 KB.</DD>
+
+<DT><B>cfgKeyRegMax</B></DT>
+    <DD>Maximum number of <A HREF="xbox_xnkid_xsnl.htm">XNKID</A>/<A HREF="xbox_xnkey_xsnl.htm">XNKEY</A> pairs that 
+	can be registered at the same time by calling <A HREF="xbox_xnetregisterkey_xsnl.htm">XNetRegisterKey</A>. Valid 
+	values for this member must be in the range of 1-255 inclusive. The default is 4 key pair registrations.</DD>
+
+<DT><B>cfgSecRegMax</B></DT>
+    <DD>Maximum number of security associations that can be registered at the same time. Valid values for 
+	this member must be in the range of 1-255 inclusive. The default is 32.
+		<P>Security associations are created for each unique <B>XNADDR</B>/<B>XNKID</B> pair passed to <A HREF="xbox_xnetxnaddrtoinaddr_xsnl.htm">XNetXnAddrToInAddr</A>. Security associations are also implicitly created for each secure host that establishes an incoming connection with this host on a given registered <B>XNKID</B>.  Note that there will be only one security association between a pair of hosts on a given <B>XNKID</B> no matter how many sockets are actively communicating on that secure connection.</P>
+	</DD>
+	
+<dt><b>cfgQosDataLimitDiv4</b></dt>
+    <dd>Maximum amount of Qos data that can be supplied to a call to <
+	a href="xbox_XNetQosListen_xsnl.htm">XNetQosListen</a>, or returned in the result set of a call to 
+	<b>XNetQosLookup</b> or <b>XNetQosServiceLookup</b>. Valid values for this member must be in the range of 1-255 
+	inclusive. The default value is 64 (256 bytes).</dd>
+</DL>
+
+<H4>Remarks</H4>
+<P><B>XNetStartupParams</B> should be passed only to <A HREF="xbox_xnetstartup_xsnl.htm">XNetStartup</A> when the title needs to change one of the default network settings (like using the XNET_STARTUP_BYPASS_SECURITY to allow insecure connections). Otherwise, the title should just pass NULL to <B>XNetStartup</B>.</P>
+
+<P>By default, the Xbox SNL operates in secure mode, which means that communications with untrusted hosts (like personal computers) is not allowed. However, the developer kit version of the Xbox SNL (Xnet.lib and Xnetd.lib) allows you to bypass this security by specifying the XNET_STARTUP_BYPASS_SECURITY flag in the <B>cfgFlags</B> member of the <B>XNetStartupParams</B> structure. The following example demonstrates an easy way of doing this.</P>
+
+<PRE>
+XNetStartupParams xnsp;
+memset(&amp;xnsp, 0, sizeof(xnsp));
+xnsp.cfgSizeOfStruct = sizeof(XNetStartupParams);
+xnsp.cfgFlags = XNET_STARTUP_BYPASS_SECURITY;
+INT err = XNetStartup(&amp;xnsp);
+</PRE>
+
+<H4>Requirements</H4>
+<P><B>&nbsp;&nbsp;Header: </B>Declared in Winsockx.h, for include use Xtl.h.</P>
+
+<H4>See Also</H4>
+<P><A HREF="xbox_xnetstartup_xsnl.htm">XNetStartup</A></P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

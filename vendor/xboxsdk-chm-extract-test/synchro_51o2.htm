@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>CreateWaitableTimer</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="CreateWaitableTimer">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="CreateWaitableTimer"/>
+<MSHelp:Keyword Index="F" Term="CreateWaitableTimer"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_createwaitabletimer"></A>CreateWaitableTimer</H1>
+
+<P>The <B>CreateWaitableTimer</B> function creates or opens a waitable timer object.</P>
+
+<PRE class=syntax><B>HANDLE CreateWaitableTimer(
+  LPSECURITY_ATTRIBUTES</B><I> lpTimerAttributes</I><B>, </B>// SD
+<B>  BOOL</B><I> bManualReset</I><B>,                       </B>// reset type
+<B>  LPCSTR</B><I> lpTimerName                      </I> // object name
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>lpTimerAttributes</I></DT>
+
+<DD>[in] Ignored; use NULL.</DD>
+
+<DT><I>bManualReset</I></DT>
+
+<DD>[in] Specifies the timer type. If <I>bManualReset</I> is TRUE, the timer is a manual-reset notification timer. Otherwise, the timer is a synchronization timer.</DD>
+
+<DT><I>lpTimerName</I></DT>
+
+<DD>[in] Pointer to a null-terminated string specifying the name of the timer object. Name comparison is case insensitive.  The name can contain any character except the backslash character.
+
+<P>If the string specified in the <I>lpTimerName</I> parameter matches the name of an existing named timer object, the call returns successfully and the <A HREF="errors_3uwi.htm">GetLastError</a> function returns ERROR_ALREADY_EXISTS.
+
+
+<P>If <I>lpTimerName</I> is NULL, the timer object is created without a name.</P>
+
+
+<P>If <I>lpTimerName</I> matches the name of an existing event, semaphore, or mutex, the function fails and <B>GetLastError</B> returns ERROR_INVALID_HANDLE. This occurs because these objects share the same name space.</P>
+
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is a handle to the timer object. If the named timer object exists before the function call, the function returns a handle to the existing object and <B>GetLastError</B> returns ERROR_ALREADY_EXISTS. </P>
+
+<P>If the function fails, the return value is NULL. To get extended error information, call <B>GetLastError</B>.</P>
+
+<H4>Remarks</H4>
+
+<P>The handle returned by <B>CreateWaitableTimer</B> can be used in any function that requires a handle to a timer object.</P>
+
+<P>Any thread can specify the timer object handle in a call to one of the wait functions.</P>
+
+<P>Use the <B>CloseHandle</B> function to close the handle.  The timer object is destroyed when its last handle has been closed.</P>
+
+<H4>Example</H4>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p><H4>See Also</H4>
+<P> 
+
+<a href="xbox_mt_xtl_sll_synchronization_functions.htm">Synchronization Functions</a> | 
+<A HREF="synchro_9kj6.htm">CancelWaitableTimer</a>, <B> <A HREF="handobj_289x.htm">CloseHandle</a></B>,  <A HREF="handobj_2pyd.htm">DuplicateHandle</a>,  <A HREF="time_0fzm.htm">FILETIME</a>,  <A HREF="synchro_0lv6.htm">OpenWaitableTimer</a>, <A HREF="synchro_6f1u.htm">SetWaitableTimer</a></P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

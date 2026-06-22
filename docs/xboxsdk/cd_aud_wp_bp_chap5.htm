@@ -1,0 +1,187 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Xbox Audio Content Development Tools</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Xbox Audio Content Development Tools"/>
+<MSHelp:Keyword Index="F" Term="Xbox Audio Content Development Tools"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1 class="heading"><A NAME=""></A>Xbox Audio Content Development Tools</H1> 
+
+<p><i>By Scott Selfon, Audio Content Consultant, Content and Design Team, Xbox Advanced Technology Group</i></P>
+
+<h2>Introduction</h2>
+<p>As part of our continuing efforts to make development on the Xbox&#174; video game system from Microsoft artist-centric and accessible to composers and sound designers, we have been steadily releasing a series of tools and samples that cover various aspects of audio production for the Xbox. This chapter provides an overview of each of the currently available tools as well as a preview of tools we hope to provide in the future. In most cases, rudimentary command-line tool documentation can be found by typing the name of the application followed by &#34;-?&#34; at a command prompt. For instance:</p>
+<p><CODE>xgpimage -? </code></p>
+<p>Note also that to use command-line applications that send data to the Xbox (for instance, xbsetcfg), you will need to point your Microsoft&#174; Windows&#174; 2000 development machine at the proper Xbox by using the &#34;-x [xbox name]&#34; switch. This needs to be done only once (unless of course you're switching between machines or you change your Xbox machine name from the XDK launcher).</p>
+<p><code>xgpimage -x &#34;AudioBox1&#34; </code></p>
+<p>will point future commands to the Xbox named &#34;AudioBox1&#34;.</p>
+<p>As always, if you think a specific area of content creation could use a tool, or if you have suggestions for one of our existing tools, please contact <a href="mailto:content@xbox.com">content@xbox.com</a>.</p>
+<h2>Xbox Audio Creation Tool (xact.exe)</h2>
+<p><u>Description:</u> Tool for creating wave banks and sound banks. Can be used in conjunction with XACT runtime engine for more complex content authoring, realtime auditioning, and abstraction of sound events for developers. </p>
+<p><u>Installation:</u> Installed with XDK at C:\Program Files\Microsoft Xbox SDK\xbox\bin\xact.exe. </p>
+<p><u>Comments:</u> </p>
+<ul>
+<li>XACT can be used to create in-memory and streaming wave banks (.xwb) as well as sound banks (.xsb). </li>
+<li>An optional header (.h) file can be generated for runtime use of wave banks without the XACT engine. For examples of this, see the WaveBank and WaveBankStream samples in the XDK. </li>
+<li>Provides some basic &#34;compression&#34; options&#8212;ADPCM compression or 8-bit downsampling on individual waves (in addition to option to retain PCM).<BR><BR></li>
+<li>Support for .wav, AIFF, and WMA file formats. </li>
+<li>Can be used to audition cues, sounds, or waves on an XDK running the Audio Console Application, including 4- and 6-channel waves.</li>
+<li>For more details on XACT, see <a href="cd_aud_wp_bp_chap9.htm">Chapter 9 of the Audio Best Practices Guide</a>, which focuses on content creation, and <a href="cd_aud_wp_bp_chap10.htm">Chapter 10 of the Audio Best Practices Guide</a>, which looks at XACT and the developer's role. </li>
+</ul>
+
+<h2>Xbox ADPCM Codec (xbadpcm.acm)</h2>
+<p><u>Description:</u> Xbox ADPCM code is an Audio Compression Manager (ACM) codec that allows you to create and play back Xbox adaptive pulse code modulation (ADPCM) content on your Windows 2000/XP development machine. </p>
+<p><u>Installation:</u> Installed with Xbox Development Kit (XDK). Can also be manually installed from the <a href="https://xds.xbox.com/BPProgInfo.asp?Page=content/prog_xdk.htm#tools" title="XDK Tools" target="blank">XDK Tools page</a>. Note that there is a known issue with the Voxware Compression Toolkit, which will need to be disabled before the Xbox ADPCM codec will function properly: </p>
+<ol>
+<li>From the desktop, click <b>Start</b>, <b>Settings</b>, and then <b>Control Panel</b>. </li>
+<li>In the Control Panel window, double-click <b>Sounds and Multimedia</b>. The <b>Sounds and Multimedia Properties</b> dialog box will appear.</li>
+<li>Click the <b>Hardware</b> tab. </li>
+<li>In the <b>Devices</b> pane, click <b>Audio Codecs</b>, and then click <b>Properties</b>. The <b>Audio Codecs Properties</b> dialog box will appear. </li>
+<li>Click the <b>Properties</b> tab. </li>
+<li>Double-click <b>Voxware Compression Toolkit</b> and click <b>Do not use this audio codec</b>. Once the Voxware codec is disabled, the Xbox ADPCM codec will function properly; however, any applications that require the Voxware codec will cease to work correctly. </li>
+</ol>
+
+<p><u>Comments:</u> </p>
+<ul>
+<li>Because the Xbox ADPCM codec is an ACM codec, all applications (including most wave editing and effects software) that support ACM can use it. </li>
+<li>Author ADPCM loop points on 64-sample boundaries (36 bytes). </li>
+<li>Make sure when using ADPCM waves that the developer reads in the entire ADPCM header structure. </li>
+<li>The codec supports 16-bit mono or stereo waves as source content. </li>
+<li>Compression is roughly 3.5:1. </li>
+</ul>
+
+<h2>Xbox ADPCM Encoder (XbADPCMEncode.exe)</h2>
+<p><u>Description:</u> The Xbox ADPCM encoder is a command-line tool for ADPCM encoding a pulse code modulation (PCM) wave file</p>
+<p><u>Installation:</u> Source code is installed with XDK in C:\Program Files\Microsoft Xbox SDK\Tools\Win32\Sound\xbadpcmencode. Must be built by developer to use. </p>
+<p><u>Comments:</u> </p>
+<ul>
+<li>Provided to demonstrate how your own encoder could be written for batch purposes or to store custom format information. <BR><BR></li>
+<li>Demonstrates saving of loop points within ADPCM format. </li>
+</ul>
+
+<h2>DSP Builder (dspbuilder.exe)</h2>
+<p><u>Description:</u> DSP Builder is a graphical tool used for creating Global Processor DSP programs, which are effects images used for real-time effects creation and manipulation. The DSP Builder tool currently provides a subset of the functionality of XGPImage but in a more visual and accessible manner. </p>
+<p><u>Installation:</u> Installed with XDK in C:\Program Files\Microsoft Xbox SDK\xbox\bin\dspbuilder.exe. </p>
+<p><u>Comments:</u></p>
+<ul>
+<li>For more details about using DSP Builder and how to audition effects programs, see the white paper <a href="cd_aud_wp_authoring.htm">Authoring and Auditioning Effects Programs</a>. </li>
+<li>DSP Builder can be used in conjunction with titles that use the instrumented XACT library, or with the Audio Console application to audition, update, and swap effects in real time on the Xbox audio hardware.</li>
+</ul>
+ 
+ <h2>XGPImage (xgpimage.exe)</h2>
+<p><u>Description:</u> XGPImage is a command-line tool for creating Global Processor DSP programs, which are effects images used for real-time effects creation and manipulation. </p>
+<p><u>Installation:</u> Installed with XDK in C:\Program Files\Microsoft Xbox SDK\xbox\bin\xgpimage.exe. </p>
+
+<p><u>Comments:</u> </p>
+<ul>
+<li>An effects image authored in DSP Builder can be exported to XGPImage for lower level manipulation (generally not necessary though). <BR><BR></li>
+<li>Developer/content creator authors an .ini file (using DSPBuilder, WordPad, or other text editor) and then runs XGPImage on it to generate an image file (.scr) as well as a header file (.h) that the developer can use to alter effect parameters in real time once the image is running. <BR><BR></li>
+<li>For details on the proper syntax for authored .ini files, see the XDK topic GP DSP Image Builder (XGPImage).</li>
+</ul>
+
+<h2><a name="wavmerge">WavMerge (wavmerge.exe)</a></h2>
+<p><u>Description:</u> WavMerge is a command-line Windows tool for creating multichannel (four- or six-channel) wave files from mono sources that Xbox can play back to the speakers of a 5.1 audio system. </p>
+<p><u>Installation:</u> Installed with XDK in C:\Program Files\Microsoft Xbox SDK\xbox\bin\wavmerge.exe. Also available online <A href="https://xds.xbox.com/BPProgInfo.asp?Page=content/cd_aud_tool.htm" title="Audio Tools" target="blank">here</a>. </p>
+<p><u>Comments:</u></p>
+<ul>
+<li>Channel order for six-channel (&#34;5.1&#34;) is left, right, center, LFE, left surround, right surround. </li>
+<li>Channel order for four-channel is left, right, left surround, right surround. Note that this is not Dolby Surround-style data (which you can either create as a pre-encoded stereo file or mix down manually from a four- or six-channel stream). </li>
+<li>Xbox currently supports six-channel interleaved PCM waveformatex or waveformatextensible files for any &#34;pre-rendered&#34; 5.1 audio you wish to create. Note that this is not Dolby Digital-encoded streams, but rather a .wav file with six channels. </li>
+<li>Some multichannel audio authoring tools already support waveformatextensible. If yours does not, save out separate mono wave files and use this tool to merge them into a four- or six-channel wave file. </li>
+</ul>
+
+<h2>DirectMusic Producer for Xbox (DMusProd.exe)</h2>
+<p><u>Description:</u> DirectMusic Producer for Xbox is a graphical tool for authoring, managing, and auditioning Xbox audio content, including Microsoft&#174; DirectX&#174; Audio scripts, Downloadable Sounds (DLS) collections, and Microsoft&#174; DirectMusic&#174; content. </p>
+<p><u>Installation:</u> Available online <A href="https://xds.xbox.com/BPProgInfo.asp?Page=content/cd_aud_tool.htm" target="blank">here</a>. </p>
+<p><u>Comments:</u></p>
+<UL>
+<LI>Supplementary DirectMusic demo content can be installed from X:\DMusProdX\DemoContent\DMPDemoContent.exe, or online <A href="https://xds.xbox.com/BPProgInfo.asp?Page=content/cd_aud_tool.htm" target="blank">here</a>.<br><br></li>
+<LI>See <a href="cd_aud_wp_bp_chap4.htm">Chapter 4&#8212;Introductory Guide to DirectMusic Producer for Xbox (DMPX)</a> for more information about DirectMusic Producer for Xbox, or <a href="https://xds.xbox.com/BPProgInfo.asp?Page=content/cd_aud_wp.htm" title="White Papers" target="blank">White Papers</a> on Audio Designer's Corner for authoring scenarios and concepts.</li>
+</ul>
+<h2>DirectMusic Audio Analyzer (AudAnalyze.exe)</h2>
+<p><u>Description:</u> Command-line tool that scans one or more DirectMusic content files, and then creates an object factory that limits the included DirectMusic library size to object types used by the content, reducing compiled and in-memory code size. </p>
+<p><u>Installation:</u> Installed with XDK in C:\Program Files\Microsoft Xbox SDK\xbox\bin\audanalyze.exe. </p>
+<p><u>Comments:</u> </p>
+<ul>
+<li>Audio Analyzer scans your content (typically segment files), and then creates a .cpp file containing a function called <b>MyFactory()</b>, which a developer can use to replace <b>DirectMusicDefaultFactory()</b>. This function contains a list of DirectMusic objects needed to play the specified content. If game code passes <b>MyFactory()</b> instead of <b>DirectMusicDefaultFactory()</b> to <b>DirectMusicInitializeEx()</b>, the linker will exclude unneeded DirectMusic objects from the compiled Xbox title, decreasing its size. (<b>DirectMusicDefaultFactory()</b> includes ALL the objects, whether needed or not.) <BR><BR></li>
+<li>For more information on options and usage, type <b>audanalyze</b> at a command prompt. <BR><BR></li>
+<li>Most of the DirectMusic samples provided with the XDK now take advantage of Audio Analyzer to create a custom object factory based on the content they use. </li>
+</ul>
+
+<h2>Audio Console Application (audconsole.xbe)</h2>
+<p><u>Description:</u> The Audio Console Application is designed for composers and sound designers to audition their content on the Xbox hardware. It is used in conjunction with PC-based audio tools, such as XACT, DirectMusic Producer for Xbox, <!--Xbox Wave Bundler, -->and DSP Builder, which manage content and effects program downloading to the Xbox, as well as playback of that content. </p>
+<p><u>Installation:</u> Provided on XDK recovery CD. After recovery, make sure that your content development machine is attached to the XDK either via a network hub or via an Xbox System Link Cable. </p>
+<p><u>Comments:</u>  </p>
+<ul>
+<li>For more information about using the Audio Console app in conjunction with DirectMusic Producer for Xbox, see <a href="cd_aud_wp_bp_chap4.htm">Chapter 4&#8212;Introductory Guide to DirectMusic Producer for Xbox (DMPX)</a>. </li>
+</ul>
+
+<h2>Audio Samples</h2>
+<p><u>Description:</u> Audio samples demonstrate to developers a variety of techniques that can also be used (often with minor modifications) to test content integration scenarios. Some of the samples are purely programmatic and will not be discussed in detail here. In the case of the DirectMusic examples, content found in the \media\sounds subdirectory can be loaded in DirectMusic Producer for closer examination. And as mentioned above, Audio Analyzer was run on most of the DirectMusic samples to optimize the included objects based on the content used. </P>
+<ul>
+<li><b>Play3DSound</b>&#8212;I3DL2 occlusion and obstruction; 3D positioning on an object; I3DL2 reverb presets </li>
+<li><b>Envelope Generator</b>&#8212;real-time manipulation of DLS-2 amplitude and filter cutoff envelopes on sounds </li>
+<li><b>SetFilter</b>&#8212;exposes filter block settings (DLS-2 low pass and parametric EQ) for real-time experimentation with effects on looped sounds </li>
+<li><b>GlobalEffects</b>&#8212;use of chained effects in a program; real-time parameter modification </li>
+<li><b>WaveBank</b>&#8212;demonstrates use of a wave bank<!-- (authored with Xbox Wave Bundler)--> on Xbox </li>
+<li><b>WaveBankStream</b>&#8212;demonstrates optimized asynchronous non-buffered streaming from hard disk or DVD, using a streaming wave bank (authored with XACT) </li>
+<li><b>XACTWMAPlayList</b>&#8212;demonstrates preferred method for integration and playback of user soundtracks and WMA files supplied with a title using XACT <BR><BR>
+<p><i>DirectMusic Samples </i></p></li>
+<li><b>DM3DScript</b>&#8212;DirectMusic playback onto a 3D audiopath (which can then be positioned in real time) using scripting </li>
+<li><b>DMAudiopath</b>&#8212;DirectMusic playback onto a 3D audiopath (which can then be positioned in real time) </li>
+<li><b>DMGrooveLevel</b>&#8212;style-based playback and interaction between groove level and pattern selection from a style </li>
+<li><b>DMScript</b>&#8212;scripting example of self-modifying music, variability, queuing, and dialog concatenation </li>
+</ul>
+
+<p><u>Installation:</u> Source code is installed with XDK installation. Audio samples are placed at C:\Program Files\Microsoft Xbox SDK\Samples\Xbox\Sound and can be compiled by a developer to run on an Xbox. </p>
+<p><u>Comments:</u></p>
+<ul>
+<li>In many cases, it is fairly trivial to swap in your own content for the existing sample content. Some samples do have limitations-all content must be the same format, additional code must be written to support ADPCM, and so on. </li>
+</ul>
+
+<!--
+ <h2><i>Xbox Wave Bundler (wbnd32.exe)&#8212;deprecated in favor of XACT authoring tool</i></h2>
+<p><u>Description:</u> Tool for concatenating numerous waves into a single file with organized header data for in-memory playback. </p>
+<p><u>Installation:</u> Installed with XDK in C:\Program Files\Microsoft Xbox SDK\xbox\bin\wbnd32.exe. </p>
+<p><u>Comments:</u> </p>
+<ul>
+<li>Wave Bundler can be used to create &#34;in-memory&#34; wave banks. It does not support the authoring of streaming wavebanks as XACT does. The sound designer places all of the sounds they needs for a specific area of the game into a wave bank. (A game can have multiple wave banks loaded at once if desired.) They then generate the wave bank (.xwb) and header (.h) file, and give those to the developer. When the developer wants to use the wave bank, they read it (header information and all of the wave data) into memory. All of the assets within this &#34;wave bundle&#34; are loaded at a single time and as a single file, reducing the file system overhead both at load time and in-game. <BR><BR></li>
+<li>When a developer wants to play a specific wave, they find a free hardware voice, look up the wave's position in the bank (and loop points, if provided) in the wave bank's header, point the buffer at the appropriate wave data (which is already in memory), and then play the buffer. </li>
+<li>Wave Bundler provides some basic &#34;compression&#34; options; namely, it can do ADPCM compression or 8-bit downsampling on individual waves when putting them in a wave bank (or retain the original uncompressed data). </li>
+<li>Support for .wav and AIFF file formats. </li>
+<li>Can be used to audition waves on an XDK running the Audio Console Application, including 4- and 6-channel waves. (Note that having 4- or 6-channel waves in an in-memory wave bank may not always be a useful scenario, as they can get quite large and will more typically just be streamed.) </li>
+<li>Sample code (and content) demonstrating wave bank usage can be found in the WaveBank XDK sample. </li>
+</ul>
+-->
+
+<h2><i>xbsetcfg (xbsetcfg.exe)&#8212;no longer supported for audio</i></h2>
+<p><u>Description:</u> xbsetcfg is a command-line Windows tool for setting flags on the Xbox hardware, bypassing the Xbox Dashboard. </p>
+<p><u>Installation:</u> Installed with XDK in C:\Program Files\Microsoft Xbox SDK\xbox\bin\xbsetcfg.exe. </p>
+<p><u>Comments:</u> </p>
+<ul>
+<li>Beta &#34;enhanced&#34; (S-video or HDTV) A/V adapters did not always properly report their support for digital output. At this point, you should only be using final A/V adapters, and only change your audio configuration from the Xbox Dashboard. </li>
+</ul>
+
+<h2>Wrap-Up</h2>
+<p>There are quite a few resources available to aid with audio content creation, testing, auditioning, and implementation for Xbox. If there is an area not addressed here that you would like to see presented as a sample, or if a particular process is blocking your progress on a project, please don't hesitate to let us know at <a href="mailto:content@xbox.com">content@xbox.com</a>. </p>
+<p>For more information about topics presented here, please consult other chapters of the Xbox Audio Best Practices Guide, the Xbox Development Kit documentation, or the white papers on Audio Designer's Corner, or send an e-mail message to <a href="mailto:content@xbox.com">content@xbox.com</a>.</p>
+
+<p><SMALL>Updated Monday, September 30, 2002</SMALL></p>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

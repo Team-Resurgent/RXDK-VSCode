@@ -1,0 +1,86 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>IXACTSoundBank::Prepare</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="F" Term="Prepare"/>
+<MSHelp:Keyword Index="K" Term="Prepare (IXACTSoundBank)"/>
+<MSHelp:Keyword Index="K" Term="IXACTSoundBank::Prepare"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>IXACTSoundBank::Prepare</h1>
+<p>Primes a sound for playback with zero latency.</p>
+<pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>Prepare(</b>
+    <b>DWORD</b> <i>dwSoundCueIndex</i><b>,</b>
+    <b>DWORD</b> <i>dwFlags</i><b>,</b>
+    <b>PXACTSOUNDCUE</b> *<i>ppSoundCue</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+			<dt><i>dwSoundCueIndex</i></dt>
+				<dd>[in]  A value indicating the index of the sound cue to be primed.</dd>
+			
+			<dt><i>dwFlags</i></dt>
+				<dd>[in]  Flags affecting preparation. May be the following:</dd>
+				<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+					<tr>
+<td>XACT_FLAG_SOUNDCUE_PRIME</td>
+<td>Indicates that the sound cue should be primed.<p>This flag is optional.</p></td>
+</tr>
+					<tr>
+<td>XACT_FLAG_SOUNDCUE_USE_LAST_VARIATION</td>
+<td>Indicates that the sound cue should use the last sound selected, assuming that multiple sounds are associated with the cue. That sound will continue to be selected until the function is called without specifying <b>XACT_FLAG_SOUNDCUE_USE_LAST_VARIATION</b>, at which point the sounds are selected at random again.<p>This does not affect wave variations. If the sound has a play event with wave variations, the waves will be selected at random. Similarly, pitch and volume variations are unaffected by this flag.</p><p>If no previous sound has been selected before using this flag, a sound will be selected at random.</p><p>This flag is optional.</p></td>
+</tr>
+				</table>
+			
+			<dt><i>ppSoundCue</i></dt>
+				<dd>[out]  The address of an IXACTSoundCue pointer to be returned. This parameter is passed to the <a href="xbox_ixactsoundbank_play_dxaudio.htm">IXACTSoundBank::Play</a> command and cannot be NULL.</dd>
+			
+		</dl>
+<h4><a name="return"></a>Return Values</h4>
+            <p>Returns DS_OK if successful; returns an error code otherwise.</p>
+        <h4><a name="remarks"></a>Remarks</h4>
+			<p><b>Prepare</b> can be used for <i>priming</i> (reading ahead) streaming data, or can be used any time the game needs control of the sound cue instance before playback actually starts.</p>
+			<p>Priming a sound cue with this function enables the sound to play with zero latency. This can be particularly helpful when synchronization between speech and animations are required. When the sound is primed, a small portion of the sound data is read into memory and immediate playback can begin (thus avoiding the latency involved with reading the data directly from DVD or hard disk). The <b>Prepare</b> function is intended to be used with wave bank entries that have not been marked as <i>Enable zero-latency Streaming</i> in the wave bank. Waves marked as <i>Enable zero-latency Streaming</i> are primed automatically when the wave bank is registered, and StreamDataAvailable notification is sent (so calling <b>Prepare</b> is unnecessary).</p>
+
+			<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;<i>Enable zero-latency Streaming</i> is a property of an entry in a wave bank, rather than the wave bank itself.</p>
+			<p>Calling the <b>Prepare</b> function will return immediately. To determine if the cue is ready (has been primed), register for a cue notification using type <a href="xbox_xactnotificationtype_dxaudio.htm">eXACTNotification_StreamDataAvailable</a>.</p>
+			<p>To determine if all the wave bank entries in a given wave bank have been primed, register for a wave bank notification using type <b>eXACTNotification_StreamDataAvailable</b>. When this notification has been received, <b>IXACTSoundBank::Play</b> can be called on any cue that uses the wave bank entries without latency.</p>
+			<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;When registering for notification type <b>eXACTNotification_StreamDataAvailable</b> on a streamed wave bank with no zero-latency wave entries, the notification will fire immediately.</p>
+			<p>Cues that are already playing cannot be primed.</p>
+			<p>To <i>unprepare</i> a sound cue (for example, a sound cue was prepared for an animation that never took place), <a href="xbox_ixactsoundbank_stop_dxaudio.htm">Stop</a> can be called on the sound cue instance. Even though the sound never started playing, this will successfully stop and free the primed sound.</p>
+			<p>The layer of a sound cue is not applied until the cue is played. Calling <a href="xbox_ixactsoundbank_play_dxaudio.htm">IXACTSoundBank::Play</a> with the XACT_FLAG_SOUNDCUE_PRIME or calling <b>Prepare</b> will not interrupt playing cues.</p>
+			<p>For more information on priming, see the <a href="xbox_xact_concepts_dxaudio.htm">XACT Concepts</a> section. Also, see the <a href="xbox_mds_samp_aud_xactparamcontrol.htm">XACTParamControl</a> sample for an example of using priming.</p>
+		<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in XACT.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use XACTEng.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+			<p><a href="xbox_ixactengine_registernotification_dxaudio.htm">IXACTEngine::RegisterNotification</a>, <a href="xbox_ixactengine_getnotification_dxaudio.htm">IXACTEngine::GetNotification</a></p>
+		<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

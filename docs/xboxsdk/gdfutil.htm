@@ -1,0 +1,174 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Xbox Game Disc Format Utility (GDFUtil)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Xbox Game Disc Format Utility (GDFUtil)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+<MSHelp:Keyword Index="K" Term="command-line tools, GDFUtil"/>
+<MSHelp:Keyword Index="K" Term="game disc layouts, converting between"/>
+<MSHelp:Keyword Index="K" Term="convert a game disc layout"/>
+<MSHelp:Keyword Index="K" Term="formats for game disc layouts"/>
+<MSHelp:Keyword Index="K" Term="Xbox Premastering Wizard"/>
+<MSHelp:Keyword Index="K" Term="game disc layouts, XLO"/>
+<MSHelp:Keyword Index="K" Term="game disc layouts, LCF"/>
+<MSHelp:Keyword Index="K" Term="game disc layouts, ISO"/>
+<MSHelp:Keyword Index="K" Term="game disc layouts, PKG"/>
+<MSHelp:Keyword Index="K" Term="XLO game disc layout"/>
+<MSHelp:Keyword Index="K" Term="LCF game disc layout"/>
+<MSHelp:Keyword Index="K" Term="ISO game disc layout"/>
+<MSHelp:Keyword Index="K" Term="PKG game disc layout"/>
+<MSHelp:Keyword Index="K" Term="GDFUtil"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Xbox Game Disc Format Utility (GDFUtil)</h1>
+<p>The Xbox Game Disc Format Utility (GDFUtil) is a command-line utility that converts 
+between various game disc layout and submission formats. Game disc layouts are 
+normally created with the <a href="xbox_lrf_tool_xbgamedisc.htm">Xbox Game Disc 
+Authoring Tool</a> (XbGameDisc), a tool with a graphical user interface.</p>
+<p>GDFUtil mirrors some of XbGameDisc's functionality by enabling command-line 
+creation and manipulation of layouts, and adds a new, readable layout format. Using 
+GDFUtil, an automated build process can unpackage a PKG  layout, 
+modify the file contents and file layout, then repackage the layout.</p><p>For a detailed discussion of the game disc layout process, see the 
+<a href="xbox_lrf_tool_xbgamedisc.htm">Xbox Game Disc Authoring Tool</a>.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;GDFUtil should not be used to premaster game title submissions to Microsoft. Instead, 
+please use the <a href="xbox_lrf_tool_xbgamedisc.htm">Xbox Game Disc 
+Authoring Tool</a>.</p><h2><a name="IDAFSM2"></a>Layout Formats</h2>
+<p>GDFUtil works with the following game layout formats:</p><table>
+<tr>
+<th>Format</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>XLO</td>
+<td>An Xbox game disc layout file, created or readable by XbGameDisc or GDFUtil.</td>
+</tr>
+<tr>
+<td>LCF</td>
+<td>A layout control file. An LCF is an XML layout format that simply specifies the files in the layout, their order, and their layer.</td>
+</tr>
+<tr>
+<td>ISO</td>
+<td>A DVD-R ISO format file. Currently not supported as an input file format.</td>
+</tr>
+<tr>
+<td>PKG</td>
+<td>A package file created by XbGameDisc or GDFUtil; contains layout information as well as the game files and directories. This is an electronic submission format.</td>
+</tr>
+
+<tr>
+<td><i>directory</i></td>
+<td>A directory can be specified as an input or output format; that directory is used as the source or destination of the file tree.</td>
+</tr>
+</table>
+<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;TAPE is not supported as an input or output format in this release.</p><p>The XLO format file is the format file used by XbGameDisc and GDFUtil to save layout and authoring session information. This format does not contain the game files but does store the directory location that contains the game files.</p><p>The LCF format is an XML text file that contains layout information including the list of game files, their order, and their layer affinity. It does not contain the game files or information on the location of the game files. The LCF format provides an easily edited, modified, and generated format, suitable for automated build processes.</p><p>The ISO format is a disk image that can be used to burn a single layer DVD-R. This format contains the game files but does not contain layer affinity information.</p><p>The PKG format is output by XbGameDisc's Xbox Premastering Wizard and is suitable for certification submission. This format contains all of the files in the layout as well as layout information (including file order and layer). A PKG includes an embedded XLO that contains the layout information for the PKG.</p><h2><a name="IDASTM2"></a>Usage</h2>
+<pre class="clsCode">
+USAGE: gdfutil [options] source destination
+</pre>
+    <table>
+<tr>
+<th>Option</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>/INPUTDIR:<i>dir</i></td>
+<td>Specifies the location of the source format file tree. For source formats that already specify the file tree location (such as XLO), this option overrides that location. For the LCF source format, this option must be used to specify the location of the file tree. This option can be used, for example, to specify a different directory than is specified in the source XLO. This option is valid for source formats XLO, PKG, and LCF and is required for source format LCF.</td>
+</tr>
+<tr>
+<td nowrap="">/OUTPUTDIR:<i>dir</i></td>
+<td>For source formats that contain or reference files, specifies the location where extracted files and folders should be written. This option is valid for destination formats XLO, PKG, and LCF. Files are written to the Temp folder if no directory is specified.
+
+</td>
+</tr>
+<tr>
+<td nowrap="">/PKGTEMPDIR:<i>dir</i></td>
+<td>Specifies the directory that GDFUtil uses when extracting PKG source format embedded files. If this directory is not specified, the user's Temp directory is used and the temporary files are removed when the operation is complete. To process PKG input, GDFUtil must first extract the embedded files. This option is valid for source format PKG.</td>
+</tr>
+<tr>
+<td>/PKGXLODIR:<i>dir</i></td>
+<td>Specifies where a PKG's embedded XLO file should be extracted. If this directory is not specified, the user's Temp directory is used. This option is valid for source format PKG. If the layout for your package contains a file named main.xlo, you must specify an extraction location when extracting the package. Otherwise, the main.xlo file in the layout overwrites the main.xlo file that is generated during package creation.</td>
+</tr>
+<tr>
+<td>/ALLOWMOD</td>
+<td>Specifies that GDFUtil should not stop processing if it determines that the files in the file tree differ from those referenced in the layout file. If this option is not specified, and if the file tree doesn't match the layout file, GDFUtil exits. This option is valid for source formats XLO and LCF.</td>
+</tr>
+<tr>
+<td>/ADDNEWFILES</td>
+<td>Specifies that GDFUtil should attempt to incorporate new files found in the file tree into the layout. If this option is not specified, and if new files are found in the file tree, gdfutil exits. This option must be used with /ALLOWMOD. It is valid for source formats XLO and LCF.</td>
+</tr>
+<tr>
+<td>/ACCURATEISO</td>
+<td>Specifies that GDFUtil should place files on the ISO in the location that best matches the layout. If this option is not specified, files are compacted to generate a smaller ISO. This option is valid for destination format ISO.</td>
+</tr>
+<tr>
+	<td>/ALLOWLARGEISO</td>
+	<td>Enables the creation of a disk image even if it exceeds the size allowed for a standard ISO DVD-R. Cannot be used  
+	with /ACCURATEISO.</td>
+</tr>
+</table>
+<p>The <i>source</i> and <i>destination</i> arguments can specify either filenames or directories. If a filename is specified, the filename indicates the input or output file, and the extension specifies the layout format (which must match one of the supported layout formats, described above). If a directory is specified, that directory is used as the source or destination of the file tree.</p><p>GDFUtil converts the source format to the destination format, preserving as much information as is possible between the two formats.</p><p>The /ALLOWMOD and /ADDNEWFILES options modify GDFUtil's behavior when comparing the files of an input XLO (or LCF) and the file tree specified in the XLO (or specified with the /INPUTDIR option). If the file information in the XLO does not match the files in the file tree (this includes file size), GDFUtil exits with an error, by default. The /ALLOWMOD option instructs GDFUtil to continue processing despite these differences. Also, by default, new files found in the file tree that are not in the XLO (or LCF) are not included in the output format. The /ADDNEWFILES option instructs GDFUtil to include these new files in the output format.</p><p>The /ACCURATEISO option specifies that ISO output be <i>accurate</i> rather than <i>compact</i>. The two possible forms of ISO output are:</p><ol>
+<li>Accurate&#8212;Output files are placed in the same layout as the input format. Because DVD-R media is single-layer, only the files from Layer 0 of the input layout are written to the ISO file. If the input layout contains files on Layer 1, these files are not included in the ISO file.</li>
+
+<li>Compact&#8212;Squeeze as many files as possible (including those on Layer 1) onto the output disc image, up to the capacity of a DVD-R disc. Compact layout ignores the layout specified in the input format, compacting files by removing gaps and placeholders.</li>
+</ol>
+<h2><a name="IDAEWM2"></a>Examples</h2>
+<p>The following example creates an LCF format output file using a PKG as input. For PKG input, the location of the extracted file tree can be specified with the /PKGTEMPDIR option.</p>
+<pre class="clsCode">
+gdfutil /pkgtempdir:c:\blaster blaster.pkg blaster.lcf
+</pre>
+    <p>The LCF file and the file tree could then be modified (manually or automatically), adding or removing files as necessary.</p><p>The following example creates a PKG format output file using an LCF input file.  For LCF input, the location of the file tree must be specified with the /INPUTDIR option.:</p>
+<pre class="clsCode">
+gdfutil /inputdir:c:\blaster blaster.lcf blaster.pkg
+</pre>
+    <h3><a name="IDARWM2"></a>Example LCF File</h3>
+<p>A simple LCF file might look like the following:</p>
+<pre class="clsCode">
+&lt;xbGameDiscLayoutTemplateFile&gt;
+  &lt;Header&gt;
+    &lt;SchemaVersion Major="1" Minor="0"/&gt;
+    &lt;OldestSchemaCompatibleWith Major="1" Minor="0"/&gt;
+    &lt;LastSave TimeMSSince1970="1043982343" ToolID="GDFUtil" Major="1" Minor="0" Build="5342" QFE="1"/&gt;
+  &lt;/Header&gt;
+  &lt;Files Location="Layer0"&gt;
+    &lt;Object Type="File"      Name="\default.xbe"/&gt;
+    &lt;Object Type="File"      Name="\level8.dat"/&gt;
+    &lt;Object Type="Directory" Name="\"/&gt;
+    &lt;Object Type="File"      Name="\cq\doggle.nam"/&gt;
+    &lt;Object Type="Directory" Name="\cq"/&gt;
+  &lt;/Files&gt;
+  &lt;Files Location="Layer1"&gt;
+    &lt;Object Type="File"      Name="\cq\spr\ginnad.lvl"/&gt;
+    &lt;Object Type="Directory" Name="\cq\spr"/&gt;
+  &lt;/Files&gt;
+  &lt;Files Location="EitherLayer"&gt;
+  &lt;/Files&gt;
+  &lt;Files Location="Ignore"&gt;
+  &lt;/Files&gt;
+&lt;/xbGameDiscLayoutTemplateFile&gt;
+</pre>
+    <p>The &lt;<b>Files</b>&gt; element lists files on the media in order from fastest to slowest; the <b>Location</b> attribute specifies the layer.</p><p>The &lt;<b>Header</b>&gt; element contains information about the version of GDFUtil used to generate the LCF, as well as a timestamp.</p><h2><a name="IDA2ZN2"></a>Remarks</h2>
+<p>If both the input and output formats contain layer information, that information is preserved in the conversion and contained in the output format. In cases where layout information is a preference rather than a requirement, the preference is honored when possible.</p><p>GDFUtil compares the input format, output format, and any appropriate directories, and, if the formats allow, does an 'lba-exact' copy of files (meaning that it preserves gaps and placeholders).
+
+</p><p>GDFUtil tracks the versions of the tools used to save a layout, create and extract PKG files, and create the final media. 
+
+
+This data is stored on the media and is used to track potential layout issues. This is also true for Primary Volume Descriptors in ISO formats.</p><p>Multi-title (Demo Disc) certification information is preserved between the PKG and XLO  formats.</p><p>When creating ISO disk images, it is important to ensure that none of the files in your title are larger than 
+the size of 1 DVD-X2 layer. If such a file exists, GDFUtil is unable to create the disk image. It outputs an error 
+message and stops the process of disk creation. You can override this behavior by enabling the /ALLOWLARGEISO option. If you 
+do, GDFUtil outputs a warning, rather than an error, when it encounters the large file.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;GDFUtil does not support individual files sizes larger than 1.02GB or layouts with more than 6.5 GB of data.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

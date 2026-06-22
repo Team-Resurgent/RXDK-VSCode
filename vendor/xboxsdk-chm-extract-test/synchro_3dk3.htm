@@ -1,0 +1,84 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>QueueUserAPC</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="QueueUserAPC">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="QueueUserAPC"/>
+<MSHelp:Keyword Index="F" Term="QueueUserAPC"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_queueuserapc"></A>QueueUserAPC</H1>
+
+<P>The <B>QueueUserAPC</B> function adds a user-mode asynchronous procedure call (APC) object to the APC queue of the specified thread.</P>
+
+<PRE class=syntax><B>DWORD QueueUserAPC(
+  PAPCFUNC</B><I> pfnAPC</I><B>,  </B>// APC function
+<B>  HANDLE</B><I> hThread</I><B>,   </B>// handle to thread
+<B>  ULONG_PTR</B><I> dwData  </I>// APC function parameter
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>pfnAPC</I></DT>
+
+<DD>[in] Pointer to the application-supplied APC function to be called when the specified thread performs an alertable wait operation. For more information, see <A HREF="synchro_5qcj.htm">APCProc</a>.</DD>
+
+<DT><I>hThread</I></DT>
+
+<DD>[in] Specifies the handle to the thread.</DD>
+
+<DT><I>dwData</I></DT>
+
+<DD>[in] Specifies a single value that is passed to the APC function pointed to by the <I>pfnAPC</I> parameter.
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is nonzero.</P>
+
+<P>If the function fails, the return value is zero. There are no error values defined for this function that can be retrieved by calling <A HREF="errors_3uwi.htm">GetLastError</a>.</P>
+
+<H4>Remarks</H4>
+
+<P>The APC support provided in the system software allows an application to queue an APC object to a thread. Each thread has its own APC queue. The queuing of an APC is a request for the thread to call the APC function. The system issues a software interrupt to direct the thread to call the APC function.</P>
+
+<P>When a user-mode APC is queued, the thread is not directed to call the APC function unless it is in an alertable state. After the thread is in an alertable state, the thread handles all pending APCs in a first in, first out (FIFO) order, and the wait operation returns WAIT_IO_COMPLETION. A thread enters an alertable state by using <A HREF="prothred_0o8o.htm">SleepEx</a>, <A HREF="synchro_5h2s.htm">SignalObjectAndWait</a>, <A HREF="synchro_5yrc.htm">WaitForSingleObjectEx</a>, or <A HREF="synchro_5lbs.htm">WaitForMultipleObjectsEx</a> to perform an alertable wait operation. </P>
+
+<P>If an application queues an APC before the thread begins running, the thread begins by calling the APC function. After the thread calls an APC function, it calls the APC functions for all APCs in its APC queue.</P>
+
+<P>When the thread is terminated using the <A HREF="prothred_531g.htm">ExitThread</a> function, the APCs in its APC queue are lost. The APC functions are not called.</P>
+
+<P>Note that the <B>ReadFileEx</B> and <B>SetWaitableTimer</B> functions are implemented using an APC as the completion notification callback mechanism.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p><H4>See Also</H4>
+<P> 
+
+<a href="xbox_mt_xtl_sll_synchronization_functions.htm">Synchronization Functions</a> | 
+<A HREF="filesio_0660.htm">ReadFileEx</a>,  <A HREF="synchro_6f1u.htm">SetWaitableTimer</a>,  <A HREF="prothred_0o8o.htm">SleepEx</a>,  <A HREF="synchro_5lbs.htm">WaitForMultipleObjectsEx</a>,  <A HREF="synchro_5yrc.htm">WaitForSingleObjectEx</a>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

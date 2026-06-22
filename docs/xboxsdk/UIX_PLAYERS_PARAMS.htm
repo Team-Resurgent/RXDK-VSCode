@@ -1,0 +1,111 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>UIX_PLAYERS_PARAMS</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="UIX_PLAYERS_PARAMS"/>
+<MSHelp:Keyword Index="F" Term="UIX_PLAYERS_PARAMS"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+    <body topmargin="0">
+        <table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+        <h1>UIX_PLAYERS_PARAMS</h1>
+
+        
+        
+<p>Initialization parameters for the players feature.  This structure is passed in <i>pFeatureParams</i> when calling <a href="ILiveEngine_StartFeature.htm">ILiveEngine::StartFeature</a> with UIX_PLAYERS_FEATURE.</p>
+
+	
+		
+
+<pre class="syntax">typedef struct _UIX_PLAYERS_PARAMS{
+    SIZE_T StructSize;
+    DWORD UserPort;
+    ITitlePlayersListItem *pPlayerControllingScreen;
+    CONST XUID *pSelectedPlayerXUID;
+    BOOL SortCurrentPlayersList;
+    DWORD FilterFlags;
+    DWORD DisplayType;
+} UIX_PLAYERS_PARAMS, *PUIX_PLAYERS_PARAMS;</pre>
+                    
+                
+            
+            
+                <h4><a name="members"></a>Members</h4>
+<dl>
+<dt><b>StructSize</b></dt>
+<dd>Size of the structure.  Must be set to the structure size before calling <b>ILiveEngine::StartFeature</b>.</dd>
+<dt><b>UserPort</b></dt>
+<dd>The controller port index (zero-based) of the user for which the players list will be displayed.  Specify UIX_INVALID_VALUE to use lobby mode.</dd>
+<dt><b>pPlayerControllingScreen</b></dt>
+<dd>The player that is given control of the players screen (this is usually the player on the port specified in <b>UserPort</b>).  The specified player will be displayed as the first player in the list (unless <b>SortCurrentPlayersList</b> is TRUE), and will not be selectable.  Specify NULL to designate no such player.</dd>
+<dt><b>pSelectedPlayerXUID</b></dt>
+<dd>Pointer to an <a href="xuid.htm">XUID</a> of the user to initially select in the players list.  If a user with the specified <b>XUID</b> is in the list, that user will be highlighted when the list is created.  Specify NULL to select the first player.</dd>
+<dt><b>SortCurrentPlayersList</b></dt>
+<dd>Specify TRUE to sort the players list (based on the <a href="ITitlePlayersListItem_Compare.htm">ITitlePlayersListItem::Compare</a> method), FALSE to perform no sorting.</dd>
+<dt><b>FilterFlags</b></dt>
+<dd>Initial filter flags to determine which players are displayed in the list.  Specify zero to show all players.  Can be changed later by calling <a href="ILivePlayersList_SetFilterFlags.htm">ILivePlayersList::SetFilterFlags</a>.</dd>
+<dt><b>DisplayType</b></dt>
+<p><dd>The type of players list to display.  One or more of the following flags must be specified:</dd>
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>UIX_PLAYERS_DISPLAY_CURRENT_PLAYERS</td>
+<td>Display current players.</td>
+</tr>
+<tr>
+<td>UIX_PLAYERS_DISPLAY_DEPARTED_PLAYERS</td>
+<td>Display departed players.</td>
+</tr>
+</table>
+<p>The following additional flags may optionally be specified:</p>
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>UIX_PLAYERS_DISPLAY_LOBBY_MODE</td>
+<td>Use lobby mode for the players list (automatically selected if <b>UserPort</b> is UIX_INVALID_VALUE).</td>
+</tr>
+</table>
+</p>
+</dl>
+                <h4><a name="remarks"></a>Remarks</h4>
+<p>This structure must be initialized to zero and <b>StructSize</b> set to the size of the structure before calling <b>ILiveEngine::StartFeature</b>.</p>
+				
+            
+                <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Uix.h.</p>
+            
+                <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="ILiveEngine_StartFeature.htm">ILiveEngine::StartFeature</a>,
+<a href="ITitlePlayersListItem_Compare.htm">ITitlePlayersListItem::Compare</a>,
+<a href="ILivePlayersList_SetFilterFlags.htm">ILivePlayersList::SetFilterFlags</a>,
+<a href="xuid.htm">XUID</a>
+</p>
+
+        <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+    </body>
+    </html>

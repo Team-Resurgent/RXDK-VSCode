@@ -1,0 +1,29 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Vertex Buffer Data for Matrix Palette Skinning</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Vertex Buffer Data for Matrix Palette Skinning"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+	<MSHelp:Keyword Index="K" Term="matrix palette skinning, vertex buffer data"/>
+	</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Vertex Buffer Data for Matrix Palette Skinning</h1>
+<p>The first three floats are always the vertex position. This position may be in world space or in object space. If it is in object space, there will be an object-to-world-space matrix that is not an identity matrix defined for the skin mesh itself. You will need this matrix and its inverse when computing the vertex shader constants, if it is not identity. </p><p>The next four floats are the bone weights. Often, only three weights are written out and the fourth is calculated, because the sum of all four weights must equal one. Because this calculation would be done in the vertex shader on a per-vertex basis, we have elected to save those cycles and use an additional float for the weight. It would be trivially easy to re-architect this to do the math in the vertex shader and save a float per vertex.</p><p>The next four shorts are the bone indices. These are vertex shader constant register indices and are used to dereference the vertex shader constants you need for each bone. You'll see how these are used in the shader implementation section below. </p><p>Note that we also assume four weights per vertex <i>always</i>. Often, two bones are more than enough to achieve the desired skinning effect. This would save three floats worth of data space (assuming you do the math to calculate the other weight in the shader) and two shorts worth of indices. As you will see, it also saves a bunch of vertex shader instructions since you won't need to multiply and add four bones per vertex but only two. </p><p>These two fields (the bone weights and bone indices) are the only additional data needed per vertex. All of the rest of the vertex data is the same as it would be given the material type of the vertex. </p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirect3DDevice8::SetVertexShader</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="IDirect3DDevice8::SetVertexShader [C++]">
+<META NAME="MS-HKWD" CONTENT="SetVertexShader (IDirect3DDevice8) [C++]">
+<META NAME="MS-HKWD" CONTENT="SetVertexShader [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="SetVertexShader (IDirect3DDevice8)"/>
+<MSHelp:Keyword Index="K" Term="IDirect3DDevice8::SetVertexShader"/>
+<MSHelp:Keyword Index="F" Term="SetVertexShader"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_idirect3ddevice8_setvertexshader_graphics"></A>IDirect3DDevice8::SetVertexShader</H1>
+
+<P>Sets the current vertex shader to either a previously created vertex shader or to a flexible vertex format (FVF) fixed function shader.</P>
+
+<PRE class=syntax><B>HRESULT SetVertexShader(
+  DWORD</B><I> Handle</I>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>Handle</I></DT>
+
+<DD>[in] Handle to a vertex shader, specifying the vertex shader to set. The value for this parameter can be the handle returned by <A HREF="_dx_idirect3ddevice8_createvertexshader_graphics.htm"><B>IDirect3DDevice8::CreateVertexShader</B></A>, or an FVF code. An FVF code is a combination of <A HREF="_dx_flexible_vertex_format_flags_graphics.htm"><b>flexible vertex format flags</b></A>. 
+
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the method succeeds, the return value is D3D_OK.</P>
+
+<H4>Remarks</H4>
+
+<P>The effect of using an FVF code in place of the handle is to enable a fixed-function vertex shader, with an implicit declaration that matches the FVF code contents read from stream zero. Only stream zero is referenced when an FVF-specified shader is bound to the device.</P>
+
+<p>In general, a subsequent call to <a href="_dx_idirect3ddevice8_setvertexshader_graphics.htm"><b>IDirect3DDevice8::SetVertexShader</b></a> will invalidate any vertex shaders loaded by <a href="xbox_dxg_IDirect3DDevice8_LoadVertexShader.htm"><b>IDirect3DDevice8::LoadVertexShader</b></a>, and require them to be reloaded. However, if <b>SetVertexShader</b> is called using D3DFVF_XYZRHW, only instruction slots 0 through D3DVS_XBOX_RESERVEDXYZRHWSLOTS &#8211; 1 will be destroyed. This means that if a title is using programmable vertex shaders in conjunction with fixed-function vertex shaders, it is recommended that the first programmable vertex shader should be loaded, beginning at address D3DVS_XBOX_RESERVEDXYZRHWSLOTS, and each subsequent programmable shader should be added at its end.</p>
+
+<p>Through careful experimentation, it is possible to discover which instruction slots are invalidated by the fixed function pipeline. With this information, you can then load vertex shaders into addresses that will not be invalidated through the use of the fixed-function pipeline.</p>
+
+<P>A fixed-function vertex shader cannot be specified if the current constant mode is <B>D3DSCM_192CONSTANTS</B> as set by <A HREF="xbox_dxg_IDirect3DDevice8_setshaderconstantmode.htm"><B>IDirect3DDevice8::SetShaderConstantMode</B></A>.</P>
+
+<p>Before a vertex shader that has been set on the device may be deleted and its associated resources freed, either a new vertex shader must be set, or zero must be passed in as the handle to <b>SetVertexShader</b>. The following code demonstrates how an active vertex shader may be deleted. (The code assumes that pDevice is a valid pointer to an <a href="_dx_idirect3ddevice8_graphics.htm"><b>IDirect3DDevice8</b></a> interface and that dwVertexShader is a valid handle to a vertex shader.)</p>
+
+<pre>pDevice->SetVertexShader( dwVertexShader );
+
+// Use the vertex shader to render the scene.
+// ...
+
+// Delete the vertex shader.
+pDevice->SetVertexShader( 0 );
+pDevice->DeleteVertexShader( dwVertexShader ); </pre>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in D3d8.h.<BR>
+<B>&nbsp;&nbsp;Import Library:</B> Use D3d8.lib.</P>
+
+<H4>See Also</H4>
+
+<P><a href="_dx_idirect3ddevice8_setvertexshaderinput_graphics.htm"><b>IDirect3DDevice8::SetVertexShaderInput</b></a>, 
+<A HREF="_dx_idirect3ddevice8_getvertexshader_graphics.htm"><B>IDirect3DDevice8::GetVertexShader</B></A>
+<A HREF="xbox_dxg_IDirect3DDevice8_loadvertexshader.htm">,<B>IDirect3DDevice8::LoadVertexShader</B></A>
+
+</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

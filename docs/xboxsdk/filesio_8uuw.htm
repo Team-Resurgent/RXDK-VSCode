@@ -1,0 +1,118 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>SetFilePointerEx</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="SetFilePointerEx">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="SetFilePointerEx"/>
+<MSHelp:Keyword Index="F" Term="SetFilePointerEx"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_setfilepointerex"></A>SetFilePointerEx</H1>
+
+<P>The <B>SetFilePointerEx</B> function moves the file pointer of an open file.</P>
+
+<PRE class=syntax><B>BOOL SetFilePointerEx(
+</B>  <B>HANDLE</B> <I>hFile</I>,<B>                    </B>// handle to file
+  <B>LARGE_INTEGER</B> <I>liDistanceToMove</I>,<B>  </B>// bytes to move pointer
+  <B>PLARGE_INTEGER</B> <I>lpNewFilePointer</I>, // new file pointer
+  <B>DWORD</B> <I>dwMoveMethod</I>               // starting point
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>hFile</I></DT>
+
+<DD>[in] Handle to the file whose file pointer is to be moved. The file handle must have been created with GENERIC_READ or GENERIC_WRITE access to the file.</DD>
+
+<DT><I>liDistanceToMove</I></DT>
+
+<DD>[in] Specifies the number of bytes to move the file pointer. A positive value moves the pointer forward in the file and a negative value moves the file pointer backward.</DD>
+
+<DT><I>lpNewFilePointer</I></DT>
+
+<DD>[in] Pointer to a variable that receives the new file pointer. If this parameter is NULL, the new file pointer is not returned.</DD>
+
+<DT><I>dwMoveMethod</I></DT>
+
+<DD>[in] Specifies the starting point for the file pointer move. This parameter can be one of the following values.
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=34%>Value</TH>
+<TH align=left width=66%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=34%>FILE_BEGIN</TD>
+<TD width=66%>The starting point is zero or the beginning of the file. If this flag is specified, then the <I>liDistanceToMove</I> parameter is interpreted as an unsigned value.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=34%>FILE_CURRENT</TD>
+<TD width=66%>The start point is the current value of the file pointer.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=34%>FILE_END</TD>
+<TD width=66%>The starting point is the current end-of-file position.</TD>
+</TR>
+</TABLE><BR>
+
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is nonzero.</P>
+
+<P>If the function fails, the return value is zero. To get extended error information, call <A HREF="errors_3uwi.htm">GetLastError</A>. </P>
+
+<H4>Remarks</H4>
+
+<P>Use caution when setting the file pointer in a multithreaded application. You must synchronize access to shared resources. For example, an application whose threads share a file handle, update the file pointer, and read from the file must protect this sequence by using a critical section object or a mutex object. For more information about these objects, see <A HREF="unresolved.htm">Critical Section Objects</A> and <A HREF="unresolved.htm">Mutex Objects</A>. </P>
+
+<P>If the <I>hFile</I> handle was opened with the FILE_FLAG_NO_BUFFERING flag set, an application can move the file pointer only to sector-aligned positions. A <I>sector-aligned position </I>is a position that is a whole number multiple of the volume's sector size. If an application calls <B>SetFilePointerEx</B> with distance-to-move values that result in a position that is not sector-aligned and a handle that was opened with FILE_FLAG_NO_BUFFERING, the function fails, and <A HREF="errors_3uwi.htm">GetLastError</A> returns ERROR_INVALID_PARAMETER.</P>
+
+<P>Note that it is not an error to set the file pointer to a position beyond the end of the file. The size of the file does not increase until you call the <A HREF="filesio_18bp.htm">SetEndOfFile</A> or <A HREF="filesio_3kkl.htm">WriteFile</A> function. A write operation increases the size of the file to the file pointer position plus the size of the buffer written, leaving the intervening bytes uninitialized. </P>
+
+<P>You can use <B>SetFilePointerEx</B> to determine the length of a file. To do this, use FILE_END for <I>dwMoveMethod </I>and seek to location zero. The file offset returned is the length of the file. However, this practice can have unintended side effects, such as failure to save the current file pointer so that the program can return to that location. It is simpler and safer to use the <A HREF="filesio_7260.htm">GetFileSizeEx</A> function instead.</P>
+
+<P>You can also use <B>SetFilePointerEx</B> to query the current file pointer position. To do this, specify a move method of FILE_CURRENT and a distance of zero.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p>
+
+<H4>See Also</H4>
+<P>
+
+<A HREF="xbox_mt_xtl_sll_file_io_functions.htm">File I/O Functions</A> | 
+<A HREF="filesio_8bso.htm">GetDiskFreeSpaceEx</A>,
+<A HREF="filesio_7260.htm">GetFileSizeEx</A>,
+<A HREF="filesio_18bp.htm">SetEndOfFile</A>,
+<A HREF="filesio_3kkl.htm">WriteFile</A>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

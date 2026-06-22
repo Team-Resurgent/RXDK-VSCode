@@ -1,0 +1,3350 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Pixel Shader Performance One Last Time (I Hope!)</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Pixel Shader Performance One Last Time (I Hope!)"/>
+<MSHelp:Keyword Index="F" Term="Pixel Shader Performance One Last Time (I Hope!)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Pixel Shader Performance One Last Time (I Hope!)</H1>
+<!--***********************************************************-->
+
+<!--****Intro paragraph. Should be a three or four sentence summary of the topic.****-->
+
+<p>In the book <i>The Mythical Man-Month</i>, Frederick
+Brooks describes how products evolve through successive versions. For the first
+version, the team knows they are venturing into uncharted waters, so they keep the
+project's scope under control, proceeding carefully and producing a product
+that is modest and flawed, but not disastrously so. For the second version, the
+team, now feeling that they're experts, aim for big things&#8212;and as a
+consequence, <i>do</i> produce a disaster. Only with the third version does a
+combination of experience and humility allow a truly excellent product to be
+produced.</p>
+
+<p>This illustrates a generally useful principle: everything
+interesting involves a learning curve, and sometimes it takes a long time to
+climb that curve.</p>
+
+<p>I tell you this by way of introduction to the topic of
+pixel shader performance. You see, it's been a long learning curve for me, one
+which unfortunately you've seen in action in previous Xbox white papers. I
+think, however, that we've finally reached the end of the trail.</p>
+
+<p>In this paper, I will tell you two things: 1) everything I
+know about pixel shader performance, and 2) the fact that I don't know enough&#8212;pixel
+shader performance is so complex that it's not statically analyzable, but
+fortunately you can run the pixel shader performance analysis program FILLRATE
+and just measure how fast any pixel shader configuration is.</p>
+
+<p>Before we begin, I want to point out that the pixel shader
+consists of two parts, texture stages and register combiners. Register combiner
+performance is simple: if you use 1 or 2 of them, it takes 1 cycle; 3 or 4 is 2
+cycles; 5 or 6 is 3 cycles; and 7 or 8 is 4 cycles. The register combiners and
+texture stages coprocess, so the time the pixel shader takes to run is the
+larger of the texture stage and register combiner times for any particular
+configuration, not their sum.</p>
+
+<p>Beyond that, there's nothing to say about register
+combiner performance; the remainder of this paper will discuss texture-stage
+performance.</p>
+
+<p><b>The basic nature of texture-stage performance</b></p>
+
+<p>The basic nature of texture-stage performance is, in a
+word, complicated. There are a lot of complex internal states, and according to
+NVIDIA engineers, the only way to describe it would be a complete description
+of the texture-stage hardware, which for all practical purposes means that
+there's no way to describe the performance rules for the texture stages. (I
+must admit that, as this paper illustrates, it is possible to come up
+with rules that explain quite a bit about texture-stage performance, but as
+we'll see, there's quite a bit that's still a mystery.)</p>
+
+<p>Fortunately, it's not necessary to describe those rules,
+because you can just run the FILLRATE program with any texture-stage
+configuration you want and measure its performance on the actual hardware.
+However, there are a <i>lot</i> of possible ways to set up the texture stages,
+so in order to help you out a bit with searching that space for
+high-performance configurations, I'll tell you what I do know about texture-stage
+performance. However, this will not be a hard-and-fast, down-to-the-metal
+description, both because that's not practical and because I don't have that
+level of knowledge. I'm just trying to give you an idea of how texture-stage
+performance works in general, and what sorts of factors might cause performance
+to jump or lag, but bear in mind that for the most part I'm going to be
+presenting you with guiding examples rather than definitive rules.</p>
+
+<p><b>Passes</b></p>
+
+<p>The texture stages do one or more passes when processing a
+pixel; the number of passes depends on the configuration. Roughly speaking, the
+first pass consists of all of the texture stages that aren't dependent on any
+other texture stage, the second pass consists of the texture stages that are
+dependent on the first pass, and so on. Thus, all of the following
+configurations are one-pass:</p>
+
+<table>
+ <tr>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border:solid windowtext 1.0pt !msorm;padding:
+  0in 5.4pt 0in 5.4pt !msorm'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 0</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt;border:solid windowtext 1.0pt !msorm;
+  border-left:none !msorm;padding:0in 5.4pt 0in 5.4pt !msorm'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 1</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt;border:solid windowtext 1.0pt !msorm;
+  border-left:none !msorm;padding:0in 5.4pt 0in 5.4pt !msorm'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 2</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt;border:solid windowtext 1.0pt !msorm;
+  border-left:none !msorm;padding:0in 5.4pt 0in 5.4pt !msorm'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 3</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt;border:solid windowtext 1.0pt !msorm;
+  border-top:none !msorm;padding:0in 5.4pt 0in 5.4pt !msorm'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt;border:solid windowtext 1.0pt !msorm;
+  border-top:none !msorm;padding:0in 5.4pt 0in 5.4pt !msorm'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt;border:solid windowtext 1.0pt !msorm;
+  border-top:none !msorm;padding:0in 5.4pt 0in 5.4pt !msorm'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt;border:solid windowtext 1.0pt !msorm;
+  border-top:none !msorm;padding:0in 5.4pt 0in 5.4pt !msorm'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt;border:solid windowtext 1.0pt !msorm;
+  border-top:none !msorm;padding:0in 5.4pt 0in 5.4pt !msorm'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>(Empty cells denote texture stages that are set to NONE.)</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>One-pass isn't the same as one-cycle, because of the
+following rule: <i>a maximum of two texture fetches may be performed in a
+single cycle</i>. Therefore, any configuration of three or four PROJECT2D
+textures will take 2 cycles. (Actually, it will take a <i>minimum</i> of 2
+cycles; texture fetch time may cause it to take longer. Basically, if the
+required texels are in the texture cache, fetch time is zero, but if they're
+not in the texture cache, the time to fetch them from memory is variable and
+can be many cycles. For the purposes of this paper, however, I'll just talk
+about texture-stage cycles, disregarding fetch time, with the understanding
+that these are minimum times.)</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>As it turns out, however, some configurations of two
+PROJECT2D textures (or CUBEMAP textures, to which all of this applies as well)
+will also take 2 cycles, due to a refinement of the first rule: a maximum of
+one even and one odd texture fetch may be performed in a single cycle, where
+even and odd refer to texture-stage numbers. Thus, the following
+configurations run in 2 cycles:</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0
+ style='border-collapse:collapse;border:none'>
+ <tr>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 0</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 1</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 2</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 3</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<span style='font-size:10.0pt;font-family:Verdana'><br clear=all
+style='page-break-before:always'>
+</span>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>Here is the complete performance table for PROJECT2D and
+CUBEMAP textures:</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0 width=631
+ style='width:473.4pt;border-collapse:collapse;border:none'>
+ <tr>
+  <td width=58 valign=top style='width:43.55pt;border:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Cycles</span></p>
+  </td>
+  <td width=93 valign=top style='width:69.85pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 0</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 1</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 2</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 3</span></p>
+  </td>
+  <td width=192 valign=top style='width:2.0in;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Notes</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.55pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>1</span></p>
+  </td>
+  <td width=93 valign=top style='width:69.85pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=192 valign=top style='width:2.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>&nbsp;</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.55pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>1</span></p>
+  </td>
+  <td width=93 valign=top style='width:69.85pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=192 valign=top style='width:2.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>&nbsp;</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.55pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>1</span></p>
+  </td>
+  <td width=93 valign=top style='width:69.85pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=192 valign=top style='width:2.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>&nbsp;</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.55pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>1</span></p>
+  </td>
+  <td width=93 valign=top style='width:69.85pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=192 valign=top style='width:2.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>&nbsp;</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.55pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>2</span></p>
+  </td>
+  <td width=93 valign=top style='width:69.85pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=192 valign=top style='width:2.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Max 1 odd+1 even/cycle</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.55pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>1</span></p>
+  </td>
+  <td width=93 valign=top style='width:69.85pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=192 valign=top style='width:2.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>&nbsp;</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.55pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>2</span></p>
+  </td>
+  <td width=93 valign=top style='width:69.85pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=192 valign=top style='width:2.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Max 1 odd+1 even/cycle</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.55pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>1</span></p>
+  </td>
+  <td width=93 valign=top style='width:69.85pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=192 valign=top style='width:2.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>&nbsp;</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.55pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>1</span></p>
+  </td>
+  <td width=93 valign=top style='width:69.85pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=192 valign=top style='width:2.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>&nbsp;</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.55pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>2</span></p>
+  </td>
+  <td width=93 valign=top style='width:69.85pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=192 valign=top style='width:2.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Max 1 odd+1 even/cycle</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.55pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>2</span></p>
+  </td>
+  <td width=93 valign=top style='width:69.85pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=192 valign=top style='width:2.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Max 1 odd+1 even/cycle</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.55pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>1</span></p>
+  </td>
+  <td width=93 valign=top style='width:69.85pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=192 valign=top style='width:2.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>&nbsp;</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.55pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>2</span></p>
+  </td>
+  <td width=93 valign=top style='width:69.85pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=192 valign=top style='width:2.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Max 1 odd+1 even/cycle</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.55pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>2</span></p>
+  </td>
+  <td width=93 valign=top style='width:69.85pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=192 valign=top style='width:2.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Max 1 odd+1 even/cycle</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=58 valign=top style='width:43.55pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>2</span></p>
+  </td>
+  <td width=93 valign=top style='width:69.85pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=192 valign=top style='width:2.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Max 1 odd+1 even/cycle</span></p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><b><span style='font-size:10.0pt;
+font-family:Verdana'>Multiple passes</span></b></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>If one or more texture stages are dependent on the output
+of other texture stages, then they obviously cannot run at the same time. The
+pixel shader handles this by putting dependent operations in separate passes
+that run after the passes theyre dependent on. So, for example, the following
+configuration runs in two passes:</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0
+ style='border-collapse:collapse;border:none'>
+ <tr>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 0</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 1</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 2</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 3</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>BUMPENVMAP</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='text-autospace:none'><b><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></b></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>The PROJECT2D texture runs on the first pass, and then the
+BUMPENVMAP texture runs on the second pass, using the output of the first pass
+as input. Each pass takes a minimum of 1 cycle, so this configuration runs in 2
+cycles.</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>This is a convenient time to point out that grouping into
+passes doesnt depend on the ordering of the texture stages. Consider the
+following configuration:</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0
+ style='border-collapse:collapse;border:none'>
+ <tr>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 0</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 1</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 2</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 3</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>BUMPENVMAP</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='text-autospace:none'><b><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></b></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>The first pass includes <i>all</i> non-dependent textures,
+in this case meaning the two PROJECT2D textures, which run together in 1 cycle
+as usual. The second pass is the BUMPENVMAP texture, which runs in 1 cycle.
+Thus, the total time for this configuration is just 2 cycles, rather than the 3
+cycles you would expect if textures had to run in order of texture-stage
+number.</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>This is also a good time to mention that the above cases
+don't run in exactly 2 cycles; it's actually more like 2.2 cycles. The reason
+for this is that some internal circuitry does double duty to convey texcoords
+to dependent textures, resulting in a slowdown of roughly 10% whenever
+dependent textures are used. Thus, you won't see integral cycle times when
+dependent textures are in use.</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>It's possible to have more than two passes. For example,
+the following configuration has four passes:</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0
+ style='border-collapse:collapse;border:none'>
+ <tr>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 0</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 1</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 2</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 3</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>BUMPENVMAP</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>BUMPENVMAP(1)</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>BUMPENVMAP(2)</span></p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>Here, the subscripts on the last two BUMPENVMAPs indicate
+the stages that provide the input to the corresponding BUMPENVMAPs, so this
+configuration has three levels of dependency, hence four passes. However, the
+following configuration has only two passes:</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0
+ style='border-collapse:collapse;border:none'>
+ <tr>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 0</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 1</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 2</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 3</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>BUMPENVMAP</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>BUMPENVMAP(0)</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>BUMPENVMAP(0)</span></p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>Ill return to the performance of these cases later.</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>Once we're talking about more than two passes, things
+become a bit fuzzy, because a single texture op can have multiple passes. For
+example, BUMPENVMAP_LUM really has two parts, one equivalent to BUMPENVMAP and
+one for luminance, and each one takes a separate pass.</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>Why do passes matter to us? Partly because each pass runs
+separately, and therefore takes at least 1 cycle. Just as important, however,
+is that every pass in any given shader must run at the same speed. In other
+words, if one pass runs at 2 cycles, all passes for that shader must run at 2
+cycles. So, for example, although this configuration runs in 2 cycles:</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0
+ style='border-collapse:collapse;border:none'>
+ <tr>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 0</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 1</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 2</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 3</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>BUMPENVMAP</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>---</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>---</span></p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>this one runs in 4 cycles:</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0
+ style='border-collapse:collapse;border:none'>
+ <tr>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 0</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 1</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 2</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 3</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>BUMPENVMAP</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>---</span></p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='text-autospace:none'><b><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></b></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>The reason is that the two PROJECT2D textures, which run
+together in the first pass, can't run during the same cycle, because they're
+both even. Consequently, the first pass takes 2 cycles. Therefore, the second
+pass also has to take 2 cycles, even though BUMPENVMAP is capable of running in
+1 cycle. We can depict this as follows:</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0 width=689
+ style='width:516.95pt;border-collapse:collapse;border:none'>
+ <tr>
+  <td width=43 valign=top style='width:32.35pt;border:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Pass</span></p>
+  </td>
+  <td width=48 valign=top style='width:.5in;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Cycle</span></p>
+  </td>
+  <td width=108 valign=top style='width:80.85pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 0</span></p>
+  </td>
+  <td width=109 valign=top style='width:81.4pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 1</span></p>
+  </td>
+  <td width=110 valign=top style='width:82.25pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 2</span></p>
+  </td>
+  <td width=107 valign=top style='width:80.55pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 3</span></p>
+  </td>
+  <td width=165 valign=top style='width:123.55pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Notes</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=43 valign=top style='width:32.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>0</span></p>
+  </td>
+  <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>0</span></p>
+  </td>
+  <td width=108 valign=top style='width:80.85pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=109 valign=top style='width:81.4pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=110 valign=top style='width:82.25pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=107 valign=top style='width:80.55pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=165 rowspan=2 valign=top style='width:123.55pt;border-top:none;
+  border-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Pass takes 2 cycles because both stages are even.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=43 valign=top style='width:32.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>0</span></p>
+  </td>
+  <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>1</span></p>
+  </td>
+  <td width=108 valign=top style='width:80.85pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=109 valign=top style='width:81.4pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=110 valign=top style='width:82.25pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=107 valign=top style='width:80.55pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=43 valign=top style='width:32.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>1</span></p>
+  </td>
+  <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>0</span></p>
+  </td>
+  <td width=108 valign=top style='width:80.85pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=109 valign=top style='width:81.4pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>BUMPENVMAP</span></p>
+  </td>
+  <td width=110 valign=top style='width:82.25pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=107 valign=top style='width:80.55pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=165 rowspan=2 valign=top style='width:123.55pt;border-top:none;
+  border-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Pass takes 2 cycles because pass 0 takes 2 cycles.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=43 valign=top style='width:32.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>1</span></p>
+  </td>
+  <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>1</span></p>
+  </td>
+  <td width=108 valign=top style='width:80.85pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=109 valign=top style='width:81.4pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=110 valign=top style='width:82.25pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=107 valign=top style='width:80.55pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<span style='font-size:10.0pt;font-family:Verdana'><br clear=all
+style='page-break-before:always'>
+</span>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>Similarly, the following configuration:</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0
+ style='border-collapse:collapse;border:none'>
+ <tr>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 0</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 1</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 2</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 3</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>BUMPENVMAP_LUM</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>---</span></p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='text-autospace:none'><b><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></b></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>runs in 6 cycles, as follows:</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0 width=689
+ style='width:516.95pt;border-collapse:collapse;border:none'>
+ <tr>
+  <td width=43 valign=top style='width:32.35pt;border:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Pass</span></p>
+  </td>
+  <td width=48 valign=top style='width:.5in;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Cycle</span></p>
+  </td>
+  <td width=108 valign=top style='width:80.85pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 0</span></p>
+  </td>
+  <td width=109 valign=top style='width:81.4pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 1</span></p>
+  </td>
+  <td width=110 valign=top style='width:82.25pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 2</span></p>
+  </td>
+  <td width=107 valign=top style='width:80.55pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 3</span></p>
+  </td>
+  <td width=165 valign=top style='width:123.55pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Notes</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=43 valign=top style='width:32.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>0</span></p>
+  </td>
+  <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>0</span></p>
+  </td>
+  <td width=108 valign=top style='width:80.85pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=109 valign=top style='width:81.4pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=110 valign=top style='width:82.25pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=107 valign=top style='width:80.55pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=165 rowspan=2 valign=top style='width:123.55pt;border-top:none;
+  border-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Pass takes 2 cycles because both stages are even.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=43 valign=top style='width:32.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>0</span></p>
+  </td>
+  <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>1</span></p>
+  </td>
+  <td width=108 valign=top style='width:80.85pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=109 valign=top style='width:81.4pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=110 valign=top style='width:82.25pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=107 valign=top style='width:80.55pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=43 valign=top style='width:32.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>1</span></p>
+  </td>
+  <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>0</span></p>
+  </td>
+  <td width=108 valign=top style='width:80.85pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=109 valign=top style='width:81.4pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>BUMPENVMAP_LUM</span></p>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>(bumpenv part)</span></p>
+  </td>
+  <td width=110 valign=top style='width:82.25pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=107 valign=top style='width:80.55pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=165 rowspan=2 valign=top style='width:123.55pt;border-top:none;
+  border-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Pass takes 2 cycles because pass 0 takes 2 cycles.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=43 valign=top style='width:32.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>1</span></p>
+  </td>
+  <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>1</span></p>
+  </td>
+  <td width=108 valign=top style='width:80.85pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=109 valign=top style='width:81.4pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=110 valign=top style='width:82.25pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=107 valign=top style='width:80.55pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=43 valign=top style='width:32.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>2</span></p>
+  </td>
+  <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>0</span></p>
+  </td>
+  <td width=108 valign=top style='width:80.85pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=109 valign=top style='width:81.4pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>BUMPENVMAP_LUM</span></p>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>(lum part)</span></p>
+  </td>
+  <td width=110 valign=top style='width:82.25pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=107 valign=top style='width:80.55pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=165 rowspan=2 valign=top style='width:123.55pt;border-top:none;
+  border-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Pass takes 2 cycles because pass 0 takes 2 cycles.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=43 valign=top style='width:32.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>2</span></p>
+  </td>
+  <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>1</span></p>
+  </td>
+  <td width=108 valign=top style='width:80.85pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=109 valign=top style='width:81.4pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=110 valign=top style='width:82.25pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=107 valign=top style='width:80.55pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>This is a good place to note that while two PROJECT2Ds and/or
+CUBEMAPs can pair in a single cycle, many combinations of two texture ops that
+run during the same pass can't pair on the same cycle, even in the case where
+one texture is odd and one is even. Thus, this configuration:</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0
+ style='border-collapse:collapse;border:none'>
+ <tr>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 0</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 1</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 2</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 3</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>BUMPENVMAP</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>BUMPENVMAP(0)</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>---</span></p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>takes 4 cycles, because two BUMPENVMAPs can't run on the
+same cycle, forcing pass two to take 2 cycles, as follows:</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0 width=689
+ style='width:516.95pt;border-collapse:collapse;border:none'>
+ <tr>
+  <td width=43 valign=top style='width:32.35pt;border:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Pass</span></p>
+  </td>
+  <td width=48 valign=top style='width:.5in;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Cycle</span></p>
+  </td>
+  <td width=108 valign=top style='width:80.85pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 0</span></p>
+  </td>
+  <td width=109 valign=top style='width:81.4pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 1</span></p>
+  </td>
+  <td width=110 valign=top style='width:82.25pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 2</span></p>
+  </td>
+  <td width=107 valign=top style='width:80.55pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 3</span></p>
+  </td>
+  <td width=165 valign=top style='width:123.55pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Notes</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=43 valign=top style='width:32.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>0</span></p>
+  </td>
+  <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>0</span></p>
+  </td>
+  <td width=108 valign=top style='width:80.85pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=109 valign=top style='width:81.4pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=110 valign=top style='width:82.25pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=107 valign=top style='width:80.55pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=165 rowspan=2 valign=top style='width:123.55pt;border-top:none;
+  border-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Pass takes 2 cycles because pass 1 takes 2 cycles.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=43 valign=top style='width:32.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>0</span></p>
+  </td>
+  <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>1</span></p>
+  </td>
+  <td width=108 valign=top style='width:80.85pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=109 valign=top style='width:81.4pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=110 valign=top style='width:82.25pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=107 valign=top style='width:80.55pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=43 valign=top style='width:32.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>1</span></p>
+  </td>
+  <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>0</span></p>
+  </td>
+  <td width=108 valign=top style='width:80.85pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=109 valign=top style='width:81.4pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>BUMPENVMAP</span></p>
+  </td>
+  <td width=110 valign=top style='width:82.25pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=107 valign=top style='width:80.55pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=165 rowspan=2 valign=top style='width:123.55pt;border-top:none;
+  border-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Pass takes 2 cycles because only one BUMPENVMAP can run
+  per cycle.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=43 valign=top style='width:32.35pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>1</span></p>
+  </td>
+  <td width=48 valign=top style='width:.5in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>1</span></p>
+  </td>
+  <td width=108 valign=top style='width:80.85pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=109 valign=top style='width:81.4pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+  <td width=110 valign=top style='width:82.25pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>BUMPENVMAP</span></p>
+  </td>
+  <td width=107 valign=top style='width:80.55pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'> ---</span></p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<span style='font-size:10.0pt;font-family:Verdana'><br clear=all
+style='page-break-before:always'>
+</span>
+
+<p class=MsoNormal style='text-autospace:none'><b><span style='font-size:10.0pt;
+font-family:Verdana'>Stepping back</span></b></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>So is it just that simple? Figure out the number of passes
+and the pairing and you're all set? Heck no! What I've described is a generally
+useful way of thinking about texture stage performance, but it's just an
+approximation, and doesn't adequately describe a number of cases. For example,
+consider this earlier case:</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0
+ style='border-collapse:collapse;border:none'>
+ <tr>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 0</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 1</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 2</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 3</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>BUMPENVMAP</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>BUMPENVMAP(1)</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>BUMPENVMAP(2)</span></p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>This takes 8 cycles, which would imply that the 4 passes
+(because of serial dependence) each take 2 cycles. But why would they take 2
+cycles, when we know from the simple case of PROJECT2D followed by BUMPENVMAP
+that each texture can run in 1 cycle?</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>The answer is that at a certain level of overall texture-stage
+complexity, the internal pipeline can't store and forward all the data for each
+pass in a single cycle, and requires 2 cycles per pass. This is what's
+happening in the above configuration, so each of the 4 passes takes 2 cycles,
+for a total of 8. The problem is, I don't have a crisp definition of what a
+certain level of overall texture-stage complexity means. All I can tell you is
+that you should be aware that if you use enough texture stages with sufficiently
+complex texture ops, you're likely to see your passes take at least 2 cycles.</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>As a 3-cycle-per-pass example, consider the following
+configuration:</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0
+ style='border-collapse:collapse;border:none'>
+ <tr>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 0</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 1</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 2</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 3</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=148 valign=top style='width:110.7pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>BUMPENVMAP</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>BUMPENVMAP(0)</span></p>
+  </td>
+  <td width=148 valign=top style='width:110.7pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>BUMPENVMAP(0)</span></p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='text-autospace:none'><b><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></b></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>This has two passes, but takes 6 cycles; the three BUMPENVMAPs
+run together in one pass, taking 3 cycles, so the PROJECT2D takes 3 cycles, too
+(since all passes have to take the same amount of time).</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>As another example, consider this configuration:</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0 width=607
+ style='width:455.4pt;border-collapse:collapse;border:none'>
+ <tr>
+  <td width=124 valign=top style='width:93.3pt;border:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 0</span></p>
+  </td>
+  <td width=171 valign=top style='width:128.2pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 1</span></p>
+  </td>
+  <td width=190 valign=top style='width:142.15pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 2</span></p>
+  </td>
+  <td width=122 valign=top style='width:91.75pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 3</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=124 valign=top style='width:93.3pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=171 valign=top style='width:128.2pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>BUMPENVMAP_LUM</span></p>
+  </td>
+  <td width=190 valign=top style='width:142.15pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>BUMPENVMAP_LUM(1)</span></p>
+  </td>
+  <td width=122 valign=top style='width:91.75pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:10.0pt;font-family:Verdana'>---</span></p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='text-autospace:none'><b><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></b></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>This runs in 8 cycles. It seems as if this configuration would
+take five passes (one for PROJECT2D, two for the first BUMPENVMAP_LUM, two for
+the second BUMPENVMAP_LUM, because its dependent on the first). However,
+there's no way that five equal-length passes can take 8 cycles.</span></p>
+
+<span style='font-size:10.0pt;font-family:Verdana'><br clear=all
+style='page-break-before:always'>
+</span>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>As it turns out, however, the way the hardware works is
+that only the BUMPENVMAP result from stage 1 is passed on to stage 2.
+Therefore, there are actually only three dependencies, resulting in only four
+passes, not five, and four passes neatly produces 8 cycles with 2 cycles per
+pass; probably the two luminance calculations are performed together on the
+last pass, or perhaps one luminance is performed during the third pass, along
+with the second BUMPENVMAP. So this case is readily explainable. But now
+consider this:</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0 width=588
+ style='width:441.0pt;margin-left:-.05in;border-collapse:collapse;border:none;
+ border-collapse:collapse !msorm;border:none !msorm'>
+ <tr>
+  <td width=106 valign=top style='width:79.75pt;border:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border:solid windowtext 1.0pt !msorm;padding:
+  0in 5.4pt 0in 5.4pt !msorm'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 0</span></p>
+  </td>
+  <td width=146 valign=top style='width:109.25pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt;border:solid windowtext 1.0pt !msorm;
+  border-left:none !msorm;padding:0in 5.4pt 0in 5.4pt !msorm'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 1</span></p>
+  </td>
+  <td width=168 valign=top style='width:1.75in;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt;border:solid windowtext 1.0pt !msorm;
+  border-left:none !msorm;padding:0in 5.4pt 0in 5.4pt !msorm'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 2</span></p>
+  </td>
+  <td width=168 valign=top style='width:1.75in;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt;border:solid windowtext 1.0pt !msorm;
+  border-left:none !msorm;padding:0in 5.4pt 0in 5.4pt !msorm'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>Texture stage 3</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=106 valign=top style='width:79.75pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt;border:solid windowtext 1.0pt !msorm;
+  border-top:none !msorm;padding:0in 5.4pt 0in 5.4pt !msorm'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=146 valign=top style='width:109.25pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>BUMPENVMAP_LUM</span></p>
+  </td>
+  <td width=168 valign=top style='width:1.75in;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>BUMPENVMAP_LUM(1)</span></p>
+  </td>
+  <td width=168 valign=top style='width:1.75in;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+  font-family:Verdana'>BUMPENVMAP_LUM(2)</span></p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='text-autospace:none'><b><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></b></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>which runs in 12 cycles. Here there would seem to be five
+passes: the initial PROJECT2D, the chain of three dependent BUMPENVMAPs, and finally
+either the three luminance calculations in a single pass together, or two of
+them in the same pass with two of the BUMPENVMAPs, and the third in a separate
+pass of its own. However, in order to produce 12 cycles, there would have to be
+either four 3-cycle passes or six 2-cycle passes. It looks like two of the
+luminance calculations are done in one pass, and the other one in a separate
+pass, but that's just a guess. The important thing is that this nicely
+illustrates the point that the internal pipeline is often inscrutable, and that
+FILLRATE is the only sure way to evaluate the performance of any complicated texture-stage
+configuration.</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><b><span style='font-size:10.0pt;
+font-family:Verdana'>A couple of notes</span></b></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>According to NVIDIA, many texture-stage configurations
+have special-case performance optimizations. These depend not only on texture
+ops (which ones, in which stages, and in what combinations), but also in some
+cases on renderstates. I don't have a list of such renderstates to give you,
+but as an example, NVIDIA engineers have mentioned that both fog and projective
+texturing can affect texture-stage performance. </span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>Be aware that although PASSTHRU or CLIPPLANE by itself
+runs in 1 cycle, each additional PASSTHRU or CLIPPLANE takes 1 additional
+cycle, so a four-PASSTHRU configuration (or any combination of four PASSTHRUs
+and CLIPPLANEs) takes 4 cycles to run.</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>There's an additional note of interest concerning
+CLIPPLANE. When CLIPPLANE succeeds in clipping a pixel, the later stages of the
+pixel shader still run at their normal speed; that is, if you have CLIPPLANE
+followed by 8 register combiner stages, the pixel shader still takes 4 cycles
+even when the pixel is clipped. However, when CLIPPLANE clips a pixel, it does
+suppress texel fetches by later texture stages, which can result in improved
+performance due to more efficient use of the texture cache and less fetching of
+texels from memory.</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>When you run FILLRATE, make sure your FVF specifies
+texcoords for each stage that's set to a texture op that requires texels.
+Otherwise, your timings will be slower than they should be. Also, any texture
+stage set to DOT_ZW should have texcoords as input, although I don't know why
+it's needed. The simplest way to do this is to always set up texcoords for all
+four stages. This avoids all possible problems and has no performance cost. (This
+is the default setting; so you shouldn't have to do anything unless you change
+that part of the .ini file.) </span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><b><span style='font-size:10.0pt;
+font-family:Verdana'>Standalone texture op performance</span></b></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>The final part of this paper is a table that shows the
+performance of each texture op running by itself (or with the minimum possible
+number of preceding stages required to provide sufficient input). This will
+give you a ballpark idea of how expensive each texture op is, but as the
+preceding part of the paper makes clear, interactions between texture ops can
+affect this quite a bit, as can texture fetch time (especially in the case of
+dependent textures, which are often accessed in patterns that are not
+particularly cache-friendly).</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>Heres the table:</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0 width=590
+ style='width:6.15in;border-collapse:collapse;border:none;border-collapse:collapse !msorm;
+ border:none !msorm'>
+ <tr style='height:24.7pt' style='height:24.7pt !msorm'>
+  <td width=55 valign=top style='width:41.4pt;border:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border:solid windowtext 1.0pt !msorm;padding:
+  0in 5.4pt 0in 5.4pt !msorm;height:24.7pt'>
+  <p class=MsoNormal style='text-autospace:none'><span style='font-size:9.0pt;
+  font-family:Verdana'>Cycles</span></p>
+  </td>
+  <td width=88 valign=top style='width:66.0pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt;border:solid windowtext 1.0pt !msorm;
+  border-left:none !msorm;padding:0in 5.4pt 0in 5.4pt !msorm;height:24.7pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>Texture stage 0</span></p>
+  </td>
+  <td width=138 valign=top style='width:103.45pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt;border:solid windowtext 1.0pt !msorm;
+  border-left:none !msorm;padding:0in 5.4pt 0in 5.4pt !msorm;height:24.7pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>Texture <br>
+  stage 1</span></p>
+  </td>
+  <td width=127 valign=top style='width:95.0pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt;border:solid windowtext 1.0pt !msorm;
+  border-left:none !msorm;padding:0in 5.4pt 0in 5.4pt !msorm;height:24.7pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>Texture <br>
+  stage 2</span></p>
+  </td>
+  <td width=183 valign=top style='width:136.95pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt;border:solid windowtext 1.0pt !msorm;
+  border-left:none !msorm;padding:0in 5.4pt 0in 5.4pt !msorm;height:24.7pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>Texture <br>
+  stage 3</span></p>
+  </td>
+ </tr>
+ <tr style='height:11.95pt' style='height:11.95pt !msorm'>
+  <td width=55 valign=top style='width:41.4pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt;border:solid windowtext 1.0pt !msorm;
+  border-top:none !msorm;padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>1</span></p>
+  </td>
+  <td width=88 valign=top style='width:66.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=138 valign=top style='width:103.45pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>---</span></p>
+  </td>
+  <td width=127 valign=top style='width:95.0pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>---</span></p>
+  </td>
+  <td width=183 valign=top style='width:136.95pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>---</span></p>
+  </td>
+ </tr>
+ <tr style='height:11.95pt' style='height:11.95pt !msorm'>
+  <td width=55 valign=top style='width:41.4pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt;border:solid windowtext 1.0pt !msorm;
+  border-top:none !msorm;padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>1</span></p>
+  </td>
+  <td width=88 valign=top style='width:66.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>CUBEMAP</span></p>
+  </td>
+  <td width=138 valign=top style='width:103.45pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>---</span></p>
+  </td>
+  <td width=127 valign=top style='width:95.0pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>---</span></p>
+  </td>
+  <td width=183 valign=top style='width:136.95pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>---</span></p>
+  </td>
+ </tr>
+ <tr style='height:11.15pt' style='height:11.15pt !msorm'>
+  <td width=55 valign=top style='width:41.4pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt;border:solid windowtext 1.0pt !msorm;
+  border-top:none !msorm;padding:0in 5.4pt 0in 5.4pt !msorm;height:11.15pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>1</span></p>
+  </td>
+  <td width=88 valign=top style='width:66.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.15pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>CLIPPLANE</span></p>
+  </td>
+  <td width=138 valign=top style='width:103.45pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.15pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>---</span></p>
+  </td>
+  <td width=127 valign=top style='width:95.0pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.15pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>---</span></p>
+  </td>
+  <td width=183 valign=top style='width:136.95pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.15pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>---</span></p>
+  </td>
+ </tr>
+ <tr style='height:12.75pt' style='height:12.75pt !msorm'>
+  <td width=55 valign=top style='width:41.4pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt;border:solid windowtext 1.0pt !msorm;
+  border-top:none !msorm;padding:0in 5.4pt 0in 5.4pt !msorm;height:12.75pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>2</span></p>
+  </td>
+  <td width=88 valign=top style='width:66.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:12.75pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>PROJECT3D</span></p>
+  </td>
+  <td width=138 valign=top style='width:103.45pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:12.75pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>---</span></p>
+  </td>
+  <td width=127 valign=top style='width:95.0pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:12.75pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>---</span></p>
+  </td>
+  <td width=183 valign=top style='width:136.95pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:12.75pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>---</span></p>
+  </td>
+ </tr>
+ <tr style='height:11.95pt' style='height:11.95pt !msorm'>
+  <td width=55 valign=top style='width:41.4pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt;border:solid windowtext 1.0pt !msorm;
+  border-top:none !msorm;padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>2.2</span></p>
+  </td>
+  <td width=88 valign=top style='width:66.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=138 valign=top style='width:103.45pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>DPNDNT_AR</span></p>
+  </td>
+  <td width=127 valign=top style='width:95.0pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>---</span></p>
+  </td>
+  <td width=183 valign=top style='width:136.95pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>---</span></p>
+  </td>
+ </tr>
+ <tr style='height:11.95pt' style='height:11.95pt !msorm'>
+  <td width=55 valign=top style='width:41.4pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt;border:solid windowtext 1.0pt !msorm;
+  border-top:none !msorm;padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>2.2</span></p>
+  </td>
+  <td width=88 valign=top style='width:66.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=138 valign=top style='width:103.45pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>DPNDNT_GB</span></p>
+  </td>
+  <td width=127 valign=top style='width:95.0pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>---</span></p>
+  </td>
+  <td width=183 valign=top style='width:136.95pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>---</span></p>
+  </td>
+ </tr>
+ <tr style='height:11.95pt' style='height:11.95pt !msorm'>
+  <td width=55 valign=top style='width:41.4pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt;border:solid windowtext 1.0pt !msorm;
+  border-top:none !msorm;padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>2.2</span></p>
+  </td>
+  <td width=88 valign=top style='width:66.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=138 valign=top style='width:103.45pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>BUMPENVMAP</span></p>
+  </td>
+  <td width=127 valign=top style='width:95.0pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>---</span></p>
+  </td>
+  <td width=183 valign=top style='width:136.95pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>---</span></p>
+  </td>
+ </tr>
+ <tr style='height:11.95pt' style='height:11.95pt !msorm'>
+  <td width=55 valign=top style='width:41.4pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt;border:solid windowtext 1.0pt !msorm;
+  border-top:none !msorm;padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>3.1</span></p>
+  </td>
+  <td width=88 valign=top style='width:66.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=138 valign=top style='width:103.45pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=127 valign=top style='width:95.0pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>BRDF</span></p>
+  </td>
+  <td width=183 valign=top style='width:136.95pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>---</span></p>
+  </td>
+ </tr>
+ <tr style='height:11.95pt' style='height:11.95pt !msorm'>
+  <td width=55 valign=top style='width:41.4pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt;border:solid windowtext 1.0pt !msorm;
+  border-top:none !msorm;padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>3.3</span></p>
+  </td>
+  <td width=88 valign=top style='width:66.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=138 valign=top style='width:103.45pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>BUMPENVMAP_LUM</span></p>
+  </td>
+  <td width=127 valign=top style='width:95.0pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>---</span></p>
+  </td>
+  <td width=183 valign=top style='width:136.95pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>---</span></p>
+  </td>
+ </tr>
+ <tr style='height:11.95pt' style='height:11.95pt !msorm'>
+  <td width=55 valign=top style='width:41.4pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt;border:solid windowtext 1.0pt !msorm;
+  border-top:none !msorm;padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>3.3</span></p>
+  </td>
+  <td width=88 valign=top style='width:66.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=138 valign=top style='width:103.45pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>DOTPRODUCT</span></p>
+  </td>
+  <td width=127 valign=top style='width:95.0pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>DOT_ST</span></p>
+  </td>
+  <td width=183 valign=top style='width:136.95pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>---</span></p>
+  </td>
+ </tr>
+ <tr style='height:11.95pt' style='height:11.95pt !msorm'>
+  <td width=55 valign=top style='width:41.4pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt;border:solid windowtext 1.0pt !msorm;
+  border-top:none !msorm;padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>3.3</span></p>
+  </td>
+  <td width=88 valign=top style='width:66.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=138 valign=top style='width:103.45pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>DOT_PRODUCT</span></p>
+  </td>
+  <td width=127 valign=top style='width:95.0pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>DOT_ZW</span></p>
+  </td>
+  <td width=183 valign=top style='width:136.95pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>---</span></p>
+  </td>
+ </tr>
+ <tr style='height:11.95pt' style='height:11.95pt !msorm'>
+  <td width=55 valign=top style='width:41.4pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt;border:solid windowtext 1.0pt !msorm;
+  border-top:none !msorm;padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>6.2</span></p>
+  </td>
+  <td width=88 valign=top style='width:66.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=138 valign=top style='width:103.45pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>DOTPRODUCT</span></p>
+  </td>
+  <td width=127 valign=top style='width:95.0pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>DOTPRODUCT</span></p>
+  </td>
+  <td width=183 valign=top style='width:136.95pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>DOT_STR_CUBE</span></p>
+  </td>
+ </tr>
+ <tr style='height:11.95pt' style='height:11.95pt !msorm'>
+  <td width=55 valign=top style='width:41.4pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt;border:solid windowtext 1.0pt !msorm;
+  border-top:none !msorm;padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>7.3</span></p>
+  </td>
+  <td width=88 valign=top style='width:66.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=138 valign=top style='width:103.45pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>DOTPRODUCT</span></p>
+  </td>
+  <td width=127 valign=top style='width:95.0pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>DOTPRODUCT</span></p>
+  </td>
+  <td width=183 valign=top style='width:136.95pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>DOT_STR_3D</span></p>
+  </td>
+ </tr>
+ <tr style='height:11.95pt' style='height:11.95pt !msorm'>
+  <td width=55 valign=top style='width:41.4pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt;border:solid windowtext 1.0pt !msorm;
+  border-top:none !msorm;padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>10.5</span></p>
+  </td>
+  <td width=88 valign=top style='width:66.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=138 valign=top style='width:103.45pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>DOTPRODUCT</span></p>
+  </td>
+  <td width=127 valign=top style='width:95.0pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>DOTPRODUCT /</span></p>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>DOT_RFLCT_DIFF</span></p>
+  </td>
+  <td width=183 valign=top style='width:136.95pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>DOT_RFLCT_SPEC</span></p>
+  </td>
+ </tr>
+ <tr style='height:11.95pt' style='height:11.95pt !msorm'>
+  <td width=55 valign=top style='width:41.4pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt;border:solid windowtext 1.0pt !msorm;
+  border-top:none !msorm;padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>10.5</span></p>
+  </td>
+  <td width=88 valign=top style='width:66.0pt;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>PROJECT2D</span></p>
+  </td>
+  <td width=138 valign=top style='width:103.45pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>DOTPRODUCT</span></p>
+  </td>
+  <td width=127 valign=top style='width:95.0pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>DOTPRODUCT /</span></p>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>DOT_RFLCT_DIFF</span></p>
+  </td>
+  <td width=183 valign=top style='width:136.95pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;border-top:none !msorm;border-left:none !msorm;
+  border-bottom:solid windowtext 1.0pt !msorm;border-right:solid windowtext 1.0pt !msorm;
+  padding:0in 5.4pt 0in 5.4pt !msorm;height:11.95pt'>
+  <p class=MsoNormal align=center style='text-align:center;text-autospace:none'><span
+  style='font-size:9.0pt;font-family:Verdana'>DOT_RFLCT_SPEC_CONST</span></p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span style='font-size:10.0pt;
+font-family:Verdana'>&nbsp;</span></p>
+
+<!--*******************************************************************************-->
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>
+

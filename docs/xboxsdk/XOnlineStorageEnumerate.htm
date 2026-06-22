@@ -1,0 +1,120 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineStorageEnumerate</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineStorageEnumerate"/>
+<MSHelp:Keyword Index="F" Term="XOnlineStorageEnumerate"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineStorageEnumerate</h1>
+<p>Enumerates files that are stored on global storage.</p><pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineStorageEnumerate(</b>
+    <b>DWORD</b> <i>dwFacility</i><b>,</b>
+    <b>DWORD</b> <i>dwUserIndex</i><b>,</b>
+    <b>LPCWSTR</b> <i>wszStorageEnumerationPath</i><b>,</b>
+    <b>DWORD</b> <i>dwStartingIndex</i><b>,</b>
+    <b>DWORD</b> <i>cMaxResultsToReturn</i><b>,</b>
+    <b>HANDLE</b> <i>hWorkEvent</i><b>,</b>
+    <b>PXONLINETASK_HANDLE</b> <i>phTask</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+		<dt><i>dwFacility</i></dt>
+			<p>
+				<dd>[in]  Indicates storage facility. Must be the following:</dd>
+				<table>
+					<tr>
+						<th>Value</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>XONLINESTORAGE_FACILITY_PER_TITLE</td> 
+						<td>Title managed global storage.</td>
+					</tr>
+				</table>
+				<p>For a complete list of facility values, see the <a href="XONLINESTORAGE_FACILITY.htm">XONLINESTORAGE_FACILITY</a> topic.</p>
+			</p>
+		
+
+		<dt><i>dwUserIndex</i></dt>
+<dd>[in]  Controller index (zero-based) of the player for whom to download the attachment.</dd>
+
+		<dt><i>wszStorageEnumerationPath</i></dt>
+<p><dd>[in]  The "*" wildcard can be used in this path. If a wildcard is not specified, only exact matches are returned (will not recurse subdirectories).</dd>
+			<p>This path can be created using <a href="XOnlineStorageCreateServerPath.htm">XOnlineStorageCreateServerPath</a>.</p></p>
+
+		<dt><i>dwStartingIndex</i></dt>
+<dd>[in]  Index of file to start enumerating from (this index is zero based). Files are returned in order from most to least recently modified.</dd>
+
+		<dt><i>cMaxResultsToReturn</i></dt>
+<dd>[in]  Maximum number of files to return.</dd>
+
+		<dt><i>hWorkEvent</i></dt>
+<dd>[in, optional]  Handle to an event that is signaled when there is work to do on the asynchronous task returned by the <i>phTask</i> parameter. This parameter can be NULL if no such synchronization is required.</dd>
+            
+
+		<dt><i>phTask</i></dt>
+<dd>[out]  Pointer to a variable of type <b>XONLINETASK_HANDLE</b> that receives a task handle. Use this handle in calls to <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> to process the file enumeration.</dd>
+	</dl>
+<h4><a name="return"></a>Return Values</h4>
+		<p>If <b>XOnlineStorageEnumerate</b> succeeds, the return value is S_OK.</p>
+		<p>If <b>XOnlineStorageEnumerate</b> fails, the return value is one of the following error codes:</p>
+		<table>
+			<tr>
+				<th>Value</th>
+				<th>Description</th>
+			</tr>
+			<tr>
+				<td>XONLINE_E_STORAGE_INVALID_REQUEST</td>
+				<td>The request is invalid.</td>
+			</tr>
+			<tr>
+				<td>XONLINE_E_STORAGE_INVALID_ACCESS_TOKEN</td>
+				<td>The access token signature is invalid.</td>
+			</tr>
+			<tr>
+				<td>XONLINE_E_STORAGE_CANNOT_FIND_PATH</td>
+				<td>Name resolution failed.</td>
+			</tr>
+			<tr>
+				<td>XONLINE_E_STORAGE_INVALID_STORAGE_PATH</td>
+				<td>Invalid storage path.</td>
+			</tr>
+			<tr>
+				<td>XONLINE_E_STORAGE_INVALID_FACILITY</td>
+				<td>Invalid facility code.</td>
+			</tr>
+		</table>
+	<h4><a name="remarks"></a>Remarks</h4>
+		<p>This function will allow a title to check whether files are stored in global storage. A title will have to handle gracefully the case where a file or all files are not present in global storage.</p>
+		
+		<p>Using a trunk storage path, this API kicks off an async enumerate to get all files available under this path.  Subpaths, if present, are not recursively traversed and returned. If such a hierarchy exists, the title must handle the recursion.</p>
+	<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p><a href="x_mt_xonline_functions.htm">Xbox Live Functions</a></p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

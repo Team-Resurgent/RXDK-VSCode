@@ -1,0 +1,108 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineMatchSearchGetResults</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineMatchSearchGetResults"/>
+<MSHelp:Keyword Index="F" Term="XOnlineMatchSearchGetResults"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineMatchSearchGetResults</h1>
+            <p>Retrieves the results from a previous call to <a href="XOnlineMatchSearch.htm">XOnlineMatchSearch</a> or <a href="XOnlineMatchSessionFindFromID.htm">XOnlineMatchSessionFindFromID</a>.</p>
+        <pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineMatchSearchGetResults(</b>
+    <b>XONLINETASK_HANDLE</b> <i>hTask</i><b>,</b>
+    <b>PXONLINE_MATCH_SEARCHRESULT</b> **<i>prgpSearchResults</i><b>,</b>
+    <b>DWORD</b> *<i>pdwReturnedResults</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+            <dt><i>hTask</i></dt>
+                <dd>[in]  
+                    Handle to the online task that was returned by <b>XOnlineMatchSearch</b> or <b>XOnlineMatchSessionFindFromID</b>.
+                </dd>
+            
+            <dt><i>prgpSearchResults</i></dt>
+                <p>
+                    <dd>[out]  Pointer to a pointer that receives the address of an array of pointers to search results.                         For example, the expression prgpSearchResults[0] is a pointer to an <a href="xonline_match_searchresult.htm">XONLINE_MATCH_SEARCHRESULT</a> structure that represents the first search result. Following each <b>XONLINE_MATCH_SEARCHRESULT</b> structure is the variable-length attribute data for the session. </dd>
+                    <p>For each search result, call the <a href="XOnlineMatchSearchParse.htm">XOnlineMatchSearchParse</a> function to parse the attributes for that search result.</p>
+                </p>
+            
+            <dt><i>pdwReturnedResults</i></dt>
+                <p><dd>[out]  Address of a <b>DWORD</b> variable that receives the number of search results&#8212;that is, the number of pointers in the array pointed to by the <i>prgpSearchResults</i> parameter.</dd>
+                </p>
+            
+        </dl>
+<h4><a name="return"></a>Return Values</h4>
+
+<p>If <b>XOnlineMatchSearchGetResults</b> succeeds, the return value is S_OK.</p>
+<p>If <b>XOnlineMatchSearchGetResults</b> fails, the return value is one of the following error codes.</p>
+
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>XONLINE_E_MATCH_SERVER_ERROR</td>
+<td>A server error occurred that is not correctable from the client. More detailed error information is returned by <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> when the search completes. If this error occurs during development, inform Microsoft of the error. If this error occurs during a game, ask the player to try again later.</td>
+</tr>
+<tr>
+<td>Other</td>
+<td>See <a href="xbox_online_errors.htm">Online Errors</a> for information about other possible errors.</td>     
+</tr>
+</table>
+
+
+<h4><a name="remarks"></a>Remarks</h4>
+            <p>The <b>XOnlineMatchSearchGetResults</b> function is called from an Xbox that 
+                wishes to join an online-game session that is hosted by a different Xbox.
+                For information on how to connect to a particular online-game session, see the <a href="whitepaper_xbox_secure_network_library_xsnl.htm">Xbox Secure Network Library</a> white paper.</p>
+            <p>The attributes returned in a search result are not necessarily the same as the 
+                attributes that were advertised by the host Xbox in the calls to <a href="XOnlineMatchSessionCreate.htm">XOnlineMatchSessionCreate</a> 
+                and <a href="XOnlineMatchSessionUpdate.htm">XOnlineMatchSessionUpdate</a>.
+                </p>
+
+            <p>No session attributes are available if the <i>hTask</i> parameter 
+                specifies a task that was returned from the <b>XOnlineMatchSessionFindFromID</b> function. To 
+                obtain attributes from a specific session, you must specify a task that was returned from 
+                the <b>XOnlineMatchSearch</b> function.</p>
+            <p>To obtain Quality of Service (QoS) information for matchmaking results, use the 
+                following functions:</p>
+            <ul>
+                <li> <a href="xbox_XNetQosListen_xsnl.htm">XNetQosListen</a></li>
+                <li> <a href="xbox_XNetQosLookup_xsnl.htm">XNetQosLookup</a></li>
+                <li> <a href="xbox_XNetQosRelease_xsnl.htm">XNetQosRelease</a></li>
+            </ul>
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="xbox_Live_Matchmaking.htm">Playing Games with Matchmaking</a> | <a href="x_mt_xonline_functions.htm">Xbox Live Functions</a> | <a href="XOnlineMatchSessionFindFromID.htm">XOnlineMatchSessionFindFromID</a>,
+<a href="XOnlineMatchSearch.htm">XOnlineMatchSearch</a>, <a href="XOnlineMatchSearchParse.htm">XOnlineMatchSearchParse</a>
+            
+</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

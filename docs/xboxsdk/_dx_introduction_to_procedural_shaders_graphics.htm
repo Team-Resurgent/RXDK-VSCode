@@ -1,0 +1,79 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Introduction to Procedural Shaders</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Introduction to Procedural Shaders"/>
+<MSHelp:Keyword Index="F" Term="Introduction to Procedural Shaders"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_introduction_to_procedural_shaders_graphics"></A>Introduction to Procedural Shaders</H1>
+
+<P>In Microsoft&#174; Direct3D&#174; for Microsoft&#174; DirectX&#174; 8.0, procedural models are used for specifying the behavior of the vertex transformation and lighting pipeline and the pixel texture blending pipeline. There are many advantages to a program model-based syntax for specifying the behavior of the hardware.</P>
+
+<H3>Generalized Syntax for Common Operations</H3>
+
+<P>A procedural model allows a more general syntax for specifying common operations. Fixed-function, as opposed to programmable, APIs must define modes, flags, and so on for an increasing number of operations that need to be expressed. Further, with the increasing power of the hardware&mdash;more colors, more textures, more vertex streams, and so on&mdash;the token space for the operations multiplied by the data inputs becomes complex. A programmability model, on the other hand, enables even simple operations such as getting the right color and right texture into the right part of the lighting model in a more direct fashion. You do not have to search through all the possible modes; you just have to learn the machine architecture and specify the desired algorithm to be performed.</P>
+
+<P>For example, the following well-known features can be supported.
+
+<UL>
+	<LI>Basic geometry transformations</LI>
+	<LI>Simple lighting models</LI>
+	<LI>Vertex blending for skinning</LI>
+	<LI>Vertex morphing (tweening)</LI>
+	<LI>Texture transforms</LI>
+	<LI>Texture generation</LI>
+	<LI>Environment mapping</LI>
+</UL>
+
+<H3>Easier Mechanism for Developing New Operations</H3>
+
+<P>A procedural model provides an easy mechanism for developing new operations. There are many operations that developers find they need that are not supported in current APIs. In most cases, this is not due to limitations in the capabilities of the hardware but rather to restrictions in the APIs. In general, these operations are also simpler and therefore faster than trying to extract the same behavior by contorting a fixed function API to an extent beyond its designer's expectations.</P>
+
+<P>Examples of new features expected to be commonly implemented include the following:
+
+<UL>
+	<LI>Matrix Palette Skinning. Character animation with 8&ndash;10 bones per mesh.</LI>
+	<LI>Anisotropic Lighting. Lighting that currently can be done only at the cost of textures for look-up tables.</LI>
+	<LI>Membrane Shaders. Shaders for balloons, skin, and so on (1/cos(eye DOT normal).</LI>
+	<LI>Kubelka-Munk Shaders. Shaders that take into account light that penetrates the surface.</LI>
+	<LI>Procedural Geometry. Compositing meshes with procedural ones (spheres) to simulate muscles moving under the skin.</LI>
+	<LI>Displacement Mapping. Modifying a mesh with a wave pattern or hump that can be tiled/repeated.</LI>
+</UL>
+
+<H3>Scalability and Evolvability</H3>
+
+<P>A procedural model provides for scalability and evolvability. Hardware capabilities are continuing to evolve rapidly, and programmatic representations can help adapt the API because they scale very well. New features and capabilities can be easily exposed in an incremental way by the following operations.
+
+<UL>
+	<LI>Adding new instructions.</LI>
+	<LI>Adding new data inputs.</LI>
+	<LI>Adding new capabilities from the fixed-function to the programmable portion of the pipeline.</LI>
+</UL>
+
+<P>Code is the representation that has the best scaling properties for representing complexity. Further, the amount of code that must change inside Direct3D is very small for new features added to the programmable shaders.</P>
+
+<H3>Familiarity</H3>
+
+<P>A procedural model offers familiarity. Software developers understand programming better than they do hardware. An API that truly caters to software developers should map hardware functionality into a code paradigm.</P>
+
+<H3>Traditional and Uncompromising</H3>
+
+<P>A procedural model follows in the footsteps of a photo-real rendering heritage. There has been a tradition of using programmable shaders in high-end photo-real rendering for many years. In general, this area is unconstrained by performance, so programmable shaders represent the ultimate no-compromise goal for rendering technologies. </P>
+
+<H3>Direct Mapping to the Hardware</H3>
+
+<P>A procedural model enables direct mapping to the hardware. Most current 3D hardware, at the vertex processing stage at least, is fairly programmable. The programmability through the API enables the application to map directly to this hardware. This enables you to manage the hardware resources according to their requirements. With a limited set of registers or instructions that can be executed, it is difficult to make a fixed-function implementation that can have all its features enabled independently. If you turn on too many features that require a shared resource, they can stop working in unexpected ways. The programmable API model follows in the DirectX tradition of eliminating this problem by letting the application developer talk directly to the hardware, making any such limitations transparent.</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

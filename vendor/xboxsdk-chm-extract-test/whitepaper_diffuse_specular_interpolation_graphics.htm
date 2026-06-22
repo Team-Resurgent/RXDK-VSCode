@@ -1,0 +1,64 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>A Note on the Performance of Diffuse and Specular Interpolation</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="A Note on the Performance of Diffuse and Specular Interpolation"/>
+<MSHelp:Keyword Index="K" Term="diffuse and specular interpolation, performance of"/>
+<MSHelp:Keyword Index="K" Term="Xbox GPU, interpolation performance"/>
+<MSHelp:Keyword Index="K" Term="GPU, interpolation performance"/>
+<MSHelp:Keyword Index="K" Term="interpolators, performance of"/>
+<MSHelp:Keyword Index="K" Term="texcoord interpolators"/>
+<MSHelp:Keyword Index="K" Term="diffuse interpolator"/>
+<MSHelp:Keyword Index="K" Term="specular interpolator"/>
+<MSHelp:Keyword Index="K" Term="fill rate, maximum possible"/>
+<MSHelp:Keyword Index="F" Term="A Note on the Performance of Diffuse and Specular Interpolation"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>A Note on the Performance of Diffuse and Specular Interpolation</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<!--****Intro paragraph. Should be a three or four sentence summary of the topic.****-->
+<P class="content"><I>By Mike Abrash</I></P>
+
+<P class="content">The GPU for the Xbox&#174; video game system from Microsoft (the Xbox GPU custom-designed by NVIDIA&#174;) has a number of per-pixel interpolators, including diffuse, specular, and the four texcoords. Any of the four texcoords can be used as a general-purpose interpolator by selecting passthrough mode for the corresponding texture unit. However, doing so means that that texture unit cannot be used for any other purpose, such as looking up texels or doing bump-mapping or any other texture-related task. The diffuse and specular interpolators, on the other hand, are not tied to any other hardware, so they are normally the general-purpose interpolators of choice.</P>
+<P class="content">Despite the nomenclature of "diffuse" and "specular," these are truly general-purpose interpolators; their interpolation parameters can be set arbitrarily by the vertex shader, and their output can be used arbitrarily by the pixel shader. Complex pixel shaders are likely to need interpolated inputs of various sorts; whatever the desired interpolated inputs are, diffuse and specular interpolators are generally the preferred sources.</P>
+<P class="content">That's all straightforward enough, but there's one performance issue of which you should be aware. There's really only one general-purpose hardware interpolator in the Xbox GPU, which can process only one interpolant per clock, so if both diffuse and specular are in use, it takes one clock to interpolate diffuse, then another clock to interpolate specular. (There are separate hardware interpolators for texcoords.) Thus, the maximum possible fill rate if you are using both diffuse and specular interpolators is half the maximum fill rate of the GPU&#151;400 MPix/sec in the case of the Alpha-2 XDK.</P>
+<P class="content">In many cases, this won't affect overall performance. If you're using more than two register combiners, for example, or if you're using more than two texture stages, the maximum fill rate is only 400 MPix/sec anyway, and since interpolation and pixel shading overlap, there will be no penalty for two interpolators in this case. Similarly, if you're using a slow texture address op or two ops that don't pair in a single clock (for example, one 3D texture and one 2D texture together), you won't run any faster than  400 MPix/sec.</P>
+<P class="content">On the other hand, if you have, say, one or two 2D textures and are using only two register combiners (plus the final combiner, which is free), be aware that you will find your maximum fill rate cut in half if you use both diffuse and specular interpolators.</P>
+<P class="content">One alternative is to use a texcoord interpolator in pass-through mode. However, if you do this, it takes up a texture unit, so you can use only one more texture unit before exceeding two texture units and thereby cutting fill rate in half, at which point you might as well have used diffuse and specular anyway.</P>
+
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+
+
+
+</body>
+</html>

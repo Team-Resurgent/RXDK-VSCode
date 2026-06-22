@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>SetWaitableTimer</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="SetWaitableTimer">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="SetWaitableTimer"/>
+<MSHelp:Keyword Index="F" Term="SetWaitableTimer"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_setwaitabletimer"></A>SetWaitableTimer</H1>
+
+<P>The <B>SetWaitableTimer</B> function activates the specified waitable timer. When the due time arrives, the timer is signaled and the thread that set the timer calls the optional completion routine.</P>
+
+<PRE class=syntax><B>BOOL SetWaitableTimer(
+  HANDLE</B><I> hTimer</I><B>,                          </B>// handle to timer
+<B>  const LARGE_INTEGER</B><I> </I><B>*</B><I>pDueTime</I><B>,          </B>// timer due time
+<B>  LONG</B><I> lPeriod</I><B>,                           </B>// timer interval
+<B>  PTIMERAPCROUTINE</B><I> pfnCompletionRoutine</I><B>,  </B>// completion routine
+<B>  LPVOID</B><I> lpArgToCompletionRoutine</I><B>,        </B>// completion routine parameter
+<B>  BOOL</B><I> fResume                            </I>// resume state
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>hTimer</I></DT>
+
+<DD>[in] Handle to the timer object. The <A HREF="synchro_51o2.htm">CreateWaitableTimer</a> or <A HREF="synchro_0lv6.htm">OpenWaitableTimer</a> function returns this handle.</DD>
+
+<DT><I>pDueTime</I></DT>
+
+<DD>[in] Specifies when the state of the timer is to be set to signaled, in 100-nanosecond intervals. Use the format described by the <A HREF="time_0fzm.htm">FILETIME</a> structure. Positive values indicate absolute time. Be sure to use a UTC-based absolute time, as the system uses UTC-based time internally. Negative values indicate relative time. The actual timer accuracy depends on the capability of the hardware. For more information about UTC-based time, see <A HREF="unresolved.htm">System Time</a>. </DD>
+
+<DT><I>lPeriod</I></DT>
+
+<DD>[in] Specifies the period of the timer, in milliseconds. If <I>lPeriod</I> is zero, the timer is signaled once. If <I>lPeriod</I> is greater than zero, the timer is periodic. A periodic timer automatically reactivates each time the period elapses, until the timer is canceled using the <A HREF="synchro_9kj6.htm">CancelWaitableTimer</a> function or reset using <B>SetWaitableTimer</B>. If <I>lPeriod</I> is less than zero, the function fails.</DD>
+
+<DT><I>pfnCompletionRoutine</I></DT>
+
+<DD>[in] Pointer to an optional completion routine. The completion routine is application-defined function of type PTIMERAPCROUTINE to be executed when the timer is signaled. For more information on the timer callback function, see <A HREF="synchro_9ktf.htm">TimerAPCProc</a>. </DD>
+
+<DT><I>lpArgToCompletionRoutine</I></DT>
+
+<DD>[in] Pointer to the structure that is passed to the optional completion routine.</DD>
+
+<DT><I>fResume</I></DT>
+
+<DD>[in] Specifies whether to restore a system in suspended power conservation mode when the timer state is set to signaled. If <I>fResume</I> is TRUE and this type of restore is not supported, the call will succeed, but <B>GetLastError</B> returns ERROR_NOT_SUPPORTED.
+</DD>
+</DL>
+
+<H4>Return Value</H4>
+
+<P>If the function succeeds, the return value is nonzero.</P>
+
+<P>If the function fails, the return value is zero. To get extended error information, call <A HREF="errors_3uwi.htm">GetLastError</a>.</P>
+
+<H4>Remarks</H4>
+
+<P>Timers are initially inactive. To activate a timer, call <B>SetWaitableTimer</B>. If the timer is already active when you call <B>SetWaitableTimer</B>, the timer is stopped, and then it is reactivated. Stopping the timer in this manner does not set the timer state to signaled, so threads blocked in a wait operation on the timer remain blocked.</P>
+
+<P>When the specified due time arrives, the timer becomes inactive and the APC is queued to the thread that set the timer. The state of the timer is set to signaled, the timer is reactivated using the specified period, and the thread that set the timer calls the completion routine when it enters an alertable wait state. For more information, see <A HREF="synchro_3dk3.htm">QueueUserAPC</a>. </P>
+
+<P>If the thread that set the timer exits before the timer elapses, the timer is cancelled. If you call <B>SetWaitableTimer</B> on a timer that has been set by another thread and that thread is not in an alertable state, the completion routine is cancelled. </P>
+
+<P>When a manual-reset timer is set to the signaled state, it remains in this state until <B>SetWaitableTimer </B>is called to reset the timer. As a result, a periodic manual-reset timer is set to the signaled state when the initial due time arrives and remains signaled until it is reset. When a synchronization timer is set to the signaled state, it remains in this state until a thread completes a wait operation on the timer object.</P>
+
+<H4>Example</H4>
+
+<P>For an example that uses <B>SetWaitableTimer</B>, see <a href="unresolved.htm">Using Waitable Timer Objects</a>. </P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p><H4>See Also</H4>
+<P> 
+
+<a href="xbox_mt_xtl_sll_synchronization_functions.htm">Synchronization Functions</a> | 
+<A HREF="synchro_9kj6.htm">CancelWaitableTimer</a>, <B> <A HREF="synchro_51o2.htm">CreateWaitableTimer</a></B>, <B> <A HREF="time_0fzm.htm">FILETIME</a></B>, <B> <A HREF="synchro_0lv6.htm">OpenWaitableTimer</a></B></P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

@@ -1,0 +1,78 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirect3DDevice8::CreatePushBuffer</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="IDirect3DDevice8::CreatePushBuffer [C++]">
+<META NAME="MS-HKWD" CONTENT="CreatePushBuffer (IDirect3DDevice8) [C++]">
+<META NAME="MS-HKWD" CONTENT="CreatePushBuffer [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="CreatePushBuffer (IDirect3DDevice8)"/>
+<MSHelp:Keyword Index="K" Term="IDirect3DDevice8::CreatePushBuffer"/>
+<MSHelp:Keyword Index="F" Term="CreatePushBuffer"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_idirect3ddevice8_CreatePushBuffer_graphics"></A>IDirect3DDevice8::CreatePushBuffer</H1>
+
+<P>Creates an empty push-buffer for use in recording between an <a href="_dx_idirect3ddevice8_beginpushbuffer_graphics.htm"><b>IDirect3DDevice8::BeginPushBuffer</b></a>/<a href="_dx_idirect3ddevice8_endpushbuffer_graphics.htm"><b>IDirect3DDevice8::EndPushBuffer</b></a> bracket.</P>
+
+<PRE class=syntax><B>HRESULT CreatePushBuffer(
+  UINT</B> <I>Size</I><B>,</B>
+<B>  BOOL</B> <I>RunUsingCpuCopy</I><B>,</B>
+<B>  D3DPushBuffer</B><I> **ppPushBuffer</I>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>Size</I></DT>
+
+<DD>[in] Size of the push-buffer in bytes, which must be a multiple of four bytes. In order to record into the push-buffer you must create it with a size of at least 4096 bytes and the size must be at least as large as any single command recorded into the push-buffer. (For example, if <a href="_dx_idirect3ddevice8_drawprimitiveup_graphics.htm"><b>IDirect3DDevice8::DrawPrimitiveUP</b></a> is called while recording, <i>Size</i> must be at least as large as all the vertex data and the call overhead.)  If <i>Size</i> is not as large as any single command recorded into the push-buffer, Direct3D will overrun the end of the buffer while recording. (No check is done on retail builds for this case so as not to slow down any of the Direct3D methods while not recording a push-buffer.) Typically, the size should be at least 1100 bytes.
+
+<p><i>Size</i> should also be at least as large as the total size of the push-buffer to be recorded.  However, even on retail builds, Direct3D is guaranteed not to overrun the end of the buffer while recording a push-buffer that is too big (subject to the constraint that no single command is larger than the size).  This permits <a href="_dx_idirect3dpushbuffer8_getsize_graphics.htm">GetSize</a> to be called on a too-small push-buffer to get the size it would have been if it were large enough to hold the data.  However, it is not always possible to use <b>GetSize</b>, call <b>CreatePushBuffer</b> with exactly that size, and then record the same data again.  Certain push-buffer commands require an extra margin at the end while they are being recorded.  Adding 512 bytes to <b>GetSize</b> should be sufficient.</p></DD>
+
+<DT><I>RunUsingCpuCopy</I></DT>
+
+<DD>[in] If TRUE, the push-buffer resource data is created in non-contiguous, cached memory, and D3DPUSHBUFFER_RUN_USING_CPU_COPY is set in the Common field of <a href="_dx_idirect3dpushbuffer8_graphics.htm"><b>IDirect3DPushBuffer8</b></a>. If FALSE, the push-buffer resource data is created in physically contiguous, write-combined memory.</dd>
+
+<DT><I>ppPushBuffer</I></DT>
+
+<DD>[out, retval] Address of a pointer to a <b>IDirect3DPushBuffer8</b> interface, representing the created push-buffer.</DD>
+
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the method succeeds, the return value is S_OK</A>.</P>
+
+<P>If there is insufficient memory, the method returns <A HREF="_dx_return_values_graphics.htm#_dx_e_outofmemory_graphics"><b>E_OUTOFMEMORY</b></A>.</P>
+
+<h4>Remarks</h4>
+
+<p>In general, <i>RunUsingCpuCopy</i> should be FALSE when the push-buffer is large, because the push-buffer can be directly executed in-place by the GPU and so save in CPU time and system bandwidth. When <i>RunUsingCpuCopy</i> is FALSE, the GPU's push-buffer contains a JUMP to the resource data and then a JUMP back. The resource data is not copied to the GPU. However, <i>RunUsingCpuCopy</i> should be TRUE for small push-buffers, because the per-call overhead of <a href="_dx_idirect3ddevice8_runpushbuffer_graphics.htm"><b>IDirect3DDevice8::RunPushBuffer</b></a> is extremely high for the direct execution case. When <i>RunUsingCpuCopy</i> is TRUE, no JUMPs are necessary since the resource data is copied to the GPU.</p>
+
+<p>As with any Direct3D resource, <b>Release</b> should be called when done with the push-buffer resource.</p>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in D3d8.h.<BR>
+<B>&nbsp;&nbsp;Import Library:</B> Use D3d8.lib.</P>
+
+<h4>See Also</h4>
+
+<p><a href="_dx_pushbuffer_overview_graphics.htm"><b>Push-Buffer Overview</b></a></p>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

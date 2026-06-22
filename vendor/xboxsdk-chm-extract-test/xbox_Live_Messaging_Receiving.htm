@@ -1,0 +1,39 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Receiving Messages</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Receiving Messages"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Receiving Messages</h1>
+<p>The following topics discuss the process of receiving messages.</p><ul>
+<li><a href="#IDARIIV">Notification</a></li><li><a href="#IDA5IIV">Retrieving Messages</a></li><li><a href="#IDAHJIV">Deleting Messages</a></li><li><a href="#_feedback">Providing Feedback</a></li><li><a href="#_feedback">Blocking Unwanted Messages</a></li></ul>
+<h2><a name="IDARIIV"></a>Notification</h2>
+<p>Title developers must determine how to best incorporate messages within the context of their game.  For example, they may want their game to have an area where users can see all of their pending messages for that title. Here, users could potentially browse, delete, and respond to their messages. Or titles may choose, upon receiving a notification, to process messages immediately within the context of the game. Message delivery is best-effort and is not guaranteed. The voice and text properties of a message may not be saved to the local Xbox hard disk nor may they be forwarded.</p><p>Titles receive notification that a message has arrived by calling the <a href="XOnlineGetNotificationEx.htm">XOnlineGetNotificationEx</a> function. When notification arrives, the title developer may display an in-game notification icon. The icon to be displayed depends on the message type in the notification information. Other flags are also immediately available and indicate if the message is from a friend, if the message has voice or text attached, if the message is from a team or competition mate, and if the message is from the same title. Up to three new message IDs are returned in the notification for immediate consumption. By default, message summaries are also automatically retrieved at the time the notification arrives. If they feel that the extra bandwidth to upload summaries is too burdensome, titles may choose to disable the auto-retrieval of summary information by calling <a href="XOnlineMessageSetSummaryRefresh.htm">XOnlineMessageSetSummaryRefresh</a>.</p><p>Message lists are returned to the client sorted in the order in which they are received by the service. The data returned in an enumeration is the summary information on each message. The idea is to give the developer enough information about each message to make routing decisions about where to display new message icons. In addition, the summary contains enough data to help the user make an informed decision whether or not to open and read the message in more detail.</p><h2><a name="IDA5IIV"></a>Retrieving Messages</h2>
+<p>Message retrieval is used to get the details of a message and requires knowing the user XUID and message ID of the message of interest. A client is expected to have first obtained the message ID by enumerating the messages in a user's queue, receiving a new message notification, or receiving the message ID from the Xbox <i>Live</i> service. This operation returns both the 64-byte message summary as well as the (up-to-4,096-byte) details of the message. Any attachments stored in the storage service are represented as storage URLs in the message details. Attachment retrieval is separated from message retrieval because attachments can potentially be very large and should require additional user interaction prior to downloading. Retrieving details is an asynchronous process and requires a task handle.</p><h2><a name="IDAHJIV"></a>Deleting Messages</h2>
+<p>A message may be deleted in several different ways. These include explicit deletion by a title, user, or service. Messages can also expire. In addition, they may be lost due to a full user queue. Messages are not deleted automatically upon viewing. Messages may be explicitly deleted by a service.  For example, the presence service deletes game invites when the sending user logs off. The competitions service deletes messages related to a canceled tournament. In addition, users may explicitly delete messages from their own queues. </p><p>Titles delete title custom messages using the <a href="XOnlineMessageDelete.htm">XOnlineMessageDelete</a> function. <b>XOnlineMessageDelete</b> should not be called for other types of messages. Game invites, friend requests, and team recruitment messages are deleted by <a href="XOnlineGameInviteAnswer.htm">XOnlineGameInviteAnswer</a>, <a href="XOnlineFriendsAnswerRequest.htm">XOnlineFriendsAnswerRequest</a>, and <a href="XOnlineTeamMemberAnswerRecruit.htm">XOnlineTeamMemberAnswerRecruit</a>, respectively. </p><h2><a name="_feedback"></a>Providing Feedback</h2>
+<p>Users must be able to send feedback on a message (that is, about the person who sent them the message). This is required by TCR. Two specific feedback types have been created for messaging: "offensive message" and "harassing message." Users who continue to send offensive or harassing messages will be banned from creating voice/text messages according to policy. </p><h2><a name="_feedback"></a>Blocking Unwanted Messages</h2>
+<p>When users delete a message, titles are required to present them with the option of blocking the sender of that message from sending them messages in the future. Titles must also give players the option of sending feedback about the sender. Users may unblock a user they have previously blocked by sending that user any message. When a message is sent to a user who has blocked the sender, a special error code is returned to the client that may or may not be displayed to the user depending on the client policy.</p><p>A user must be able to block the following communications.</p><ul>
+				<li>Friend request</li>
+				<li>Team recruit</li>
+				<li>Tournament join</li>
+			</ul>
+<p>A user cannot block system messages or messages created by publishers.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>ResumeThread</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="ResumeThread">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="ResumeThread"/>
+<MSHelp:Keyword Index="F" Term="ResumeThread"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_resumethread"></A>ResumeThread</H1>
+
+<P>The <B>ResumeThread</B> function decrements a thread's suspend count. When the suspend count is decremented to zero, the execution of the thread is resumed. </P>
+
+<PRE class=syntax><B>DWORD ResumeThread(
+  HANDLE</B><I> hThread</I>   // handle to thread
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>hThread</I></DT>
+
+<DD>[in] Handle to the thread to be restarted. 
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is the thread's previous suspend count. </P>
+
+<P>If the function fails, the return value is -1. To get extended error information, call <B>GetLastError</B>. </P>
+
+<H4>Remarks</H4>
+
+<P>The <B>ResumeThread</B> function checks the suspend count of the subject thread. If the suspend count is 0, the thread is not currently suspended. Otherwise, the subject thread's suspend count is decremented. If the resulting value is 0, then the execution of the subject thread is resumed. </P>
+
+<P>If the return value is 0, the specified thread was not suspended. If the return value is 1, the specified thread was suspended but was restarted. If the return value is greater than 1, the specified thread is still suspended. </P>
+
+<P>Note that while reporting debug events, all threads within the title are frozen. Debuggers are expected to use the <B>SuspendThread</B> and <B>ResumeThread</B> functions to limit the set of threads that can execute within a title. By suspending all threads in a title except for the one reporting a debug event, it is possible to "single step" a single thread. The other threads are not released by a continue operation if they are suspended. </P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p><H4>See Also</H4>
+<P> 
+<a href="xbox_mt_xtl_sll_threads_overview.htm">Thread Overview</a>,
+<a href="xbox_mt_xtl_sll_threads_functions.htm">Thread Functions</a> | 
+<A HREF="prothred_7gkk.htm">SuspendThread</a> </P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

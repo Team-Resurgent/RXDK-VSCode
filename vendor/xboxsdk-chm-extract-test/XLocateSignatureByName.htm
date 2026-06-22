@@ -1,0 +1,83 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XLocateSignatureByName</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XLocateSignatureByName"/>
+<MSHelp:Keyword Index="F" Term="XLocateSignatureByName"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XLocateSignatureByName</h1>
+<p>Retrieves a content signature, from the specified signature data, for a file or block of data within a file.</p><pre class="syntax" xml:space="preserve"><b>BOOL</b> <b>XLocateSignatureByName(</b>
+    <b>HANDLE</b> <i>hSignature</i><b>,</b>
+    <b>LPCSTR</b> <i>lpFileName</i><b>,</b>
+    <b>DWORD</b> <i>dwFileOffset</i><b>,</b>
+    <b>DWORD</b> <i>dwDataSize</i><b>,</b>
+    <b>LPBYTE</b> *<i>ppbSignatureData</i><b>,</b>
+    <b>LPDWORD</b> *<i>pdwSignatureSize</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+<dt><i>hSignature</i></dt>
+<dd>[in]  Handle to signature data opened with <a href="XLoadContentSignatures.htm">XLoadContentSignatures</a>.</dd>
+
+<dt><i>lpFileName</i></dt>
+<dd>[in]  Pointer to a null-terminated string that specifies the file that contains the data block for which the signature is to be retrieved.</dd>
+
+<dt><i>dwFileOffset</i></dt>
+<dd>[in]  Offset into the file (in bytes) of the data block.</dd>
+
+<dt><i>dwDataSize</i></dt>
+<dd>[in]  The size (in bytes) of the data block.</dd>
+
+<dt><i>ppbSignatureData</i></dt>
+<dd>[out]  Pointer to an <b>LPBYTE</b> variable that receives the address of the specified signature.</dd>
+
+<dt><i>pdwSignatureSize</i></dt>
+<dd>[out]  Pointer to a <b>DWORD</b> variable that receives the size (in bytes) of the signature pointed to by <i>SignatureData</i>.</dd>
+
+</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>If the function succeeds, the return value is TRUE.</p>
+<p>If the function fails, the return value is FALSE. To retrieve extended error information, call <a href="errors_3uwi.htm">GetLastError</a>.</p><h4><a name="remarks"></a>Remarks</h4>
+<p><b>XLocateSignatureByName</b> retrieves a signature for a specified block of data. A given content file may have a single signature (representing the entire file), or the file may be broken into smaller data blocks with signatures calculated separately for each data block. Mutliple signatures could facilitate, for example, loading smaller pieces of content from a large resource file and enabling computing and comparing a signature over only the portion of data loaded.</p>
+
+<p>To retrieve the signature for an entire file, specify zero for <i>FileOffset</i> and <i>DataSize</i>. To retrieve the signature for a specific block of data within a file, specify the beginning offset and size of the data block. A signature matching the specified data range will be searched for in the signature data, and will be returned if found. Note that, in either case, the signature for the data block must have been specified and computed when the signature data was initially created.</p>
+
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xbox.h, for include use Xtl.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xapilib.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="x_mt_storage_oview.htm">Storage Overview</a>,
+<a href="x_jsk_storage_functions.htm">Storage Functions</a>,
+<a href="x_mt_storage_ov_signatures.htm">Content Signatures</a> |
+<a href="XLoadContentSignatures.htm">XLoadContentSignatures</a>,
+<a href="XLocateSignatureByIndex.htm">XLocateSignatureByIndex</a>,
+<a href="XCalculateContentSignature.htm">XCalculateContentSignature</a>,
+<a href="XCloseContentSignatures.htm">XCloseContentSignatures</a>
+</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

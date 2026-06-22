@@ -1,0 +1,269 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineLogon</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineLogon"/>
+<MSHelp:Keyword Index="F" Term="XOnlineLogon"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineLogon</h1>
+            <p>Creates an asynchronous task to log the specified players on to Xbox <i>Live</i> and to acquire access to the specified online services.</p>
+			<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;All XOnline functions should be called from a single thread. Multiple simultaneous calls into the XOnline library from different threads can lead to unexpected behavior.</p>
+        <pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineLogon(</b>
+    <b>const XONLINE_USER</b> *<i>pUsers</i><b>,</b>
+    <b>const DWORD</b> *<i>pdwServiceIDs</i><b>,</b>
+    <b>DWORD</b> <i>dwServices</i><b>,</b>
+    <b>HANDLE</b> <i>hWorkEvent</i><b>,</b>
+    <b>PXONLINETASK_HANDLE</b> <i>pHandle</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+            <dt><i>pUsers</i></dt>
+                <p>
+<dd>[in]  Array of <a href="XONLINE_USER.htm">XONLINE_USER</a> structures that contain information 
+about the players using the console who would like to participate in the online 
+game session. The array must contain XONLINE_MAX_LOGON_USERS structures.</dd>
+                
+                <p>The order of players represented in the array is significant and must map one-to-one to the controller index (zero-based) of the game port that the player is 
+using. If no player is using a specific game port, the <b>XONLINE_USER</b> 
+structure at that index should be set to all zeroes.</p>
+
+                <p>Use the <a href="XOnlineGetUsers.htm">XOnlineGetUsers</a> function to obtain <b>XONLINE_USER</b> 
+structures that contain user information stored on the local Xbox hard disk or 
+in Memory Units.</p>
+				</p>
+            
+            <dt><i>pdwServiceIDs</i></dt>
+                <p>
+<dd>[in]  Array of <b>DWORD</b> values specifying the services for which 
+tickets are to be obtained to enable future secure communication with Xbox <i>Live</i> services. These values can be one or more of the following:</dd>                
+                <table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+					<tr>
+<td>XONLINE_ARBITRATION_SERVICE</td>
+<td>
+						Accesses the arbitration service.
+					</td>
+</tr>
+                    <tr>
+<td>XONLINE_BILLING_OFFERING_SERVICE</td>
+<td>
+                        Accesses the billing service.
+                    </td>
+</tr>
+                    <tr>
+<td>XONLINE_CONTENT_AVAILABLE_SERVICE</td>
+<td>
+                        Accesses the content availability checking service and allows use of the <a href="XOnlineOfferingIsNewContentAvailable.htm">XOnlineOfferingIsNewContentAvailable</a> function.
+                    </td>
+</tr>
+                    <tr>
+<td>XONLINE_FEEDBACK_SERVICE</td>
+<td>
+                        Accesses the feedback service.
+                    </td>
+</tr>
+                    <tr>
+<td>XONLINE_MATCHMAKING_SERVICE</td>
+<td>
+                        Accesses the matchmaking service.
+                    </td>
+</tr>
+					<tr>
+<td>XONLINE_MESSAGING_SERVICE</td>
+<td>
+						Accesses the messaging service.
+					</td>
+</tr>
+					<tr>
+<td>XONLINE_NAT_TYPE_DETECTION_SERVICE</td>
+<td>
+						Accesses the NAT type detection service.
+					</td>
+</tr>
+					<tr>
+<td>XONLINE_QUERY_SERVICE</td>
+<td>
+						Accesses the query service.
+					</td>
+</tr>
+                    <tr>
+<td>XONLINE_SIGNATURE_SERVICE</td>
+<td>
+                        Accesses the signature service. <b>XOnlineLogon</b> contacts the signature 
+                        service and obtains a session signature key. The key is obtained before the 
+                        logon task returns XONLINE_S_LOGON_CONNECTION_ESTABLISHED.
+                    </td>
+</tr>
+                    <tr>
+<td>XONLINE_STATISTICS_SERVICE</td>
+<td>
+                        Accesses the statistics service.
+                    </td>
+</tr>
+                    <tr>
+<td>XONLINE_STORAGE_SERVICE</td>
+<td>
+                        Accesses the storage service. You must specify this service in order to use the <a href="XOnlineStorageUpload.htm">XOnlineStorageUpload</a> and <a href="XOnlineStorageDownload.htm">XOnlineStorageDownload</a> functions.
+                    </td>
+</tr>
+					<tr>
+<td>XONLINE_STRING_SERVICE</td>
+<td>
+						Accesses the string service.
+					</td>
+</tr>
+					<tr>
+<td>XONLINE_TEAM_SERVICE</td>
+<td>
+						Accesses the team service.
+					</td>
+</tr>
+                </table>
+				</p>
+            
+            <dt><i>dwServices</i></dt>
+                <dd>[in]  Number of services in the <i>pdwServiceIDs</i> array.</dd>
+            
+            <dt><i>hWorkEvent</i></dt>
+                <dd>[in, optional]  Handle to an event that is signaled when there is work to be done on the 
+logon task. The event is left unsignaled if the task is currently blocked 
+by an asynchronous operation. This parameter can be NULL if no such event is 
+required.</dd>
+            
+            <dt><i>pHandle</i></dt>
+                <p><dd>[out]  Pointer to a variable of type <b>XONLINETASK_HANDLE</b> that receives a task handle representing this logon task. The handle can then be used in calls to the <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> function to perform work associated with this task. This task must remain active while the players are signed in to the online service. This task processes the periodic online "heartbeat," which maintains the console's connection to the online service.</dd>
+					<p>Calling the <a href="XOnlineTaskClose.htm">XOnlineTaskClose</a> function closes the task handle and logs out of the online service.</p>
+                </p>
+            
+        </dl>
+<h4><a name="return"></a>Return Values</h4>
+            <p>The return value indicates whether the asynchronous task was successfully 
+                created:</p>
+            <table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+                <tr>
+<td>S_OK</td>
+<td>
+                    The asynchronous logon task was successfully created.
+                </td>
+</tr>
+                <tr>
+<td>XONLINE_E_LOGON_NO_NETWORK_CONNECTION</td>
+<td>
+                    No network connection was detected.
+                </td>
+</tr>
+                <tr>
+<td>XONLINE_E_OUT_OF_MEMORY</td>
+<td>
+                    There was not enough memory to create the asynchronous logon task.
+                </td>
+</tr>
+                <tr>
+<td>XONLINE_E_TASK_BUSY</td>
+<td>
+                    Another logon task is currently being performed, or the previous logon task has 
+                    not been closed. (In debug builds, an assert occurs when this value is 
+                    returned.)
+                </td>
+</tr>
+            </table>
+
+            <p>The return value does not represent the success or failure of the actual logon 
+                task. Once the logon task has been successfully created, <b>XOnlineTaskContinue</b> 
+                should be called until it returns a value other than XONLINETASK_S_RUNNING. At 
+                that point, <a href="XOnlineLogonTaskGetResults.htm">XOnlineLogonTaskGetResults</a> is called to determine the results 
+                of the logon. For a list of the possible return values, see 
+				<b>XOnlineLogonTaskGetResults</b>.</p>
+
+            <p>After a successful logon, <a href="XOnlineGetLogonUsers.htm">XOnlineGetLogonUsers</a> and <a href="XOnlineGetServiceInfo.htm">XOnlineGetServiceInfo</a> 
+                must be called to determine the individual status for each player and service 
+                specified, as described in the <a href="XOnlineLogon.htm#remarks">Remarks</a>
+				section below.</p>
+            <h4><a name="remarks"></a>Remarks</h4>
+            <p>When specifying services with the <i>pdwServiceIDs</i> parameter, the 
+                title must explicitly reference the XONLINE_STATISTICS_SERVICE and 
+                XONLINE_STORAGE_SERVICE symbols in order to use these services. It does not 
+                suffice to specify the numeric values that correspond to these symbols.</p>
+            <p><b>XOnlineLogon</b> returns a handle to an asynchronous task that must be pumped 
+				with <b>XOnlineTaskContinue</b> until that function returns a value other than
+				XONLINETASK_S_RUNNING. A value other than XONLINETASK_S_RUNNING indicates one 
+				of the following: </p>				
+				<ul>
+				<li>The logon has completed.</li>
+                <li>The logon has been aborted.</li>
+				<li>An error has occurred.</li> 
+				</ul>
+			<p>The results of the logon can then be obtained with a call to
+			   <b>XOnlineLogonTaskGetResults</b>.</p>
+            <p>A successful logon return code of XONLINE_S_LOGON_CONNECTION_ESTABLISHED does 
+                not necessarily indicate that all of the specified users and services were 
+                logged on. The results of the individual user logons must be determined by 
+                calling <a href="XOnlineGetLogonUsers.htm">XOnlineGetLogonUsers</a>. The results of the service logons 
+                are obtained with calls to <a href="XOnlineGetServiceInfo.htm">XOnlineGetServiceInfo</a>.</p>
+            <p>Once the logon is successful, <b>XOnlineTaskContinue</b> should continue to 
+				be periodically called for the logon task. As long as the online connection is 
+				valid, the return value continues to be XONLINE_S_LOGON_CONNECTION_ESTABLISHED. 
+				If an error is returned, the logon task handle should be closed. If desired, 
+				another logon attempt can be made.</p>
+            <p>The logon process involves:</p> 
+			<ol>
+				<li>Communicating with the authentication server to 
+                authenticate users using Kerberos.</li> 
+				<li>Obtaining the tickets necessary for 
+                future communication with the requested online services.</li> 
+			</ol>				
+				<p>The service connections obtained by the logon process allow later calling online
+					functions that use those services. <b>XOnlineLogon</b> can be called again, but 
+					all service connections obtained from the previous logon call will be lost. 
+					Therefore, it is recommended that titles first collect all player information 
+					and service IDs ahead of time, and then make a single logon call.</p>
+            <p><b>XOnlineLogon</b> is not thread safe, so titles should avoid making a second
+			   <b>XOnlineLogon</b> call before the first logon task is completed. Additionally, 
+			   before a new logon is attempted, the previous logon task handle must be closed 
+			   with <b>XOnlineTaskClose</b>.</p>
+			<p>It is possible to log on a player as a guest of another valid Xbox 
+			   <i>Live</i> user.  Guest players have limited privileges.  A guest player 
+			   is always associated with a valid Xbox <i>Live</i> user (the real account)
+			   who is currently being logged on to the same Xbox.  A guest account can be created by
+			   copying the real account's <b>XONLINE_USER</b> structure to the <b>XONLINE_USER</b> 
+			   array slot associated with the guest's controller, and then using the <a href="XOnlineSetUserGuestNumber.htm">XOnlineSetUserGuestNumber</a>
+			   macro to give a guest number in the range 1&#8211;3.</p>
+
+        <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p><a href="x_mt_xonline_functions.htm">Xbox Live Functions</a> | <a href="XONLINE_USER.htm">XONLINE_USER</a>, <a href="XOnlineChangeLogonUsers.htm">XOnlineChangeLogonUsers</a>, <a href="XOnlineGetLogonUsers.htm">XOnlineGetLogonUsers</a>, <a href="XOnlineGetServiceInfo.htm">XOnlineGetServiceInfo</a>, <a href="XOnlineLogonTaskGetResults.htm">XOnlineLogonTaskGetResults</a>, <a href="XOnlineSilentLogon.htm">XOnlineSilentLogon</a>, <a href="XOnlineTaskClose.htm">XOnlineTaskClose</a>,  <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> </p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

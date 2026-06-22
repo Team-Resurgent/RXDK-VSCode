@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>texm3x3diff</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="texm3x3diff">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="texm3x3diff"/>
+<MSHelp:Keyword Index="F" Term="texm3x3diff"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_texm3x3diff_graphics"></A>texm3x3diff</H1>
+
+<P>Determines the diffuse color of a fragment.</P>
+
+<PRE class=syntax>texm3x3diff   tDest, tSrc0, tSrc1
+</PRE>
+
+<H4>Registers</H4>
+
+<DL>
+<DT><B>tDest</B></DT>
+
+<DD>Destination register, holding the result of the operation.</DD>
+
+<DT><B>tSrc0</B></DT>
+
+<DD>Source register, specifying the input argument.</DD>
+
+<DT><B>tSrc1</B></DT>
+
+<DD>Source register, specifying the input argument.
+</DD>
+</DL>
+
+<H4>Remarks</H4>
+
+<p>The <b>texm3x3diff</b> texture mode is similar to the <b>texm3x3spec</b> and <b>texm3x3vspec</b> modes except that an additional texture lookup is performed to determine the diffuse color (non-reflected) of the fragment. A normalization cubemap is set on stage 0. The normal is then transformed to eye space in stages 1 through 3. A cubemap that contains the diffuse color for the surface is set on stage 2. Another cubemap that contains the specular color for the surface is set on stage 3. The resulting diffuse color can be read from t2, and the specular color can be read from t3. </p>
+
+<p>This instruction can be used as shown below:</p>
+<blockquote><pre>tex t0	                // bump normal map
+texm3x3pad t1, t0	// Perform first row of transform.
+texm3x3diff t2, t0	// Perform second row of transform, specify diffuse cubemap.
+texm3x3spec t3, t0	// Perform last row of transform, specify specular cubemap.
+</pre></blockquote>
+
+<p>This instruction actually performs a dot product between the texture coordinates of the current stage and the output value from the specified input stage. Color values are unsigned integers in the range 0x0 to 0xff, but through the use of input modifiers, these values can be interpreted as signed numbers.</p>
+
+<p>If the _bx2 input modifier is applied to the specified input argument, the color values are mapped to signed numbers using the formula</p>
+
+<blockquote>( ColorValue &#8211; 0x80 ) / 127.0f </blockquote>
+
+<p>So,</p>
+
+<ul>	
+<li>0x0 is mapped to &#8211;1.007874016f (&#8211;128 / 127),</li>
+<li>0x1 is mapped to &#8211;1.0f,</li>
+<li>0x80 is mapped to 0.0f, and</li>
+<li>0xff is mapped to 1.0f.</li>
+</ul>
+
+<p>If there is no input modifier applied to the specified input argument, the color values are mapped to the range zero to one using the formula</p>
+
+<blockquote>ColorValue / 255.0f</blockquote>
+
+<p>So,</p>
+
+<ul>
+<li>0x0 is mapped to 0.0f, and</li>
+<li>0xff is mapped to 1.0f.</li>
+</ul>
+<BR>
+<p>This texture mode is an Xbox extension.</p>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

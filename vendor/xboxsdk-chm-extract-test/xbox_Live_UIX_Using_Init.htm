@@ -1,0 +1,138 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Initializing UIX</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Initializing UIX"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Initializing UIX</h1>
+<p>Initializing UIX is a straightforward process of creating the UIX engine and the font renderer and default plug-ins, registering the plug-ins, and enabling features your title uses.</p><p>Start by calling <a href="UIXCreateLiveEngine.htm">UIXCreateLiveEngine</a> to get a pointer to the engine's interface.  Your title must specify the skin file and language it uses when it creates the engine. <b>UIXCreateLiveEngine</b> passes the engine's interface pointer back to your title. It then uses the <a href="ILiveEngine.htm">ILiveEngine</a> interface pointer to call the engine's methods. </p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Your title must create a Direct3D device (with <a href="_dx_idirect3d8_createdevice_graphics.htm">IDirect3D8::CreateDevice</a>) <i>before</i> calling <b>UIXCreateLiveEngine</b>.</p><p>After your title obtains the engine's interface pointer, it must register the plug-ins it uses.  These plug-ins can be the default plug-ins or custom plug-ins implemented by the title. To register plug-ins, call <a href="ILiveEngine_SetAudioPlugin.htm">ILiveEngine::SetAudioPlugin</a> and <a href="ILiveEngine_SetUIPlugin.htm">ILiveEngine::SetUIPlugin</a>. The font renderer plug-in <a href="ITitleFontRenderer.htm">ITitleFontRenderer</a>, which must be implemented by the title, is passed as an argument to <a href="UIXCreateUIPlugin.htm">UIXCreateUIPlugin</a> when it creates the UI plug-in.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Obtain pointers to the default plug-ins by calling <a href="UIXCreateAudioPlugin.htm">UIXCreateAudioPlugin</a> and <b>UIXCreateUIPlugin</b>.</p><p>After initialization, Drop-in UI features can be started as needed. Any features that titles use must be enabled with <a href="ILiveEngine_EnableFeature.htm">ILiveEngine::EnableFeature</a> prior to use.  <b>EnableFeature</b> links the appropriate code in with the title but doesn't allocate any memory, so it is typically called at initialization time.</p><ul>
+<li><a href="#IDADCEV">A Simple UIX Initialization Skeleton</a></li><li><a href="#IDAVDEV">Registering the Audio Plug-in</a></li><li><a href="#fontrender">Registering the UI Plug-in</a></li></ul>
+<h2><a name="IDADCEV"></a>A Simple UIX Initialization Skeleton</h2>
+<p>The following code sample demonstrates the initialization of UIX.</p>
+<pre class="clsCode">
+#include &lt;xtl.h&gt;
+#include &lt;xonline.h&gt;
+#include &lt;xact.h&gt;
+#include &lt;uix.h&gt;
+
+// Xbox Drop-in UI interface pointers.
+CTitleFontRenderer ctfr;
+ITitleAudioPlugin *pAudioPlugin;
+ITitleUIPlugin *pUIPlugin;
+ILiveEngine *pLiveEngine;
+
+// Simple title initialization
+XOnlineStartup( NULL );
+XInitDevices( 0, NULL );
+
+// Create the Xbox Drop-in UI engine, the font plug-in, and the default audio and UI plug-ins.
+ctfr.OpenFont( L"d:\\media\\arialuni.ttf" );
+UIXCreateAudioPlugin( pXactEngine, pXactSoundBank, &amp;pAudioPlugin );
+UIXCreateUIPlugin( &amp;ctfr, &amp;pUIPlugin );
+UIXCreateLiveEngine( "d:\\media\\default.uix", XC_LANGUAGE_ENGLISH, &amp;pLiveEngine );
+</pre>
+    
+<pre class="clsCode">
+// Register the plug-ins and enable features the title uses.
+pLiveEngine-&gt;SetUIPlugin( pUIPlugin );
+pLiveEngine-&gt;SetAudioPlugin( pAudioPlugin );
+pLiveEngine-&gt;EnableFeature( UIX_LOGON_FEATURE );
+pLiveEngine-&gt;EnableFeature( UIX_FRIENDS_FEATURE );
+</pre>
+    <p>This example uses the default font and skin files that are included with the Xbox SDK (redist\stats\media\ArialUni.Ttf and source\uix\default.inx). Use SkinBld to build the default.uix skin file from default.inx, the text skin description file.</p><p>After the example code executes, the engine is initialized and features can be started as needed.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;In this example, error checking has been removed to streamline flow. Most of the functions return an <b>HRESULT</b> value that should be checked with the SUCCEEDED (or similar) macro.</p><h2><a name="IDAVDEV"></a>Registering the Audio Plug-in</h2>
+<p>The default audio plug-in requires that your title obtain pointers to the XACT engine and XACT sound bank so that it can use XACT to provide sound for the user interface.  Create the XACT engine by calling <a href="xbox_xactenginecreate_dxaudio.htm">XACTEngineCreate</a>.  You can use the XACT project, included with the Xbox SDK (in source\uix\UIXDefault.xap), to create default sound and wave banks.  Choose <b>Build</b> from the Visual Studio <b>File</b> menu after opening the project.  Alternatively, pre-built sound and wave banks are available in redist\uix\media.  Register the wave bank by calling <a href="xbox_ixactengine_registerwavebank_dxaudio.htm">IXACTEngine::RegisterWaveBank</a>. To register the sound bank, invoke <a href="xbox_ixactengine_createsoundbank_dxaudio.htm">IXACTEngine::CreateSoundBank</a>.  Pass the resulting <i>pXactEngine</i> and <i>pXactSoundBank</i> pointers to <b>UIXCreateAudioPlugin</b> to create the default audio plug-in.  Titles can modify the default sound and wave banks, use their own banks, or provide a custom implementation of the audio plug-in to provide audio support through some other means.</p><p>The following example code provides a more specific view of XACT initialization. This example uses the default XACT sound and wave banks that are included with the Xbox SDK (in redist\uix\media).</p>
+<pre class="clsCode">
+PXACTWAVEBANK pXactWaveBank;
+PXACTSOUNDBANK pXactSoundBank;
+PXACTENGINE pXactEngine;
+
+XACT_RUNTIME_PARAMETERS Params;
+PVOID SoundBankData;
+PVOID WaveBankData;
+DWORD SoundBankSize;
+DWORD WaveBankSize;
+
+LoadFile( "d:\\media\\UIXDefault.xwb", &amp;WaveBankData, &amp;WaveBankSize );
+LoadFile( "d:\\media\\UIXDefault.xsb", &amp;SoundBankData, &amp;SoundBankSize);
+
+ZeroMemory( &amp;Params, sizeof(Params) );
+Params.dwMaxConcurrentStreams = 16;
+Params.dwMax2DHwVoices = 40;
+Params.dwMax3DHwVoices = 10;
+XACTEngineCreate( &amp;Params, &amp;pXactEngine );
+
+pXactEngine-&gt;RegisterWaveBank( WaveBankData, WaveBankSize, &amp;pXactWaveBank );
+pXactEngine-&gt;CreateSoundBank( SoundBankData, SoundBankSize, &amp;pXactSoundBank );
+</pre>
+    <p>The LoadFile() support function simply loads a file into memory:</p>
+<pre class="clsCode">
+BOOL LoadFile( LPSTR pszFile, PVOID *pvData, DWORD *pdwSize )
+{
+    BOOL fRes = FALSE;
+    DWORD dwRead;
+    HANDLE hFile = CreateFile( pszFile, GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL );
+    if( INVALID_HANDLE_VALUE != hFile ) {
+        *pdwSize = GetFileSize( hFile, NULL );	
+        if( *pvData = HeapAlloc( GetProcessHeap(), 0, *pdwSize ) ) {
+            fRes = ReadFile( hFile, *pvData, *pdwSize, &amp;dwRead, NULL );		
+        }	
+        CloseHandle( hFile );
+    }
+    return fRes;
+}
+</pre>
+    <h2><a name="fontrender"></a>Registering the UI Plug-in</h2>
+<p>When registering the default UI plugin, <b>UIXCreateUIPlugin</b> requires an <b>ITitleFontRenderer</b> interface that is used to render text.  The following code is a simple example implementation of <b>ITitleFontRenderer</b> using <a href="xgraphics_xfont_interface.htm">XFONT</a>.  The font renderer plug-in need not be implemented with <b>XFONT</b>; it can be implemented using the title's existing font support.</p>
+<pre class="clsCode">
+class CTitleFontRenderer : public ITitleFontRenderer
+{
+public:
+    CTitleFontRenderer() { m_pXFont = NULL; };
+    ~CTitleFontRenderer() { if( m_pXFont ) { m_pXFont-&gt;Release(); } };
+    STDMETHODIMP_(ULONG)Release() { delete this; return 0; };
+    STDMETHODIMP OpenFont( LPCWSTR pszFont ) {
+        return XFONT_OpenTrueTypeFont( pszFont, 0x10000, &amp;m_pXFont );
+    };
+    STDMETHODIMP DrawText( LPCWSTR pText, DWORD X, DWORD Y, DWORD MaxWidth ) {
+        if( MaxWidth &gt; 0 ) {
+            D3DRECT r = { X, Y, X + MaxWidth, Y + 200 };
+            m_pXFont-&gt;SetClippingRectangle( &amp;r );
+        }
+        return m_pXFont-&gt;TextOut( g_pSurface, pText, -1, X, Y );
+    };
+    STDMETHODIMP GetTextSize( LPCWSTR pText, DWORD *pWidth, DWORD *pHeight ) {
+        *pHeight = m_pXFont-&gt;GetTextHeight();
+        return m_pXFont-&gt;GetTextExtent( pText, -1, (UINT *)pWidth );
+    };
+    STDMETHODIMP SetColor( D3DCOLOR Color ) {
+        m_pXFont-&gt;SetTextColor( Color );
+        return S_OK;
+    };
+    STDMETHODIMP SetHeight( DWORD Height ) {
+        return m_pXFont-&gt;SetTextHeight( Height );
+    };
+
+private:
+    XFONT *m_pXFont;
+};
+</pre>
+    <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>D3DTILE</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="D3DTILE">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="D3DTILE"/>
+<MSHelp:Keyword Index="F" Term="D3DTILE"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_D3DTILE_graphics"></A>D3DTILE</H1>
+
+<P>Describes a tile. Tiles are GPU views that significantly improve rendering speed for render targets and depth buffers by reorganizing memory to improve bandwidth, and by allowing depth buffers to be compressed.</P>
+
+<PRE class=syntax>typedef struct _D3DTILE        // Xbox extension
+{                   
+    DWORD   Flags;
+    void*   pMemory;
+    DWORD   Size;
+    DWORD   Pitch;
+    DWORD   ZStartTag; 
+    DWORD   ZOffset;
+} D3DTILE;
+</PRE>
+
+<H4>Members</H4>
+
+<DL>
+<DT><B>Flags</B></DT>
+
+<DD>This may be the value zero, or one or more of the following flags ORed together. These flags describe the characteristics of the tile.
+	<dl>
+	<dt>D3DTILE_FLAGS_ZBUFFER</dt>
+	<dd>Tile will be used to hold depth targets.</dd>
+	
+	<dt>D3DTILE_FLAGS_ZCOMPRESS</dt>
+	<dd>Tile for a z buffer is to be compressed.</dd>
+	
+	<dt>D3DTILE_FLAGS_Z32BITS</dt>
+	<dd>Gives the depth format for a tiled z buffer. D3DTILE_FLAGS_Z16BITS may not be set at the same time.</dd>
+	
+	<dt>D3DTILE_FLAGS_Z16BITS</dt>
+	<dd>Gives the depth format for a tiled z buffer. D3DTILE_FLAGS_Z32BITS may not be set at the same time.</dd>
+	</dl>
+	
+
+</DD>
+
+<DT><B>pMemory</B></DT>
+
+<DD>Pointer to the start of the contiguous memory range that is to be tiled. The memory should allocated using <a href="xbox_dxg_D3D_AllocContiguousMemory.html"><B>D3D_AllocContiguousMemory</b></a> with  D3DTILE_ALIGNMENT (16k) byte alignment.</DD>
+
+<DT><B>Size</B></DT>
+
+<DD>Size of the memory that is to be tiled and is pointed to by <i>pMemory</i>. <i>Size</i> should be calculated using a height that is a multiple of 16 (and the result should be rounded up to the next multiple of 16K).</DD>
+
+<DT><B>Pitch</B></DT>
+
+<DD>Specifies the pitch of the tile. Any surface created in the tiled memory should share this same pitch.  The hardware supports only a limited number of pitches, ranging from 0x200 to 0xE000. Only the following pitches are supported:
+	<table>
+	<tr><th>Constant</th><th>Pitch Value</th></tr>
+	<tr><td>D3DTILE_PITCH_0200&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>0x0200</td></tr>
+	<tr><td>D3DTILE_PITCH_0300</td><td>0x0300</td></tr>
+	<tr><td>D3DTILE_PITCH_0400</td><td>0x0400</td></tr>
+	<tr><td>D3DTILE_PITCH_0500</td><td>0x0500</td></tr>
+	<tr><td>D3DTILE_PITCH_0600</td><td>0x0600</td></tr>
+	<tr><td>D3DTILE_PITCH_0700</td><td>0x0700</td></tr>
+	<tr><td>D3DTILE_PITCH_0800</td><td>0x0800</td></tr>
+	<tr><td>D3DTILE_PITCH_0A00</td><td>0x0A00</td></tr>
+	<tr><td>D3DTILE_PITCH_0C00</td><td>0x0C00</td></tr>
+	<tr><td>D3DTILE_PITCH_0E00</td><td>0x0E00</td></tr>
+	<tr><td>D3DTILE_PITCH_1000</td><td>0x1000</td></tr>
+	<tr><td>D3DTILE_PITCH_1400</td><td>0x1400</td></tr>
+	<tr><td>D3DTILE_PITCH_1800</td><td>0x1800</td></tr>
+	<tr><td>D3DTILE_PITCH_1C00</td><td>0x1C00</td></tr>
+	<tr><td>D3DTILE_PITCH_2000</td><td>0x2000</td></tr>
+	<tr><td>D3DTILE_PITCH_2800</td><td>0x2800</td></tr>
+	<tr><td>D3DTILE_PITCH_3000</td><td>0x3000</td></tr>
+	<tr><td>D3DTILE_PITCH_3800</td><td>0x3800</td></tr>
+	<tr><td>D3DTILE_PITCH_4000</td><td>0x4000</td></tr>
+	<tr><td>D3DTILE_PITCH_5000</td><td>0x5000</td></tr>
+	<tr><td>D3DTILE_PITCH_6000</td><td>0x6000</td></tr>
+	<tr><td>D3DTILE_PITCH_7000</td><td>0x7000</td></tr>
+	<tr><td>D3DTILE_PITCH_8000</td><td>0x8000</td></tr>
+	<tr><td>D3DTILE_PITCH_A000</td><td>0xA000</td></tr>
+	<tr><td>D3DTILE_PITCH_C000</td><td>0xC000</td></tr>
+	<tr><td>D3DTILE_PITCH_E000</td><td>0xE000</td></tr>
+	</table>
+
+</DD>
+
+<DT><B>ZStartTag</B></DT>
+
+<DD>Z-Compressed tiles require that memory be allocated from special tag RAM, for the size of the depth buffer. Every D3DTILE_TAGSIZE (64) bytes of depth buffer require that one tag bit be allocated from the special tag RAM. There are D3DTILE_MAXTAGS (76800) total tag RAM bits available, and the tag bits can only be allocated in bundles of 256. It is up to the caller to manage the allocations from tag RAM by appropriately setting <b>ZStartTag</b> to the start of a consecutive, unused section of tag RAM large enough to represent the tile. The following bit of code show how you can set the <b>ZStartTag</b> member for a new tile, assuming you have pDevice, a valid pointer to an <a href="_dx_idirect3ddevice8_graphics.htm"><b>IDirect3DDevice8</b></a> interface.
+<blockquote>
+<pre>D3DTILE lastReservedTile; // tiles 0 and 1 are reserved
+D3DTILE newTile;
+
+pDevice-&gt;GetTile( 1, &amp;lastReservedTile );
+newTile.ZStartTag = D3DTILE_ZENDTAG( &amp;lastReservedTile );
+</pre>
+</blockquote>
+
+<p>The macro <a href="_dx_d3dtile_zendtag_graphics.htm"><b>D3DTILE_ZENDTAG</b></a> has been provided to help to help determine where to start in tag RAM. In this example, it is assumed that newTile is the first tile to be created by the user. Tile 0 and 1 are reserved by Direct3D for the primary render target and primary depth buffer, assuming that these are automatically created.</p>
+
+<p>For automatically created depth buffers (<b>EnableAutoDepthStencil</b> is TRUE), Direct3D always reserves a corresponding range of tags bits, starting at 0.  If <a href="_dx_idirect3ddevice8_reset_graphics.htm"><b>IDirect3DDevice8::Reset</b></a> is called, it's the callers responsibility to ensure that there are enough free tag bits starting at 0 to satisfy the new mode.</p>
+
+</DD>
+
+<DT><B>ZOffset</B></DT>
+
+<DD>It's possible to create a compressed tile even if there are not enough tag bits free to entirely cover it, so long as the tags bits are allocated from the very end of the tag RAM buffer.  In this case, <b>ZOffset</b> may be used to specify an offset in order to vertically position the tag bits to correspond to the area of the buffer that would make most benefit from the compression.  <b>ZOffset</b> is a byte offset from the start of the frame buffer, and must be a multiple of D3DTILE_ALIGNMENT.
+
+<p>This offset applies to only one depth buffer, the one that uses up all available tag RAMs. Because of the way in which tiled memory is organized, the mapping of the offset to screen locations, and likewise the portion of a partially-covered buffer that's actually compressible, are only roughly top-to-bottom.</p>
+</DD>
+
+</DL>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in d3d8typs.h.</P>
+
+<h4>See Also</h4>
+
+<p><a href="_dx_d3dtile_zendtag_graphics.htm"><b>D3DTILE_ZENDTAG</b></a>, <a href="_dx_idirect3ddevice8_gettile_graphics.htm"><b>IDirect3DDevice8::GetTile</b></a>, <a href="_dx_idirect3ddevice8_settile_graphics.htm"><b>IDirect3DDevice8::SetTile</b></a></p>
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

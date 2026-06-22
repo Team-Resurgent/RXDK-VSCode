@@ -1,0 +1,156 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>PSFinalCombinerInputsEFG</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="PSFinalCombinerInputsEFG"/>
+<MSHelp:Keyword Index="F" Term="PSFinalCombinerInputsEFG"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1><A NAME=""></A>PSFinalCombinerInputsEFG</H1>
+<!--***********************************************************-->
+
+<p>The <b>PSFinalCombinerInputsEFG</b> field specifies the e, f, and g inputs for the final combiner. The <b>PS_COMBINERINPUTS(</b><i>a</i>,<i>b</i>,<i>c</i>,<i>d</i><b>)</b> macro is used to set values in this field. The macro is defined as follows:</p>
+
+<a name="ps_combinerinputs"></a><pre class=syntax>#define PS_COMBINERINPUTS(a,b,c,d) (((a)&lt;&lt;24)|((b)&lt;&lt;16)|((c)&lt;&lt;8)|(d))</pre>
+
+<p>The parameters <i>a</i>, <i>b</i>, and <i>c</i> correspond to e, f, and g. The <I>d</I> parameter is used to specify flags that configure the <a href="_dx_psfinalcombinerinputsabcd_graphics.htm#ps_register_v1r0_sum"><b>PS_REGISTER_V1RO_SUM</b></a> register or the <a href="_dx_psfinalcombinerinputsabcd_graphics.htm#ps_register_ef_prod"><b>PS_REGISTER_EF_PROD</b></a> register. The g input of the final combiner is used to specify the alpha output of the final combiner. The final combiner only reads three components (red, blue, and green values) from the e and f registers unless the <a href="#ps_channel_alpha"><b>PS_CHANNEL_ALPHA</b></a> modifer is set. It also only reads one component (the blue value) from the g register unless the <b>PS_CHANNEL_ALPHA</b> modifier is used.</p>
+
+<p>Each input (for the <i>a</i>, <i>b</i>, and <i>c</i> parameters) consists of a <a href="#register"><b>register name</b></a>, an <a href="#input_modifiers"><b>input modifier</b></a>, and a <a href="#channel_designator"><b>channel designator</b></a>, all ORed together.</p>
+
+<p>The fourth parameter (<i>d</i>) of the <b>PS_COMBINERINPUT</b> macro is a combination of up to three <a href="#flags"><b>flags</b></a> ORed together and is used to specify the behavior of the <a href="_dx_psfinalcombinerinputsabcd_graphics.htm#ps_register_v1r0_sum"><b>PS_REGISTER_V1R0_SUM</b></a> which may be used in the final combiner.</p>
+
+<a name="register"></a><h4>Registers</h4>
+
+<p>The register is specified from the following list and must be ORed together with an input modifer and a channel designator:</p>
+
+<dl>
+<dt><a name="ps_register_zero"></a>PS_REGISTER_ZERO</dt>
+
+<dd>All components are zero.</dd>
+
+<dt><a name="ps_register_c0"></a>PS_REGISTER_C0</dt>
+
+<dd>Constant c0 for this stage.</dd>
+
+<dt><a name="ps_register_c1"></a>PS_REGISTER_C1</dt>
+
+<dd>Constant c1 for this stage.</dd>
+
+<dt><a name="ps_register_fog"></a>PS_REGISTER_FOG</dt>
+
+<dd>Fog register. Only the RGB value of this register may be read by the eight combiner stages. It contains the color of the fog. The alpha value of the fog register may be read by the final combiner. It contains the fog factor that specifies the amount of fog color for the current fragment.</dd>
+
+<dt><a name="ps_register_vo"></a>PS_REGISTER_V0</dt>
+
+<dd>The diffuse color of the fragment. Note that this value may have been modified by a previous stage from the value calculated by the vertex shader.</dd>
+
+<dt><a name="ps_register_v1"></a>PS_REGISTER_V1</dt>
+
+<dd>The specular color of the fragment. Again, this value may have been modified by a previous stage from the value calculated by the vertex shader.</dd>
+
+<dt><a name="ps_register_to"></a>PS_REGISTER_T0</dt>
+
+<dd>The output of texture stage 0, possibly modified by a previous combiner stage.</dd>
+
+<dt><a name="ps_register_t1"></a>PS_REGISTER_T1</dt>
+
+<dd>The output of texture stage 1, possibly modified by a previous combiner stage.</dd>
+
+<dt><a name="ps_register_t2"></a>PS_REGISTER_T2</dt>
+
+<dd>The output of texture stage 2, possibly modified by a previous combiner stage.</dd>
+
+<dt><a name="ps_register_t3"></a>PS_REGISTER_T3</dt>
+
+<dd>The output of texture stage 3, possibly modified by a previous combiner stage.</dd>
+
+<dt><a name="ps_register_r0"></a>PS_REGISTER_R0</dt>
+
+<dd>Temporary register 0. If the final combiner is not used (<a href="_dx_psfinalcombinerinputsabcd_graphics.htm"><b>PSFinalCombinerInputsABCD</b></a> and <a href="_dx_psfinalcombinerinputsefg_graphics.htm"><b>PSFinalCombinerInputsEFG</b></a> both set to 0), the final color and alpha output of the pixel shader should be stored in the r0 register of the final active combiner stage.</dd>
+
+<dt><a name="ps_register_r1"></a>PS_REGISTER_R1</dt>
+
+<dd>Temporary register 1.</dd>
+
+</dl>
+
+<a name="input_modifiers"></a><h4>Input Modifers</h4>
+
+<p>The input modifer must be one of the following. It must be ORed together with a register and an channel designator. In the descriptions, x stands for the input register and y is the value presented to the register.</p>
+
+<dl>
+
+<dt><a name="ps_inputmapping_unsigned_identity"></a>PS_INPUTMAPPING_UNSIGNED_IDENTITY</dt>
+
+<dd>if(x&lt;0) y = -x else y = x</dd>
+
+<dt><a name="ps_inputmapping_unsigned_invert"></a>PS_INPUTMAPPING_UNSIGNED_INVERT</dt>
+
+<dd>y = 1 - x</dd>
+
+</dl>
+
+<a name="channel_designator"></a><h4>Channel Designator</h4>
+
+<p>The channel designator needs to be one of the following values. This must be ORed together with a register and an input modifier.</p>
+
+<dl>
+<dt><a name="ps_channel_rgb"></a>PS_CHANNEL_RGB</dt>
+
+<dd>Input comes from the RGB portion of the input register (valid for RGB portion only).</dd>
+
+<dt><a name="ps_channel_alpha"></a>PS_CHANNEL_ALPHA</dt>
+
+<dd>Input comes from alpha portion of input register (valid for both RGB and alpha portions).</dd>
+
+</dl>
+
+<h4><a name="flags"></a>Flags</h4>
+
+<p>These flags determine the behavior of the <a href="_dx_psfinalcombinerinputsabcd_graphics.htm#ps_register_v1r0_sum"><b>PS_REGISTER_V1R0_SUM</b></a> which may be used in the final combiner.</p>
+
+<dl>
+<dt>PS_FINALCOMBINERSETTING_CLAMP_SUM</dt> 
+
+<dd>(v0 + r1) is clamped to a positive range.</dd>
+
+<dt>PS_FINALCOMBINERSETTING_COMPLEMENT_V1</dt> 
+
+<dd>(1 - v1) is used as an input to the sum rather than v1.</dd>
+
+PS_FINALCOMBINERSETTING_COMPLEMENT_R0 (1 - r0) is used as an input to the sum rather than v1.
+
+</dl>
+
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

@@ -1,0 +1,53 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>10x11 Pixel Aspect Ratio</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="10x11 Pixel Aspect Ratio"/>
+<MSHelp:Keyword Index="F" Term="10x11 Pixel Aspect Ratio"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1>10x11 Pixel Aspect Ratio</H1>
+
+<p>This is a video mode attribute that may be specified in all video modes that are 640 pixels wide. It is not supported in any other modes. Enabling the 10 &times; 11 pixel aspect ratio will increase the black space on the left and right sides of the screen so that more of the rendered pixels are squeezed into the active portion of the screen.</p>
+
+<p>This mode is enabled by ORing the D3DPRESENTFLAG_10X11PIXELASPECTRATIO flag in with the <b>Flags</b> member of <a href="_dx_d3dpresent_parameters_graphics.htm"><b>D3DPRESENT_PARAMETERS</b></a>.</p>
+
+<p>If you choose to use this mode, you will need to adjust your projection transformation matrix to accommodate the non-square pixels in the display (the pixels are taller and thinner 1:1.1). For example:</p>
+
+<pre>// Setup the presentation parameters.
+D3DPRESENT_PARAMETERS params;
+ZeroMemory( &amp;params, sizeof( params ) );
+params.BackBufferWidth   = 640;
+params.BackBufferHeight  = 480;
+params.Flags             = D3DPRESENTFLAG_10X11PIXELASPECTRATIO;
+
+// Initialize the other members of D3DPRESENT_PARAMETERS and create the device.
+// ...
+
+// Setup the projection transformation matrix.
+XGMATRIX matProjection;
+XGMatrixPerspectiveFovLH( &amp;matProjection, // The projection transformation matrix.
+                          XG_PI / 4,      // Field of view, in radians.
+                          4.0f / 3.3f,    // The aspect ratio.
+                          1.0f,           // The Z-value of the near view plane.
+                          100.0f);        // The Z-value of the far view plane.
+
+</pre>
+
+<p>Notice that in this example, the aspect ratio is not 4:3 but is instead 4:3.3.</p>
+
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

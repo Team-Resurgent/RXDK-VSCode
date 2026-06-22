@@ -1,0 +1,192 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>PROCESS_HEAP_ENTRY</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="PROCESS_HEAP_ENTRY">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="PROCESS_HEAP_ENTRY"/>
+<MSHelp:Keyword Index="F" Term="PROCESS_HEAP_ENTRY"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_process_heap_entry_str"></A>PROCESS_HEAP_ENTRY</H1>
+
+<P>The <B>PROCESS_HEAP_ENTRY</B> structure contains information about a heap element. The <A HREF="memman_1ca3.htm">HeapWalk</a> function uses a <B>PROCESS_HEAP_ENTRY </B>structure to enumerate the elements of a heap.</P>
+
+<PRE class=syntax>typedef struct _PROCESS_HEAP_ENTRY {
+    PVOID lpData;
+    DWORD cbData;
+    BYTE cbOverhead;
+    BYTE iRegionIndex;
+    WORD wFlags;
+    union {
+        struct {
+            HANDLE hMem;
+            DWORD dwReserved[ 3 ];
+        } Block;
+        struct {
+            DWORD dwCommittedSize;
+            DWORD dwUnCommittedSize;
+            LPVOID lpFirstBlock;
+            LPVOID lpLastBlock;
+        } Region;
+    };
+} PROCESS_HEAP_ENTRY, *LPPROCESS_HEAP_ENTRY, *PPROCESS_HEAP_ENTRY; </PRE>
+
+<H4>Members</H4>
+
+<DL>
+<DT><B>lpData</B></DT>
+
+<DD>Pointer to the data portion of the heap element. 
+
+<P>To initiate a <B>HeapWalk</B> heap enumeration, set <B>lpData</B> to NULL.
+
+
+<P>If PROCESS_HEAP_REGION is used in the <B>wFlags</B> member, <B>lpData</B> points to the first virtual address used by the region. 
+
+
+<P>If PROCESS_HEAP_UNCOMMITTED_RANGE is used in <B>wFlags</B>, <B>lpData</B> points to the beginning of the range of uncommitted memory. 
+</DD>
+
+<DT><B>cbData</B></DT>
+
+<DD>Specifies the size, in bytes, of the data portion of the heap element.
+
+<P>If PROCESS_HEAP_REGION is used in <B>wFlags</B>, <B>cbData</B> specifies the total size, in bytes, of the address space that is reserved for this region. 
+
+
+<P>If PROCESS_HEAP_UNCOMMITTED_RANGE is used in <B>wFlags</B>, <B>cbData</B> specifies the size, in bytes, of the range of uncommitted memory. 
+</DD>
+
+<DT><B>cbOverhead</B></DT>
+
+<DD>Specifies the size, in bytes, of the data used by the system to maintain information about the heap element. These overhead bytes are in addition to the <B>cbData</B> bytes of the data portion of the heap element.
+
+<P>If PROCESS_HEAP_REGION is used in <B>wFlags</B>, <B>cbOverhead</B> specifies the size, in bytes, of the heap control structures that describe the region. 
+
+
+<P>If PROCESS_HEAP_UNCOMMITTED_RANGE is used in <B>wFlags</B>, <B>cbOverhead</B> specifies the size, in bytes, of the control structures that describe this uncommitted range. 
+</DD>
+
+<DT><B>iRegionIndex</B></DT>
+
+<DD>Handle to the heap region that contains the heap element. A heap consists of one or more regions of virtual memory, each with a unique region index.
+
+<P>In the first heap entry returned for most heap regions, <B>HeapWalk</B> uses the PROCESS_HEAP_REGION in the <B>wFlags</B> member. When this value is used, the members of the <B>Region</B> structure contain additional information about the region.
+
+
+<P>The <A HREF="memman_6krn.htm">HeapAlloc</a> function sometimes uses the <A HREF="memman_3elf.htm">VirtualAlloc</a> function to allocate large blocks from a growable heap. The heap manager treats such a large block allocation as a separate region with a unique region index. <B>HeapWalk</B> does not use PROCESS_HEAP_REGION in the heap entry returned for a large block region, so the members of the <B>Region</B> structure are not valid. You can use the <A HREF="memman_6v7d.htm">VirtualQuery</a> function to get additional information about a large block region.
+</DD>
+
+<DT><B>wFlags</B></DT>
+
+<DD>Specifies properties of the heap element. Some values affect the meaning of other members of this <B>PROCESS_HEAP_ENTRY</B> data structure. The following values are defined. 
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=39%>Value</TH>
+<TH align=left width=61%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=39%>PROCESS_HEAP_REGION</TD>
+<TD width=61%>The heap element is located at the beginning of a region of contiguous virtual memory in use by the heap. 
+<P>The <B>lpData</B> member of the structure points to the first virtual address used by the region; the <B>cbData</B> member specifies the total size, in bytes, of the address space that is reserved for this region; and the <B>cbOverhead</B> member specifies the size, in bytes, of the heap control structures that describe the region.</P>
+
+<P>The <B>Region</B> structure becomes valid. The <B>dwCommittedSize</B>, <B>dwUnCommittedSize</B>, <B>lpFirstBlock</B>, and <B>lpLastBlock</B> members of the structure contain additional information about the region.</P>
+</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=39%>PROCESS_HEAP_UNCOMMITTED_RANGE</TD>
+<TD width=61%>The heap element is located in a range of uncommitted memory within the heap region. 
+<P>The <B>lpData</B> member points to the beginning of the range of uncommitted memory; the <B>cbData</B> member specifies the size, in bytes, of the range of uncommitted memory; and the <B>cbOverhead</B> member specifies the size, in bytes, of the control structures that describe this uncommitted range.</P>
+</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=39%>PROCESS_HEAP_ENTRY_BUSY</TD>
+<TD width=61%>The heap element is an allocated block.</TD>
+</TR>
+</TABLE><BR>
+
+</DD>
+
+<DT><B>Block</B></DT>
+
+<DD>This structure is unused.</DD>
+
+<DT><B>Region</B></DT>
+
+<DD>This structure is valid only if the <B>wFlags</B> member specifies PROCESS_HEAP_REGION. 
+
+<P>The members of the <B>Region</B> structure are as follows. 
+
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=33%>Member</TH>
+<TH align=left width=67%>Description</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=33%><B>dwCommittedSize</B></TD>
+<TD width=67%>Specifies the number of bytes in the heap region that are currently committed as free memory blocks, busy memory blocks, or heap control structures.
+<P>This is an optional field that is set to zero if the number of committed bytes is not available.</P>
+</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=33%><B>dwUnCommittedSize</B></TD>
+<TD width=67%>Specifies the number of bytes in the heap region that are currently uncommitted.
+<P>This is an optional field that is set to zero if the number of uncommitted bytes is not available.  </P>
+</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=33%><B>lpFirstBlock</B></TD>
+<TD width=67%>Pointer to the first valid memory block in this heap region.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=33%><B>lpLastBlock</B></TD>
+<TD width=67%>Pointer to the first invalid memory block in this heap region. </TD>
+</TR>
+</TABLE><BR>
+
+</DD>
+</DL>
+
+<h4>Requirements</h4>
+
+<p>
+<B>Header: </B>Declared in Winbase.h; include Xtl.h.</P>
+
+<H4>See Also</H4>
+<P>
+
+<a href="xbox_mt_xtl_sll_memory_management_structures.htm">Memory Management Structures</a> | 
+<A HREF="memman_66qr.htm">GlobalAlloc</a>, <A HREF="memman_6krn.htm">HeapAlloc</a>, <A HREF="memman_1ca3.htm">HeapWalk</a>, <A HREF="memman_3elf.htm">VirtualAlloc</a>, <A HREF="memman_6v7d.htm">VirtualQuery</a> 
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

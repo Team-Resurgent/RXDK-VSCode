@@ -1,0 +1,311 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>DmNotify</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="CreateFile">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="DmNotify"/>
+<MSHelp:Keyword Index="F" Term="DmNotify"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_createfile"></A>DmNotify</H1>
+
+<P>Registers notification handlers for debugging events.</P>
+
+<PRE class=syntax><b>DMHRAPI DmNotify(</b>
+  <b>PDMN_SESSION</b> <i>Session</i><b>,</b> 
+  <b>DWORD</b> <i>dwNotification</i><b>,</b> 
+  <b>PDM_NOTIFY_FUNCTION</b> <i>pfnHandler</i>
+  <b>);</b></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+
+<DT><I>Session</I></DT>
+
+<DD>Pointer to a notification session that was created with a call to <A HREF="xbox_jbh_debugapi_function_dmopennotificationsession.htm"><B>DmOpenNotificationSession</B></A>.</DD>
+
+<DT><I>dwNotification</I></DT>
+
+<DD>Contains one of the following values:
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=31%>Value</TH>
+<TH align=left width=69%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>DM_NONE</TD>
+<TD width=69%>Notifications are no longer sent.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>DM_BREAK</TD>
+<TD width=69%>A notification is issued if a breakpoint is reached.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>DM_DEBUGSESSION</TD>
+<TD width=69%>When this flag is used, the debug manager will return TRUE for all calls to <B>DmIsDebuggerPresent</B> as long as this session remains open. This flag is valid only on the development system (xboxdbg.lib).</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>DM_DEBUGSTR</TD>
+<TD width=69%>A notification is issued if text is sent to debug out.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>DM_EXEC</TD>
+<TD width=69%>A notification is issued if the debugging subsystem causes all execution on the Xbox to start or stop.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>DM_SINGLESTEP</TD>
+<TD width=69%>A notification is issued if the CPU generates a single-step interrupt.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>DM_MODLOAD</TD>
+<TD width=69%>A notification is issued if an XTL-derived module (an Xbox title) is loaded.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>DM_MODUNLOAD</TD>
+<TD width=69%>A notification is issued if an XTL-derived module (an Xbox title) is unloaded.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>DM_CREATETHREAD</TD>
+<TD width=69%>A notification is issued if a thread is created.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>DM_DESTROYTHREAD</TD>
+<TD width=69%>A notification is issued if a thread is destroyed.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>DM_EXCEPTION</TD>
+<TD width=69%>A notification is issued if an exception occurs.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>DM_ASSERT</TD>
+<TD width=69%>A notification is issued if an assertion occurs.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>DM_DATABREAK</TD>
+<TD width=69%>A notification is issued if a data break occurs.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>DM_RIP</TD>
+<TD width=69%>A notification is issued if a RIP debug event occurs.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>DM_CLOCKINT</TD>
+<TD width=69%>A notification is issued if a clock interrupt occurs.</TD>
+</TR>
+
+<!--
+<TR VALIGN="top">
+<TD width=31%>DM_PROFINT</TD>
+<TD width=69%>A notification is issued if a profiler interrupt occurs.</TD>
+</TR>
+-->
+
+<TR VALIGN="top">
+<TD width=31%>DM_THREADSWITCH</TD>
+<TD width=69%>A notification is issued if an execution switches from the current thread.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>DM_SECTIONLOAD</TD>
+<TD width=69%>A notification is issued if a section from an XTL-derived module (an Xbox title) is loaded.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>DM_SECTIONUNLOAD</TD>
+<TD width=69%>A notification is issued if a section from an XTL-derived module (an Xbox title) is unloaded.</TD>
+</TR>
+
+</TABLE>
+
+</DD>
+
+<DT><I>pfnHandler</I></DT>
+
+<DD>Pointer to a notification handler. Debugging notification handlers must take the following form:
+<PRE>DWORD __stdcall my_handler(ULONG dwNotification, DWORD dwParam);</PRE>
+</DD>
+
+</DL>
+
+<H4>Return Values</H4>
+
+<P class="content">Returns XBDM_NOERR if successful, an error value otherwise.</P>
+
+<H4>Remarks</H4>
+
+<P class="content">Once you have registered your handler to receive notifications, the Xbox debugging subsystem will call your handler when the specified debugging event occurs. The first parameter, <I>dwNotification</I>, contains one of the notification constants listed below. The contents of the second parameter, <I>dwParam</I>, vary according to the type of debugging event that occurred.</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=31%>Value</TH>
+<TH align=left width=69%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>DM_BREAK</TD>
+<TD width=69%>The <I>dwParam</I> parameter contains a pointer to a <b>DMN_BREAK</b> structure.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>DM_DEBUGSTR</TD>
+<TD width=69%>The <I>dwParam</I> parameter contains a pointer to a <b>DMN_DEBUGSTR</b> structure.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>DM_EXEC</TD>
+<TD width=69%>The <I>dwParam</I> parameter contains one of the DMN_EXEC constants listed below.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>DM_SINGLESTEP</TD>
+<TD width=69%>The <I>dwParam</I> parameter contains a pointer to a <b>DMN_BREAK</b> structure.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>DM_MODLOAD</TD>
+<TD width=69%>The <I>dwParam</I> parameter contains a pointer to a <b>DMN_MODLOAD</b> structure.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>DM_MODUNLOAD</TD>
+<TD width=69%>The <I>dwParam</I> parameter contains a pointer to a <b>DMN_MODLOAD</b> structure.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>DM_CREATETHREAD</TD>
+<TD width=69%>The <I>dwParam</I> parameter contains a pointer to a <b>DMN_CREATETHREAD</b> structure.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>DM_DESTROYTHREAD</TD>
+<TD width=69%>The <I>dwParam</I> parameter contains the ID of the thread that was destroyed.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>DM_EXCEPTION</TD>
+<TD width=69%>The <I>dwParam</I> parameter contains a pointer to a <b>DMN_EXCEPTION</b> structure.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>DM_ASSERT</TD>
+<TD width=69%>The <I>dwParam</I> parameter contains a pointer to a <b>DMN_DEBUGSTR</b> structure.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>DM_DATABREAK</TD>
+<TD width=69%>The <I>dwParam</I> parameter contains a pointer to a <b>DMN_DATABREAK</b> structure.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>DM_RIP</TD>
+<TD width=69%>The <I>dwParam</I> parameter contains a pointer to a <b>RIP_INFO</b> structure.</TD>
+</TR>
+
+<!--
+<TR VALIGN="top">
+<TD width=31%>DM_PROFINT</TD>
+<TD width=69%>The <I>dwParam</I> parameter contains a pointer to a DMN_PROFINT structure.</TD>
+</TR>
+-->
+
+<TR VALIGN="top">
+<TD width=31%>DM_THREADSWITCH</TD>
+<TD width=69%>The <I>dwParam</I> parameter contains a pointer to a <b>DMN_THREADSWITCH</b> structure.</TD>
+</TR>
+
+</TABLE>
+
+
+<P class=note><B><I>Note</I></B>&nbsp;&nbsp;&nbsp;If the thread has stopped, the DM_STOPTHREAD flag is set in the <I>dwNotification</I> parameter. In addition, all other threads are suspended as if <A HREF="xbox_jbh_debugapi_function_dmstop.htm"><B>DmStop</B></A> had been called. Bitwise-and <I>dwNotification</I> with DM_NOTIFICATIONMASK to strip this flag, or bitwise-and with DM_STOPTHREAD to see if the flag was set. If the thread has stopped, you will have to restart it using the <A HREF="xbox_jbh_debugapi_function_dmcontinuethread.htm"><B>DmContinueThread</B></A> function, and you will have to call <A HREF="xbox_jbh_debugapi_function_dmgo.htm"><B>DmGo</B></A> to resume execution of all other threads.</P>
+
+<H4>DM_ASSERT</H4>
+<P class="content">If an assertion occurs, a DM_ASSERT notification is sent. The <I>dwParam</I> parameter contains a pointer to a <B>DMN_DEBUGSTR</B> structure that contains the assert message. If an assert occurs, you will have to tell the debugging subsystem how to proceed by setting the EAX register (in the context of the thread that took the assertion) on the Xbox to one of these three values: "B" (ASCII 66) to suspend and break into the process, "I" (ASCII 73) to ignore the assertion and continue with title execution, or "T" (ASCII 84) to terminate the thread. To accomplish this, you will need to call the <A HREF="xbox_jbh_debugapi_function_dmsetthreadcontext.htm"><B>DmSetThreadContext</B></A> function.</P>
+
+<H4>DM_DEBUGSTR</H4>
+<P class="content">If text is sent to debug out, a DM_DEBUGSTR notification is sent.</P>
+
+<H4>DM_EXEC</H4>
+<P class="content">DM_EXEC notifications are sent immediately, when a handler is registered for DM_EXEC notification events (to relay the current state), and whenever the Xbox execution state changes. <I>dwParam</I> will contain one of the following values:</P>
+<UL>
+<LI>DMN_EXEC_STOP &#8211 All title threads are stopped.</LI>
+<LI>DMN_EXEC_START &#8211 All title threads are restarted, except those marked with the DM_STOPTHREAD flag.</LI>
+<LI>DMN_EXEC_REBOOT &#8211 The Xbox is about to reboot.</LI>
+<LI>DMN_EXEC_PENDING &#8211 The Xbox has rebooted, but no title has been loaded yet.</LI>
+</UL>
+
+<H4>DM_CREATETHREAD</H4>
+
+<P class="content">The DM_CREATETHREAD notification is sent just after a new thread is created and just before that thread begins execution.</P>
+
+<H4>DM_CLOCKINT, <!--DM_PROFINT,--> DM_THREADSWITCH</H4>
+
+<P class="content">There are a few things to keep in mind regarding the DM_CLOCKINT <!--DM_PROFINT,--> and DM_THREADSWITCH notification event types.</P>
+
+  <UL>
+    <LI>No system services are available while processing these notifications.</LI>
+    <LI>These events are only supported on the Xbox (via the xbdm.h header).</LI>
+    <LI>Details of these notification events are intentionally left undocumented.</LI>
+  </UL>
+
+<H4>Cease Notifications</H4>
+
+<P class="content">To tell the debugging subsystem to quit sending notifications to a specific handler, call <B>DmNotify</B>, sending DM_NONE as the <i>dwNotification</i> value and a pointer to the handler as the <I>pfnHandler</I> value.</P>
+
+<P class="content">To tell the debugging subsystem to quit sending notifications to all handlers in the given session, call <B>DmNotify</B>, sending DM_NONE as the <i>dwNotification</i> value and NULL as the <I>pfnHandler</I> value.</P>
+
+<H4>Registering a Handler Multiple Times</H4>
+
+<P class="content">If the same handler is registered in several sessions, each handler will receive a notification when a debug event occurs. If you attempt to register the same handler multiple times in the same session, it is only registered once.</P>
+
+
+<h4>Requirements</h4>
+<p class="content">
+<b>Header:</b> Declared in XbDm.h and XboxDbg.h
+<br><b>Import Library:</b> XbDm.lib for target system code; XboxDbg.lib for development system code.
+</p>
+
+<!--
+<H4>See Also</H4>
+<P class="content"></P>
+-->
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

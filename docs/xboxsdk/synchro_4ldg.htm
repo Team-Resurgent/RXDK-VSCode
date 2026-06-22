@@ -1,0 +1,121 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>WaitForSingleObject</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="WaitForSingleObject">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="WaitForSingleObject"/>
+<MSHelp:Keyword Index="F" Term="WaitForSingleObject"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_waitforsingleobject"></A>WaitForSingleObject</H1>
+
+<P>The <B>WaitForSingleObject</B> function returns when one of the following occurs:
+
+<UL>
+	<LI>The specified object is in the signaled state.</LI>
+
+	<LI>The time-out interval elapses.</LI>
+</UL>
+
+<P>To enter an alertable wait state, use the <A HREF="synchro_5yrc.htm">WaitForSingleObjectEx</a> function. To wait for multiple objects, use the <A HREF="synchro_9xbn.htm">WaitForMultipleObjects</a>. </P>
+
+<PRE class=syntax><B>DWORD WaitForSingleObject(
+  HANDLE</B><I> hHandle</I><B>,        </B>// handle to object
+<B>  DWORD</B><I> dwMilliseconds</I>   // time-out interval
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>hHandle</I></DT>
+
+<DD>[in] Handle to the object. For a list of the object types whose handles can be specified, see the following Remarks section. 
+
+<P>If this handle is closed while the wait is still pending, the function's behavior is undefined. 
+</DD>
+
+<DT><I>dwMilliseconds</I></DT>
+
+<DD>[in] Specifies the time-out interval, in milliseconds. The function returns if the interval elapses, even if the object's state is nonsignaled. If <I>dwMilliseconds</I> is zero, the function tests the object's state and returns immediately. If <I>dwMilliseconds</I> is INFINITE, the function's time-out interval never elapses. 
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value indicates the event that caused the function to return. This value can be one of the following. </P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=32%>Value</TH>
+<TH align=left width=68%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=32%>WAIT_ABANDONED</TD>
+<TD width=68%>The specified object is a mutex object that was not released by the thread that owned the mutex object before the owning thread terminated. Ownership of the mutex object is granted to the calling thread, and the mutex is set to nonsignaled.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=32%>WAIT_OBJECT_0</TD>
+<TD width=68%>The state of the specified object is signaled.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=32%>WAIT_TIMEOUT</TD>
+<TD width=68%>The time-out interval elapsed, and the object's state is nonsignaled.</TD>
+</TR>
+</TABLE><BR>
+
+<P>If the function fails, the return value is WAIT_FAILED. To get extended error information, call <A HREF="errors_3uwi.htm">GetLastError</a>. </P>
+
+<H4>Remarks</H4>
+
+<P>The <B>WaitForSingleObject</B> function checks the current state of the specified object. If the object's state is nonsignaled, the calling thread enters the wait state. It uses no processor time while waiting for the object state to become signaled or the time-out interval to elapse.</P>
+
+<P>The function modifies the state of some types of synchronization objects. Modification occurs only for the object whose signaled state caused the function to return. For example, the count of a semaphore object is decreased by one. </P>
+
+<P>The <B>WaitForSingleObject</B> function can wait for the following objects: 
+
+<UL>
+	<LI>Event</LI>
+
+	<LI>Mutex</LI>
+
+	<LI>Semaphore</LI>
+
+	<LI>Thread</LI>
+
+	<LI>Waitable timer</LI>
+</UL>
+
+<P>For more information, see <a href="unresolved.htm">Synchronization Objects</a>.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p><H4>See Also</H4>
+<P> 
+
+<a href="xbox_mt_xtl_sll_synchronization_functions.htm">Synchronization Functions</a> | 
+<A HREF="synchro_9xbn.htm">WaitForMultipleObjects</a>,  <A HREF="synchro_5yrc.htm">WaitForSingleObjectEx</a> </P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

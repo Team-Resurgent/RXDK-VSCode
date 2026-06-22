@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirectSoundBuffer8::Lock</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="IDirectSoundBuffer8::Lock [C++]">
+<META NAME="MS-HKWD" CONTENT="Lock (IDirectSoundBuffer8) [C++]">
+<META NAME="MS-HKWD" CONTENT="Lock [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Lock (IDirectSoundBuffer8)"/>
+<MSHelp:Keyword Index="K" Term="IDirectSoundBuffer8::Lock"/>
+<MSHelp:Keyword Index="F" Term="Lock"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_idirectsoundbuffer8_lock_dxaudio"></A>IDirectSoundBuffer8::Lock</H1>
+
+<P>The Lock method readies all or part of the buffer for a data write, and returns pointers to which data can be written.</P>
+
+<PRE class="syntax"><B>HRESULT Lock(</B>
+	<B>DWORD</B> <I>dwOffset</I>,
+	<B>DWORD</B> <I>dwBytes</I>,
+	<B>LPVOID</B> <I>*ppvAudioPtr1</I>,
+	<B>LPDWORD</B> <I>pdwAudioBytes1</I>,
+	<B>LPVOID</B> <I>*ppvAudioPtr2</I>,
+	<B>LPDWORD</B> <I>pdwAudioBytes2</I>,
+	<B>DWORD</B> <I>dwFlags</I>
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>dwOffset</I></DT>
+
+<DD>Value that specifies the offset (in bytes) from the start of the buffer to the point where the lock begins. This parameter is ignored if DSBLOCK_FROMWRITECURSOR is specified in the <I>dwFlags</I> parameter.</DD>
+
+<DT><I>dwBytes</I></DT>
+
+<DD>Value that specifies the size (in bytes) of the portion of the buffer to lock. The buffer is conceptually circular, so this number can exceed the number of bytes between <I>dwOffset</I> and the end of the buffer.</DD>
+
+<DT><I>ppvAudioPtr1</I></DT>
+
+<DD>Address of a variable that receives a pointer to the first locked part of the buffer.</DD>
+
+<DT><I>pdwAudioBytes1</I></DT>
+
+<DD>Address of a variable that receives the number of bytes in the block at <I>ppvAudioPtr1</I>. If this value is less than <I>dwBytes</I>, then the lock has wrapped and <I>ppvAudioPtr2</I> points to a second block of data at the beginning of the buffer .</DD>
+
+<DT><I>ppvAudioPtr2</I></DT>
+
+<DD>Address of a variable that receives a pointer to the second locked part of the capture buffer. If NULL is returned, the <I>ppvAudioPtr1</I> parameter points to the entire locked portion of the capture buffer.</DD>
+
+<DT><I>pdwAudioBytes2</I></DT>
+
+<DD>Address of a variable that receives the number of bytes in the block at <I>ppvAudioPtr2</I>. If <I>ppvAudioPtr2</I> is NULL, this value is zero.</DD>
+
+<DT><I>dwFlags</I></DT>
+
+<DD>Flags modifying the lock event. The following flags are defined:</DD>
+
+<TABLE border=0 cellpadding=5 cols=2 frame=below rules=rows>
+
+<TR VALIGN="top">
+<TD class=blue width=50%><B>Value</B></TD>
+<TD class=blue width=50%><B>Description</B></TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=50%>DSBLOCK_FROMWRITECURSOR</TD>
+<TD width=50%>Start the lock at the write cursor. The <I>dwOffset</I> parameter is ignored. </TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=50%>DSBLOCK_ENTIREBUFFER</TD>
+<TD width=50%>Lock the entire buffer. The <I>dwBytes</I> parameter is ignored. </TD>
+</TR>
+</TABLE>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>Returns DS_OK if successful; returns an error code otherwise.</P>
+
+<H4>Remarks</H4>
+
+<P>This method has been retained to allow easier porting of existing code. The buffer is not actually locked on the Xbox, but pointers are provided to which data can be written.</P>
+
+<P>This method accepts an offset and a byte count, and returns two write pointers and their associated sizes. If the locked portion does not extend to the end of the buffer and wrap to the beginning, the second pointer, <I>ppvAudioBytes2</I>, receives NULL. If the lock does wrap, <I>ppvAudioBytes2</I> points to the beginning of the buffer.</P>
+
+<P>If the application passes NULL for the <I>ppvAudioPtr2</I> and <I>pdwAudioBytes2</I> parameters, the lock extends no farther than the end of the buffer and does not wrap.</P>
+
+<H4>Requirements</H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in dsound.h.</P>
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

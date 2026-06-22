@@ -1,0 +1,64 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>XNetStartup</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="XNetStartup [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XNetStartup"/>
+<MSHelp:Keyword Index="F" Term="XNetStartup"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="xbox_xnetstartup_xsnl"></A>XNetStartup</H1>
+
+<P>Initializes the Xbox Secure Network Library (SNL).</P>
+
+<PRE class="syntax"><B>INT XNetStartup(</B>
+    <B>const XNetStartupParams</B> <I>*pxnsp</I>
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>pxnsp</I></DT>
+    <DD>Address of a <A HREF="xbox_xnetstartupparams_xsnl.htm"><B>XNetStartupParams</B></A> structure that contains all of the initial settings. Should be set to NULL if the title is using the default settings.</DD>
+</DL>
+
+<H4>Return Values</H4>
+<P>Returns zero if successful, an error code otherwise.</P>
+
+<H4>Remarks</H4>
+<P><B>XNetStartup</B> must be called before any network calls are made, with the exception of <A HREF="xbox_xnetgetethernetlinkstatus_xsnl.htm"><B>XNetGetEthernetLinkStatus</B></A>. After the network session is complete, the title must call the <A HREF="xbox_xnetcleanup_xsnl.htm"><B>XNetCleanup</B></A> function.</P>
+
+<P>By default, the Xbox SNL operates in secure mode, which does not allow communication with untrusted hosts, such as personal computers. However, the developer kit version of the Xbox SNL (Xnet.lib and Xnetd.lib) allows you to bypass this security by specifying the XNET_STARTUP_BYPASS_SECURITY flag in the <B>cfgFlags</B> member of the <B>XNetStartupParams</B> structure. The following example demonstrates an easy way of doing this:</P>
+
+<PRE>
+XNetStartupParams xnsp;
+memset(&amp;xnsp, 0, sizeof(xnsp));
+xnsp.cfgSizeOfStruct = sizeof(XNetStartupParams);
+xnsp.cfgFlags = XNET_STARTUP_BYPASS_SECURITY;
+INT err = XNetStartup(&amp;xnsp);
+</PRE>
+
+<H4>Requirements </H4>
+<P><B>Header: </B>Declared in Winsockx.h, for include use Xtl.h.</P>
+<P><B>Import Library: </B>Use Xnet.lib for titles that only support system link play, XOnline.lib for titles that support online play. Use the secure versions of the library file (Xnets.lib or XOnlines.lib) for final testing.</P>
+
+<H4>See Also</H4>
+<P><A HREF="xbox_xnetcleanup_xsnl.htm"><B>XNetCleanup</B></A>, <A HREF="xbox_wsastartup_winsock.htm"><B>WSAStartup</B></A></P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>BackgroundMusic Sample</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="BackgroundMusic Sample"/>
+<MSHelp:Keyword Index="F" Term="BackgroundMusic Sample"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>BackgroundMusic Sample</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<!--****Intro paragraph. Should be a three or four sentence summary of the topic.****-->
+<P class="intro">The BackgroundMusic sample demonstrates how to play background WMA music in an Xbox game.  This is done through the CMusicManager class, which encapsulates both soundtracks stored on the Xbox hard disk as well as WMA files that ship with the game.</P>
+<!--*********************************************************************************-->
+
+<!--****Stock text. Do not change.****-->
+<h3 class="overview">CMusicManager</H3>
+<!--**********************************-->
+
+<!--****Content paragraph. To use multiple paragraphs, copy and paste this tag.****-->
+<P class="content">The CMusicManager class uses one WMA decoder and two DirectSound streams to perform the playback.  When the decoder hits the end of the currently playing track, a new decoder is created to start decoding the next track while the end of the previous track is still playing.  It then performs a crossfade between the two streams to transition to the new track.  The duration of the crossfade is determined by the amount of decoded sound data that is buffered.</P>
+
+<P class="content">Since the two streams share the same audio buffer, the new stream could get starved as it is first starting up.  To avoid this, a small number of packets are reserved for the new stream to use when it first starts playing.  </P>
+
+<P class="content">The CMusicManager class uses the asynchronous WMA decoder to process WMA audio packets.  This frees the burden of keeping a separate thread. CMusicManager::Process allows for packet processing to occur and can be called from from the game's main thread, since file I/O inside the WMA decoder is asynchronous.  However, it is prudent to note that decoding is done synchronously, which may or may not be an issue depending on your game.</P>
+
+<h3 class="overview">Overview</H3>
+
+<P class="content">The user is limited to storing 100 soundtracks on his or her Xbox, so you don't have to worry about using up too much memory when caching soundtrack information.  Each soundtrack could have up to 500 songs in it, which means it's not appropriate to attempt to cache every song in memory.</P>
+
+<P class="content">The intent was to use as little CPU as possible.  As such, we use only one WMA decoder at a time, and use DLS envelopes to perform the crossfade. That is also why there is no synchronization between the main game thread and the worker thread.</P>
+
+<P class="note"><B><I>Note</I></B>&nbsp;&nbsp; In the November release, there is no way to trigger the release segment of a DLS envelope on a stream, so a volume fade is used to emulate the functionality.</P>
+
+<P class="content">One of the difficult aspects of WMA decoding is that the amount of CPU time required to decode a packet of audio data can vary dramatically depending on the content.  If the WMA decoding thread were allowed to run for its full quantum, it could consume as much as 20ms each time the thread is executed. To alleviate these spikes, the decoder can be instructed to yield its thread's quantum periodically.  This will not decrease the amount of time it takes to decode a packet's worth of audio data.  In fact, it will slightly increase the time taken, but it spreads the time out over several thread quanta.  This gives a much finer granularity of execution than the thread scheduler's 20ms quantum.  Analysis has shown that with a dwYield value of 1, the maximum execution time per quantum of the worker thread is approximately 2.5ms for user soundtracks.  </P>
+
+<P class="content">It's important to make sure that the worker thread still processes often enough not to starve the streams it is feeding.  Also keep in mind that, by spreading out the worker thread's execution time, other work being done on that thread will be less responsive.  A yield rate of 1 is NOT sufficient to ensure that user soundtracks will be decoded fast enough to keep the stream from starving. Some soundtracks may even starve with a yield rate of 2.</P>
+
+<!--
+<H3 class="hdcontrols">Controls</H3>
+
+<P class="content">For a complete list of controller mappings, press the <B>F</B> button on the hammerhead controller while this sample is running.</P>
+-->
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

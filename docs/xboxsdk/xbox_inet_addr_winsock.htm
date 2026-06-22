@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>inet_addr</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="inet_addr">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="inet_addr"/>
+<MSHelp:Keyword Index="F" Term="inet_addr"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="xbox_inet_addr_winsock"></A>inet_addr</H1>
+
+<P>Converts a string containing an (Ipv4) Internet Protocol dotted address into a proper address for the <A HREF="xbox_in_addr_winsock.htm">IN_ADDR</A> structure.</P>
+
+<PRE class=syntax><B>unsigned long inet_addr(
+  const char   FAR </B><I>*cp  </I>
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>cp</I></DT>
+
+<DD>[in] Null-terminated character string representing a number expressed in the Internet standard "." (dotted) notation.
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If no error occurs, <B>inet_addr</B> returns an unsigned long value containing a suitable binary representation of the Internet address given.</P>
+
+<P><B>inet_addr</B> does not verify that the string in the <I>cp</I> parameter contains a legitimate Internet address.  If a portion of an "a.b.c.d" address exceeds 255, the byte in the returned address will silenty overflow (for example, "4.3.2.256" will return 0x00020304).  However, <B>inet_addr</B> does verify that the string in the <I>cp</I> parameter contains only decimal, octal, or hexadecimal numbers; if a portion of an "a.b.c.d." address contains a non-number (for example, "4.3.2.ggg"), then <B>inet_addr</B> returns the value INADDR_NONE.</P>
+
+<H4>Remarks</H4>
+
+<P>The <B>inet_addr</B> function interprets the character string specified by the <I>cp</I> parameter. This string represents a numeric Internet address expressed in the Internet standard "." notation. The value returned is a number suitable for use as an Internet address. All Internet addresses are returned in IP's network order (bytes ordered from left to right). If you pass in " " (a space) to the <B>inet_addr</B> function, <B>inet_addr</B> returns zero.</P>
+
+<H4>Internet Addresses</H4>
+
+<P>Values specified using the "." notation take one of the following forms:</P>
+
+<P>a.b.c.d    a.b.c    a.b    a</P>
+
+<P>When four parts are specified, each is interpreted as a byte of data and assigned, from left to right, to the four bytes of an Internet address. When an Internet address is viewed as a 32-bit integer quantity on the Intel architecture, the bytes referred to above appear as "d.c.b.a". That is, the bytes on an Intel processor are ordered from right to left.</P>
+
+<P>The parts that make up an address in "." notation can be decimal, octal or hexadecimal as specified in the C language. Numbers that start with "0x" or "0X" imply hexadecimal. Numbers that start with "0" imply octal. All other numbers are interpreted as decimal.</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=41%>Internet address value</TH>
+<TH align=left width=59%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>"4.3.2.16" </TD>
+<TD width=59%>Decimal</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>"004.003.002.020" </TD>
+<TD width=59%>Octal</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>"0x4.0x3.0x2.0x10" </TD>
+<TD width=59%>Hexadecimal</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>"4.003.002.0x10" </TD>
+<TD width=59%>Mix</TD>
+</TR>
+</TABLE><BR>
+
+<P class=note><B>Note</B>&nbsp;&nbsp; The following notations are used by Berkeley only, and nowhere else on the Internet. For compatibility with their software, they are supported as specified.</P>
+
+<P>When a three-part address is specified, the last part is interpreted as a 16-bit quantity and placed in the right-most two bytes of the network address. This makes the three-part address format convenient for specifying Class B network addresses as "128.net.host"</P>
+
+<P>When a two-part address is specified, the last part is interpreted as a 24-bit quantity and placed in the right-most three bytes of the network address. This makes the two-part address format convenient for specifying Class A network addresses as "net.host".</P>
+
+<P>When only one part is given, the value is stored directly in the network address without any byte rearrangement.</P>
+
+<H4>Requirements</H4>
+<p>
+<b>Header: </b>Declared in winsockx.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xnet.lib for titles that only support system link play, XOnline.lib for titles that support online play. Use the secure versions of the library file (Xnets.lib or XOnlines.lib) for final testing.
+</p>
+
+
+<H4>See Also</H4>
+
+<P><a href="xbox_winsock_overview_winsock.htm">Winsock Overview</A>, <a href="xbox_winsock_functions_winsock.htm">Winsock Functions</A></P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

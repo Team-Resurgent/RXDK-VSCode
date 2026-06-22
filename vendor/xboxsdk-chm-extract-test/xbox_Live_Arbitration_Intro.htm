@@ -1,0 +1,53 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Introducing Arbitration</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Introducing Arbitration"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Introducing Arbitration</h1>
+<p>This section provides an overview of the the arbitration service in the following topics.</p><ul>
+<li><a href="#IDARAEV">What is Arbitration Used For?</a></li><li><a href="#IDACBEV">What Problems Matter Most?</a></li><li><a href="#IDACCEV">Arbitration and the Player Reliability Rating (PRR)</a></li></ul>
+<h2><a name="IDARAEV"></a>What is Arbitration Used For?</h2>
+<p>Cheating has consistently plagued online gaming and choked many promising online communities. Common methods of cheating can be categorized into hacks (for example, executing modified code to walk through walls), game exploits (for instance, pausing a game for hours to force the opponent to quit) and network exploits (such as deploying packet filters to alter the course of a game). Xbox <i>Live</i><sup style="font-size:smaller">TM</sup> continuously addresses all three categories of cheating in order to maintain a secure arena for fair online play. To learn about our approach to hackers and Xbox <i>Live</i> hacks, see the <a href="prog_wp_xbox_security_architecture.htm">Xbox Security Architecture</a> white paper. The Xbox <i>Live</i> arbitration service is designed with the last two categories of cheating in mind. Arbitration targets network exploits and assists game developers in preventing game exploits.</p><h2><a name="IDACBEV"></a>What Problems Matter Most?</h2>
+<p>The value of arbitration is best understood in terms of the common problems it solves, such as:</p><ul>
+			  <li>Plug pulling</li>
+			  <li>Port blocking</li>
+			  <li>Packet flooding</li>
+			</ul>
+<p>To preserve the integrity of reported scores, the arbitration service imposes the following limitations:</p><ul>
+			  <li>Joining games that are already in progress is not allowed. All players must preregister with arbitration before the match begins. Note that arbitration does support a join-in-progress session if the session is divided into a series of short rounds for which the participants must preregister.</li>
+			  <li>Single-player games are not supported. At least two players must register for a session in order for arbitration to approve final results.</li>
+			  <li>Multiplayer sessions with more than 256 players are not supported.</li>
+			  <li>In extreme cases, when no trustworthy results are submitted, it is possible that arbitration rejects all submissions and records no results for the session.</li>
+			</ul>
+<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;An underlying assumption in the design of the arbitration service is that no player is running modified code while logged on to Xbox <i>Live</i>. A number of existing security measures make it almost impossible to sneak a modified Xbox system onto the Xbox <i>Live</i> service. If a modified Xbox ever succeeds in penetrating the defenses, it will be able to disrupt, but not alter, game results.</p><h2><a name="IDACCEV"></a>Arbitration and the Player Reliability Rating (PRR)</h2>
+<p>The arbitration service assigns a player reliability rating (PRR) to each player in an arbitrated event. The PRR is a per-player, per-title value that reflects a player's reliability in submitting game scores to Xbox <i>Live</i>. PRR produces meaningful and fair ratings for all players in the long run. As mentioned previously, the PRR is used to settle disputes when players submit conflicting game results. When resolving score disputes, arbitration sides with the group of players who demonstrate a higher total PRR than the contesting faction. Specifically, PRR is currently applied to:</p><ul>
+		  <li>Determine whether to declare a majority quorum in a session.</li>
+		  <li>Determine whether to declare a non-majority quorum in a session.</li>
+		  <li>Select a winner in a competition event for which no scores are available (for example, due to QoS/NAT issues preventing two checked-in players from establishing a game session).</li>
+		</ul>
+<p>Player reliability ratings are updated at the completion of every arbitrated session, according to the following rules:</p><ul>
+		  <li>New players' ratings are always in between the worst and the best in the system.</li>
+		  <li>Cheaters accumulate a worse rating than non-cheaters in the long run.</li>
+		  <li>Plug pullers accumulate a worse rating than players who complete their games.</li>
+		</ul>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

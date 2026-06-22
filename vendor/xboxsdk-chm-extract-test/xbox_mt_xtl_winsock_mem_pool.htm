@@ -1,0 +1,39 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<TITLE>Xbox Network Subsystem Pool and the System Pool</TITLE>
+
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Xbox Network Subsystem Pool and the System Pool"/>
+<MSHelp:Keyword Index="F" Term="Xbox Network Subsystem Pool and the System Pool"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR></TR>
+</TABLE>
+
+<H1 class="heading"><A NAME="xbox_mt_xtl_winsock_mem_pool"></A>Xbox Network Subsystem Pool and the System Pool</H1>
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<P class="intro">The Xbox network subsystem must deal with events that can happen at any time that may require the allocation of memory (for example, an incoming TCP packet that requires an immediate response).  In order to make its memory footprint completely deterministic, the Xbox network subsystem allocates a separate pool of memory to satisfy these asynchronous allocations.  This pool is allocated at Xbox network subsystem initialization time, and the parameters of that allocation can be controlled via the <A HREF="xbox_xnetstartup_xsnl.htm"><B>XNetStartup</B></A> function.  So as a game runs and network events occur, the game never sees the amount of available system memory decrease beyond what was originally allocated during <B>XNetStartup</B>.  These private pool allocations are described in <A HREF="xbox_mt_xtl_winsock_mem_pool_xnet.htm"><B>Private Pool Allocations</B></A>.</P>
+
+<P>However, when a memory allocation needs to be made by the Xbox network subsystem that is not the result of some asynchronous network event, the network subsystem makes the allocation from the system pool instead.  This is the case with Xbox Winsock functions such as <B>send</B>, in which the data provided to the function may need to be buffered before it can be dealt with by the network subsystem.  These system pool allocations are described in <A HREF="xbox_mt_xtl_winsock_mem_pool_sys.htm"><B>System Pool Allocations</B></A>.</P>
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

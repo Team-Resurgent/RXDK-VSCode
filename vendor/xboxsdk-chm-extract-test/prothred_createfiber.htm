@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>CreateFiber</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="CreateFiber">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="CreateFiber"/>
+<MSHelp:Keyword Index="F" Term="CreateFiber"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_createfiber"></A>CreateFiber</H1>
+
+<P>The <B>CreateFiber</B> function allocates a fiber object, assigns it a stack, and sets up execution to begin at the specified start address, typically the fiber function. This function does not schedule the fiber.</P>
+
+<PRE class=syntax><B>LPVOID CreateFiber(
+  DWORD</B><I> dwStackSize</I><B>,                    </B>// initial stack size
+<B>  LPFIBER_START_ROUTINE</B><I> lpStartAddress</I><B>, </B>// fiber function
+<B>  LPVOID</B><I> lpParameter                    </I>// fiber argument
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>dwStackSize</I></DT>
+
+<DD>[in] Specifies the size, in bytes, of the stack for the new fiber. If zero is specified, the default stack size of the title is used. The function fails if it cannot commit <I>dwStackSize</I> bytes.  A minimum of 12 KB will be allocated and committed for the stack, even if a smaller size is specified.</DD>
+
+<DT><I>lpStartAddress</I></DT>
+
+<DD>[in] Pointer to the application-defined function of type LPFIBER_START_ROUTINE to be executed by the fiber and represents the starting address of the fiber. Execution of the newly created fiber does not begin until another fiber calls the <A HREF="prothred_switchtofiber.htm">SwitchToFiber</a> function with this address. For more information about the fiber callback function, see <A HREF="prothred_fiberproc.htm">FiberProc</a>. </DD>
+
+<DT><I>lpParameter</I></DT>
+
+<DD>[in] Specifies a single argument that is passed to the fiber. This value can be retrieved by the fiber using the <A HREF="prothred_getfiberdata.htm">GetFiberData</a> macro.
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is the address of the fiber.</P>
+
+<P>If the function fails, the return value is NULL. To get extended error information, call <A HREF="errors_3uwi.htm">GetLastError</a>.</P>
+
+<H4>Remarks</H4>
+
+<P>Before a thread can schedule a fiber using the <A HREF="prothred_switchtofiber.htm">SwitchToFiber</a><B> </B>function, it must call the <A HREF="prothred_converttofiber.htm">ConvertThreadToFiber</a><B> </B>function<B> </B>so that there is a fiber associated with the thread.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p><H4>See Also</H4>
+<P>
+<a href="xbox_mt_xtl_sll_threads_overview.htm">Thread Overview</a>,
+<a href="xbox_mt_xtl_sll_threads_functions.htm">Thread Functions</a> | 
+<A HREF="prothred_converttofiber.htm">ConvertThreadToFiber</a>,
+<A HREF="prothred_deletefiber.htm">DeleteFiber</a>,
+<A HREF="prothred_fiberproc.htm">FiberProc</a>,
+<A HREF="prothred_getfiberdata.htm">GetFiberData</a>,
+<A HREF="prothred_switchtofiber.htm">SwitchToFiber</a>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

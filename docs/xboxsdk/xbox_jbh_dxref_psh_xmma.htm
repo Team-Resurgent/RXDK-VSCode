@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>xmma</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="add">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="xmma"/>
+<MSHelp:Keyword Index="F" Term="xmma"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="xbox_jbh_dxref_psh_xmma"></A>xmma</H1>
+
+<P>Performs the following operations: d0=s0*s1, d1=s2*s3, d2=s0*s1 + s2*s3.</P>
+
+<PRE class=syntax>xmma	d0,d1,d2, s0,s1,s2,s3
+</PRE>
+
+<H4>Registers</H4>
+
+<DL>
+<DT><B>d0,d1,d2</B></DT>
+
+<DD><P>The destination registers d0, d1, and d2 can be selected from the following set:</P>
+
+<TABLE>
+<TR VALIGN="top"><TH align=left width=20%>Register</TH><TH align=left width=50%>Description</TH></TR>
+<TR VALIGN="top"><TD>r0</TD><TD>Temporary register 0</TD></TR>
+<TR VALIGN="top"><TD>r1</TD><TD>Temporary register 1</TD></TR>
+<TR VALIGN="top"><TD>t0</TD><TD>Texture register 0</TD></TR>
+<TR VALIGN="top"><TD>t1</TD><TD>Texture register 1</TD></TR>
+<TR VALIGN="top"><TD>t2</TD><TD>Texture register 2</TD></TR>
+<TR VALIGN="top"><TD>t3</TD><TD>Texture register 3</TD></TR>
+<TR VALIGN="top"><TD>v0</TD><TD>Vertex color register 0</TD></TR>
+<TR VALIGN="top"><TD>v1</TD><TD>Vertex color register 1</TD></TR>
+<TR VALIGN="top"><TD>discard</TD><TD>Discard result</TD></TR>
+</TABLE>
+
+<P>Each of the registers d0, d1, and d2 must be unique.  The only exception is that one or more of these destination registers can be discard, indicating that the result is to be discarded.</P>
+
+<P>This instruction may be modified to specify the scale and bias applied to the outputs according to the following table:</P>
+
+<TABLE>
+<TR VALIGN="top"><TH align=left width=20%>Modifier</TH><TH align=left width=50%>Description</TH></TR>
+<TR VALIGN="top"><TD>_bias</TD><TD>Subtracts 0.5 from outputs</TD></TR>
+<TR VALIGN="top"><TD>_x2</TD><TD>Scales outputs by 2</TD></TR>
+<TR VALIGN="top"><TD>_bx2</TD><TD>Subtracts 0.5 from outputs and scales by 2</TD></TR>
+<TR VALIGN="top"><TD>_x4</TD><TD>Scales outputs by 4</TD></TR>
+<TR VALIGN="top"><TD>_d2</TD><TD>Divides outputs by 2</TD></TR>
+</TABLE>
+
+<p class=note><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;The _x2, _x4, and _d2 modifiers are applied directly to the instruction and not to a particular register.</p>
+
+</DD>
+
+<DT><B>s0,s1,s2,s3</B></DT>
+
+<DD><P>The source registers s0, s1, s2, and s3 can be selected from the following set:</P>
+
+<TABLE>
+<TR VALIGN="top"><TH align=left width=20%>Register</TH><TH align=left width=50%>Description</TH></TR>
+<TR VALIGN="top"><TD>r0</TD><TD>Temporary register 0</TD></TR>
+<TR VALIGN="top"><TD>r1</TD><TD>Temporary register 1</TD></TR>
+<TR VALIGN="top"><TD>t0</TD><TD>Texture register 0</TD></TR>
+<TR VALIGN="top"><TD>t1</TD><TD>Texture register 1</TD></TR>
+<TR VALIGN="top"><TD>t2</TD><TD>Texture register 2</TD></TR>
+<TR VALIGN="top"><TD>t3</TD><TD>Texture register 3</TD></TR>
+<TR VALIGN="top"><TD>v0</TD><TD>Vertex color register 0</TD></TR>
+<TR VALIGN="top"><TD>v1</TD><TD>Vertex color register 1</TD></TR>
+<TR VALIGN="top"><TD>c(0-15)</TD><TD>Constant registers 0 through 15</TD></TR>
+<TR VALIGN="top"><TD>fog.rgb</TD><TD>Fog color</TD></TR>
+<TR VALIGN="top"><TD>zero</TD><TD>Constant 0</TD></TR>
+</TABLE>
+
+<P>Each of the source registers may be modified using the modifiers in the tables below.  An optional channel modifier (.a or .b) may be specified along with another modifier from the second table.  In the table below, X represents a register:</P>
+
+<TABLE>
+<TR VALIGN="top"><TH align=left width=20%>Modifier</TH><TH align=left width=50%>Description</TH></TR>
+<TR VALIGN="top"><TD>X.a</TD><TD>Replicate alpha channel to all channels</TD></TR>
+<TR VALIGN="top"><TD>X.b</TD><TD>Replicate blue channel to the alpha channel</TD></TR>
+</TABLE>
+
+<P>One of the following modifiers may also be specified to adjust the range of the value in the register.  In the table below, Y represents a register with an optional channel modifier:</P>
+
+<TABLE>
+<TR VALIGN="top"><TH align=left width=20%>Modifier</TH><TH align=left width=50%>Description</TH></TR>
+<TR VALIGN="top"><TD>Y</TD><TD>(no modifier, Y is passed without alteration)</TD></TR>
+<TR VALIGN="top"><TD>Y_sat</TD><TD>Clamps negative Y to 0</TD></TR>
+<TR VALIGN="top"><TD>-Y</TD><TD>Negate Y</TD></TR>
+<TR VALIGN="top"><TD>1-Y</TD><TD>Complements Y (1.0-Y)</TD></TR>
+<TR VALIGN="top"><TD>Y_bx2</TD><TD>Shifts range from [0..1] to [-1..1] (2*(Y-0.5))</TD></TR>
+<TR VALIGN="top"><TD>Y_bias</TD><TD>Clamps negative Y to 0 and then subtracts 0.5</TD></TR>
+<TR VALIGN="top"><TD>-Y_bias</TD><TD>Clamps negative Y to 0, subtracts 0.5, and then negates</TD></TR>
+<TR VALIGN="top"><TD>-Y_bx2</TD><TD>Shifts range from [0..1] to [-1..1] and then negates</TD></TR>
+</TABLE>
+
+</DD>
+
+</DL>
+
+<h4>Remarks</h4>
+
+<p>Two moves can be done simultaneously using the <b>xmma</b> instruction as below:</p>
+<pre>xmma d0, d1, discard, s0, 1-zero, s1, 1-zero  ;  copy s0 to d0 and s1 to d1</pre></p>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

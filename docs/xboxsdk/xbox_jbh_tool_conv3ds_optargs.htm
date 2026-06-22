@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Specifying Optional Arguments for Conv3DS.exe</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Specifying Optional Arguments for Conv3DS.exe"/>
+<MSHelp:Keyword Index="F" Term="Specifying Optional Arguments for Conv3DS.exe"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR></TR>
+</TABLE>
+<!--**********************************-->
+
+<H1>Specifying Optional Arguments for Conv3DS.exe</H1>
+
+
+<P>If the .3ds file contains key frame data, you can use the <B>-A</B> option to produce an .x file that contains an animation set. The following command would do this.</P>
+
+<PRE>conv3ds -A File.3ds
+</PRE>
+
+<P>The File.3ds argument is the name of the file to be converted. </P>
+
+<P>Use the <B>-m</B> option to make an .x file that contains a single mesh made from all the objects in the .3ds file. </P>
+
+<PRE>conv3ds -m File.3ds
+</PRE>
+
+<P>Use the <B>-T</B> option to wrap all the objects and frame hierarchies in a single top-level frame. Using this option, all the frames and objects in the .3ds file can be loaded with a single call. The first top-level frame hierarchy in the .x file will be loaded. The frame containing all the other frames and meshes is called x3ds_filename, without the .3ds extension. The <B>-T</B> option will have no effect if it is used with the <B>-m</B> option. </P>
+
+<P>The <B>-s</B> option enables you to specify a scale factor for all the objects converted in the .3ds file. For example, the following command makes all objects ten times bigger.</P>
+
+<PRE>conv3ds -s10 File.3ds
+</PRE>
+
+<P>The following command makes all objects ten times smaller: </P>
+
+<PRE>conv3ds -s0.1 File.3ds
+</PRE>
+
+<P>The <B>-r</B> option reverses the winding order of the faces when the .3ds file is converted. If, after converting the .3ds file and viewing it in Microsoft&#174; Direct3D&#174;, the object appears inside-out, try converting it with the <B>-r</B> option. All Lightwave models exported as .3ds files need this option. For details, see <A HREF="xbox_jbh_tool_conv3ds_lwo.htm">Producing 3DS Files from Lightwave Objects</A>.</P>
+
+<P>The <B>-v</B> option turns on verbose output mode. Specify an integer with it. The following table shows the currently supported integers. </P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=17%>Option</TH>
+<TH align=left width=83%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=17%>-v0</TD>
+<TD width=83%>Default. Verbose mode off. </TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=17%>-v1</TD>
+<TD width=83%>Prints warnings about bad objects, and prints general information about what the converter is doing. </TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=17%>-v2</TD>
+<TD width=83%>Prints basic key frame information, the objects being included in the conversion process, and information about the objects being saved. </TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=17%>-v3</TD>
+<TD width=83%>Very verbose. Most useful for debugging information. </TD>
+</TR>
+</TABLE><BR>
+
+<P>The <B>-e</B> option enables you to change the extension for texture map files, as shown in the following example.</P>
+
+<PRE>conv3ds -e"ppm" File.3ds
+</PRE>
+
+<P>If File.3ds contains objects that reference the texture map file Brick.gif, the .x file will reference the texture map file Brick.ppm. The converter does not convert the texture map file. The texture map files must be in the D3DPATH when the resulting .x file is loaded. The D3DPATH is an environment variable that sets the default search path. </P>
+
+<P>The <B>-x</B> option forces Conv3DS.exe to produce a text .x file, instead of a binary .x file. Text files are larger but can be easily edited by hand. </P>
+
+<P>The <B>-X</B> option forces Conv3DS.exe to include the .x file templates in the file. By default, the templates are not included. </P>
+
+<P>The <B>-t</B> option specifies that the .x file produced will not contain texture information. </P>
+
+<P>The <B>-N</B> option specifies that the .x file produced will not contain normal vector information. All the load calls will generate normal vectors for objects with no normal vectors in the .x file. </P>
+
+<P>The <B>-c</B> option specifies that the .x file produced should not contain texture coordinates. By default, if you use the <B>-m</B> option, the mesh that is output will contain (0,0) uv texture coordinates if the .3ds object had no texture coordinates. </P>
+
+<P>The <B>-f</B> option specifies that the .x file produced should not contain a frame transformation matrix. </P>
+
+<P>The <B>-z</B> and <B>-Z</B> options enable you to adjust the alpha face color value of all the materials referenced by objects in the .x file. For example, the following command causes Conv3DS.exe to add 0.1 to all alpha values under 0.2.</P>
+
+<PRE>conv3ds -z0.1 -Z0.2 File.3ds
+</PRE>
+
+<P>The following command causes Conv3DS.exe to subtract 0.2 from the alpha values for all alphas.</P>
+
+<PRE>conv3ds-z"-0.2" -z1 File.3ds
+</PRE>
+
+<P>The <B>-o</B> option enables you to specify the file name for the .x file produced. </P>
+
+<P>The <B>-h</B> option tells the converter not to try to resolve any hierarchy information in the .3ds file, usually produced by the key framer. Instead, all the objects are output in top-level frames if the <B>-m</B> option is not used.</P>
+
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>XInitDevices</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="XInitDevices">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XInitDevices"/>
+<MSHelp:Keyword Index="F" Term="XInitDevices"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_xbox_xinitdevices"></A>XInitDevices</H1>
+
+<P>The <B>XInitDevices</B> function initializes the peripheral control software on the console and also enables the title to specify the maximum number of devices of each device type that will ever be used simultaneously.  The title must call this function before accessing or enumerating any peripherals (controllers, memory cards, voice units, and so on).</P>
+
+
+<PRE class=syntax><B>VOID XInitDevices(</B>
+  <b>DWORD</b><I> dwPreallocTypeCount</I>,
+  <b>PXDEVICE_PREALLOC_TYPE</b><I> PreallocTypes</I>
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+
+<DT><I>dwPreallocTypeCount</I></DT>
+<DD>[in] Number of structures contained in the <I>PreallocTypes</I> array.</DD>
+
+<DT><I>PreallocTypes</I></DT>
+<DD>[in] Pointer to an array of <A HREF="x_mt_xdevice_prealloc_type.htm">XDEVICE_PREALLOC_TYPE</A> structures.  Each array element is a structure that specifies the maximum number of devices of a specified device type that will be used simultaneously.</DD>
+
+</DL>
+
+<H4>Return Values</H4>
+
+<P>This function does not return a value.</P>
+
+<H4>Remarks</H4>
+
+<P><B>XInitDevices</B> initializes the peripheral control software on the console.  A title must call this function before accessing or enumerating any peripherals.</P>
+
+<P>This function also informs the system software how many devices of each type will be simultaneously used by the title.  The driver uses this information to determine the resources to allocate in order to handle interaction with the specified number of devices.  Titles can use this functionality to limit the resources allocated by the driver to the minimum needed by the title.</P>
+
+<P>The <I>dwPreallocTypeCount</I> parameter specifies the number of structures in the <I>PreallocTypes</I> array, or, in other words, how many device types are being initialized.</P>
+
+<P>The <I>PreallocTypes</I> parameter is a pointer to an array of <B>XDEVICE_PREALLOC_TYPE</B> structures.  Each element of the array is a structure that specifies a device type and how many devices of that type will be simultaneously used by the title.  The <b>DeviceType</b> member of the structure must be a valid Xbox device type (for example, XDEVICE_TYPE_GAMEPAD).  The <b>dwPreallocCount</b> member of the structure specifies the number of devices of that type that will be used.</P>
+
+<P>The system pre-allocates the necessary resources to allow the specified number of devices to be used simultaneously.  For example, if the <B>DeviceType</B> member of the <B>XDEVICE_PREALLOC_TYPE</B> structure is XDEVICE_TYPE_MEMORY, and the <B>dwPreallocCount</B> member is two, the title can then only mount two memory units at one time.  The title can still access all of the eight potential memory units, but it must do so sequentially, mounting and unmounting the memory units in turn (with at most two mounted at a time).</P>
+
+<P>The limit to the number of devices of a given type that can be used simultaneously does not limit the enumeration of devices of that type.  Titles can still enumerate the full complement of attached devices, even if resources were only allocated for the use of fewer devices at a time.</P>  
+
+<P>Specifying at least one device of a certain type will cause the system to initialize the appropriate driver and allocate the requested resources, even if that device type is never subsequently used by the title.</P>
+
+<P>If <I>dwPreallocTypeCount</I> is zero and <I>PreallocTypes</I> is NULL, the maximum limits for each device type used will apply.  The defaults are determined by the control software for each device type, and are currently four game controllers, eight memory units, four voice units, one debug mouse, and one debug keyboard.  When using this default behavior, only device types that are called from the title's code (thus causing their corresponding control software libraries to be linked in) will have resources allocated for their use.  Using <B>XInitDevices</B> in this way is not recommended, because the title loses control of the exact amount of resources allocated.</P>
+
+<P>This function limits the opening or mounting of peripherals using the <A HREF="x_jsk_xinputopen.htm">XInputOpen</A>, <A HREF="x_jsk_xmountmu.htm">XMountMU</A>, or <a href="XVoiceCreateMediaObject.htm">XVoiceCreateMediaObject</a> functions.  Those functions will fail if a title attempts to open or mount more devices at a time than were specified in the call to <B>XInitDevices</B>.</P>
+
+<P><B>XInitDevices</B> must be called only once by the title, and is normally called in the title's initialization code.  It takes some amount of time (which varies, but usually less than half a second) for devices to initialize after the function is called.  The title should call <A HREF="x_jsk_xgetdevices.htm">XGetDevices</A>, then continue to call <A HREF="x_jsk_xgetdevicechanges.htm">XGetDeviceChanges</A> as part of the game loop, until the attached devices show up.  This way, the title can continue initialization without blocking and waiting for device startup.  If the title is finished initializating and really wants to wait for complete device startup (for example, before displaying UI representing connected controllers), the title can call <a href="XGetDeviceEnumerationStatus.htm">XGetDeviceEnumerationStatus</a> to check enumeration status.  See <a href="x_mt_input_oview.htm">Using Xbox Peripherals</a> for complete example code demonstrating device initialization and detection.</P>
+
+<BR />
+<P>The following example shows a typical call to <B>XInitDevices</B> that might occur at title startup:<P>
+
+<PRE>XDEVICE_PREALLOC_TYPE deviceTypes[] =
+{
+   {XDEVICE_TYPE_GAMEPAD, 4},
+   {XDEVICE_TYPE_MEMORY_UNIT, 2}
+};
+
+XInitDevices(
+    sizeof(deviceTypes) / sizeof(XDEVICE_PREALLOC_TYPE),
+    deviceTypes );
+</PRE>
+
+<P>The <B>XInitDevices</B> call above specifies that at most four gamepads, and at most two memory units, will be used simultaneously by the title.</P>
+
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Xbox.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+
+<H4>See Also</H4>
+<P>
+<A HREF="x_jsk_xid_functions.htm">Input Device Functions</A>,
+<a href="x_mt_input_oview.htm">Using Xbox Peripherals</a> |
+<A HREF="x_jsk_xinputopen.htm">XInputOpen</A>,
+<A HREF="x_jsk_xmountmu.htm">XMountMU</A>,
+<A HREF="x_jsk_xgetdevices.htm">XGetDevices</A>,
+<A HREF="x_jsk_xgetdevicechanges.htm">XGetDeviceChanges</A>,
+<a href="XGetDeviceEnumerationStatus.htm">XGetDeviceEnumerationStatus</a>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

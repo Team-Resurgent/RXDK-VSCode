@@ -1,0 +1,79 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>IXHVEngine::SetPlaybackPriority</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="F" Term="SetPlaybackPriority"/>
+<MSHelp:Keyword Index="K" Term="SetPlaybackPriority (IXHVEngine)"/>
+<MSHelp:Keyword Index="K" Term="IXHVEngine::SetPlaybackPriority"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>IXHVEngine::SetPlaybackPriority</h1>
+<p>Sets the destination priority of voice data from a specified remote talker.</p><pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>SetPlaybackPriority(</b>
+    <b>XUID</b> <i>xuidRemoteTalker</i><b>,</b>
+    <b>DWORD</b> <i>dwLocalPort</i><b>,</b>
+    <b>XHV_PLAYBACK_PRIORITY</b> <i>playbackPriority</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+<dt><i>xuidRemoteTalker</i></dt>
+<dd>[in]  The <a href="xuid.htm">XUID</a> of the registered remote talker.</dd>
+<dt><i>dwLocalPort</i></dt>
+<dd>[in]  Controller port of the local talker.  To assign priorities for speaker playback, specify XHV_PLAYBACK_TO_SPEAKERS.</dd>
+<dt><i>playbackPriority</i></dt>
+<p><dd>[in]  The priority to assign to voice data coming from the remote talker specified in <i>xuidRemoteTalker</i>.  Can be one of the following values, or any value between XHV_PLAYBACK_PRIORITY_MAX and XHV_PLAYBACK_PRIORITY_MIN:</dd>
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>XHV_PLAYBACK_PRIORITY_MAX</td>
+<td>Highest possible priority.</td>
+</tr>
+<tr>
+<td>XHV_PLAYBACK_PRIORITY_MIN</td>
+<td>Lowest possible priority.</td>
+</tr>
+<tr>
+<td>XHV_PLAYBACK_PRIORITY_NEVER</td>
+<td>The destination (local talker or speaker output) will not be sent voice data from the specified remote talker.</td>
+</tr>
+</table>
+<p>Values between XHV_PLAYBACK_PRIORITY_MAX (0) and XHV_PLAYBACK_PRIORITY_MIN (0xFFFF) are used to specify relative priorities.</p>
+</p>
+
+</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>Returns S_OK if successful, an error code otherwise.</p><h4><a name="remarks"></a>Remarks</h4>
+<p>Each local talker, as well speaker playback, can assign priorities in decoding remote talker data.  The XHV engine will decode data with the highest priority first, up to the engine's maximum number of playback streams (see <a href="XHVEngine_SetMaxPlaybackStreamsCount.htm">SetMaxPlaybackStreamsCount</a>).</p>
+
+<p><a href="XHVEngine_SetMixBinMapping.htm">SetMixBinMapping</a> can be used to alter the default mixbins used when sending remote talker voice data to destination local talkers or speaker playback.</p>
+
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xhv.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xvoice.lib.</p>
+    <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

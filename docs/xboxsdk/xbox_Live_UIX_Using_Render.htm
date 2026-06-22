@@ -1,0 +1,65 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>UIX Render Loop</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="UIX Render Loop"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>UIX Render Loop</h1>
+<p>The render loop for most titles likely checks for input device changes, retrieves controller input, renders to the current render surface, and presents that surface on the screen. To use UIX, two additional steps need to be added to the render loop. The first is that the title's render loop must invoke <a href="ILiveEngine_SetInput.htm">ILiveEngine::SetInput</a>. Second, the loop must call <a href="ILiveEngine_DoWork.htm">ILiveEngine::DoWork</a>. </p><p>The <b>ILiveEngine::SetInput</b> method forwards controller input, in the form of an <a href="x_jsk_xinput_state.htm">XINPUT_STATE</a> structure, to the UIX engine.  <b>ILiveEngine::DoWork</b> gives the engine an opportunity to perform the required processing such as calling Xbox Live by calling the appropriate functions and pumping asynchronous online task handles.</p><p><b>ILiveEngine::DoWork</b> can return flags indicating that additional calls need to be made into the engine in order to perform subsequent tasks.  The UIX_DOWORK_NEED_TO_RENDER flag indicates that render work must be done by the engine, and the title should call <a href="ILiveEngine_Render.htm">ILiveEngine::Render</a> to render the UI to a Direct3D surface.  The UIX_DOWORK_NEED_TO_REBOOT flag indicates that the engine needs to reboot, so the title should call <a href="ILiveEngine_Reboot.htm">ILiveEngine::Reboot</a>.  A reboot is typically required when the user needs to access the Xbox Dashboard (for account management, as an example) or when an auto-update must be performed.  The UIX_DOWORK_FEATURE_EXIT flag indicates that an active feature has exited, and the title should call <a href="ILiveEngine_GetExitInfo.htm">ILiveEngine::GetExitInfo</a> to determine which feature exited, and why.  The title can use the exit information to determine the next course of action.  For example, after a successful logon by the logon feature, the title can continue with online game play.</p><p><b>ILiveEngine::DoWork</b> also sets the UIX_DOWORK_FEATURE_EXIT when the network connection is lost or fails, even if the logon feature is not currently active and did not exit.  In this case, the exit code returned by <b>ILiveEngine::GetExitInfo</b> will be UIX_EXIT_LOGON_FAILED.</p><p>If a title has requested that the Xbox Drop-in UI not automatically handle notifications (by setting the UIX_PROPERTY_DISPLAY_NOTIFICATIONS property to FALSE), the UIX_DOWORK_NOTIFICATIONS flag may be set.  This flag indicates that the title must call <a href="ILiveEngine_GetNotifications.htm">ILiveEngine::GetNotifications</a> to retrieve in-game user notifications and then must display those notifications appropriately.  Normally, the engine handles detection and display of notifications automatically.</p><p><b>ILiveEngine::DoWork</b> sets the UIX_DOWORK_PROCESSING_INPUT flag to indicate that the engine is processing player input.  If this flag is set, controller input is going to an active feature and should not be processed by the title.  Otherwise, the title should process controller input normally.</p><p>The title should perform its normal game rendering, and then perform Drop-in UI rendering (if indicated) to the same surface, and then display the resulting surface by updating the swap chain (using <a href="_dx_idirect3ddevice8_present_graphics.htm">IDirect3DDevice8::Present</a> or <a href="_dx_idirect3ddevice8_swap_graphics.htm">IDirect3DDevice8::Swap</a>).</p><p>An example render loop, with the additional Xbox Drop-in UI calls, is shown here:</p>
+<pre class="clsCode">
+DWORD dwFlags, i;
+
+// ... existing title code that renders to g_pSurface
+// ... existing title code that detects input device changes
+
+// Forward controller input
+XINPUT_STATE InputState;
+for( i = 0; i &lt; XGetPortCount(); i++ ) {
+    if( g_hInputDevice[i] ) {
+        XInputGetState( g_hInputDevice[i], &amp;InputState );
+        pLiveEngine-&gt;SetInput( i, &amp;InputState );
+    } else {
+        pLiveEngine-&gt;SetInput( i, NULL );
+    }
+}
+
+// Call DoWork (and additional engine functions as indicated).
+pLiveEngine-&gt;DoWork( &amp;dwFlags );
+if( dwFlags &amp; UIX_DOWORK_NEED_TO_RENDER ) {
+    pLiveEngine-&gt;Render( g_pSurface );
+}
+if( dwFlags &amp; UIX_DOWORK_NEED_TO_REBOOT ) {
+    pLiveEngine-&gt;Reboot();
+}
+if( dwFlags &amp; UIX_DOWORK_FEATURE_EXIT ) {
+    UIX_EXIT_INFO ExitInfo;
+    pLiveEngine-&gt;GetExitInfo( &amp;ExitInfo );
+}
+
+if( !(dwFlags &amp; UIX_DOWORK_PROCESSING_INPUT) ) {
+    // Process controller input normally.
+}
+
+// Present (or Swap)
+g_pDevice-&gt;Present( NULL, NULL, NULL, NULL );
+</pre>
+    <p>For code demonstrating the detection and handling of input device changes (and device handles), see <a href="x_mt_input_oview.htm">Using Xbox Peripherals</a>.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

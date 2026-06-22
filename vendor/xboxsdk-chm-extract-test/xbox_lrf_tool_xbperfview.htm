@@ -1,0 +1,157 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Xbox Call-Attributed Profile Viewer (XbPerfView)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Xbox Call-Attributed Profile Viewer (XbPerfView)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+  <MSHelp:Keyword Index="K" Term="XbPerfView"/>
+  <MSHelp:Keyword Index="K" Term="analyze CPU profiling data with XbPerfView"/>
+  <MSHelp:Keyword Index="K" Term="CPU profiling data, analyzing with XbPerfView"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Xbox Call-Attributed Profile Viewer (XbPerfView)</h1>
+<p>The Xbox Call-Attributed Profile Viewer (XbPerfView) is a graphical tool for analyzing CPU profiling data. It can be used to locate the CPU bottlenecks in your title, and to understand why those bottlenecks occur.</p>
+<pre class="clsCode">
+USAGE: xbperfview [-s symbolpath] [logfile]
+</pre>
+    <p>Logfiles can be generated using the
+<a href="xbox_lrf_tool_xbperf.htm">Xbox Call-Attributed Profiler (XbPerf)</a>
+or by adding calls to <a href="xbox_lrf_debugapi_function_dmstartprofiling.htm">DmStartProfiling</a>
+and <a href="xbox_lrf_debugapi_function_dmstopprofiling.htm">DmStopProfiling</a> in your
+title. In addition to using the command line, it's possible to open a logfile by choosing
+<b>Open</b> from the <b>File</b> menu.</p><p>When you open a logfile, XbPerfView tries to resolve symbols for all function
+addresses encountered in the logfile. The tool uses the symbol path specified on the command line,
+or else the current directory if no symbol path is given. To view or change the
+symbol path when XbPerfView is running, select <b>Set Symbol Path</b>
+from the <b>Edit</b> menu. Or, you can press Ctrl+Y.
+If you set the symbol path to an empty string, XbPerfView reverts to searching
+the current directory. In the <b>Set Symbol Path</b> dialog box, click
+<b>OK</b> to set the symbol path for future logfiles, or click
+<b>Resolve Symbols</b> to set the path and search for symbols
+to apply to the current logfile.</p><p>Three view modes are available for browsing logfiles in XbPerfView:
+Function List, Thread Summary, and Execution List. These view modes are explained below in more detail, together with some other features that XbPerfView provides.</p><h2><a name="IDAZBEV"></a>Function List View</h2>
+<p>This is the default view that XbPerfView displays when opening a logfile.
+It displays a set of statistics for each function that was called during the profiling run.
+To switch from another view to the Function List view, select <b>Function List</b>
+from the <b>View</b> menu. Or you can press Ctrl+U.</p><p>Here is an example of what this view might look like:</p><img alt="" height="337" width="532" src="images/xbox_tool_xbperfview_list_view.jpg"><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Many more columns are available in XbPerfView than are pictured here (see below):</p><p>Each row represents a function, and each column displays a piece of information about that function.
+Many statistics can be displayed in the Function List view.  To show new columns or hide existing ones, 
+from the <b>Edit</b> menu, select <b>Choose Columns</b>. Or you can press Ctrl+M.</p><p>You can sort on a particular column by clicking on that column's heading.
+Clicking the heading multiple times will toggle between ascending and descending sort order.
+You can change the order of the columns by dragging and dropping the column headings.</p><p>The following table describes the available columns:</p><table>
+  <tr>
+<th>Column</th>                   <th>Description</th>
+</tr>
+  <tr>
+<td>Calls</td>                    <td>Number of calls made to a particular function</td>
+</tr>
+  <tr>
+<td>% Inclusive</td>              <td>Percentage of time spent in a particular function, including time spent in its children</td>
+</tr>
+  <tr>
+<td>% Exclusive</td>              <td>Percentage of time spent in a particular function, excluding time spent in its children</td>
+</tr>
+  <tr>
+<td>Function</td>                 <td>Name of the function</td>
+</tr>
+  <tr>
+<td>Module</td>                   <td>Module containing the function</td>
+</tr>
+  <tr>
+<td>Inclusive Cycles</td>         <td>Total CPU cycles spent in function, including children</td>
+</tr>
+  <tr>
+<td>Exclusive Cycles</td>         <td>Total CPU cycles spent in function, excluding children</td>
+</tr>
+  <tr>
+<td>Inclusive Cycles / Call</td>  <td>Number of CPU cycles (inclusive) per each call to function</td>
+</tr>
+  <tr>
+<td>Exclusive Cycles / Call</td>  <td>Number of CPU cycles (exclusive) per each call to function</td>
+</tr>
+  <tr>
+<td>Min % Inclusive</td>          <td>Minimum amount of time (inclusive) spent in a single call to function, expressed as percentage of total time</td>
+</tr>
+  <tr>
+<td>Max % Inclusive</td>          <td>Similar to Min % Inclusive, but expresses the maximum inclusive time</td>
+</tr>
+  <tr>
+<td>Min % Exclusive</td>          <td>Similar to Min % Inclusive, but expresses the minimum exclusive time</td>
+</tr>
+  <tr>
+<td>Max % Exclusive</td>          <td>Similar to Min % Inclusive, but expresses the maximum exclusive time</td>
+</tr>
+  <tr>
+<td>Divided Calls</td>            <td>Number of calls to function, divided by user-specified divisor</td>
+</tr>
+  <tr>
+<td>Divided Inclusive Cycles</td> <td>Total CPU cycles (inclusive) spent in function, divided by user-specified divisor</td>
+</tr>
+  <tr>
+<td>Divided Exclusive Cycles</td> <td>Total CPU cycles (exclusive) spent in function, divided by user-specified divisor</td>
+</tr>
+  <tr>
+<td>Comments</td>                 <td>List of comments about function</td>
+</tr>
+</table>
+<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;To set the denominator for the <b>Divided</b> columns, select the <b>Set Denominator</b> option from the <b>Edit</b> menu. Or you can press Ctrl+D. One use for the <b>Divided</b> columns is to display per-frame statistics: Simply set the denominator to the number of frames displayed during the profiling run, which is usually equal to the number of calls to D3DDevice_Swap.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;The <b>Comments</b> column displays abbreviated information.
+For a detailed explanation of each abbreviated comment, from the <b>Help</b> menu, select <b>Explain Comments</b>.</p><h3><a name="IDAGGEV"></a>Parent/Child Windows</h3>
+<p>For a given function, XbPerfView can display information about all the functions
+that it called (its children) and all the functions that it was called by (its parents).
+To display the Parent/Child window for a function, select the function in any window
+(including another Parent/Child window), and then choose the <b>Expand Function</b>
+command from the <b>Edit</b> menu. Or you can press Ctrl+E.
+Alternatively, in most windows you can simply double-click on the function.</p><p>Here is an example of a Parent/Child window:</p><img alt="" height="206" width="516" src="images/xbox_tool_xbperfview_parent_child.jpg"><p>In this Parent/Child window, the user has expanded the function Actor::Update.
+The statistics in that row are the aggregate stats for Actor::Update across all
+calls to it. Above that row are all the functions that called Actor::Update
+(its parents) and the statistics for Actor::Update when called by that parent. Below Actor::Update
+are all the functions that it called (its children) and the statistics for each
+child when called by Actor::Update. Hovering your mouse over a row will briefly pop up a
+reminder about what that row's statistics refer to.</p><p>The columns displayed in the Parent/Child window are identical to those
+displayed in the Function List view. If you want to display different columns in
+the Parent/Child windows, change the columns in the Function List view
+<i>before</i> opening a Parent/Child window. Columns can be
+sorted as in the Function List view, but note that all parents will stay above
+the expanded function and all children will stay below it.</p><p>To close all Parent/Child windows at once, select <b>Close
+Parent/Child Windows</b> from the main window's <b>Edit</b>
+menu. Or you can press Ctrl+W.</p><h2><a name="IDAHHEV"></a>Thread Summary View</h2>
+<p>The Thread Summary view displays a list of all threads in the title.
+Next to the name of each thread is the percentage of total time spent in that thread,
+plus the number of cycles spent in that thread during the profiling run.
+You can expand the tree view at each thread to see what top-level functions were executed in that thread.
+Furthermore, you can expand each function to see what other functions it called, until you reach functions with no children.</p><p>To display the Thread Summary view, select <b>Thread Summary</b> from the
+<b>View</b> menu. Or you can press Ctrl+T. Here is an example of this view:</p><img alt="" height="353" width="359" src="images/xbox_tool_xbperfview_summary_view.jpg"><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;In this example, thread 0x1c was the only thread that called any functions.</p><h2><a name="IDA1HEV"></a>Execution List View</h2>
+<p>The Execution List view displays a chronological list of function calls and thread switches
+that occurred in each thread during the profiling run.  For each function, the Execution List view lists the depth in the call stack and the time at which the function was called (in CPU cycles, relative to zero, the start of the profiling run).</p><p>To display the Execution List view, select <b>Execution List</b> from the
+<b>View</b> menu. Or you can press Ctrl+I.</p><h2><a name="IDAKQFV"></a>Other Features</h2>
+<p>You can search the current view for a given string in the function names. To do this, select <b>Find</b>
+from the <b>Edit</b> menu. Or you can press Ctrl+F.  <p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;You cannot search Parent/Child windows.</p></p><p>The <b>Hide/Show Incomplete Calls</b> command on the <b>Edit</b> menu
+can be useful for displaying only complete frames of profiling data.  An incomplete function
+call is one where the profiler records a call into a function but records no call out (or vice versa).
+<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Incomplete calls will typically only occur at the start and end of the profiling run.</p>
+By default, XbPerfView does not ignore incomplete function calls.  But if you hide incomplete
+calls, XbPerfView reparses the logfile and only considers complete frames of data for each thread.
+A complete frame of data begins the first time the highest level function in a thread calls another function, and it ends the last time execution returns to that highest level. By considering only complete frames, you can sometimes reduce your chances of seeing skewed profile data.</p><h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="xbox_lrf_tool_xbperf.htm">Xbox Call-Attributed Profiler (XbPerf)</a> |
+<a href="xbox_lrf_debugapi_function_dmstartprofiling.htm">DmStartProfiling</a>,
+<a href="xbox_lrf_debugapi_function_dmstopprofiling.htm">DmStopProfiling</a>
+</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

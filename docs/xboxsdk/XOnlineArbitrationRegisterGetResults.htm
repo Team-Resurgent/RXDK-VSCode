@@ -1,0 +1,99 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineArbitrationRegisterGetResults</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineArbitrationRegisterGetResults"/>
+<MSHelp:Keyword Index="F" Term="XOnlineArbitrationRegisterGetResults"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineArbitrationRegisterGetResults</h1>
+            <p>Retrieves the results of the task begun by <a href="XOnlineArbitrationRegister.htm">XOnlineArbitrationRegister</a>.</p>
+        <pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineArbitrationRegisterGetResults(</b>
+    <b>XONLINETASK_HANDLE</b> <i>hTask</i><b>,</b>
+    <b>DWORD</b> <i>dwRegistrantsBufferCount</i><b>,</b>
+    <b>XONLINE_ARB_REGISTRANT</b> *<i>pRegistrants</i><b>,</b>
+    <b>DWORD</b> *<i>pdwNumRegistrants</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+
+            <dt><i>hTask</i></dt>
+				<dd>[in]  Task handle obtained from <b>XOnlineArbitrationRegister</b>.</dd>
+            
+			
+			
+            <dt><i>dwRegistrantsBufferCount</i></dt>
+				<dd>[in]  Number of registrant entries in the array specified by the 
+				<i>pRegistrants</i> parameter.</dd>
+            
+			
+
+            <dt><i>pRegistrants</i></dt>
+				<dd>[in, out]  Array of <a href="XONLINE_ARB_REGISTRANT.htm">XONLINE_ARB_REGISTRANT</a> structures. Each 
+				structure in the array contains information about a registrant (a player or 
+				a team) in a competition.</dd>
+            
+			
+
+            <dt><i>pdwNumRegistrants</i></dt>
+				<dd>[out]  Actual number of registrants in the competition.</dd>
+            
+			
+			
+        </dl>
+<h4><a name="return"></a>Return Values</h4>
+            
+                <p>Returns S_OK if successful, an error code otherwise.</p>
+            
+        <h4><a name="remarks"></a>Remarks</h4>
+			<p>This function returns the list of participants currently 
+			registered for an arbitrated round. The list includes only the participants 
+			who are registered at the time the <b>XOnlineArbitrationRegister</b> operation 
+			completed, in the order in which they registered.</p> 
+			
+			<p>Each list entry includes an identifier for the corresponding Xbox, 
+			a list of users on the Xbox, and a normalized value representing the 
+			perceived "reliability" of the Xbox.  The least reliable participant in the list always 
+			has a reliability value of 0; all others have an arbitrary value at or above 0 based on 
+			their relative reliability.</p>
+			
+			<p>Because the reliability value is relative and differs based on who is in the list 
+			of participants, titles are not expected to display the value to users. In fact, it is 
+			strongly discouraged. Rather, they may use it along with other information sources such 
+			as QoS results to determine which Xbox should perform round/game session host duties, 
+			and so forth.</p>
+			
+			<p>Do not use this function for competitions. Instead, have your title call the 
+			<a href="XOnlineCompetitionSessionRegisterGetResults.htm">XOnlineCompetitionSessionRegisterGetResults</a> function.</p>
+		<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+			<a href="XOnlineArbitrationRegister.htm">XOnlineArbitrationRegister</a>, <a href="XOnlineCompetitionSessionRegisterGetResults.htm">XOnlineCompetitionSessionRegisterGetResults</a>
+		</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

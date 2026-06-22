@@ -1,0 +1,95 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Understanding DirectSound</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="Understanding DirectSound">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Understanding DirectSound"/>
+<MSHelp:Keyword Index="F" Term="Understanding DirectSound"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="xbox_understanding_directsound_dxaudio"></A>Understanding DirectSound</H1>
+
+<P>The DirectSound title library provides software for low-level control of the audio hardware for the Xbox.  In most cases, a DirectSound method call results in direct control of the audio hardware registers.  DirectSound is typically used where games desire the highest level of program control over audio implementation.</P>
+
+<P>DirectSound provides access to all the functions of the voice processor pipeline (filters, low frequency oscillators [LFOs], envelopes) as well as 3D control and Head Relative Transfer Function (HRTF) processing.  DirectSound is also used to load DSP programs into the Global Processor (GP) and control the overall flow of the audio data.</P>
+
+<P>DirectSound can automatically generate HRTF and multi-speaker values by using its 3D audio method.  Each sound source may be given a 3D value in standard (x,y,z) space.  DirectSound also defines a DirectSound 3D listener which specifies the location and orientation of the sound receiver.  In most cases, sound sources are tied to visual objects (whether or not they happen to be visible on the screen at any given time), while the DirectSound 3D listener is set to the game player's viewpoint.  DirectSound also allows an application to specify other parameters useful for simulating sound fields such as Doppler shift and apparent speed of sound as well as sound cone radiation.</P>
+
+<P>Access to the audio hardware is provided by DirectSound buffers and DirectSound streams.</P>
+
+<UL>
+	<LI><A HREF="#buffers"><B>DirectSound Buffers</B></A></LI>
+    <LI><A HREF="#streams"><B>DirectSound Streams</B></A></LI>
+    <LI><A HREF="#xbox_managing_directsound_streams_and_buffers_dxaudio"><B>Managing DirectSound Streams and Buffers</B></A></LI>
+</UL>
+
+<H2><A NAME="buffers"></A>DirectSound Buffers</H2>
+
+<P>DirectSound buffers represent areas of system memory that can be accessed by the Xbox Media Communications Processor (MCP).  This makes DirectSound buffers especially suitable for short sound effects and musical instrument sounds that can easily fit into a small amount of memory.  DirectSound buffers expose all of the features of the voice pipeline, including SRC, looping, filtering, mixing, and other processing.</P>
+
+<P>The following diagram is a representation of a DirectSound buffer.</P>
+
+<P><IMG SRC="images/xbox_directsound_buffer_diagram_dxaudio.gif" WIDTH="263" HEIGHT="221" BORDER="0" ALT="DirectSound Buffer" /></P>
+
+<H2><A NAME="streams"></A>DirectSound Streams</H2>
+
+<P>DirectSound streams allow an application to stream data into the Xbox MCP on a packet basis.</P>
+
+<P>The following diagram is a representation of a DirectSound stream.</P>
+
+<P><IMG SRC="images/xbox_directsound_stream_diagram_dxaudio.gif" WIDTH="290" HEIGHT="217" BORDER="0" ALT="DirectSound Stream" /></P>
+
+<!-- COMMENT: Please don't change the formatting of the following sections too much, since I'm going to be breaking this page into separate articles in a future release. -->
+<H2><A NAME="xbox_managing_directsound_streams_and_buffers_dxaudio"></A>Managing DirectSound Streams and Buffers</H1>
+
+<P>This section covers managing the memory used by DirectSound buffers and streams.</P>
+
+<UL>
+	<LI><A HREF="#xbox_managing_directsound_streams_and_buffers_dxaudio_constraints"><B>Hardware Constraints</B></A></LI>
+    <LI><A HREF="#xbox_managing_directsound_streams_and_buffers_dxaudio_freeing_buffers"><B>Freeing Buffers</B></A></LI>
+</UL>
+
+<H3><A NAME="xbox_managing_directsound_streams_and_buffers_dxaudio_constraints"></A>Hardware Constraints</H3>
+
+<P>A maximum of 16 MB of audio data can be accessed (physically allocated at any one moment) at any given time (buffers and streams combined). This doesn't affect the number of DirectSound buffers or DirectSound streams that can be created.</P>
+
+<P>DirectSound buffers are managed in a scatter gather entry (SGE) list.  There is a maximum of 2,047 SGEs, which each point to a 4-KB page. This means that a maximum of 8 MB are available for allocating or playing DirectSound buffers simultaneously. Attempting to allocate/play more than the maximum will result in the following error message:</P>
+
+<pre class="clsCode">DSOUND: CMcpxBuffer::MapInputBuffer: Resource failure: Out of scatter/gather entries.
+        Either your buffer is too big, or too many buffers have been mapped at one time.</pre>
+
+
+<H3><A NAME="xbox_managing_directsound_streams_and_buffers_dxaudio_freeing_buffers"></A>Freeing Buffers</H3>
+
+<P>Because of restrictions in the hardware, a voice may still be playing after calling <B>IDirectSoundBuffer8::Stop</B> or <B>IDirectSoundBuffer8::StopEx.</B> Before freeing memory allocated for the buffer, you must make sure that the buffer has stopped playing in one of the following ways:</P>
+
+<UL>
+	<LI>Poll <B>GetStatus</B> and check the result against the <b>DSBSTATUS_PLAYING</b> flag</LI>
+    <LI>Call <B>SetBufferData</B> with NULL, 0 (but this will busy wait; internally spin on <B>GetStatus</B>)</LI>
+    <LI>Call <B>Release</B> on the buffer, which will do the previous option automatically.</LI>
+</UL>
+
+<P>Of the three methods, the first method, polling <B>GetStatus</B>, is probably the best way, because it allows the title more control of what is going on. The following code is an example:</P>
+
+<pre class="clsCode">DWORD dwStatus;
+pDSBuffer-&gt;StopEx( 0, DSBSTOPEX_IMMEDIATE );
+do
+{
+    pDSBuffer-&gt;GetStatus( &amp;dwStatus );
+} while( dwStatus &amp; DSBSTATUS_PLAYING );</pre>
+
+<P>This ensures that it is safe to free memory allocated for the buffer.</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

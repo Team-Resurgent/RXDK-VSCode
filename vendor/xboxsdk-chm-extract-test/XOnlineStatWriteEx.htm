@@ -1,0 +1,89 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineStatWriteEx</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineStatWriteEx"/>
+<MSHelp:Keyword Index="F" Term="XOnlineStatWriteEx"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineStatWriteEx</h1>
+            <p>Sets statistical information for one or more specified players or Xbox <i>Live</i> teams.</p>
+        <pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineStatWriteEx(</b>
+    <b>DWORD</b> <i>dwNumStatProcs</i><b>,</b>
+    <b>const XONLINE_STAT_PROC</b> *<i>pStatProcs</i><b>,</b>
+    <b>HANDLE</b> <i>hWorkEvent</i><b>,</b>
+    <b>PXONLINETASK_HANDLE</b> <i>phTask</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+
+            <dt><i>dwNumStatProcs</i></dt>
+                <p>
+<dd>[in]  Number of <a href="XONLINE_STAT_PROC.htm">XONLINE_STAT_PROC</a> structures in the array pointed to by the <i>pStatProcs</i> parameter.</dd>
+                </p>
+            
+
+            <dt><i>pStatProcs</i></dt>
+                <p>
+<dd>[in]  Array of <a href="XONLINE_STAT_PROC.htm">XONLINE_STAT_PROC</a> structures that are used to report 
+stats for each player. A player can be a user or an Xbox <i>Live</i> team.</dd>
+                </p>
+            
+
+            <dt><i>hWorkEvent</i></dt>
+                
+				<p>
+<dd>[in, optional]  Handle to a caller-created event object. This object is signaled when there 
+is work to do by calling the <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> function. The caller can pass in NULL instead, indicating that the caller is to poll <b>XOnlineTaskContinue</b> itself.</dd>
+                </p>
+            
+
+            <dt><i>phTask</i></dt>
+                <p>
+<dd>[out]  Address of an <b>XONLINETASK_HANDLE</b> that receives the task that 
+stores the stats. This task sends the storage request to the statistics service 
+and receives the response. This handle must be pumped to completion by <b>XOnlineTaskContinue</b>. Call the <a href="XOnlineTaskClose.htm">XOnlineTaskClose</a> function to close the task.</dd>
+                </p>
+				<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;To throttle requests sent to the statistics service, <b>XOnlineTaskContinue</b> returns the value XONLINE_E_TASK_ABORTED_BY_DUPLICATE if the task is still being pumped when a second operation is started.</p>
+            
+
+        </dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>Returns S_OK if successful, an error code otherwise.</p>
+<h4><a name="remarks"></a>Remarks</h4>
+            <p>This function must not be called more often than once every five minutes between game sessions. During a game session, this function can only be called once at the beginning, once at the end and every five minutes if the game session lasts longer than five minutes. This function should not be used to write to more than five leaderboards per player. For details, contact your technical game manager (TGM) or consult the Technical Certification Requirements.</p>
+
+            <p>The <b>XOnlineStatWriteEx</b> function is dynamically throttled by the server depending on the server's load.</p>
+			
+			<p>This function can be called only with direct user input related to statistics.</p>
+        <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p> <a href="x_mt_xonline_functions.htm">Xbox Live Functions</a> | <a href="XOnlineStatRead.htm">XOnlineStatRead</a>, <a href="XOnlineStatWrite.htm">XOnlineStatWrite</a>, 
+                <a href="XONLINE_STAT_PROC.htm">XONLINE_STAT_PROC</a></p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

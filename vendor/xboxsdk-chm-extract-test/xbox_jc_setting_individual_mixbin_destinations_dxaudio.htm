@@ -1,0 +1,136 @@
+<!doctype html public "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+
+<title>Setting Individual Mixbin Destinations</title>
+<script src="linkcss.js"></script>
+<script src="langref.js"></script>
+<meta name="MS-HKWD" content="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Setting Individual Mixbin Destinations"/>
+<MSHelp:Keyword Index="F" Term="Setting Individual Mixbin Destinations"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</head>
+<body topmargin="0"><table class="buttonbarshade" cellspacing=0><tr><td>&nbsp;</td></tr></table>
+<table class="buttonbartable" cellspacing=0>
+	<tr id="hdr"><td class="runninghead" nowrap><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1><a name="xbox_jc_setting_individual_mixbin_destinations_dxaudio"></a>Setting Individual Mixbin Destinations</h1>
+
+<p>A mixbin is a mixing destination for a DirectSound buffer. The Xbox Media Communications Processor (MCP) allows each DirectSound buffer to be assigned to any 8 of 32 possible "mixbins."  There are two types of mixbins, fixed function and user definable.  The fixed function mixbins allow an application to set the audio destination for the DirectSound buffer to a specific audio destination. For a listing of the mixbins, go to the <a href="xbox_mixbin_constants_dxaudio.htm">Mixbin Constants</a>.</p>
+
+
+<p>The Xbox MCP voice processor allows any DirectSound buffer to be sent to up to 8 of the 31 available output mixbins.  The mixbins are used as submix destinations, prior to DSP processing.  This is done with the <a href="xbox_jc_idirectsoundbuffer8_setmixbins_dxaudio.htm"><b>IDirectSoundBuffer8::SetMixBins</b></a> method.</p>
+
+<h2>Mixbin Assigments for DirectSound Buffers</h2>
+
+<p>The assignment of mixbins depends on the type of DirectSound buffer and the audio data it contains. <a href="xbox_jc_idirectsoundbuffer8_setmixbins_dxaudio.htm"><b>IDirectSoundBuffer8::SetMixBins</b></a> and <a href="xbox_jc_idirectsoundstream_setmixbins_dxaudio.htm">IDirectSoundStream::SetMixBins</a> take a pointer to a <a href="xbox_dsmixbins_dxaudio.htm">DSMIXBINS</a> structure. The <b>DSMIXBINS</b> structure contains the count of the mixbins being assigned and an array of <a href="xbox_dsmixbinvolumepair_dxaudio.htm">DSMIXBINVOLUMEPAIR</a> structures. Both <b>SetMixBins</b> methods can assign up to 8 mixbin destinations for a DirectSound buffer or for a DirectSound stream.</p>
+
+<p>The following example shows how to assign mixbins.</p>
+
+<pre>
+DSMIXBINVOLUMEPAIR dsmbvp[8] = {
+    {DSMIXBIN_FRONT_LEFT, DSBVOLUME_MAX},
+    {DSMIXBIN_FRONT_RIGHT, DSBVOLUME_MAX},
+    {DSMIXBIN_FRONT_CENTER, DSBVOLUME_MAX},
+    {DSMIXBIN_FRONT_CENTER, DSBVOLUME_MAX},
+    {DSMIXBIN_BACK_LEFT, DSBVOLUME_MAX},
+    {DSMIXBIN_BACK_RIGHT, DSBVOLUME_MAX},
+    {DSMIXBIN_LOW_FREQUENCY, DSBVOLUME_MAX},
+    {DSMIXBIN_LOW_FREQUENCY, DSBVOLUME_MAX}};
+    
+DSMIXBINS dsmb;
+
+dsmb.dwMixBinCount = 8;
+dsmb.lpMixBinVolumePairs = dsmbvp;
+pBuffer->SetMixBins(&amp;dsmb);
+</pre>
+
+<p>For 3D buffers and streams, you must include the default 3D mixbins (the 4 crosstalk cancellation mixbins) either by using the predefined constant (DSMIXBINVOLUMEPAIRS_REQUIRED_3D) or by specifying the mixbins yourself. The following example uses the predefined constant, and also sends the buffer to four effects sends.</p>
+
+<pre>
+DSMIXBINVOLUMEPAIR dsmbvp[8] = {
+    DSMIXBINVOLUMEPAIRS_REQUIRED_3D,
+    {DSMIXBIN_FXSEND_0, DSBVOLUME_MAX},
+    {DSMIXBIN_FXSEND_1, DSBVOLUME_MAX},
+    {DSMIXBIN_FXSEND_2, DSBVOLUME_MAX},
+    {DSMIXBIN_FXSEND_3, DSBVOLUME_MAX}};
+    
+DSMIXBINS dsmb;
+
+dsmb.dwMixBinCount = 8;
+dsmb.lpMixBinVolumePairs = dsmbvp;
+pBuffer->SetMixBins(&amp;dsmb);
+</pre>
+
+<p>The following example uses the four crosstalk mixbins, and also sends the buffer to four effects sends for a 3D buffer/stream.</p>
+
+<pre>
+DSMIXBINVOLUMEPAIR dsmbvp[8] = {
+    {DSMIXBIN_XTLK_FRONT_LEFT, DSBVOLUME_MAX},
+    {DSMIXBIN_XTLK_FRONT_RIGHT, DSBVOLUME_MAX},
+    {DSMIXBIN_XTLK_BACK_LEFT, DSBVOLUME_MAX},
+    {DSMIXBIN_XTLK_BACK_RIGHT, DSBVOLUME_MAX},
+    {DSMIXBIN_FXSEND_0, DSBVOLUME_MAX},
+    {DSMIXBIN_FXSEND_1, DSBVOLUME_MAX},
+    {DSMIXBIN_FXSEND_2, DSBVOLUME_MAX},
+    {DSMIXBIN_FXSEND_3, DSBVOLUME_MAX}};
+    
+DSMIXBINS dsmb;
+
+dsmb.dwMixBinCount = 8;
+dsmb.lpMixBinVolumePairs = dsmbvp;
+pBuffer->SetMixBins(&amp;dsmb);
+</pre>
+
+<p>For multi-channel audio, assignment of channels to mixbins alternates as the method goes through the members of the array. For example, for stereo buffer or stream, it would assign the mixbins in the array in the following manner:</p>
+
+<pre>
+DSMIXBINVOLUMEPAIR dsmbvp[8] = {
+    {DSMIXBIN_FRONT_LEFT, DSBVOLUME_MAX},   // left channel
+    {DSMIXBIN_FRONT_RIGHT, DSBVOLUME_MAX},  // right channel
+    {DSMIXBIN_FRONT_CENTER, DSBVOLUME_MAX}, // left channel
+    {DSMIXBIN_FRONT_CENTER, DSBVOLUME_MAX}, // right channel
+    {DSMIXBIN_BACK_LEFT, DSBVOLUME_MAX},    // left channel
+    {DSMIXBIN_BACK_RIGHT, DSBVOLUME_MAX},   // right channel
+    {DSMIXBIN_LOW_FREQUENCY, DSBVOLUME_MAX},    // left channel
+    {DSMIXBIN_LOW_FREQUENCY, DSBVOLUME_MAX}};   // right channel
+</pre>
+
+<p>If the audio data had four channels, the method would handle it in the following manner:</p>
+
+<pre>
+DSMIXBINVOLUMEPAIR dsmbvp[8] = {
+    {DSMIXBIN_FRONT_LEFT, DSBVOLUME_MAX},   // channel 1
+    {DSMIXBIN_FRONT_RIGHT, DSBVOLUME_MAX},  // channel 2
+    {DSMIXBIN_FRONT_CENTER, DSBVOLUME_MAX}, // channel 3
+    {DSMIXBIN_FRONT_CENTER, DSBVOLUME_MAX}, // channel 4
+    {DSMIXBIN_BACK_LEFT, DSBVOLUME_MAX},    // channel 1
+    {DSMIXBIN_BACK_RIGHT, DSBVOLUME_MAX},   // channel 2
+    {DSMIXBIN_LOW_FREQUENCY, DSBVOLUME_MAX},    //channel 3
+    {DSMIXBIN_LOW_FREQUENCY, DSBVOLUME_MAX}};   // channel 4
+</pre>
+
+<p>If you have odd assignments (for example, if you want three mixbins to receive the right channel audio and only two to receive the left channel), use your unused mixbins to fill in those positions. For example, if you are not using DSMIXBIN_FXSEND13:</p>
+
+<pre>
+DSMIXBINVOLUMEPAIR dsmbvp[6] = {
+    {DSMIXBIN_FRONT_LEFT, DSBVOLUME_MAX},   // left channel
+    {DSMIXBIN_FRONT_RIGHT, DSBVOLUME_MAX},  // right channel
+    {DSMIXBIN_BACK_LEFT, DSBVOLUME_MAX},    // left channel
+    {DSMIXBIN_BACK_RIGHT, DSBVOLUME_MAX},   // right channel
+    {DSMIXBIN_FXSEND_13, DSBVOLUME_MAX},    // left channel to unused mixbin
+    {DSMIXBIN_LOW_FREQUENCY, DSBVOLUME_MAX}};   // right channel
+</pre>
+
+<!--****Stock Text. Do not change.****-->
+<div class="footer" id="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</div>
+<!--**********************************-->
+
+</body>
+</html>

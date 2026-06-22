@@ -1,0 +1,88 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineGameInviteSend</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineGameInviteSend"/>
+<MSHelp:Keyword Index="F" Term="XOnlineGameInviteSend"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineGameInviteSend</h1>
+<p>Sends a game invitation to a specified list of players.</p><pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineGameInviteSend(</b>
+    <b>DWORD</b> <i>dwUserIndex</i><b>,</b>
+    <b>DWORD</b> <i>dwPeerCount</i><b>,</b>
+    <b>const XUID</b> *<i>pxuidPeersToInvite</i><b>,</b>
+    <b>XNKID</b> <i>SessionID</i><b>,</b>
+    <b>DWORD</b> <i>dwFlags</i><b>,</b>
+    <b>XONLINE_MSG_HANDLE</b> <i>hMsg</i><b>,</b>
+    <b>HANDLE</b> <i>hWorkEvent</i><b>,</b>
+    <b>PXONLINETASK_HANDLE</b> <i>phTask</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+		<dt><i>dwUserIndex</i></dt>
+<dd>[in]  Controller index (zero-based) of the player sending the game invitation. The player must have been successfully logged on with a previous call to <a href="XOnlineLogon.htm">XOnlineLogon</a>.</dd>
+            
+
+		<dt><i>dwPeerCount</i></dt>
+<dd>[in]  Number of peers to invite. This is the number of <a href="xuid.htm">XUID</a> structures represented by the <i>pxuidPeersToInvite</i> argument.</dd>
+            
+
+		<dt><i>pxuidPeersToInvite</i></dt>
+<dd>[in]  Pointer to an array of <b>XUID</b> structures representing the peers to invite.</dd>
+            
+
+		<dt><i>SessionID</i></dt>
+<dd>[in]  An <a href="xbox_xnkid_xsnl.htm">XNKID</a> structure representing the session.</dd>
+            
+
+		<dt><i>dwFlags</i></dt>
+<dd>[in]  This value is currently unused and must be zero.</dd>
+            
+
+		<dt><i>hMsg</i></dt>
+<dd>[in]  Pointer to an <b>XONLINE_MSG_HANDLE</b> specifying an XONLINE_MSG_TYPE_GAME_INVITE message, with an optional voice attachment. This parameter may be NULL if a custom invitation message is not needed.</dd>
+            
+
+		<dt><i>hWorkEvent</i></dt>
+<dd>[in, optional]  Handle to an event that will be signaled when there is work to be done on this task. This parameter can be NULL if no such event is required.</dd>
+            
+
+		<dt><i>phTask</i></dt>
+<dd>[out]  Address of an <b>XONLINETASK_HANDLE</b> that must be pumped to completion by <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a>. Call <a href="XOnlineTaskClose.htm">XOnlineTaskClose</a> to close the task.</dd>
+            
+	</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>Returns S_OK if successful, an error code otherwise.</p><h4><a name="remarks"></a>Remarks</h4>
+		<p>This function is similar to the <a href="XOnlineFriendsGameInvite.htm">XOnlineFriendsGameInvite</a> function, with the exception that the sender can be a teammate or fellow peer in a competition.</p>
+		<p>The operation returned from <b>XOnlineGameInviteSend</b> may be passed to <a href="XOnlineMessageSendGetProgress.htm">XOnlineMessageSendGetProgress</a> to retrieve a numeric representation of the status of the invite message upload.</p>
+		<p>The title should not destroy the message object it specified through the <i>hMsg</i> parameter until the <b>XOnlineGameInviteSend</b> operation is complete.</p>
+	<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p><a href="x_mt_xonline_functions.htm">Xbox Live Functions</a> | <a href="XOnlineMessageCreate.htm">XOnlineMessageCreate</a></p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

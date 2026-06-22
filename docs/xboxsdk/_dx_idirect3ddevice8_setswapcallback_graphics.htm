@@ -1,0 +1,78 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirect3DDevice8::SetSwapCallback</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="SetSwapCallback (IDirect3DDevice8)"/>
+<MSHelp:Keyword Index="K" Term="IDirect3DDevice8::SetSwapCallback"/>
+<MSHelp:Keyword Index="F" Term="SetSwapCallback"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_idirect3ddevice8_setswapcallback_graphics"></A>IDirect3DDevice8::SetSwapCallback</H1>
+
+<P>Sets the function that will be called on each swap or present.</P>
+
+<PRE class=syntax><B>void SetSwapCallback(
+  D3DSWAPCALLBACK</B><I> pCallback</I>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>pCallback</I></DT>
+
+<DD>[in] Specifies the address of a callback function of type <b>D3DSWAPCALLBACK</b> that will be called during each <b>Swap</b> or <b>Present</b>. Set this to NULL to disable the swap callback.</DD>
+
+</DL>
+
+<h4>Remarks</h4>
+
+<p>When the GPU encounters a <b>Swap</b> or <b>Present</b>, the callback function will be called. <b>SetSwapCallback</b> is provided in order to notify the title information when the GPU handles its <a href="_dx_idirect3ddevice8_swap_graphics.htm"><b>Swap</b></a> or <a href="_dx_idirect3ddevice8_present_graphics.htm"><b>Present</b></a> calls. <b>Swap</b> and <b>Present</b> are like all other rendering functions in that they are enqueued in the push-buffer. So the handling of the command is not synchronous with the function call. Even if the title calls the <b>Swap</b> or <b>Present</b> before a vertical blank, the GPU may not handle it until after the vertical blank. This is because the GPU must still process all of the commands in the push-buffer that are before the <b>Swap</b> or <b>Present</b>. <b>SetSwapCallback</b> enables the title to find out when the GPU handles the <b>Swap</b> or <b>Present</b> and at which vertical blank it will be visible.</p>
+
+<p>The callback is defined as:</p>
+
+<pre>typedef void (__cdecl * D3DSWAPCALLBACK)(D3DSWAPDATA *pData);</pre>
+
+<p>The value passed as the <i>pData</i> parameter of the callback function is a <a href="_dx_d3dswapdata_graphics.htm"><b>D3DSWAPDATA</b></a> structure containing information about the <b>Swap</b> or <b>Present</b> that initiated the callback.</p>
+
+<p>The earliest that a title will be notified that it sucessfully made the <b>Swap</b> or <b>Present</b> in time for the frame is through <b>SetSwapCallback</b>.</p>
+
+<p>This method is called at the time of deferred procedure calls (DPC) and should do little processing.  Only a few XTL functions are safe to call at DPC level: The <B>Interlocked</B> functions are safe to use, as are the following XTL functions, if given a valid object handle:</P>
+<UL>
+<LI><B>SetEvent</B></LI>
+<LI><B>ResetEvent</B></LI>
+<LI><B>PulseEvent</B></LI>
+<LI><B>ReleaseSemaphore</B></LI>
+<LI><B>ReleaseMutex</B></LI>
+</UL>
+
+<P>When these functions are called at DPC with an invalid handle, their behavior is undefined.</P>
+
+<p>Do not perform floating-point math, SSE instructions, and MMX instructions during DPC unless the <a href="XSaveFloatingPointStateForDpc.htm">XSaveFloatingPointStateForDpc</a> and <a href="XRestoreFloatingPointStateForDpc.htm">XRestoreFloatingPointStateForDpc</a> functions are used.</p>
+
+<H4>Requirements</H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in D3d8.h.<BR>
+<B>&nbsp;&nbsp;Import Library:</B> Use D3d8.lib.</P>
+
+<H4>See Also</H4>
+
+<P><a href="_dx_idirect3ddevice8_swap_graphics.htm"><b>IDirect3DDevice8::Swap</b></a>, <a href="_dx_idirect3ddevice8_present_graphics.htm"><b>IDirect3DDevice8::Present</b></a>, <a href="_dx_idirect3ddevice8_setverticalblankcallback_graphics.htm"><b>IDirect3DDevice8::SetVerticalBlankCallback</b></a></p>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

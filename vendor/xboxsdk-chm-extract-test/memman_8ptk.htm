@@ -1,0 +1,236 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>VirtualAllocEx</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="VirtualAllocEx">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="VirtualAllocEx"/>
+<MSHelp:Keyword Index="F" Term="VirtualAllocEx"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_virtualallocex"></A>VirtualAllocEx</H1>
+
+<P>The <B>VirtualAllocEx</B> function reserves or commits a region of memory within the virtual address space of the title. The function initializes the memory it allocates to zero, unless MEM_RESET is used.</P>
+
+<PRE class=syntax><B>LPVOID VirtualAllocEx(
+  HANDLE</B><I> hProcess</I><B>,          </B>// process to allocate memory
+<B>  LPVOID</B><I> lpAddress</I><B>,         </B>// desired starting address 
+<B>  SIZE_T</B><I> dwSize</I><B>,            </B>// size of region to allocate
+<B>  DWORD</B><I> flAllocationType</I><B>,   </B>// type of allocation
+<B>  DWORD</B><I> flProtect</I>           // type of access protection
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>hProcess</I></DT>
+
+<DD>[in] Ignored; use <B>GetCurrentProcess</B>.</DD>
+
+<DT><I>lpAddress</I></DT>
+
+<DD>[in] Pointer to a desired starting address for the region of pages that you want to allocate.  If the memory is being reserved, the specified address is rounded down to the next 64-kilobyte boundary.  If the memory is already reserved and is being committed, the address is rounded down to the next page boundary. Xbox system software uses a page size of 4 KB. If this parameter is NULL, the system determines where to allocate the region. 
+</DD>
+
+<DT><I>dwSize</I></DT>
+
+<DD>[in] Size, in bytes, of the region of memory to allocate. 
+
+<P>If <I>lpAddress</I> is NULL, the function rounds <I>dwSize</I> up to the next page boundary.
+
+<P>If <I>lpAddress</I> is not NULL, the function allocates all pages that contain one or more bytes in the range from <I>lpAddress</I> to (<I>lpAddress</I>+<I>dwSize</I>). This means, for example, that a 2-byte range that straddles a page boundary causes the function to allocate both pages.
+</DD>
+
+<DT><I>flAllocationType</I></DT>
+
+<DD>[in] Type of memory allocation. This parameter can be one or more of the following values.
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=33%>Value</TH>
+<TH align=left width=67%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=33%>MEM_COMMIT</TD>
+<TD width=67%>Allocates physical storage in memory for the specified region of pages. The memory is initialized to zero, unless MEM_NOZERO is specified.
+<P>An attempt to commit an already committed page will not cause the function to fail. This means that a range of committed or decommitted pages can be committed without having to worry about a failure.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=33%>MEM_RESERVE</TD>
+<TD width=67%>Reserves a range of the title's virtual address space without allocating any physical storage. The reserved range cannot be used by any other allocation operations (the <B>malloc</B> function, the <A HREF="memman_2fxf.htm">LocalAlloc</a> function, and so on) until it is released. Reserved pages can be committed in subsequent calls to the <B>VirtualAllocEx</B> function.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=33%>MEM_NOZERO</TD>
+<TD width=67%>Specifies that the allocated memory will not be initialized to zero. Otherwise, the memory is initialized to zero.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=33%>MEM_TOP_DOWN</TD>
+<TD width=67%>Allocates memory at the highest possible address.</TD>
+</TR>
+
+</TABLE><BR>
+
+</DD>
+
+<DT><I>flProtect</I></DT>
+
+<DD>[in] Access protection for the region of pages you are allocating. You can specify one of the following values, along with the PAGE_GUARD and PAGE_NOCACHE protection values, as desired.
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=30%>Value</TH>
+<TH align=left width=70%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=45%>PAGE_READONLY</TD>
+<TD width=55%>Enables read and execute access to the committed region of pages. An attempt to write to the committed region results in an access violation.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=45%>PAGE_READWRITE</TD>
+<TD width=55%>Enables read, write, and execute access to the committed region of pages.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=45%>PAGE_EXECUTE</TD>
+<TD width=55%>Equivalent to PAGE_READONLY.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=45%>PAGE_EXECUTE_READ</TD>
+<TD width=55%>Equivalent to PAGE_READONLY.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=45%>PAGE_EXECUTE_READWRITE</TD>
+<TD width=55%>Equivalent to PAGE_READWRITE.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=30%>PAGE_GUARD</TD>
+<TD width=70%>Pages in the region become guard pages. Any attempt to read from or write to a guard page causes the system to raise a STATUS_GUARD_PAGE exception and turn off the guard page status. Guard pages thus act as a one-shot access alarm.
+<P>This value is a page protection modifier. An application uses it with one of the other page protection values, with one exception: it cannot be used with PAGE_NOACCESS. When an access attempt leads the system to turn off guard page status, the underlying page protection takes over.</P>
+
+<P>If a guard page exception occurs during a system service, the service typically returns a failure status indicator. </P>
+</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=30%>PAGE_NOACCESS</TD>
+<TD width=70%>Disables all access to the committed region of pages. An attempt to read from, write to, or execute in the committed region results in an access violation exception, called a general protection (GP) fault.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=33%>PAGE_NOCACHE</TD>
+<TD width=67%>Allows no memory caching for memory in the committed region of pages. The hardware attributes for the physical memory will be treated as "no cache." This is not recommended for general usage. It is useful for device drivers; for example, mapping a video frame buffer with no caching. This value is a page protection modifier, and it is only valid when used with one of the page protections other than PAGE_NOACCESS.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=33%>PAGE_WRITECOMBINE</TD>
+<TD width=67%>The allocated memory has a write-combining cache policy.  This is not recommended for general usage. It is useful for device drivers; for example, mapping a video frame buffer.  Write combining is a special caching mode that batches writes to the same cache line so they can be transferred in a single bus clock. Write combining does not preserve ordering of the writes, a tradeoff that is usually acceptable for frame buffers.  This value is a page protection modifier, and it is only valid when used with one of the page protections other than PAGE_NOACCESS.</TD>
+</TR>
+</TABLE><BR>
+
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is the base address of the allocated region of pages.</P>
+
+<P>If the function fails, the return value is NULL. To get extended error information, call <A HREF="errors_3uwi.htm">GetLastError</a>. </P>
+
+<h4>Known Issues</h4>
+
+<P>The following are known issues with <B>VirtualAllocEx</B>:</P>
+<ul>
+<li>Allocating virtual memory with protection of type PAGE_GUARD or PAGE_NOACCESS may cause later attempts to allocate physically contiguous memory to fail.  Ordinarily, the Xbox kernel can relocate virtual memory pages in order to make room for allocation of a larger contiguous block of memory.  However, pages that have been virtually allocated with PAGE_GUARD or PAGE_NOACCESS cannot be moved, resulting in crashes within functions such as <a href="xbox_mt_sll_memman_xphysicalalloc.htm">XPhysicalAlloc</a> and <a href="xbox_dxg_d3d_alloccontiguousmemory.html">D3D_AllocContiguousMemory</a>.  Unless a title can ensure that virtual memory blocks won't need to be relocated by physical memory allocations, PAGE_GUARD and PAGE_NOACCESS should not be used.</li>
+<li>Using <b>VirtualAllocEx</b> to repeatedly allocate and free memory can fail after about 32746 allocations.  With repeated use of <b>VirtualAllocEx</b> and <A HREF="memman_0dr9.htm">VirtualFree</a>, the addresses returned by <b>VirtualAllocEx</b> can steadily climb until <b>VirtualAllocEx</b> fails as the address nears 0x80000000.  <b>VirtualAllocEx</b> uses an optimization to quickly return the next consecutive memory address without searching through a tree to find the lowest free block, but this fails once it reaches the top of the virtual address space.  Titles that make heavy use of <b>VirtualAllocEx</b> and <A HREF="memman_0dr9.htm">VirtualFree</a> should employ one of the following workarounds:
+<ul>
+<li>At program startup, perform a single allocation of <b>VirtualAllocEx</b> with the MEM_TOP_DOWN flag.  That will cause regular calls to <b>VirtualAllocEx</b> to go back and reuse previously freed virtual addresses once it reaches the top.</li>
+<li>Use MEM_TOP_DOWN for all calls to <b>VirtualAllocEx</b>.  That will be somewhat slower because a search is performed with each allocation, but it may also reduce the memory used by the application's Virtual Page Table by making better use of a reduced range of the virtual address space.</li>
+</ul>
+</li>
+</ul>
+
+<H4>Remarks</H4>
+
+<P>The <B>VirtualAllocEx</B> function can perform the following operations: 
+
+<UL>
+	<LI>Commit a region of pages reserved by a previous call to the <B>VirtualAllocEx</B>  function. </LI>
+
+	<LI>Reserve a region of free pages. </LI>
+
+	<LI>Reserve and commit a region of free pages. </LI>
+</UL>
+
+<P>You can use <B>VirtualAllocEx</B> to reserve a block of pages and then make additional calls to <B>VirtualAllocEx</B> to commit individual pages from the reserved block. This lets you reserve a range of a titles's virtual address space without consuming physical storage until it is needed. </P>
+
+<P>Each page of memory in a titles's virtual address space is in one of the following states. </P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=18%>State</TH>
+<TH align=left width=82%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=18%>Free</TD>
+<TD width=82%>The page is not committed or reserved and is not accessible to the title. The <B>VirtualAllocEx</B> function can reserve, or simultaneously reserve and commit, a free page.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=18%>Reserved</TD>
+<TD width=82%>The page is reserved. The range of addresses cannot be used by other allocation functions, but the page is not accessible and has no physical storage associated with it. The <B>VirtualAllocEx</B> function can commit a reserved page, but it cannot reserve it a second time. You can use the <A HREF="memman_5diw.htm">VirtualFreeEx</a> function to release a reserved page in a specified title, making it a free page.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=18%>Committed</TD>
+<TD width=82%>Physical storage is allocated for the page, and access is controlled by a protection code. The system initializes and loads each committed page into physical memory only at the first attempt to read or write to that page. The <B>VirtualAllocEx</B> function can commit an already committed page. This means that you can commit a range of pages, regardless of whether they have already been committed, and the function will not fail. You can use the <A HREF="memman_5diw.htm">VirtualFreeEx</a> function to decommit a committed page in a specified title, or to simultaneously decommit and free a committed page.</TD>
+</TR>
+</TABLE><BR>
+
+<P>If the <I>lpAddress</I> parameter is not NULL, the function uses the <I>lpAddress</I> and <I>dwSize</I> parameters to compute the region of pages to be allocated. The current state of the entire range of pages must be compatible with the type of allocation specified by the <I>flAllocationType</I> parameter. Otherwise, the function fails and none of the pages is allocated. This compatibility requirement does not preclude committing an already committed page; see the preceding list. </P>
+
+<P>The PAGE_GUARD protection modifier establishes guard pages. Guard pages act as one-shot access alarms. For more information, see <a href="unresolved.htm">Creating Guard Pages</a>. </P>
+
+<P>All allocated memory has EXECUTE access whether or not a PAGE_EXECUTE protection flag was specified.</P>
+
+<P><B>VirtualAllocEx</B> is identical in functionality to <B>VirtualAlloc</B>.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p><H4>See Also</H4>
+<P> 
+
+<a href="xbox_mt_xtl_sll_memory_management_functions.htm">Memory Management Functions</a> | 
+<A HREF="memman_6krn.htm">HeapAlloc</a>,  <A HREF="memman_5diw.htm">VirtualFreeEx</a>,  <A HREF="memman_30l0.htm">VirtualProtect</a>,  <A HREF="memman_6v7d.htm">VirtualQuery</a> </P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

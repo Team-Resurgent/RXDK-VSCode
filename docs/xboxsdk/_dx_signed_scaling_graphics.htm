@@ -1,0 +1,50 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Signed Scaling</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Signed Scaling"/>
+<MSHelp:Keyword Index="F" Term="Signed Scaling"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_signed_scaling_graphics"></A>Signed Scaling</H1>
+
+<P><I><B>r</B><SUB>n</SUB></I><B>_bx2</B></P>
+
+<P>When used with a color and alpha blending instruction, this modifier subtracts 0.5 from each channel and scales the result by 2.0 before the instruction is executed. So it performs y = (x-0.5)*2.</P>
+
+<P>The following example shows how to use this modifier.</P>
+
+<PRE>dp3_sat r0, t1_bx2, v0_bx2    ; Per-pixel lighting/bump mapping which assumes bump normals
+                              ; assumes bump normals in t1 and light direction in diffuse 
+                              ; color v0.
+</PRE>
+
+<P>This modifier has the effect of remapping data that was in the range 0 to 1 to be in the signed range -1 to 1. This allows subsequent processing of the data to use the full signed dynamic range of the implementation. </P>
+
+<P>This modifier is commonly used on inputs to the dot product instruction (<A HREF="_dx_dp3_graphics.htm"><B>dp3</B></A>).</P>
+
+<P>Note that this modifier is mutually exclusive with <A HREF="_dx_invert_graphics.htm"><B>Invert</B></A>, so it cannot be applied to the same register.</P>
+
+<P>The input arguments to texture register declarations can support the <B>_bx2</B> modifier to indicate additional processing to be performed during the execution of the declaration/instruction for the <A HREF="_dx_dp3_graphics.htm"><B>dp3</B></A>, <A HREF="_dx_texm3x2tex_graphics.htm"><B>texm3x2tex</B></A>, and <A HREF="_dx_texm3x3tex_graphics.htm"><B>texm3x3tex</B></A> operations. The other texture addressing operators do not support the <B>_bx2</B> input argument modifiers.</P>
+
+<P>To indicate that the input register argument should be biased and scaled before use, append <B>_bx2</B> to the input register argument.</P>
+
+<PRE>tex t0            ; Read a texture color.
+dp3 t1, t0_bx2    ; Calculate a dotproduct with this stage's texture coordinates.
+</PRE>
+
+<P>This performs the operation y = 2(x - 0.5) on the input register before using it in the specified operator. This operation is commonly used to translate data that is intended to contain signed values in the range -1 to 1, but does not do this because the source it comes from cannot support it. Such data sources include textures (<A HREF="_dx_tn_graphics.htm"><B>t<I>n</I></B></A>), iterated colors (<A HREF="_dx_vn_graphics.htm"><B>v<I>n</I></B></A>), texture coordinates, or constant factor registers (<A HREF="_dx_cn_graphics.htm"><B>c<I>n</I></B></A>).</P>
+
+<P>This modifier is for use with both the color and alpha blending instructions and the texture addressing instructions.</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

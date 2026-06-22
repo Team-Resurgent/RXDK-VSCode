@@ -1,0 +1,115 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>MakeFont Tool (MakeFont)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="MakeFont Tool (MakeFont)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+  <MSHelp:Keyword Index="K" Term="TrueType fonts, converting into bitmap fonts"/>
+  <MSHelp:Keyword Index="K" Term="bitmap fonts, converting from TrueType fonts"/>
+  <MSHelp:Keyword Index="K" Term="convert a TrueType font to a bitmap font"/>
+  <MSHelp:Keyword Index="K" Term="fonts, converting"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>MakeFont Tool (MakeFont)</h1>
+<p>The MakeFont tool converts a TrueType font into a bitmap font file (.bmf).</p><h2><a name="IDA0AEV"></a>Usage</h2>
+<pre class="clsCode">
+USAGE: MakeFont [options] infile outfile
+</pre>
+    <table>
+  <tr>
+<th>Option</th>        <th>Description</th>
+</tr>
+  <tr>
+<td>-d <i>directory</i></td>  <td>Directory where the TrueType font is located.</td>
+</tr>
+  <tr>
+<td>-f <i>fontfile</i></td>   <td>TrueType font file to load; using this switch overrides the -d switch.</td>
+</tr>
+  <tr>
+<td>-h <i>height</i></td>     <td>Height of the font, in pixels.</td>
+</tr>
+  <tr>
+<td>-e <i>default</i></td>    <td>Hexadecimal number of the default character in the font.</td>
+</tr>
+  <tr>
+<td>-a <i>alpha</i></td>      <td>Amount of antialiasing information to store; valid values for <i>alpha</i> are 0, 2 or 4.</td>
+</tr>
+  <tr>
+<td>-r <i>bits</i></td>       <td>Width of the font's RLE packet, in bits; valid values are 0 or from 2 to 8, inclusive.</td>
+</tr>
+  <tr>
+<td>-s <i>style</i></td>      <td>Style of the font; valid values are NORMAL, BOLD, ITALICS, or BOLDITALICS.</td>
+</tr>
+  <tr>
+<td>-c <i>name</i></td>       <td>Create a C structure called <i>name</i> in the output file.</td>
+</tr>
+  <tr>
+<td>-v</td>            <td>Display font statistics.</td>
+</tr>
+</table>
+<p>The <i>infile</i> argument specifies the name of an .rsp file that
+lists the characters from the TrueType font that should be converted.</p><p>The <i>outfile</i> argument specifies the name of the bitmap font
+file (.bmf) that MakeFont creates.</p><h2><a name="IDAIDEV"></a>RSP File Format</h2>
+<p>An .rsp file is a text file that lists the hexadecimal Unicode value for
+each character in the TrueType font that should be converted. The file should
+list one value per line, as in the following example.</p>
+<pre class="clsCode">
+67
+3040
+3041
+3042
+3043
+3044
+3045
+3046
+3047
+3048
+3049
+304a
+304b
+</pre>
+    <p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;You must include the lowercase "g" character (U+0067) in
+the list. Without the "g" character, the font will not load on the Xbox
+console.</p><p>An .rsp file usually starts with five lines of configuration information that
+describe the file name of the TrueType font and what properties the resulting
+.bmf font should have. These lines are optional; their values may be specified
+with command-line options. Any configuration option that you do not specify in
+the .rsp file must be specified as a command-line switch when running
+MakeFont.</p><p>The configuration section has the following format.</p>
+<pre class="clsCode">
+FONT "<i>fontfile</i>.ttf"
+HEIGHT <i>height</i>
+DEFAULT <i>default</i>
+ANTIALIASLEVEL <i>alpha</i>
+RLEWIDTH <i>bits</i>
+</pre>
+    <p>The FONT option specifies the file name of the TrueType font to convert.
+This option corresponds to the <b>-f</b> command-line switch.</p><p>The HEIGHT option specifies the height of the font, in
+pixels. This option corresponds to the <b>-h</b> command-line switch.</p><p>The DEFAULT option specifies the default character in the
+font. This option corresponds to the <b>-e</b> command-line switch.</p><p>The ANTIALIASLEVEL option specifies the level of antialiasing
+information for the font. Valid values are 0, 2, or 4. This option
+corresponds to the <b>-a</b> command-line switch.</p><p>The RLEWIDTH option specifies the width of the font's RLE packet, in bits.
+Valid values are 0 or from 2 to 8, inclusive. This option corresponds to the <b>-r</b>
+command-line switch.</p><h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="xbox_jbh_samp_gra_TrueTypeFont.htm">TrueTypeFont Sample</a>
+</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

@@ -1,0 +1,153 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineChangeLogonUsers</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineChangeLogonUsers"/>
+<MSHelp:Keyword Index="F" Term="XOnlineChangeLogonUsers"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineChangeLogonUsers</h1>
+<p>Creates an asynchronous task to change the set of local players logged onto Xbox Live.</p>
+
+<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Titles using XHV must free the XHV engine (by calling <a href="_dx_iunknown_release_dxintro.htm">Release</a> on the <a href="IXHVEngine.htm">IXHVEngine</a> pointer) before calling <b>XOnlineChangeLogonUsers</b>.  After the logon player change is complete, the title can re-initialize the XHV engine if desired.</p>
+
+<pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineChangeLogonUsers(</b>
+    <b>const XONLINE_USER</b> *<i>pUsers</i><b>,</b>
+    <b>HANDLE</b> <i>hWorkEvent</i><b>,</b>
+    <b>PXONLINETASK_HANDLE</b> <i>pHandle</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+
+<dt><i>pUsers</i></dt>
+<dd>[in]  Array of <a href="XONLINE_USER.htm">XONLINE_USER</a> structures that contain information about the players using the console who would like to participate in the online game session. The array must contain XONLINE_MAX_LOGON_USERS structures.</dd>
+            
+<p>The order of users represented in the array is significant and must map one-to-one to the controller index (zero-based) of the game port that the player is using.  If no player is using a specific game port, the <b>XONLINE_USER</b> structure at that index should be set to all zeroes.</p>
+
+<p>Use the <a href="XOnlineGetUsers.htm">XOnlineGetUsers</a> function to obtain <a href="XONLINE_USER.htm">XONLINE_USER</a> structures that contain player information stored on the local Xbox hard disk or in Memory Units.</p>
+
+
+<dt><i>hWorkEvent</i></dt>
+<dd>[in, optional]  Handle to an event that will be signaled when there is work to be done on the logon change task.  The event will be left unsignaled if the task is currently blocked by an asynchronous operation.  This parameter can be NULL if no such event is required.</dd>
+            
+
+
+<dt><i>pHandle</i></dt>
+<dd>[out]  Pointer to a variable of type <b>XONLINETASK_HANDLE</b> that receives a task handle representing this logon change task.  The handle can then be used in calls to <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> to perform work associated with this task.</dd>
+            
+
+
+</dl>
+<h4><a name="return"></a>Return Values</h4>
+	<p>The return value indicates whether the asynchronous task was successfully created:</p>
+		<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+		<tr>
+<td>S_OK</td>
+<td>The asynchronous logon change task was successfully created.</td>
+</tr>
+		<tr>
+<td>XONLINE_E_NO_GUEST_ACCESS</td>
+<td>A player logged on as a guest does not have a host present.</td>
+</tr>
+		<tr>
+<td>XONLINE_E_OUT_OF_MEMORY</td>
+<td>There was not enough memory to create the asynchronous logon change task.</td>
+</tr>
+		<tr>
+<td>XONLINE_E_TASK_BUSY</td>
+<td>Another logon task is currently being performed, or the previous logon task has not been closed.  (In debug builds, an assert will occur when this value is returned.)</td>
+</tr>
+		</table>
+
+<p>The return value does not represent the success or failure of the actual logon change task.  Once the logon change task has been successfully created, <b>XOnlineTaskContinue</b> should be called until it returns a value other than XONLINETASK_S_RUNNING.  At that point, the return value determines how to proceed (see the 
+<a href="XOnlineChangeLogonUsers.htm#remarks">Remarks</a> section for details).  The possible return values from  <b>XOnlineTaskContinue</b> for the logon change task are:</p>
+
+
+            <table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+                <tr>
+<td>XONLINE_S_LOGON_USER_CHANGE_COMPLETE</td>
+<td>The logon change has been successfully completed.  The task handle should be closed.</td>
+</tr>
+                <tr>
+<td>XONLINE_S_LOGON_COMMIT_USER_CHANGE</td>
+<td>The first phase of the logon change task has completed.  The logon change task can no longer be aborted without also disconnecting the existing logon.  Many online functions may not be called while the logon is in this state, especially those that rely on the indices of logged on players.  <b>XOnlineTaskContinue</b> should continue to be called until it indicates final completion or an error.</td>
+</tr>
+				<tr>
+<td>XONLINE_E_LOGON_CHANGE_USER_FAILED</td>
+<td>An error concerning one of the new or existing players has occurred that prevents the change from proceeding.  <a href="XOnlineChangeLogonUsersTaskGetResults.htm">XOnlineChangeLogonUsersTaskGetResults</a> can be called to retrieve error results for each of the users specified in the logon change request.  If this error occurs before the change task has reached the XONLINE_S_LOGON_COMMIT_USER_CHANGE phase, then existing players can continue to play.  Otherwise, the existing logon session must be terminated.</td>
+</tr>
+				<tr>
+<td>XONLINE_E_LOGON_CANNOT_ACCESS_SERVICE</td>
+<td>One or more problems were encountered trying to log onto the online service.  If this error occurs before the change task has reached the XONLINE_S_LOGON_COMMIT_USER_CHANGE phase, then existing users can continue to play.  Otherwise, the existing logon session must be terminated and the player should be given the option to reboot into the network troubleshooting portion of the Xbox Dashboard.</td>
+</tr>
+				<tr>
+<td>XONLINE_E_LOGON_SERVERS_TOO_BUSY</td>
+<td>The logon servers are currently too busy to perform the logon request.  The existing logon session must be terminated, and the player should be instructed to try to log on again later.</td>
+</tr>
+                <tr>
+<td>XONLINE_E_LOGON_UPDATE_REQUIRED</td>
+<td>The title should terminate the existing logon session and call <a href="XOnlineTitleUpdate.htm">XOnlineTitleUpdate</a> to update the title.</td>
+</tr>
+            </table>
+
+<h4><a name="remarks"></a>Remarks</h4>
+<p><b>XOnlineChangeLogonUsers</b> returns an asynchronous task that must be pumped with <b>XOnlineTaskContinue</b> in order to perform work on and eventually complete the task.  The task normally proceeds through two different phases before finally completing.</p>
+
+<p><b>XOnlineTaskContinue</b> should first be called for the logon change task until it returns a value other than XONLINETASK_S_RUNNING, indicating that either the first phase of the change (or possibly the entire task) has completed, or that an error has occurred.  A return value of XONLINE_S_LOGON_COMMIT_USER_CHANGE indicates that the first phase has been completed, and that the change request task is now committed to proceeding with the logon change.  At this point, the logon change task can no longer be aborted without also disconnecting the existing logon.  Many online functions may not be called while the logon change is in this state, especially those that rely on the indices of logged on players (typically, those that take a user index as an argument).  The first phase has completed and <b>XOnlineTaskContinue</b> should continue to be called until it indicates final completion or an error.</p>
+
+<p>If an error value is returned before the first phase is completed, the logon change has failed, but, depending on the specific error, the existing logged on users may be able to continue playing.  XONLINE_E_LOGON_CHANGE_USER_FAILED and XONLINE_E_LOGON_CANNOT_ACCESS_SERVICE allow the game to continue with the existing players, while XONLINE_E_LOGON_SERVERS_TOO_BUSY and XONLINE_E_LOGON_UPDATE_REQUIRED require terminating the existing logon session.</p>  
+
+<p>After the first phase has been completed, <b>XOnlineTaskContinue</b> should continue to be called until it returns an error code or returns XONLINE_S_LOGON_USER_CHANGE_COMPLETE to indicate that the second phase has succeeded and that the change is complete.  Once the change has succeeded, normal calling of online functions may resume, with the newly logged on players participating.  The user indices specified for users now refer to the index in the new array returned by <a href="XOnlineGetLogonUsers.htm">XOnlineGetLogonUsers</a>.  The logon change task handle should be closed.  Games with game servers that have requested "authdata" will need to notify the game server of the player change and have the game server request the data again.  Game hosts that have collected user identifiers and gamertags of participating players will need to be informed of the new players.</p>
+
+<p>If the logon change task returns an error value after the first phase has been completed, the change task has failed, the task handle should be closed, and the existing logon session terminated as well.</p>
+
+<p>In some cases, the first phase of the task may be not be needed, and <b>XOnlineTaskContinue</b> will return XONLINE_S_LOGON_USER_CHANGE_COMPLETE prior to (and instead of) returning XONLINE_S_LOGON_COMMIT_USER_CHANGE.  This indicates that the first phase was not necessary, and that the change has completed successfully.</p>
+
+<p>Note that, in order for the logon change task to eventually succeed, both the task handle returned in <i>pHandle</i> as well as the original logon task handle returned by <a href="XOnlineLogon.htm">XOnlineLogon</a> must be pumped with <b>XOnlineTaskContinue</b>.</p>
+
+<p>The game's user interface should give players on each individual controller the option of logging off or of directly switching to a different player for that controller.  In the case where a different player is logging on at a particular controller in place of a previous player, call <b>XOnlineChangeLogonUsers</b> only once, with the new player assigned to that controller, not twice (once to log off the old player and once to log on the new player).</p>
+
+<p><b>XOnlineChangeLogonUsers</b> cannot be called to change from having one or more players to having no players, or to change from having no players to having one or more players.</p>
+
+<p>After a successful logon change, <b>XOnlineGetLogonUsers</b> will return information for the new list of players.</p>
+
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="x_mt_xonline_functions.htm">Xbox Live Functions</a> | <a href="XOnlineLogon.htm">XOnlineLogon</a>, <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a>, <a href="XOnlineChangeLogonUsersTaskGetResults.htm">XOnlineChangeLogonUsersTaskGetResults</a>
+</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

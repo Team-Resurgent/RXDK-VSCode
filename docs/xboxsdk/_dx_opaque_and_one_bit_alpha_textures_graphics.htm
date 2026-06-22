@@ -1,0 +1,254 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Opaque and One-bit Alpha Textures</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Opaque and One-bit Alpha Textures"/>
+<MSHelp:Keyword Index="F" Term="Opaque and One-bit Alpha Textures"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H4><A NAME="_dx_opaque_and_one_bit_alpha_textures_graphics"></A>Opaque and One-Bit Alpha Textures</H4>
+
+<P>Texture format DXT1 is for textures that are opaque or have a single transparent color.</P>
+
+<P>For each opaque or one-bit alpha block, two 16-bit values (RGB 5:6:5 format) and a 4x4 bitmap with 2-bits-per-pixel are stored. This totals 64 bits for 16 texels, or four bits per texel. In the block bitmap, there are two bits per texel to select between the four colors, two of which are stored in the encoded data. The other two colors are derived from these stored colors by linear interpolation. This layout is shown in the following diagram.</P>
+
+<P><IMG SRC="images/colors1.gif" ALT="" BORDER=0></P>
+
+<P>The one-bit alpha format is distinguished from the opaque format by comparing the two 16-bit color values stored in the block. They are treated as unsigned integers. If the first color is greater than the second, it implies that only opaque texels are defined. This means four colors are used to represent the texels. In four-color encoding, there are two derived colors and all four colors are equally distributed in RGB color space. This format is analogous to RGB 5:6:5 format. Otherwise, for one-bit alpha transparency, three colors are used and the fourth is reserved to represent transparent texels. </P>
+
+<P>In three-color encoding, there is one derived color and the fourth two-bit code is reserved to indicate a transparent texel (alpha information). This format is analogous to RGBA 5:5:5:1, where the final bit is used for encoding the alpha mask.</P>
+
+<P>The following code example illustrates the algorithm for deciding whether three- or four-color encoding is selected.</P>
+
+<PRE>if (color_0 &gt; color_1) 
+{
+    // Four-color block: derive the other two colors.    
+    // 00 = color_0, 01 = color_1, 10 = color_2, 11 = color_3
+    // These 2-bit codes correspond to the 2-bit fields 
+    // stored in the 64-bit block.
+    color_2 = (2 * color_0 + color_1 + 1) / 3;
+    color_3 = (color_0 + 2 * color_1 + 1) / 3;
+}    
+else
+{ 
+    // Three-color block: derive the other color.
+    // 00 = color_0,  01 = color_1,  10 = color_2,  
+    // 11 = transparent.
+    // These 2-bit codes correspond to the 2-bit fields 
+    // stored in the 64-bit block. 
+     color_2 = (color_0 + color_1) / 2;    
+     color_3 = transparent;    
+
+}
+</PRE>
+
+<P>It is recommended that you set the RGBA components of the transparency pixel to zero before blending.</P>
+
+<P>The following tables show the memory layout for the 8-byte block. It is assumed that the first index corresponds to the y-coordinate and the second corresponds to the x-coordinate. For example, Texel[1][2] refers to the texture map pixel at (x,y) = (2,1).</P>
+
+<P>This table contains the memory layout for the 8-byte (64-bit) block.</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=41%>Word address</TH>
+<TH align=left width=59%>16-bit word</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>0</TD>
+<TD width=59%>Color_0</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>1</TD>
+<TD width=59%>Color_1</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>2</TD>
+<TD width=59%>Bitmap Word_0</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>3</TD>
+<TD width=59%>Bitmap Word_1</TD>
+</TR>
+</TABLE><BR>
+
+<P>Color_0 and Color_1&#8212;the colors at the two extremes&#8212;are laid out as follows:</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=42%>Bits</TH>
+<TH align=left width=58%>Color</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=42%>4:0 (LSB)</TD>
+<TD width=58%>Blue color component</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=42%>10:5</TD>
+<TD width=58%>Green color component</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=42%>15:11</TD>
+<TD width=58%>Red color component</TD>
+</TR>
+</TABLE><BR>
+
+<P>Bitmap Word_0 is laid out as follows: </P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=41%>Bits</TH>
+<TH align=left width=59%>Texel</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>1:0 (LSB)</TD>
+<TD width=59%>Texel[0][0]</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>3:2</TD>
+<TD width=59%>Texel[0][1]</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>5:4</TD>
+<TD width=59%>Texel[0][2]</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>7:6</TD>
+<TD width=59%>Texel[0][3]</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>9:8</TD>
+<TD width=59%>Texel[1][0]</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>11:10</TD>
+<TD width=59%>Texel[1][1]</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>13:12</TD>
+<TD width=59%>Texel[1][2]</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>15:14 (MSB)</TD>
+<TD width=59%>Texel[1][3]</TD>
+</TR>
+</TABLE><BR>
+
+<P>Bitmap Word_1 is laid out as follows:</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=41%>Bits</TH>
+<TH align=left width=59%>Texel</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>1:0 (LSB)</TD>
+<TD width=59%>Texel[2][0]</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>3:2</TD>
+<TD width=59%>Texel[2][1]</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>5:4</TD>
+<TD width=59%>Texel[2][2]</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>7:6</TD>
+<TD width=59%>Texel[2][3]</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>9:8</TD>
+<TD width=59%>Texel[3][0]</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>11:10</TD>
+<TD width=59%>Texel[3][1]</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>13:12</TD>
+<TD width=59%>Texel[3][2]</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>15:14 (MSB)</TD>
+<TD width=59%>Texel[3][3]</TD>
+</TR>
+</TABLE><BR>
+
+<H4>Example of Opaque Color Encoding</H4>
+
+<P>As an example of opaque encoding, assume that the colors red and black are at the extremes. Red is color_0, and black is color_1. There are four interpolated colors that form the uniformly distributed gradient between them. To determine the values for the 4&times;4 bitmap, the following calculations are used.</P>
+
+<PRE>00 ? color_0
+01 ? color_1
+10 ? 2/3 color_0 + 1/3 color_1
+11 ? 1/3 color_0 + 2/3 color_1
+</PRE>
+
+<P>The bitmap then looks like the following graphic.</P>
+
+<P><IMG SRC="images/colors2.gif" ALT="" BORDER=0></P>
+
+<P>This looks like the following series of colors.</P>
+
+<P><IMG SRC="images/redsquares.gif" ALT="" BORDER=0></P>
+
+<H4>Example of One-Bit Alpha Encoding</H4>
+
+<P>This format is selected when the unsigned 16-bit integer, color_0, is less than the unsigned 16-bit integer, color_1. An example of where this format can be used is leaves on a tree, shown against a blue sky. Some texels can be marked as transparent while three shades of green are still available for the leaves. Two colors fix the extremes, and the third is an interpolated color.</P>
+
+<P>Here is an example of such a picture.</P>
+
+<P><IMG SRC="images/greenthing.gif" ALT="" BORDER=0></P>
+
+<P>Note that where the image is shown as white, the texel would be encoded as transparent. Also note that the RGBA components of the transparent texels should be set to zero before blending.</P>
+
+<P>The bitmap encoding for the colors and the transparency is determined using the following calculations.</P>
+
+<PRE>00 ? color_0
+01 ? color_1
+10 ? 1/2 color_0 + 1/2 color_1
+11   ?   Transparent
+</PRE>
+
+<P>The bitmap then looks like the following graphic.</P>
+
+<P><IMG SRC="images/colors3.gif" ALT="" BORDER=0></P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

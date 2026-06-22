@@ -1,0 +1,37 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Using the Publisher Common Data Region</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Using the Publisher Common Data Region"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+<MSHelp:Keyword Index="K" Term="publisher common data region"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Using the Publisher Common Data Region</h1>
+<p>To access the publisher common data region, a title must mount the region with the <a href="x_mt_xmountalternatetitle.htm">XMountAlternateTitle</a> function, specifying the publisher common data region alternate title ID as the alternate title ID to mount.</p><h2><a name="IDAVQM2"></a>Publisher Common Data Region Alternate Title ID</h2>
+<p>The publisher common data region alternate title ID (PCDRATI) is an alternate title identifier that provides access to the common data region.  A unique PCDRATI exists for each publisher.  The PCDRATI is a 32-bit value formed by combining the publisher ID in the upper 16 bits with the value 0xFFFF in the lower 16 bits.  For example, a publisher with ID 0xABCD would have a PCDRATI of 0xABCDFFFF.  Publishers must not create primary title IDs that contain 0xFFFF in the lower 16 bits, because this would conflict with the publisher's PCDRATI.</p><p>To be permitted access to the common data region, a title must include the PCDRATI in the title's list of alternate IDs when the title is submitted for certification.  The PCDRATI is associated with the title in addition to the title's primary ID and any other alternate title IDs that the publisher desires.</p><h2><a name="IDA3QM2"></a>Mounting and Using the Publisher Common Data Region</h2>
+<p>To access the common data region, the title must mount a logical drive letter that can be used to access the region.  To mount the publisher common data region, call <b>XMountAlternateTitle</b> with "T:\" in the <i>lpRootPath</i> parameter, and with the PCDRATI in the <i>dwAltTitleId</i> parameter.  If the call is successful, the function returns ERROR_SUCCESS and writes the drive letter of the newly mounted common data region to the variable pointed to by the <i>pchDrive</i> parameter.</p><p>The returned drive letter is a mounted drive that can be used with the standard file I/O functions (such as <a href="filesio_7wmd.htm">CreateFile</a>, <a href="filesio_39id.htm">ReadFile</a>, and <a href="filesio_3kkl.htm">WriteFile</a>) to read and write data in the region.</p><p>If the function fails, it does so for one of the following reasons:
+<ul>
+<li>If the alternate title ID is not valid or was not included in the title's list of alternate title IDs when the title was signed.</li>
+<li>If the title's publisher does not match the publisher portion of the PCDRATI.</li>
+<li>If a drive other than "T:\" is specified for <i>lpRootPath</i>.</li>
+</ul>
+</p><p>As with all data written to the hard disk, titles should sign data written to the common data area by using <a href="x_mt_xcalculatesignaturebeginex.htm">XCalculateSignatureBeginEx</a>, <a href="x_mt_xcalculatesignatureupdate.htm">XCalculateSignatureUpdate</a>, and <a href="x_mt_xcalculatesignatureend.htm">XCalculateSignatureEnd</a>.  When calling <b>XCalculateSignatureBeginEx</b>, specify the PCDRATI in the <i>dwAltTitleId</i> parameter, thus securely signing the data while also permitting multiple titles access to the data.</p><p>When the title no longer needs to access the common data region, it should unmount the region by calling <a href="x_mt_xunmountalternatetitle.htm">XUnmountAlternateTitle</a>.</p><p>For general information about the common data region, see <a href="x_mt_storage_ov_region_common.htm">Publisher Common Data Storage Region</a>.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

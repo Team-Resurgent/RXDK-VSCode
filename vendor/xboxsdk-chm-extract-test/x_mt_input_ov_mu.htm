@@ -1,0 +1,78 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Memory Units</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Memory Units"/>
+<MSHelp:Keyword Index="F" Term="Memory Units"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Memory Units</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<P>The second main section of the example code in the previous topic deals with memory units.  The code is monitoring memory unit insertions and removals.  As for the other device types, the code checks each bit in the insertion mask to see if a memory unit has been inserted.  The code must also handle the additional task of checking both the top and bottom controller slots for each port.  When a memory unit is inserted, the code mounts it into the file system by calling <A HREF="x_jsk_xmountmu.htm">XMountMU</A>.  <B>XMountMU</B> makes the memory unit accessible to a title through a mapped drive letter (returned in the <I>pchDrive</I> parameter).  After the code mounts a memory unit, it can read from and write to the MU using that drive letter.  The code then stores the returned drive letter in the global array of mounted MU drive letters.</P>
+
+<P class="note"><I><B>Note</B></I>&nbsp;&nbsp;&nbsp;You must format memory units before they can be mounted.  Xbox memory units sold commercially will be pre-formatted; otherwise, use the XDK Launcher's format option to format any memory units that you have received with your XDK.</P> 
+
+<P>When a memory unit is removed that had been previously mounted, the code calls <A HREF="x_jsk_xunmountmu.htm">XUnmountMU</A> to unmount the memory unit from the file system and free up the associated resources.  The code then sets the global drive letter for the MU to zero to indicate that it is not mounted.</P>
+
+<P>As with other device types covered earlier, and in many cases to a greater extent, you will typically not want to have all connected memory units mounted at all times.  It is likely that only on a save game screen or at a save game point in the game would the code be concerned about the availability of memory units or need to access them.  You would likely enable dynamic mounting and unmounting of the MUs in the code above only during those save game periods.  Also, the code may have requested resources for at most two simultaneously mounted memory units when it called <A HREF="x_mt_xinitdevices.htm">XInitDevices</A>, in which case it would have to monitor and limit simultaneously mounted MUs.  The code, as shown above, could simultaneously mount all eight MUs, requiring that the initialization done with <B>XInitDevices</B> request resources for eight MUs (as was done in the DeviceInit() routine).</P>
+
+<H3>Memory Unit Information</H3>
+
+<P>In the example, the code would call ShowMUInfo() when it detected a memory unit insertion.  That function is defined here as a simple routine to display to the debugger some information about the inserted MU.  In a game, during a save game screen, this function could update the memory unit information being displayed to the user.</P>
+
+<PRE>
+//
+// Display free space, name, and saved games on a mounted MU.
+//
+void ShowMUInfo( char chDrive )
+{
+    WCHAR szName[MAX_MUNAME + 1];
+    ULARGE_INTEGER uliFreeAvail, uliFree, uliTotal;
+    char szDrive[] = "X:\\";
+
+
+    *szDrive = chDrive;
+    GetDiskFreeSpaceEx( szDrive, &amp;uliFreeAvail, &amp;uliTotal, &amp;uliFree );
+    XMUNameFromDriveLetter( chDrive, szName, MAX_MUNAME + 1 );
+    DbgPrintf( "MU %c: (%S) free: %u total: %u.\r\n",
+                chDrive, szName,
+                uliFreeAvail.LowPart, uliTotal.LowPart ); 
+    EnumSavedGames( *szDrive );
+}
+</PRE>
+
+<P>This function calls <A HREF="x_mt_xmunamefromdriveletter.htm">XMUNameFromDriveLetter</A> to retrieve the customized name the user has assigned to the memory unit.  This is an excellent way to make the memory unit more recognizable to the player.  The DbgPrintf() function used here is a simple custom output function defined later in <A HREF="x_mt_input_ov_util.htm">Keyboard and Support Routines</A>.</P>
+
+<!--*******************************************************************************-->
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

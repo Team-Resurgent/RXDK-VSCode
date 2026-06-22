@@ -1,0 +1,138 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>XTL Function Prototypes</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XTL Function Prototypes"/>
+<MSHelp:Keyword Index="F" Term="XTL Function Prototypes"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR></TR>
+</TABLE>
+<!--**********************************-->
+
+<H2 class="heading"><A NAME=""></A>XTL Function Prototypes</H2>
+
+<P>For XTL functions that have text arguments, prototypes are provided for generic, ANSI, and/or Unicode versions.  Some functions are implemented as both ANSI and Unicode versions, some as ANSI or Unicode only, and some as functions that require both ANSI and Unicode parameters.  For functions that have both ANSI and Unicode versions, the documentation gives the generic function prototypes, which, when compiled, will produce either ANSI or Unicode prototypes.</P>
+
+<P>If you use the generic function call in your application, the actual version of the function that is used depends on whether UNICODE is defined or not.  If you define UNICODE, functions that implement both ANSI and Unicode versions will resolve to the Unicode version.  If you don't define UNICODE, the ANSI version of those functions will be used.  For functions that implement either ANSI or Unicode only, the generic prototype will resolve to the prototype for the implemented version, regardless of whether UNICODE is defined or not.</P>
+
+You can specifically choose whether you want to use the ANSI or Unicode version of a function by using the explicit function name ending with <I>A</I> or <I>W</I>, as shown below.</P>
+
+<H4>Both ANSI and Unicode Versions</H4>
+
+<P>The <A HREF="debug_3pt3.htm"><B>OutputDebugString</B></A> function is an example of a function implemented as both ANSI and Unicode versions.  It is shown here with the ANSI, Unicode, and generic function prototypes.</P>
+
+<P><B>Generic Prototype:</B></P>
+
+<PRE>VOID OutputDebugString(
+  LPCTSTR lpOutputString
+); 
+</PRE>
+
+<P>The header file provides the generic function name implemented as a macro: </P>
+
+<PRE>#ifdef UNICODE
+#define OutputDebugString  OutputDebugStringW
+#else
+#define OutputDebugString  OutputDebugStringA
+#endif // !UNICODE
+</PRE>
+
+<P>The preprocessor expands the macro into either the ANSI or Unicode function names, depending on whether UNICODE is defined. The letter <I>A</I> (ANSI) or <I>W</I> (wide) is added at the end of the generic function name, as appropriate. The header file then provides ANSI and Unicode function prototypes, as shown in the following examples. </P>
+
+<P><B>ANSI Prototype:</B></P>
+
+<PRE>VOID
+WINAPI
+OutputDebugStringA(
+    IN LPCSTR lpOutputString
+    );
+</PRE>
+
+<P><B>Unicode Prototype:</B></P>
+
+<PRE>VOID
+WINAPI
+OutputDebugStringW(
+    IN LPCWSTR lpOutputString
+    );
+</PRE>
+
+<P>Note that the generic function prototype uses the generic <B>LPCTSTR</B> for the text parameter, but the ANSI prototype uses <B>LPCSTR</B> and the Unicode prototype uses <B>LPCWSTR</B>.</P>
+
+<P>If at a particular place in your code you wanted to use the Unicode version explicitly, whether UNICODE was defined or not, you would call the Unicode function by adding a <I>W</I> to the end:</P>
+
+<PRE>
+OutputDebugStringW( L"Displaying Unicode String\n" );
+</PRE>
+
+<P class=note><B><I>Note</I></B>&nbsp;&nbsp;&nbsp;Whenever a function that implements both ANSI and Unicode versions has a length parameter for a character string, the length is documented as a count of <B>TCHAR</B> values in the string. This refers to bytes for ANSI versions of the function, or characters for Unicode versions. Parameters that require or return pointers to untyped memory blocks are exceptions; the count for those parameters is given in bytes.</P>
+
+<h4>ANSI or Unicode Only</H4>
+
+<p>The <a href="filesio_5n8l.htm"><B>DeleteFile</B></A> function is an example of a function that is implemented as ANSI only.</P>
+
+<P><B>Generic Prototype:</B></P>
+
+<PRE>BOOL DeleteFile(
+  LPCTSTR lpFileName
+); 
+</PRE>
+
+<P>The header file provides the generic function name implemented as a macro: </P>
+
+<PRE>#define DeleteFile DeleteFileA
+</PRE>
+
+<P>The preprocessor expands the macro into the ANSI function name, regardless of whether UNICODE is defined or not. The letter <I>A</I> (ANSI) is added at the end of the generic function name.  The header file then provides only the ANSI function prototype:</P>
+
+<P><B>ANSI Prototype:</B></P>
+
+<PRE>BOOL
+WINAPI
+DeleteFileA(
+    IN LPCSTR lpFileName
+    );
+</PRE>
+
+
+<h4>Both ANSI and Unicode Parameters</H4>
+
+<p>The <a href="x_jsk_xdeletesavegame.htm"><B>XDeleteSaveGame</B></A> function is an example of a function that requires both ANSI and Unicode strings as parameters.</P>
+
+<P><B>Prototype:</B></P>
+
+<PRE>DWORD
+XDeleteSaveGame(
+    LPCSTR lpRootPathName,
+    LPCWSTR lpSaveGameName
+);
+</PRE>
+
+<P>There is only one prototype for this function, and there is no macro to resolve the function name into an <I>A</I> or <I>W</I> version.</P>
+
+<P>To call this function, you must provide an ANSI string for the <I>lpRootPathName</I> parameter and a Unicode string for the <I>lpSaveGameName</I> parameter.</P>
+
+
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

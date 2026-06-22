@@ -1,0 +1,71 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Context Switches</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Context Switches"/>
+<MSHelp:Keyword Index="F" Term="Context Switches"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR></TR>
+</TABLE>
+<!--**********************************-->
+
+<H3><A NAME="_win32_context_switches"></A>Context Switches</H3>
+
+<P>The scheduler maintains a queue of executable threads for each priority level. These are known as <I>ready threads</I>. When the processor becomes available, the system performs a <I>context switch</I>. The steps in a context switch are: 
+
+<OL>
+	<LI>Save the context of the thread that just finished executing. </LI>
+
+	<LI>Place the thread that just finished executing at the end of the queue for its priority. </LI>
+
+	<LI>Find the highest priority queue that contains ready threads. </LI>
+
+	<LI>Remove the thread at the head of the queue, load its context, and execute it. </LI>
+</OL>
+
+<P>The following classes of threads are not ready threads. 
+
+<UL>
+	<LI>Threads created with the CREATE_SUSPENDED flag </LI>
+
+	<LI>Threads halted during execution with the <A HREF="prothred_7gkk.htm"><B>SuspendThread</B></A> function </LI>
+
+	<LI>Threads waiting for a synchronization object or input. </LI>
+</UL>
+
+<P>Until threads that are suspended or blocked become ready to run, the scheduler does not allocate any processor time to them, regardless of their priority. </P>
+
+<P>The most common reasons for a context switch are: 
+
+<UL>
+	<LI>The time slice has elapsed. </LI>
+
+	<LI>A thread with a higher priority has become ready to run. </LI>
+
+	<LI>A running thread needs to wait. </LI>
+</UL>
+
+<P>When a running thread needs to wait, it relinquishes the remainder of its time slice. </P>
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

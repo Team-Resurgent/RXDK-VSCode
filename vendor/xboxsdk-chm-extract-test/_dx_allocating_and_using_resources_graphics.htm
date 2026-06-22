@@ -1,0 +1,51 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Allocating and Using Resources</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Allocating and Using Resources"/>
+<MSHelp:Keyword Index="F" Term="Allocating and Using Resources"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Allocating and Using Resources</H1>
+<!--***********************************************************-->
+
+<!--****Intro paragraph. Should be a three or four sentence summary of the topic.****-->
+<p>The easiest way to allocate a resource is through the <b>Create</b> methods on <a href="_dx_idirect3ddevice8_graphics.htm">IDirect3DDevice8</a>, but in many scenarios, it makes sense to either pre-create the headers and data or to create the headers for the resource on demand and point the headers at existing data.</p>
+
+<p>The headers for resources created outside of the device can be allocated in any memory, including on the stack or embedded inside of another structure. They need to follow these rules:</p>
+
+<ul>
+	<li>The reference count for the header should be initialized to one, and the title should never allow the count to go to zero so that Direct3D will not attempt to destroy the resource.</li>
+	<li>D3DCOMMON_D3DCREATED must not be set to prevent the driver from attempting to manipulate the resource allocations directly.</li>
+	<li>The header and data for the resource must live until the graphics processor has finished using them. For more information, see <a href="_dx_resource_lifetime_graphics.htm">Resource Lifetime</a>.</li>
+</ul>
+
+<p>The data for a resource must be allocated from contiguous memory and accessed through a write-combined pointer. The methods <a href="xbox_dxg_D3D_AllocContiguousMemory.html">D3D_AllocContiguousMemory</a> and <a href="xbox_dxg_D3D_FreeContiguousMemory.html">D3D_FreeContiguousMemory</a> provide an easy to way to get such memory. It is legal, and even recommended due to the 4K-allocation granularity of this function, to have the data for multiple resources stored in one allocation as long as 1) that allocation lives as long as all of the resources whose data it contains, and 2) that data is aligned correctly within the allocation.</p>
+
+<p><a href="xbox_dxg_IDirect3DResource8_Register.htm">IDirect3DResource8::Register</a> is a helper method that assists with filling in the data field of a manually allocated resource. It takes a pointer to a contiguous memory allocation, adds it to the <b>Data</b> field of the resource, converts the resulting address to a physical memory offset, and sets the result back into the <b>Data</b> field.  This makes it easy to do a bulk load of many resources, because the headers can be pre-generated with the offset of their data within the contiguous memory allocation.</p>
+
+<!--*******************************************************************************-->
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

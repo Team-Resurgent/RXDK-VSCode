@@ -1,0 +1,1851 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Basic UIX Customization Through Skinning</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Basic UIX Customization Through Skinning"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+  <MSHelp:Keyword Index="K" Term="SkinBld tool"/>
+  <MSHelp:Keyword Index="K" Term="skinning, Xbox Drop-In UI"/>
+  <MSHelp:Keyword Index="K" Term="Drop-in UI, skinning"/>
+  <MSHelp:Keyword Index="K" Term="Xbox Drop-in UI, skinning"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Basic UIX Customization Through Skinning</h1>
+<p>Titles can customize the Xbox Drop-in UI through the use of a skin file. A skin file contains strings, images, and layout information for each Xbox Drop-in UI screen. Content developers can work make changes to the skin file without rebuilding the title's executable (.xbe) file.</p><p>Customize the skin file by changing the string, images, sounds, layout information, and icons for any language setting. Information describing these assets is stored in the text skin description file (.inx). The SkinBld tool uses the skin description file and the assets it describes to create a binary skin file (.uix). You then include the resulting .uix file on your title's game disc.</p><p>If your title supports multiple screen resolutions, you should create separate skin files for each resolution. The title specifies the appropriate skin file for a given resolution when calling the <a href="UIXCreateLiveEngine.htm">UIXCreateLiveEngine</a> function. Using the default 640&#0215;480 skin file when the screen is set to 1080 produces a small and poorly aligned user interface. Your game uses the same skin files for interlaced and progressive output.</p><p>UI plug-ins use the methods of <a href="IPluginSupport.htm">IPluginSupport</a> to obtain skin file information from the engine. For titles using the default <a href="ITitleUIPlugin.htm">ITitleUIPlugin</a> interface created with the <a href="UIXCreateUIPlugin.htm">UIXCreateUIPlugin</a> function, that retrieve and handle that information automatically without additional code.</p><p>&nbsp;</p><img src="images/uix_friends2.jpg"><p><i><b>Illustration</b>&nbsp;&nbsp;Skinning the Friends Feature (minimal changes to text height and color).</i></p>
+<p>&nbsp;</p><ul>
+<li><a href="#SkinBld">SkinBld</a></li><li><a href="#IDA3UEV">Skin Description File Sections</a></li><li><a href="#example_description_file">Example Skin Description File</a></li><li><a href="#example_language_file">Example Language File</a></li></ul>
+<h2><a name="SkinBld"></a>SkinBld</h2>
+<p>The SkinBld tool compiles a Unicode text skin description file (.inx) and associated resources into a binary skin file (.uix) usable by the Xbox Drop-in UI engine. You must include the skin file on the title's game disk and specify it in the call to <b>UIXCreateLiveEngine</b>.</p>
+<pre class="clsCode">
+[/header] [/pre] [/rdf] input1.inx [input2.inx ...] output_file
+</pre>
+    
+<pre class="clsCode">
+USAGE: skinbld [/header] [/pre] [/rdf] <i>input1.inx</i> [<i>input2.inx</i> ...] <i>outputfile.uix</i> [/help <i>sectionname</i>]
+</pre>
+    <table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>/header</td>
+<td>Generate a C/C++ header file with resource IDs.</td>
+</tr>
+<tr>
+<td>/pre</td>
+<td>Generate a merged input file for reference.</td>
+</tr>
+<tr>
+<td>/rdf</td>
+<td>Generate a merged input file for reference.</td>
+</tr>
+
+<tr>
+<td>inputfile.inx</td>
+<td>The name of the input skin description file (Unicode text).</td>
+</tr>
+<tr>
+<td>outputfile.uix</td>
+<td>The name of the output compiled skin file.</td>
+</tr>
+<tr>
+<td>/help STRING</td>
+<td>List valid String section values.</td>
+</tr>
+<tr>
+<td>/help IMAGE</td>
+<td>List valid Image section values.</td>
+</tr>
+<tr>
+<td>/help AUDIO</td>
+<td>List valid Audio section values.</td>
+</tr>
+<tr>
+<td>/help POPUP_SCREEN</td>
+<td>List valid POPUP_SCREEN section values.</td>
+</tr>
+<tr>
+<td>/help LOGON_1_USER_SCREEN</td>
+<td>List valid LOGON_1_USER_SCREEN section values.</td>
+</tr>
+<tr>
+<td>/help LOGON_2_USER_SCREEN</td>
+<td>List valid LOGON_2_USER_SCREEN section values.</td>
+</tr>
+<tr>
+<td>/help LOGON_4_USER_SCREEN</td>
+<td>List valid LOGON_4_USER_SCREEN section values.</td>
+</tr>
+<tr>
+<td>/help FRIENDS_SCREEN</td>
+<td>List valid FRIENDS_SCREEN section values.</td>
+</tr>
+<tr>
+<td>/help NOTIFICATION_SCREEN</td>
+<td>List valid NOTIFICATION_SCREEN section values.</td>
+</tr>
+<tr>
+<td>/help PLAYERS_DEFAULT_SCREEN</td>
+<td>List valid PLAYERS_DEFAULT_SCREEN section values.</td>
+</tr>
+<tr>
+<td>/help PLAYERS_DEPARTED_ONLY_SCREEN</td>
+<td>List valid PLAYERS_DEPARTED_ONLY_SCREEN section values.</td>
+</tr>
+<tr>
+<td>/help PLAYERS_CURRENT_ONLY_SCREEN</td>
+<td>List valid PLAYERS_CURRENT_ONLY_SCREEN section values.</td>
+</tr>
+<tr>
+<td>/help VOICE_MAIL_SCREEN</td>
+<td>List valid VOICE_MAIL_SCREEN section values.</td>
+</tr>
+</table>
+<h2><a name="IDA3UEV"></a>Skin Description File Sections</h2>
+<p>The skin description file contains the following sections: Image, Audio, String, POPUP_SCREEN, LOGON_1_USER_SCREEN, LOGON_2_USER_SCREEN, LOGON_4_USER_SCREEN, FRIENDS_SCREEN, NOTIFICATION_SCREEN, PLAYERS_DEFAULT_SCREEN, PLAYERS_DEPARTED_ONLY_SCREEN, and PLAYERS_CURRENT_ONLY_SCREEN. Within each section, values are given for the images, string, sounds, or UI elements that are contained within the section.</p><p>For UI element colors, values are A8R8G8B8 D3DCOLOR values specified as 32-bit hexadecimal numbers (for example, 0x88FF00AA). For UI elements, some values have defaults that are used when a value is not supplied. The default TextColor is 0xFFFFFFFF, the default DisabledTextColor is 0xFF808080, and the default FontHeight is 16.</p><p>For all sections, a Language= value can be given that specifies the language for that section. For example, Language="JA" specifies that the section contains values for Japanese. The language value determines which sections in the skin file are used by the engine, based on the language that was specified when the engine was created with <a href="UIXCreateLiveEngine.htm">UIXCreateLiveEngine</a>. Sections that match the specified language are used if found. Otherwise, default language sections (sections with no language value specified) are used.</p><p>The two-letter language identifiers used in the skin file map to the language identifier value passed to <b>UIXCreateLiveEngine</b>. The built-in codes to support languages used in the Dashboard can also be specified. Note that "BR", Brazil, maps to the Dashboard language value XC_LANGUAGE_PORTUGUESE. Numeric data is also supported for Language. If the title supports a language other than a Dashboard language, a decimal number can be specified. Titles can display languages that the Dashboard cannot. </p><p>The following language codes are supported. </p><table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>EN</td>
+<td>English</td>
+</tr>
+<tr>
+<td>JA</td>
+<td>Japanese</td>
+</tr>
+<tr>
+<td>DE</td>
+<td>German</td>
+</tr>
+<tr>
+<td>FR</td>
+<td>French</td>
+</tr>
+<tr>
+<td>ES</td>
+<td>Spanish</td>
+</tr>
+<tr>
+<td>IT</td>
+<td>Italian</td>
+</tr>
+<tr>
+<td>KO</td>
+<td>Korean</td>
+</tr>
+<tr>
+<td>TW</td>
+<td>Traditional Chinese</td>
+</tr>
+<tr>
+<td>BR</td>
+<td>Brazilian Portuguese</td>
+</tr>
+</table>
+<p>The skin file sections are presented in the following topics.</p><ul>
+<li><a href="#IDA0WEV">[Image]</a></li><li><a href="#IDARXEV">[Audio]</a></li><li><a href="#IDA1XEV">[String]</a></li><li><a href="#IDANAFV">[POPUP_SCREEN]</a></li><li><a href="#IDA5CFV">[LOGON_1_USER_SCREEN]</a></li><li><a href="#IDA3FFV">[LOGON_4_USER_SCREEN]</a></li><li><a href="#IDAFGFV">[FRIENDS_SCREEN]</a></li><li><a href="#IDAGJFV">[NOTIFICATION_SCREEN]</a></li><li><a href="#IDAYLFV">[PLAYERS_DEFAULT_SCREEN]</a></li><li><a href="#IDA0PFV">[PLAYERS_DEPARTED_ONLY_SCREEN]</a></li><li><a href="#IDADQFV">[PLAYERS_CURRENT_ONLY_SCREEN]</a></li></ul>
+<h3><a name="IDA0WEV"></a>[Image]</h3>
+<p>The [Image] section contains images used by the various Xbox Drop-in UI feature screens, as well as images embedded in strings specified in the [String] section.</p><p>The [Image] section contains the following images: IMG_A, IMG_B, IMG_X, IMG_Y, IMG_FRIEND_ONLINE, IMG_FRIEND_ONLINE_ON, IMG_FRIENDS_REQUEST_RECEIVED, IMG_FRIENDS_REQUEST_RECEIVED_ON, IMG_FRIENDS_REQUEST_SENT, IMG_FRIENDS_REQUEST_SENT_ON, IMG_GAME_INVITE_RECV, IMG_GAME_INVITE_RECV_ON, IMG_GAME_INVITE_SENT, IMG_GAME_INVITE_SENT_ON, IMG_PASSCODE_BLANK, IMG_PASSCODE_FILLED, IMG_BLANK, IMG_VOICE_HEADSET, IMG_VOICE_HEADSET_ON, IMG_UP_ARROW, IMG_DOWN_ARROW, IMG_LIST_HIGHLIGHT. IMG_SPIN_1, IMG_SPIN_2, IMG_SPIN_3, and IMG_SPIN_4. Additionally, images embedded in strings in the [String] section can be defined as desired.</p><p>For each image, the file name of the source bitmap image is specified. The following additional values are valid for each image:</p><table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>AlphaSource</td>
+<td>Alpha image bitmap file name.</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>Bundler format for image (the default is D3DFMT_DXT3).</td>
+</tr>
+</table>
+<h3><a name="IDARXEV"></a>[Audio]</h3>
+<p>The [Audio] section contains the event to sound name mappings. The events correspond to UI events, and will trigger the associated sound names. If using the default audio plug-in, the sound names must match sound names in the XACT sound bank specified in <a href="UIXCreateAudioPlugin.htm">UIXCreateAudioPlugin</a>. Otherwise, the sound names must be recognized by the custom audio plug-in, and appropriate sounds played in response to the UI events.</p><p>The current UI events that trigger sound are AUDIO_PRESS_A, AUDIO_PRESS_B, AUDIO_ERROR, AUDIO_LIST_ITEM_CHANGED, AUDIO_POPUP_MESSAGE, AUDIO_PASSCODE, and AUDIO_NOTIFICATION.</p><h3><a name="IDA1XEV"></a>[String]</h3>
+<p>The [String] section contains the strings used for display strings, button names, error messages, and other notifications. A string can contain embedded icons before, after, or in the middle of the string. Embedded icons are contained within braces. For example "Press {IMG_A} to join" would embed into the display string the image specified as IMG_A in the [Image] section.</p><p>Strings beginning with STRP are parameterized strings containing a '%s' at the location within the string where a run-time text value is inserted.</p><p>For a list of strings, see the <a href="xbox_Live_UIX_Customizing_Skinning.htm#example_language_file">example language file</a>, below, or the output of 'SkinBld /help String'.</p><h3><a name="IDANAFV"></a>[POPUP_SCREEN]</h3>
+<p>The [POPUP_SCREEN] sections contains the screen layout for the general pop-up screen that displays error messages or other messages to the user. The pop-up screen contains the following UI elements: SCREEN, TITLE, MESSAGE, MENU, ACTIONBUTTON, BACKBUTTON.</p><p>For the SCREEN element, the following values are valid:</p><table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>X</td>
+<td>Horizontal position for the screen.</td>
+</tr>
+<tr>
+<td>Y</td>
+<td>Vertical position for the screen.</td>
+</tr>
+<tr>
+<td>Width</td>
+<td>Screen width.</td>
+</tr>
+<tr>
+<td>Height</td>
+<td>Screen height.</td>
+</tr>
+<tr>
+<td>BackColor</td>
+<td>Screen background color.</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>Screen background image.</td>
+</tr>
+<tr>
+<td>AlphaSource</td>
+<td>Screen background image alpha.</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>Screen background image Bundler format.</td>
+</tr>
+<tr>
+<td>FontHeight</td>
+<td>Vertical size of the font, in pixels.</td>
+</tr>
+</table>
+<p>For the TITLE, MESSAGE, MENU, ACTIONBUTTON, and BACKBUTTON elements, the following values are valid:</p><table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>X</td>
+<td>Horizontal position of the object (left).</td>
+</tr>
+<tr>
+<td>Y</td>
+<td>Vertical position of the object (top).</td>
+</tr>
+<tr>
+<td>Width</td>
+<td>Object width in pixels.</td>
+</tr>
+<tr>
+<td>Height</td>
+<td>Object height in pixels.</td>
+</tr>
+<tr>
+<td>BackColor</td>
+<td>Background color for the object.</td>
+</tr>
+<tr>
+<td>TextColor</td>
+<td>Text color for the object.</td>
+</tr>
+<tr>
+<td>DisabledTextColor</td>
+<td>Text color for disabled items.</td>
+</tr>
+<tr>
+<td>FontHeight</td>
+<td>Vertical size of the font, in pixels.</td>
+</tr>
+</table>
+<h3><a name="IDA5CFV"></a>[LOGON_1_USER_SCREEN]</h3>
+<p>The [LOGON_1_USER_SCREEN] section contains the screen layout for the one-player logon screen. The one-player logon screen contains the following UI elements: SCREEN, TITLE, CONTINUEBUTTON, BACKBUTTON, USERLIST0, STATUS0, PASSCODE0, and SPINNER.</p><p>For the SCREEN element, the following values are valid:</p><table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>X</td>
+<td>Horizontal position for the screen.</td>
+</tr>
+<tr>
+<td>Y</td>
+<td>Vertical position for the screen.</td>
+</tr>
+<tr>
+<td>Width</td>
+<td>Screen width.</td>
+</tr>
+<tr>
+<td>Height</td>
+<td>Screen height.</td>
+</tr>
+<tr>
+<td>BackColor</td>
+<td>Screen background color.</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>Screen background image.</td>
+</tr>
+<tr>
+<td>AlphaSource</td>
+<td>Screen background image alpha.</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>Screen background image Bundler format.</td>
+</tr>
+<tr>
+<td>FontHeight</td>
+<td>Vertical size of the font, in pixels.</td>
+</tr>
+</table>
+<p>For the USERLIST0 element, the values for SCREEN (above) are valid, along with the following additional values:</p><table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>TextColor</td>
+<td>Text color for the object.</td>
+</tr>
+<tr>
+<td>DisabledTextColor</td>
+<td>Text color for disabled items.</td>
+</tr>
+</table>
+<p>For the TITLE, CONTINUEBUTTON, BACKBUTTON, STATUS0, PASSCODE0, and SPINNER elements, the following values are valid:</p><table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>X</td>
+<td>Horizontal position of the object (left).</td>
+</tr>
+<tr>
+<td>Y</td>
+<td>Vertical position of the object (top).</td>
+</tr>
+<tr>
+<td>Width</td>
+<td>Object width in pixels.</td>
+</tr>
+<tr>
+<td>Height</td>
+<td>Object height in pixels.</td>
+</tr>
+<tr>
+<td>BackColor</td>
+<td>Background color for the object.</td>
+</tr>
+<tr>
+<td>TextColor</td>
+<td>Text color for the object.</td>
+</tr>
+<tr>
+<td>DisabledTextColor</td>
+<td>Text color for disabled items.</td>
+</tr>
+<tr>
+<td>FontHeight</td>
+<td>Vertical size of the font, in pixels.</td>
+</tr>
+</table>
+<h3><a name="IDA3FFV"></a>[LOGON_4_USER_SCREEN]</h3>
+<p>The [LOGON_4_USER_SCREEN] section contains the screen layout for the four-player logon screen. In addition to the elements in the one-player logon screen, the four-player screen contains the following additional UI elements, representing the three additional quadrants ("regions") representing each player: USERLIST1, USERLIST2, USERLIST3, STATUS1, STATUS2, STATUS3, PASSCODE1, PASSCODE2, and PASSCODE3. The four-player screen contains a JOINBUTTON element instead of the one-player CONTINUEBUTTON element.</p><p>The valid values for the USERLIST, STATUS, and PASSCODE elements are the same as for the corresponding elements in [LOGON_1_USER_SCREEN]. JOINBUTTON has the same valid values as BACKBUTTON.</p><h3><a name="IDAFGFV"></a>[FRIENDS_SCREEN]</h3>
+<p>The [FRIENDS_SCREEN] section contains values for the friends list screen. The friends list screen contains the following UI elements: SCREEN, TITLE, USERGAMERTAG, FRIENDSLIST, FRIENDGAMERTAG, FRIENDSSTATUS, SELECTBUTTON, BACKBUTTON, and SIGNOUTBUTTON.</p><p>For the SCREEN element, the following values are valid:</p><table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>X</td>
+<td>Horizontal position for the screen.</td>
+</tr>
+<tr>
+<td>Y</td>
+<td>Vertical position for the screen.</td>
+</tr>
+<tr>
+<td>Width</td>
+<td>Screen width.</td>
+</tr>
+<tr>
+<td>Height</td>
+<td>Screen height.</td>
+</tr>
+<tr>
+<td>BackColor</td>
+<td>Screen background color.</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>Screen background image.</td>
+</tr>
+<tr>
+<td>AlphaSource</td>
+<td>Screen background image alpha.</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>Screen background image Bundler format.</td>
+</tr>
+<tr>
+<td>FontHeight</td>
+<td>Vertical size of the font, in pixels.</td>
+</tr>
+</table>
+<p>For the FRIENDSLIST element, the values for SCREEN (above) are valid, along with the following additional values:</p><table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>TextColor</td>
+<td>Text color for the object.</td>
+</tr>
+<tr>
+<td>DisabledTextColor</td>
+<td>Text color for disabled items.</td>
+</tr>
+</table>
+<p>For the TITLE, USERGAMERTAG, FRIENDGAMERTAG, FRIENDSSTATUS, SELECTBUTTON, BACKBUTTON, and SIGNOUTBUTTON elements, the following values are valid:</p><table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>X</td>
+<td>Horizontal position of the object (left).</td>
+</tr>
+<tr>
+<td>Y</td>
+<td>Vertical position of the object (top).</td>
+</tr>
+<tr>
+<td>Width</td>
+<td>Object width, in pixels.</td>
+</tr>
+<tr>
+<td>Height</td>
+<td>Object height, in pixels.</td>
+</tr>
+<tr>
+<td>BackColor</td>
+<td>Background color for the object.</td>
+</tr>
+<tr>
+<td>TextColor</td>
+<td>Text color for the object.</td>
+</tr>
+<tr>
+<td>DisabledTextColor</td>
+<td>Text color for disabled items.</td>
+</tr>
+<tr>
+<td>FontHeight</td>
+<td>Vertical size of the font, in pixels.</td>
+</tr>
+</table>
+<h3><a name="IDAGJFV"></a>[NOTIFICATION_SCREEN]</h3>
+<p>The [NOTIFICATION_SCREEN] section specifies the locations and dimensions of the notification screen that displays in-game notifications (such as game invites and friend requests), and of the icon that represents the notification type. The notification screen contains the UI elements SCREEN and ICON.</p><p>Valid values are:</p><table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>Language</td>
+<td>Language for this section.</td>
+</tr>
+<tr>
+<td>SCREEN.X</td>
+<td>Horizontal position for the screen.</td>
+</tr>
+<tr>
+<td>SCREEN.Y</td>
+<td>Vertical position for the screen.</td>
+</tr>
+<tr>
+<td>SCREEN.Width</td>
+<td>Screen width.</td>
+</tr>
+<tr>
+<td>SCREEN.Height</td>
+<td>Screen height.</td>
+</tr>
+<tr>
+<td>SCREEN.BackColor</td>
+<td>Screen background color.</td>
+</tr>
+<tr>
+<td>SCREEN.Source</td>
+<td>Screen background image.</td>
+</tr>
+<tr>
+<td>SCREEN.AlphaSource</td>
+<td>Screen background image alpha.</td>
+</tr>
+<tr>
+<td>SCREEN.Format</td>
+<td>Screen background image Bundler format.</td>
+</tr>
+<tr>
+<td>SCREEN.FontHeight</td>
+<td>Vertical size of the font, in pixels.</td>
+</tr>
+<tr>
+<td>ICON.X</td>
+<td>Horizontal position.</td>
+</tr>
+<tr>
+<td>ICON.Y</td>
+<td>Vertical position.</td>
+</tr>
+<tr>
+<td>ICON.Width</td>
+<td>Width.</td>
+</tr>
+<tr>
+<td>ICON.Height</td>
+<td>Height.</td>
+</tr>
+<tr>
+<td>ICON.BackColor</td>
+<td>Background color for the object.</td>
+</tr>
+<tr>
+<td>ICON.TextColor</td>
+<td>Text color for the object.</td>
+</tr>
+<tr>
+<td>ICON.DisabledTextColor</td>
+<td>Text color for disabled items.</td>
+</tr>
+<tr>
+<td>ICON.FontHeight</td>
+<td>Vertical size of the font, in pixels.</td>
+</tr>
+</table>
+<h3><a name="IDAYLFV"></a>[PLAYERS_DEFAULT_SCREEN]</h3>
+<p>The [PLAYERS_DEFAULT_SCREEN] section contains values for the default players list screen, which includes both current and departed players. The default players list screen contains the following UI elements: SCREEN, TITLE, CURRENTPLAYERSLIST, DEPARTEDPLAYERSLIST, CURRENTPLAYERSTITLE, DEPARTEDPLAYERSTITLE, CURRENTPLAYERSIMAGEACTIVE, CURRENTPLAYERSIMAGEDIM, DEPARTEDPLAYERSIMAGEACTIVE, DEPARTEDPLAYERSIMAGEDIM, CURRENTPLAYERSARROWACTIVE, CURRENTPLAYERSARROWDIM, DEPARTEDPLAYERSARROWACTIVE, DEPARTEDPLAYERSARROWDIM, SELECTBUTTON, and BACKBUTTON.</p><p>For the SCREEN element, the following values are valid:</p><table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>X</td>
+<td>Horizontal position for the screen.</td>
+</tr>
+<tr>
+<td>Y</td>
+<td>Vertical position for the screen.</td>
+</tr>
+<tr>
+<td>Width</td>
+<td>Screen width.</td>
+</tr>
+<tr>
+<td>Height</td>
+<td>Screen height.</td>
+</tr>
+<tr>
+<td>BackColor</td>
+<td>Screen background color.</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>Screen background image.</td>
+</tr>
+<tr>
+<td>AlphaSource</td>
+<td>Screen background image alpha.</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>Screen background image Bundler format.</td>
+</tr>
+<tr>
+<td>FontHeight</td>
+<td>Vertical size of the font, in pixels.</td>
+</tr>
+</table>
+<p>For the CURRENTPLAYERSLIST and DEPARTEDPLAYERSLIST elements, the values for SCREEN (above) are valid, along with the following additional values:</p><table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>TextColor</td>
+<td>Text color for the object.</td>
+</tr>
+<tr>
+<td>DisabledTextColor</td>
+<td>Text color for disabled items.</td>
+</tr>
+<tr>
+<td>HighlightedTextColor</td>
+<td>Text color for highlighted items.</td>
+</tr>
+<tr>
+<td>XOffset</td>
+<td>Text offset from the left.</td>
+</tr>
+<tr>
+<td>YOffset</td>
+<td>Text offset from the top.</td>
+</tr>
+<tr>
+<td>AlignText</td>
+<td>Text alignment (left, center, or right).</td>
+</tr>
+<tr>
+<td>VisibleItems</td>
+<td>Number of items visible in the list.</td>
+</tr>
+</table>
+<p>For the TITLE, CURRENTPLAYERSTITLE, DEPARTEDPLAYERSTITLE, CURRENTPLAYERSIMAGEACTIVE, CURRENTPLAYERSIMAGEDIM, DEPARTEDPLAYERSIMAGEACTIVE, DEPARTEDPLAYERSIMAGEDIM, CURRENTPLAYERSARROWACTIVE, CURRENTPLAYERSARROWDIM, DEPARTEDPLAYERSARROWACTIVE, DEPARTEDPLAYERSARROWDIM, SELECTBUTTON, and BACKBUTTON elements, the following values are valid:</p><table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>X</td>
+<td>Horizontal position of the object (left).</td>
+</tr>
+<tr>
+<td>Y</td>
+<td>Vertical position of the object (top).</td>
+</tr>
+<tr>
+<td>Width</td>
+<td>Object width in pixels.</td>
+</tr>
+<tr>
+<td>Height</td>
+<td>Object height in pixels.</td>
+</tr>
+<tr>
+<td>BackColor</td>
+<td>Background color for the object.</td>
+</tr>
+<tr>
+<td>TextColor</td>
+<td>Text color for the object.</td>
+</tr>
+<tr>
+<td>DisabledTextColor</td>
+<td>Text color for disabled items.</td>
+</tr>
+<tr>
+<td>HighlightedTextColor</td>
+<td>Text color for highlighted items.</td>
+</tr>
+<tr>
+<td>XOffset</td>
+<td>Text offset from the left.</td>
+</tr>
+<tr>
+<td>YOffset</td>
+<td>Text offset from the top.</td>
+</tr>
+<tr>
+<td>AlignText</td>
+<td>Text alignment (left, center, or right).</td>
+</tr>
+<tr>
+<td>FontHeight</td>
+<td>Vertical size of the font, in pixels.</td>
+</tr>
+</table>
+<h3><a name="IDA0PFV"></a>[PLAYERS_DEPARTED_ONLY_SCREEN]</h3>
+<p>The [PLAYERS_DEPARTED_ONLY_SCREEN] section is similar to the [PLAYERS_DEFAULT_SCREEN] section but contains only the following UI elements: SCREEN, TITLE, DEPARTEDPLAYERSLIST, DEPARTEDPLAYERSTITLE, DEPARTEDPLAYERSIMAGEACTIVE, SELECTBUTTON, and BACKBUTTON. The valid values for those elements are identical to the valid values for the corresponding elements in the [PLAYERS_DEFAULT_SCREEN] section.</p><h3><a name="IDADQFV"></a>[PLAYERS_CURRENT_ONLY_SCREEN]</h3>
+<p>The [PLAYERS_CURRENT_ONLY_SCREEN] section is similar to the [PLAYERS_DEFAULT_SCREEN] section but contains only the following UI elements: SCREEN, TITLE, CURRENTPLAYERSLIST, CURRENTPLAYERSTITLE, CURRENTPLAYERSIMAGEACTIVE, SELECTBUTTON, and BACKBUTTON. The valid values for those elements are identical to the valid values for the corresponding elements in the [PLAYERS_DEFAULT_SCREEN] section.</p><h2><a name="example_description_file"></a>Example Skin Description File</h2>
+<p>Below is an example skin description file. A default skin description file is included with the Xbox SDK (source\uix\default.inx).</p>
+<pre class="clsCode">
+;
+; Xbox Skin Description File
+;
+; File format is a Unicode text file with Field="Value" (quotes required) lines.
+; A ';' or a '#' is used for comments. [] are used for section
+;
+; Use the 'SkinBld' tool to compile this file into a skin file
+;
+
+[Skin]
+Application="UIX"
+
+; -----------------------------------------------------------------------------
+; Images for default language
+;
+
+[Image]
+IMG_A="srcmedia\abutton.bmp"
+IMG_A.alphasource="srcmedia\buttonalpha.bmp"
+IMG_A.Format="D3DFMT_A8R8G8B8"
+
+IMG_B="srcmedia\bbutton.bmp"
+IMG_B.alphasource="srcmedia\buttonalpha.bmp"
+IMG_B.Format="D3DFMT_A8R8G8B8"
+
+IMG_X="srcmedia\xbutton.bmp"
+IMG_X.alphasource="srcmedia\buttonalpha.bmp"
+IMG_X.Format="D3DFMT_A8R8G8B8"
+
+IMG_Y="srcmedia\abutton.bmp"
+IMG_Y.alphasource="srcmedia\buttonalpha.bmp"
+IMG_Y.Format="D3DFMT_A8R8G8B8"
+
+IMG_BLANK="srcmedia\xbutton.bmp"
+IMG_BLANK.alphasource="srcmedia\blankbuttonalpha.bmp"
+IMG_BLANK.Format="D3DFMT_A8R8G8B8"
+
+IMG_FRIEND_ONLINE="srcmedia\icon-online.bmp"
+IMG_FRIEND_ONLINE.alphasource="srcmedia\icon-online-alpha.bmp"
+
+IMG_FRIEND_ONLINE_ON="srcmedia\icon-online-ON.bmp"
+IMG_FRIEND_ONLINE_ON.alphasource="srcmedia\icon-online-alpha.bmp"
+
+IMG_FRIENDS_REQUEST_RECEIVED="srcmedia\icon-friendrequestrecv.bmp"
+IMG_FRIENDS_REQUEST_RECEIVED.alphasource="srcmedia\icon-friendrequestrecv-alpha.bmp"
+
+IMG_FRIENDS_REQUEST_RECEIVED_ON="srcmedia\icon-friendrequestrecv-ON.bmp"
+IMG_FRIENDS_REQUEST_RECEIVED_ON.alphasource="srcmedia\icon-friendrequestrecv-alpha.bmp"
+
+IMG_FRIENDS_REQUEST_SENT="srcmedia\icon-friendrequestsent.bmp"
+IMG_FRIENDS_REQUEST_SENT.alphasource="srcmedia\icon-friendrequestsent-alpha.bmp"
+
+IMG_FRIENDS_REQUEST_SENT_ON="srcmedia\icon-friendrequestsent-ON.bmp"
+IMG_FRIENDS_REQUEST_SENT_ON.alphasource="srcmedia\icon-friendrequestsent-alpha.bmp"
+
+IMG_FRIEND_ONLINE_LARGE="srcmedia\icon-online.bmp"
+IMG_FRIEND_ONLINE_LARGE.alphasource="srcmedia\icon-online-alpha.bmp"
+
+IMG_FRIEND_ONLINE_ON_LARGE="srcmedia\icon-online-ON.bmp"
+IMG_FRIEND_ONLINE_ON_LARGE.alphasource="srcmedia\icon-online-alpha.bmp"
+
+IMG_FRIENDS_REQUEST_RECEIVED_LARGE="srcmedia\icon-friendrequestrecv.bmp"
+IMG_FRIENDS_REQUEST_RECEIVED_LARGE.alphasource="srcmedia\icon-friendrequestrecv-alpha.bmp"
+
+IMG_FRIENDS_REQUEST_RECEIVED_ON_LARGE="srcmedia\icon-friendrequestrecv-ON.bmp"
+IMG_FRIENDS_REQUEST_RECEIVED_ON_LARGE.alphasource="srcmedia\icon-friendrequestrecv-alpha.bmp"
+
+IMG_FRIENDS_REQUEST_SENT_LARGE="srcmedia\icon-friendrequestsent.bmp"
+IMG_FRIENDS_REQUEST_SENT_LARGE.alphasource="srcmedia\icon-friendrequestsent-alpha.bmp"
+
+IMG_FRIENDS_REQUEST_SENT_ON_LARGE="srcmedia\icon-friendrequestsent-ON.bmp"
+IMG_FRIENDS_REQUEST_SENT_ON_LARGE.alphasource="srcmedia\icon-friendrequestsent-alpha.bmp"
+
+IMG_GAME_INVITE_RECV="srcmedia\icon-gameinviterecv.bmp"
+IMG_GAME_INVITE_RECV.alphasource="srcmedia\icon-gameinviterecv-alpha.bmp"
+
+IMG_GAME_INVITE_RECV_ON="srcmedia\icon-gameinviterecv-ON.bmp"
+IMG_GAME_INVITE_RECV_ON.alphasource="srcmedia\icon-gameinviterecv-alpha.bmp"
+
+IMG_GAME_INVITE_SENT="srcmedia\icon-gameinvitesent.bmp"
+IMG_GAME_INVITE_SENT.alphasource="srcmedia\icon-gameinvitesent-alpha.bmp"
+
+IMG_GAME_INVITE_SENT_ON="srcmedia\icon-gameinvitesent-ON.bmp"
+IMG_GAME_INVITE_SENT_ON.alphasource="srcmedia\icon-gameinvitesent-alpha.bmp"
+
+IMG_VOICE_HEADSET="srcmedia\icon-voice.bmp"
+IMG_VOICE_HEADSET.alphasource="srcmedia\icon-voice-alpha.bmp"
+
+IMG_VOICE_HEADSET_ON="srcmedia\icon-voice-ON.bmp"
+IMG_VOICE_HEADSET_ON.alphasource="srcmedia\icon-voice-alpha.bmp"
+
+IMG_VOICE_HEADSET_LARGE="srcmedia\icon-voice.bmp"
+IMG_VOICE_HEADSET_LARGE.alphasource="srcmedia\icon-voice-alpha.bmp"
+
+IMG_VOICE_HEADSET_ON_LARGE="srcmedia\icon-voice-ON.bmp"
+IMG_VOICE_HEADSET_ON_LARGE.alphasource="srcmedia\icon-voice-alpha.bmp"
+
+IMG_PASSCODE_BLANK="srcmedia\passcodeblank.bmp"
+IMG_PASSCODE_BLANK.alphasource="srcmedia\passcodeblankalpha.bmp"
+
+IMG_PASSCODE_FILLED="srcmedia\passcodefilled.bmp"
+IMG_PASSCODE_FILLED.alphasource="srcmedia\passcodealpha.bmp"
+
+IMG_UP_ARROW="srcmedia\arrowScrollUp.bmp"
+IMG_UP_ARROW.alphasource="srcmedia\arrowScrollUp-alpha.bmp"
+
+IMG_DOWN_ARROW="srcmedia\arrowScrollDown.bmp"
+IMG_DOWN_ARROW.alphasource="srcmedia\arrowScrollDown-alpha.bmp"
+
+IMG_LIST_HIGHLIGHT="srcmedia\highlight-new.bmp"
+IMG_LIST_HIGHLIGHT.alphasource="srcmedia\highlight-new-alpha.bmp"
+
+IMG_SPIN_1="srcmedia\spin1.bmp"
+IMG_SPIN_1.alphasource="srcmedia\spin1alpha.bmp"
+
+IMG_SPIN_2="srcmedia\spin2.bmp"
+IMG_SPIN_2.alphasource="srcmedia\spin2alpha.bmp"
+
+IMG_SPIN_3="srcmedia\spin3.bmp"
+IMG_SPIN_3.alphasource="srcmedia\spin3alpha.bmp"
+
+IMG_SPIN_4="srcmedia\spin4.bmp"
+IMG_SPIN_4.alphasource="srcmedia\spin4alpha.bmp"
+
+IMG_VOICE_MUTED="srcmedia\icon-novoice.bmp"
+IMG_VOICE_MUTED.alphasource="srcmedia\icon-novoice-alpha.bmp"
+
+IMG_VOICE_MUTED_ON="srcmedia\icon-novoice-on.bmp"
+IMG_VOICE_MUTED_ON.alphasource="srcmedia\icon-novoice-alpha.bmp"
+
+IMG_VOICE_THROUGH_SPEAKERS="srcmedia\icon-tv.bmp"
+IMG_VOICE_THROUGH_SPEAKERS.alphasource="srcmedia\icon-tv-alpha.bmp"
+
+IMG_VOICE_THROUGH_SPEAKERS_ON="srcmedia\icon-tv-on.bmp"
+IMG_VOICE_THROUGH_SPEAKERS_ON.alphasource="srcmedia\icon-tv-alpha.bmp"
+
+IMG_VOICE_MUTED_LARGE="srcmedia\icon-novoice.bmp"
+IMG_VOICE_MUTED_LARGE.alphasource="srcmedia\icon-novoice-alpha.bmp"
+
+IMG_VOICE_MUTED_ON_LARGE="srcmedia\icon-novoice-on.bmp"
+IMG_VOICE_MUTED_ON_LARGE.alphasource="srcmedia\icon-novoice-alpha.bmp"
+
+IMG_VOICE_THROUGH_SPEAKERS_LARGE="srcmedia\icon-voice.bmp"
+IMG_VOICE_THROUGH_SPEAKERS_LARGE.alphasource="srcmedia\icon-voice-alpha.bmp"
+
+IMG_VOICE_THROUGH_SPEAKERS_ON_LARGE="srcmedia\icon-voice-on.bmp"
+IMG_VOICE_THROUGH_SPEAKERS_ON_LARGE.alphasource="srcmedia\icon-voice-alpha.bmp"
+
+IMG_PROGRESS_BLANK="srcmedia\progress-off.bmp"
+IMG_PROGRESS_BLANK.alphasource="srcmedia\progress-alpha.bmp"
+
+IMG_PROGRESS_FILLED="srcmedia\progress-on.bmp"
+IMG_PROGRESS_FILLED.alphasource="srcmedia\progress-alpha.bmp"
+
+; -----------------------------------------------------------------------------
+; Audio names
+;
+
+[Audio]
+AUDIO_PRESS_A="PressA"
+AUDIO_PRESS_B="PressB"
+AUDIO_ERROR="Error"
+AUDIO_LIST_ITEM_CHANGED="MenuItemSelect"
+AUDIO_POPUP_MESSAGE="Popup"
+AUDIO_PASSCODE="PasscodeEntry"
+AUDIO_NOTIFICATION="Notification"
+
+; -----------------------------------------------------------------------------
+; General purpose pop-up screen (messages/errors/menus)
+;
+
+[POPUP_SCREEN]
+Screen.X="94"
+Screen.Y="134"
+Screen.Width="452"
+Screen.Height="312"
+Screen.Source="srcmedia\bgroundPopup.bmp"
+Screen.AlphaSource="srcmedia\bgroundPopup-alpha.bmp"
+Screen.Format="D3DFMT_DXT1"
+
+Title.X="25"
+Title.Y="40"
+Title.Width="300"
+Title.Height="30"
+Title.FontHeight="20"
+
+Message.X="40"
+Message.Y="90"
+Message.Width="350"
+Message.Height="160"
+Message.FontHeight="18"
+
+Menu.X="40"
+Menu.Y="90"
+Menu.Width="350"
+Menu.Height="140"
+Menu.FontHeight="18"
+
+ActionButton.X="170"
+ActionButton.Y="245"
+ActionButton.Width="240"
+ActionButton.Height="32"
+ActionButton.FontHeight="18"
+
+BackButton.X="220"
+BackButton.Y="270"
+BackButton.Width="240"
+BackButton.Height="32"
+BackButton.FontHeight="18"
+
+; -----------------------------------------------------------------------------
+; Voice Mail screen
+;
+
+[VOICE_MAIL_SCREEN]
+Screen.X="94"
+Screen.Y="134"
+Screen.Width="452"
+Screen.Height="312"
+Screen.Source="srcmedia\bgroundPopup.bmp"
+Screen.AlphaSource="srcmedia\bgroundPopup-alpha.bmp"
+Screen.Format="D3DFMT_DXT1"
+
+Title.X="25"
+Title.Y="40"
+Title.Width="300"
+Title.Height="30"
+Title.FontHeight="20"
+
+Subject.X="25"
+Subject.Y="65"
+Subject.Width="300"
+Subject.Height="30"
+Subject.FontHeight="20"
+
+ProgressBar.X="40"
+ProgressBar.Y="100"
+ProgressBar.Width="300"
+ProgressBar.Height="20"
+
+Duration.X="330"
+Duration.Y="100"
+Duration.Width="100"
+Duration.Height="20"
+Duration.FontHeight="18"
+
+Message.X="40"
+Message.Y="90"
+Message.Width="350"
+Message.Height="160"
+Message.FontHeight="18"
+
+Menu.X="40"
+Menu.Y="120"
+Menu.Width="350"
+Menu.Height="140"
+Menu.FontHeight="18"
+
+ActionButton.X="170"
+ActionButton.Y="245"
+ActionButton.Width="240"
+ActionButton.Height="32"
+ActionButton.FontHeight="18"
+
+BackButton.X="220"
+BackButton.Y="270"
+BackButton.Width="240"
+BackButton.Height="32"
+BackButton.FontHeight="18"
+
+Spinner.X="220"
+Spinner.Y="150"
+Spinner.Width="40"
+Spinner.Height="40"
+Spinner.FontHeight="18"
+
+; -----------------------------------------------------------------------------
+; Logon screen for one user
+;
+
+[LOGON_1_USER_SCREEN]
+Screen.X="0"
+Screen.Y="0"
+Screen.Width="640"
+Screen.Height="480"
+Screen.Source="srcmedia\back-logon1.bmp"
+Screen.AlphaSource="srcmedia\back-alpha.bmp"
+Screen.Format="D3DFMT_DXT3"
+
+ContinueButton.Width="150"
+ContinueButton.Height="32"
+ContinueButton.X="368"
+ContinueButton.Y="385"
+ContinueButton.FontHeight="18"
+
+BackButton.Width="150"
+BackButton.Height="32"
+BackButton.X="395"
+BackButton.Y="415"
+BackButton.FontHeight="18"
+
+Title.X="394"
+Title.Y="64"
+Title.Width="150"
+Title.Height="30"
+Title.FontHeight="24"
+
+UserList0.Width="300"
+UserList0.Height="180"
+UserList0.X="180"
+UserList0.Y="145"
+UserList0.FontHeight="18"
+UserList0.VisibleItems="5"
+UserList0.XOffset="12"
+
+Passcode0.Width="200"
+Passcode0.Height="40"
+Passcode0.X="185"
+Passcode0.Y="185"
+Passcode0.FontHeight="22"
+
+Status0.Width="300"
+Status0.Height="50"
+Status0.X="180"
+Status0.Y="145"
+Status0.FontHeight="20"
+
+Spinner.Width="40"
+Spinner.Height="40"
+Spinner.X="275"
+Spinner.Y="215"
+Spinner.FontHeight="18"
+
+; -----------------------------------------------------------------------------
+; Logon screen for two users
+;
+
+[LOGON_2_USER_SCREEN]
+Screen.X="0"
+Screen.Y="0"
+Screen.Width="640"
+Screen.Height="480"
+Screen.Source="srcmedia\back-logon2.bmp"
+Screen.AlphaSource="srcmedia\back-alpha.bmp"
+Screen.Format="D3DFMT_DXT3"
+
+JoinButton.X="368"
+JoinButton.Y="385"
+JoinButton.Width="150"
+JoinButton.Height="32"
+JoinButton.FontHeight="18"
+
+BackButton.X="395"
+BackButton.Y="415"
+BackButton.Width="150"
+BackButton.Height="32"
+BackButton.FontHeight="18"
+
+Title.X="394"
+Title.Y="64"
+Title.Width="150"
+Title.Height="30"
+Title.FontHeight="24"
+
+Spinner.X="275"
+Spinner.Y="215"
+Spinner.Width="40"
+Spinner.Height="40"
+Spinner.FontHeight="18"
+
+;
+; Region 0
+;
+
+ControllerNo0.X="52"
+ControllerNo0.Y="115"
+ControllerNo0.Width="244"
+ControllerNo0.Height="24"
+ControllerNo0.FontHeight="20"
+ControllerNo0.XOffset="0"
+ControllerNo0.AlignText="Center"
+
+UserList0.X="80"
+UserList0.Y="145"
+UserList0.Width="200"
+UserList0.Height="180"
+UserList0.FontHeight="18"
+UserList0.VisibleItems="5"
+UserList0.TextColor="0xFFFFFFFF"
+UserList0.DisabledTextColor = "0xFF686868"
+
+Passcode0.X="52"
+Passcode0.Y="245"
+Passcode0.Width="244"
+Passcode0.Height="40"
+Passcode0.FontHeight="18"
+Passcode0.XOffset="0"
+Passcode0.AlignText="Center"
+
+Status0.X="52"
+Status0.Y="215"
+Status0.Width="244"
+Status0.Height="40"
+Status0.FontHeight="18"
+Status0.XOffset="0"
+Status0.AlignText="Center"
+
+UserName0.X="52"
+UserName0.Y="140"
+UserName0.Width="244"
+UserName0.Height="40"
+UserName0.FontHeight="20"
+UserName0.XOffset="0"
+UserName0.AlignText="Center"
+
+;
+; Region 1
+;
+
+ControllerNo1.X="306"
+ControllerNo1.Y="115"
+ControllerNo1.Width="244"
+ControllerNo1.Height="24"
+ControllerNo1.FontHeight="20"
+ControllerNo1.XOffset="0"
+ControllerNo1.AlignText="Center"
+
+UserList1.X="320"
+UserList1.Y="145"
+UserList1.Width="200"
+UserList1.Height="180"
+UserList1.FontHeight="18"
+UserList1.VisibleItems="5"
+UserList1.TextColor="0xFFFFFFFF"
+UserList1.DisabledTextColor = "0xFF686868"
+
+Passcode1.X="306"
+Passcode1.Y="245"
+Passcode1.Width="244"
+Passcode1.Height="40"
+Passcode1.FontHeight="18"
+Passcode1.XOffset="0"
+Passcode1.AlignText="Center"
+
+Status1.X="306"
+Status1.Y="215"
+Status1.Width="244"
+Status1.Height="40"
+Status1.FontHeight="18"
+Status1.XOffset="0"
+Status1.AlignText="Center"
+
+UserName1.X="306"
+UserName1.Y="140"
+UserName1.Width="244"
+UserName1.Height="40"
+UserName1.FontHeight="20"
+UserName1.XOffset="0"
+UserName1.AlignText="Center"
+
+; -----------------------------------------------------------------------------
+; Logon screen for four users
+;
+
+[LOGON_4_USER_SCREEN]
+Screen.X="0"
+Screen.Y="0"
+Screen.Width="640"
+Screen.Height="480"
+Screen.Source="srcmedia\back-logon4.bmp"
+Screen.AlphaSource="srcmedia\back-alpha.bmp"
+Screen.Format="D3DFMT_DXT3"
+
+JoinButton.Width="150"
+JoinButton.Height="32"
+JoinButton.X="368"
+JoinButton.Y="385"
+JoinButton.FontHeight="18"
+
+BackButton.Width="150"
+BackButton.Height="32"
+BackButton.X="395"
+BackButton.Y="415"
+BackButton.FontHeight="18"
+
+Title.X="394"
+Title.Y="64"
+Title.Width="150"
+Title.Height="30"
+Title.FontHeight="24"
+
+Spinner.Width="40"
+Spinner.Height="40"
+Spinner.X="275"
+Spinner.Y="215"
+Spinner.FontHeight="18"
+
+;
+; Region 0
+;
+
+UserList0.Width="200"
+UserList0.Height="120"
+UserList0.X="80"
+UserList0.Y="120"
+UserList0.FontHeight="18"
+UserList0.VisibleItems="4"
+UserList0.TextColor="0xFFFFFFFF"
+UserList0.DisabledTextColor = "0xFF686868"
+
+Passcode0.Width="220"
+Passcode0.Height="40"
+Passcode0.X="55"
+Passcode0.Y="185"
+Passcode0.FontHeight="18"
+Passcode0.XOffset="0"
+Passcode0.AlignText="Center"
+
+Status0.Width="242"
+Status0.Height="40"
+Status0.X="45"
+Status0.Y="145"
+Status0.FontHeight="18"
+Status0.XOffset="0"
+Status0.AlignText="Center"
+
+UserName0.Width="220"
+UserName0.Height="40"
+UserName0.X="55"
+UserName0.Y="115"
+UserName0.FontHeight="20"
+UserName0.XOffset="0"
+UserName0.AlignText="Center"
+
+;
+; Region 1
+;
+
+UserList1.Width="200"
+UserList1.Height="120"
+UserList1.X="345"
+UserList1.Y="120"
+UserList1.FontHeight="18"
+UserList1.VisibleItems="4"
+UserList1.TextColor="0xFFFFFFFF"
+UserList1.DisabledTextColor = "0xFF686868"
+
+Passcode1.Width="220"
+Passcode1.Height="40"
+Passcode1.X="320"
+Passcode1.Y="185"
+Passcode1.FontHeight="18"
+Passcode1.XOffset="0"
+Passcode1.AlignText="Center"
+
+Status1.Width="242"
+Status1.Height="40"
+Status1.X="310"
+Status1.Y="145"
+Status1.FontHeight="18"
+Status1.XOffset="0"
+Status1.AlignText="Center"
+
+UserName1.Width="220"
+UserName1.Height="40"
+UserName1.X="320"
+UserName1.Y="115"
+UserName1.FontHeight="20"
+UserName1.XOffset="0"
+UserName1.AlignText="Center"
+
+;
+; Region 2
+;
+
+UserList2.Width="200"
+UserList2.Height="120"
+UserList2.X="80"
+UserList2.Y="245"
+UserList2.FontHeight="18"
+UserList2.VisibleItems="4"
+UserList2.TextColor="0xFFFFFFFF"
+UserList2.DisabledTextColor = "0xFF686868"
+
+Passcode2.Width="220"
+Passcode2.Height="40"
+Passcode2.X="55"
+Passcode2.Y="320"
+Passcode2.FontHeight="18"
+Passcode2.XOffset="0"
+Passcode2.AlignText="Center"
+
+Status2.Width="242"
+Status2.Height="40"
+Status2.X="45"
+Status2.Y="280"
+Status2.FontHeight="18"
+Status2.XOffset="0"
+Status2.AlignText="Center"
+
+UserName2.Width="220"
+UserName2.Height="40"
+UserName2.X="55"
+UserName2.Y="250"
+UserName2.FontHeight="20"
+UserName2.XOffset="0"
+UserName2.AlignText="Center"
+
+;
+; Region 3
+;
+
+UserList3.Width="200"
+UserList3.Height="120"
+UserList3.X="345"
+UserList3.Y="245"
+UserList3.FontHeight="18"
+UserList3.VisibleItems="4"
+UserList3.TextColor="0xFFFFFFFF"
+UserList3.DisabledTextColor = "0xFF686868"
+
+Passcode3.Width="220"
+Passcode3.Height="40"
+Passcode3.X="320"
+Passcode3.Y="320"
+Passcode3.FontHeight="18"
+Passcode3.XOffset="0"
+Passcode3.AlignText="Center"
+
+Status3.Width="242"
+Status3.Height="40"
+Status3.X="310"
+Status3.Y="280"
+Status3.FontHeight="18"
+Status3.XOffset="0"
+Status3.AlignText="Center"
+
+UserName3.Width="220"
+UserName3.Height="40"
+UserName3.X="320"
+UserName3.Y="250"
+UserName3.FontHeight="20"
+UserName3.XOffset="0"
+UserName3.AlignText="Center"
+
+
+; -----------------------------------------------------------------------------
+; Friends screen
+;
+
+[FRIENDS_SCREEN]
+Screen.X="0"
+Screen.Y="0"
+Screen.Width="640"
+Screen.Height="480"
+Screen.Source="srcmedia\bgroundFriendslist.bmp"
+Screen.AlphaSource="srcmedia\bgroundFriendslist-alpha.bmp"
+Screen.Format="D3DFMT_DXT3"
+
+Title.X="394"
+Title.Y="64"
+Title.Width="145"
+Title.Height="30"
+Title.FontHeight="24"
+
+UserGamertag.X="60"
+UserGamertag.Y="100"
+UserGamertag.Width="300"
+UserGamertag.Height="30"
+UserGamertag.FontHeight="22"
+
+FriendsList.X="65"
+FriendsList.Y="139"
+FriendsList.Width="265"
+FriendsList.Height="207"
+FriendsList.FontHeight="20"
+FriendsList.VisibleItems="5"
+
+FriendGamertag.X="355"
+FriendGamertag.Y="140"
+FriendGamertag.Width="200"
+FriendGamertag.Height="30"
+FriendGamertag.FontHeight="22"
+
+FriendStatus.X="355"
+FriendStatus.Y="175"
+FriendStatus.Width="200"
+FriendStatus.Height="170"
+FriendStatus.FontHeight="20"
+
+SelectButton.X="368"
+SelectButton.Y="385"
+SelectButton.Width="150"
+SelectButton.Height="32"
+SelectButton.FontHeight="18"
+
+BackButton.X="395"
+BackButton.Y="415"
+BackButton.Width="150"
+BackButton.Height="32"
+BackButton.FontHeight="18"
+
+SignOutButton.X="80"
+SignOutButton.Y="395"
+SignOutButton.Width="200"
+SignOutButton.Height="32"
+SignOutButton.FontHeight="18"
+
+Spinner.Width="40"
+Spinner.Height="40"
+Spinner.X="275"
+Spinner.Y="215"
+Spinner.FontHeight="18"
+Spinner.CustomParam="3"
+
+;------------------------------------------------------------------------------
+; Players screen, default
+;
+
+[PLAYERS_DEFAULT_SCREEN]
+Screen.X="0"
+Screen.Y="0"
+Screen.Width="640"
+Screen.Height="480"
+Screen.Source="srcmedia\back-logon1.bmp"
+Screen.AlphaSource="srcmedia\back-alpha.bmp"
+Screen.Format="D3DFMT_DXT3"
+
+CurrentPlayersList.X="58"
+CurrentPlayersList.Y="141"
+CurrentPlayersList.Width="237"
+CurrentPlayersList.Height="205"
+CurrentPlayersList.FontHeight="20"
+CurrentPlayersList.CustomParam="4"
+CurrentPlayersList.XOffset="10"
+
+DepartedPlayersList.X="337"
+DepartedPlayersList.Y="160"
+DepartedPlayersList.Width="204"
+DepartedPlayersList.Height="126"
+DepartedPlayersList.FontHeight="18"
+DepartedPlayersList.CustomParam="3"
+DepartedPlayersList.XOffset="10"
+
+CurrentPlayersTitle.X="58"
+CurrentPlayersTitle.Y="85"
+CurrentPlayersTitle.Width="184"
+CurrentPlayersTitle.Height="23"
+CurrentPlayersTitle.FontHeight="20"
+
+DepartedPlayersTitle.X="337"
+DepartedPlayersTitle.Y="304"
+DepartedPlayersTitle.Width="204"
+DepartedPlayersTitle.Height="23"
+DepartedPlayersTitle.FontHeight="20"
+
+CurrentPlayersImageActive.X="45"
+CurrentPlayersImageActive.Y="78"
+CurrentPlayersImageActive.Width="255"
+CurrentPlayersImageActive.Height="301"
+CurrentPlayersImageActive.Source="srcmedia\currentplayers-active.bmp"
+CurrentPlayersImageActive.AlphaSource="srcmedia\currentplayers-active-alpha.bmp"
+CurrentPlayersImageActive.Format="D3DFMT_DXT3"
+
+CurrentPlayersImageDim.X="45"
+CurrentPlayersImageDim.Y="78"
+CurrentPlayersImageDim.Width="255"
+CurrentPlayersImageDim.Height="301"
+CurrentPlayersImageDim.Source="srcmedia\currentplayers-dim.bmp"
+CurrentPlayersImageDim.AlphaSource="srcmedia\currentplayers-dim-alpha.bmp"
+CurrentPlayersImageDim.Format="D3DFMT_DXT3"
+
+DepartedPlayersImageActive.X="322"
+DepartedPlayersImageActive.Y="132"
+DepartedPlayersImageActive.Width="238"
+DepartedPlayersImageActive.Height="228"
+DepartedPlayersImageActive.Source="srcmedia\departedplayers-active.bmp"
+DepartedPlayersImageActive.AlphaSource="srcmedia\departedplayers-active-alpha.bmp"
+DepartedPlayersImageActive.Format="D3DFMT_DXT3"
+
+DepartedPlayersImageDim.X="322"
+DepartedPlayersImageDim.Y="132"
+DepartedPlayersImageDim.Width="238"
+DepartedPlayersImageDim.Height="228"
+DepartedPlayersImageDim.Source="srcmedia\departedplayers-dim.bmp"
+DepartedPlayersImageDim.AlphaSource="srcmedia\departedplayers-dim-alpha.bmp"
+DepartedPlayersImageDim.Format="D3DFMT_DXT3"
+
+CurrentPlayersArrowActive.X="299"
+CurrentPlayersArrowActive.Y="217"
+CurrentPlayersArrowActive.Width="12"
+CurrentPlayersArrowActive.Height="12"
+CurrentPlayersArrowActive.Source="srcmedia\arrowLeft.bmp"
+CurrentPlayersArrowActive.AlphaSource="srcmedia\arrowLeft-alpha.bmp"
+CurrentPlayersArrowActive.Format="D3DFMT_DXT3"
+
+CurrentPlayersArrowDim.X="299"
+CurrentPlayersArrowDim.Y="217"
+CurrentPlayersArrowDim.Width="12"
+CurrentPlayersArrowDim.Height="12"
+CurrentPlayersArrowDim.Source="srcmedia\arrowLeft-dim.bmp"
+CurrentPlayersArrowDim.AlphaSource="srcmedia\arrowLeft-alpha.bmp"
+CurrentPlayersArrowDim.Format="D3DFMT_DXT3"
+
+DepartedPlayersArrowActive.X="312"
+DepartedPlayersArrowActive.Y="217"
+DepartedPlayersArrowActive.Width="12"
+DepartedPlayersArrowActive.Height="12"
+DepartedPlayersArrowActive.Source="srcmedia\arrowRight.bmp"
+DepartedPlayersArrowActive.AlphaSource="srcmedia\arrowRight-alpha.bmp"
+DepartedPlayersArrowActive.Format="D3DFMT_DXT3"
+
+DepartedPlayersArrowDim.X="312"
+DepartedPlayersArrowDim.Y="217"
+DepartedPlayersArrowDim.Width="12"
+DepartedPlayersArrowDim.Height="12"
+DepartedPlayersArrowDim.Source="srcmedia\arrowRight-dim.bmp"
+DepartedPlayersArrowDim.AlphaSource="srcmedia\arrowRight-alpha.bmp"
+DepartedPlayersArrowDim.Format="D3DFMT_DXT3"
+
+SelectButton.X="368"
+SelectButton.Y="385"
+SelectButton.Width="150"
+SelectButton.Height="32"
+SelectButton.FontHeight="18"
+
+BackButton.Width="150"
+BackButton.Height="32"
+BackButton.X="395"
+BackButton.Y="415"
+BackButton.FontHeight="18"
+
+Title.X="394"
+Title.Y="64"
+Title.Width="145"
+Title.Height="30"
+Title.FontHeight="24"
+
+
+;------------------------------------------------------------------------------
+; Players screen, departed only
+;
+
+[PLAYERS_DEPARTED_ONLY_SCREEN]
+Screen.X="0"
+Screen.Y="0"
+Screen.Width="640"
+Screen.Height="480"
+Screen.Source="srcmedia\back-logon1.bmp"
+Screen.AlphaSource="srcmedia\back-alpha.bmp"
+Screen.Format="D3DFMT_DXT3"
+
+DepartedPlayersList.X="175"
+DepartedPlayersList.Y="139"
+DepartedPlayersList.Width="297"
+DepartedPlayersList.Height="212"
+DepartedPlayersList.FontHeight="18"
+DepartedPlayersList.CustomParam="5"
+DepartedPlayersList.XOffset="10"
+
+DepartedPlayersTitle.X="175"
+DepartedPlayersTitle.Y="84"
+DepartedPlayersTitle.Width="251"
+DepartedPlayersTitle.Height="23"
+DepartedPlayersTitle.FontHeight="20"
+
+DepartedPlayersImageActive.X="163"
+DepartedPlayersImageActive.Y="78"
+DepartedPlayersImageActive.Width="315"
+DepartedPlayersImageActive.Height="341"
+DepartedPlayersImageActive.Source="srcmedia\singlepanel.bmp"
+DepartedPlayersImageActive.AlphaSource="srcmedia\singlepanel-alpha.bmp"
+DepartedPlayersImageActive.Format="D3DFMT_DXT3"
+
+SelectButton.X="200"
+SelectButton.Y="375"
+SelectButton.Width="150"
+SelectButton.Height="32"
+SelectButton.FontHeight="18"
+
+BackButton.X="360"
+BackButton.Y="375"
+BackButton.Width="150"
+BackButton.Height="32"
+BackButton.FontHeight="18"
+
+Title.X="394"
+Title.Y="64"
+Title.Width="145"
+Title.Height="30"
+Title.FontHeight="24"
+
+
+;------------------------------------------------------------------------------
+; Players screen, current only
+;
+
+[PLAYERS_CURRENT_ONLY_SCREEN]
+Screen.X="0"
+Screen.Y="0"
+Screen.Width="640"
+Screen.Height="480"
+Screen.Source="srcmedia\back-logon1.bmp"
+Screen.AlphaSource="srcmedia\back-alpha.bmp"
+Screen.Format="D3DFMT_DXT3"
+
+CurrentPlayersList.X="175"
+CurrentPlayersList.Y="139"
+CurrentPlayersList.Width="297"
+CurrentPlayersList.Height="212"
+CurrentPlayersList.FontHeight="18"
+CurrentPlayersList.CustomParam="5"
+CurrentPlayersList.XOffset="10"
+
+CurrentPlayersTitle.X="175"
+CurrentPlayersTitle.Y="84"
+CurrentPlayersTitle.Width="251"
+CurrentPlayersTitle.Height="23"
+CurrentPlayersTitle.FontHeight="20"
+
+CurrentPlayersImageActive.X="163"
+CurrentPlayersImageActive.Y="78"
+CurrentPlayersImageActive.Width="315"
+CurrentPlayersImageActive.Height="341"
+CurrentPlayersImageActive.Source="srcmedia\singlepanel.bmp"
+CurrentPlayersImageActive.AlphaSource="srcmedia\singlepanel-alpha.bmp"
+CurrentPlayersImageActive.Format="D3DFMT_DXT3"
+
+SelectButton.X="200"
+SelectButton.Y="375"
+SelectButton.Width="150"
+SelectButton.Height="32"
+SelectButton.FontHeight="18"
+
+BackButton.X="360"
+BackButton.Y="375"
+BackButton.Width="150"
+BackButton.Height="32"
+BackButton.FontHeight="18"
+
+Title.X="394"
+Title.Y="64"
+Title.Width="145"
+Title.Height="30"
+Title.FontHeight="24"
+
+
+; -----------------------------------------------------------------------------
+; Notification screen
+;
+
+[NOTIFICATION_SCREEN]
+Screen.X="560"
+Screen.Y="400"
+Screen.Width="40"
+Screen.Height="40"
+
+Icon.X="0"
+Icon.Y="0"
+Icon.Width="40"
+Icon.Height="40"
+Icon.CustomParam="900"
+
+;-----------------------------------------------------------------------------
+; Strings for default language
+;
+
+[String]
+Include="loc\uix_enu.inf"
+
+;-----------------------------------------------------------------------------
+; Strings for TW language
+;
+
+[String]
+Language="tw"
+Include="loc\uix_cht.inf"
+
+;-----------------------------------------------------------------------------
+; Strings for DE language
+;
+
+[String]
+Language="de"
+Include="loc\uix_deu.inf"
+
+;-----------------------------------------------------------------------------
+; Strings for ES language
+;
+
+[String]
+Language="es"
+Include="loc\uix_esp.inf"
+
+;-----------------------------------------------------------------------------
+; Strings for FR language
+;
+
+[String]
+Language="fr"
+Include="loc\uix_fra.inf"
+
+;-----------------------------------------------------------------------------
+; Strings for IT language
+;
+
+[String]
+Language="it"
+Include="loc\uix_ita.inf"
+
+;-----------------------------------------------------------------------------
+; Strings for JA language
+;
+
+[String]
+Language="ja"
+Include="loc\uix_jpn.inf"
+
+;-----------------------------------------------------------------------------
+; Strings for KO language
+;
+
+[String]
+Language="ko"
+Include="loc\uix_kor.inf"
+
+;-----------------------------------------------------------------------------
+; Strings for BR language
+;
+
+[String]
+Language="br"
+Include="loc\uix_ptb.inf"
+
+</pre>
+    <h2><a name="example_language_file"></a>Example Language File</h2>
+<p>Below is an example language file (uix_enu.inf) containing strings. Default string files are included with the Xbox SDK (in Source\uix\loc).</p>
+<pre class="clsCode">
+;
+; File format is a Unicode text file with Field="Value" lines (quotation marks 
+; required). A ';' or a '#' is used for comments.
+;
+; Special characters that are allowed in here:
+;
+;   \n      New line
+;   \x11    Arbitrary ANSI character in hexadecimal (replace the 11 with the
+;           code you want; use charmap.exe to find the code, and use the code in
+;           the lower-left portion of the status bar).
+;   \u1111  Arbitrary Unicode character in hexadecimal (replace the 1111 with
+;           the code you want; use charmap.exe to find the code).
+;   \xA0    Non-breaking space
+;   \xA9    Copyright symbol
+;   \u2122  Trademark symbol
+;
+
+[Strings]
+
+STR_BLANK=""
+STR_NEW_ACCOUNT="New Account"
+STR_BACK_BUTTON="{IMG_B}Back"
+STR_PLAYERS_BACK_BUTTON="{IMG_B}Back"
+STR_CONTINUE_BUTTON="{IMG_A}Continue"
+STR_STATUS_SIGN_IN="Sign-In"
+STR_STATUS_PASSCODE="Enter pass code"
+STR_STATUS_SIGNING_IN="Signing in..."
+STR_SELECT_BUTTON="{IMG_A}Select"
+STR_GUEST="Guest"
+STR_YES_BUTTON="{IMG_A}Yes"
+STR_NO_BUTTON="{IMG_B}NO"
+STR_NO_WORKING_CONN="Your Xbox console cannot connect to Xbox Live. Do you want to start the troubleshooter?"
+STR_REQUIRED_MESSAGES="You have an important message from Xbox Live. You must read this message before you can sign in."
+STR_UNIVERSAL_NET_ERROR="Could not connect to Xbox Live. Do you want to troubleshoot your network connection in the Xbox Dashboard?"
+STR_SERVER_BUSY="The Xbox Live service is very busy. Please try again later."
+STR_CHECK_MESSAGES="You have a new Xbox Live message. Would you like to read it now?"
+STR_UPDATE_REQUIRED="A required update is available for the Xbox Live service. You cannot connect to Xbox Live until the update is installed."
+STR_INVALID_ACCOUNT="This account is not current. You need to update the account in Account Recovery."
+STR_JOIN_BUTTON="{IMG_A}Join"
+STR_STATUS_INSERT_CONTROLLER="Connect controller"
+STR_STATUS_PRESS_TO_JOIN="Press {IMG_A} to join"
+STR_STATUS_WAIT_FOR_OTHERS="Waiting for others"
+STR_TITLE_FRIENDS="Friends"
+STR_STATUS_FRIENDS_OFFLINE="Offline\n"
+STR_STATUS_FRIENDS_ONLINE="Online\n"
+STRP_STATUS_FRIENDS_ONLINE_PLAYING="Playing %s\n"
+STRP_STATUS_FRIENDS_ONLINE_JOINABLE="Available in %s\n"
+STRP_STATUS_FRIENDS_ONLINE_IN_GAME="Online in %s\n"
+STRP_STATUS_GAME_INVITE_RECEIVED="Wants to play %s\n"
+STR_STATUS_GAME_INVITE_SENT="Invited to play\n"
+STR_STATUS_GAME_INVITE_ACCEPTED="Accepted your invitation to play\n"
+STR_STATUS_GAME_INVITE_REJECTED="Declined your invitation to play\n"
+STR_STATUS_FRIENDS_REQUEST_RECEIVED="Wants to be your friend\n"
+STR_STATUS_FRIENDS_REQUEST_SENT="Friend request sent\n"
+STR_STATUS_FRIENDS_VOICE_ON="Voice:On"
+STR_STATUS_FRIENDS_VOICE_OFF="Voice:Off"
+STR_STATUS_FRIENDS_VOICE_TV="Voice through TV"
+STRP_STATUS_FRIENDS_ONLINE_PLAYING_JOINABLE="Playing %s (joinable)\n"
+STR_STATUS_FRIENDS_NO_FRIENDS="There are currently no friends in your Friends List."
+STR_ACTION_FRIENDS_PLAY_VOICE_MAIL_GAME_INVITE="Play voice message"
+STR_ACTION_FRIENDS_SEND_GAME_INVITE="Send game invite"
+STR_ACTION_FRIENDS_ACCEPT_GAME_INVITE="Accept game invite"
+STR_ACTION_FRIENDS_DECLINE_GAME_INVITE="Decline game invite"
+STR_ACTION_FRIENDS_REVOKE_GAME_INVITE="Cancel game invite"
+STR_ACTION_FRIENDS_JOIN="Join friend"
+STR_ACTION_FRIENDS_ACCEPT_REQUEST="Accept friend request"
+STR_ACTION_FRIENDS_PLAY_VOICE_MAIL_REQUEST="Play voice message"
+STR_ACTION_FRIENDS_DECLINE_REQUEST="Decline friend request"
+STR_ACTION_FRIENDS_BLOCK_REQUEST="Block future requests"
+STR_ACTION_FRIENDS_CANCEL_REQUEST="Cancel friend request"
+STR_ACTION_FRIENDS_REMOVE="Remove friend"
+STR_ACTION_FRIENDS_SEND_FEEDBACK="Send feedback"
+STR_ACTION_FRIENDS_REMOVE_CONFIRMATION="Are you sure you want to remove this player from your Friends List?"
+STR_ACTION_FRIENDS_BLOCK_CONFIRMATION="Are you sure you want to permanently block friend requests from this player?"
+STRP_ACTION_FRIENDS_JOIN_GAME="To join, insert the %s disc. Or press B and then save your current game before inserting the new disc."
+STRP_ACTION_FRIENDS_JOIN_GAME_NO_TITLE="To join %s, insert the appropriate disc. Or press B and then save your current game before inserting the new disc."
+STRP_ACTION_FRIENDS_JOIN_EXIT_HOST="If you exit to join %s, the current game will end for all other players."
+STR_TITLE_FRIENDS_OPTIONS="Friend Options"
+STR_SIGNOUT_BUTTON="{IMG_X}Sign Out"
+STR_ERROR_LOGON_CONNECTION_LOST="Connection to Xbox Live lost. Please sign in again."
+STR_TROUBLESHOOT_BUTTON="{IMG_A}Troubleshoot"
+STR_READ_NOW_A_BUTTON="{IMG_A}Read Now"
+STR_READ_NOW_B_BUTTON="{IMG_B}Read Now"
+STR_READ_LATER_BUTTON="{IMG_A}Read Later"
+STR_ACCOUNT_REC_BUTTON="{IMG_A}Recover"
+STR_NEW_ACCOUNT_BUTTON="{IMG_A}New Account"
+STR_ERROR_LOGON_KICKED_BY_DUPLICATE_LOGON="You were signed out of Xbox Live because another person signed in using your account."
+STR_ERROR_LOGON_PASSCODE="Incorrect pass code"
+STRP_RECONNECT_CONTROLLER="Please reconnect controller %s."
+STRP_INFO_INVITATION_WAITING="%s has accepted a game invitation. Join game now?"
+STRP_ERROR_INVITED_USER_NOT_SIGNED_IN="%s must sign in to join this game."
+STR_IGNORE_INVITE_BUTTON="{IMG_B}Back"
+STRP_CONTROLLER="Controller %s"
+STR_STATUS_PRESS_TO_START="Press {IMG_A} to start"
+STR_CURRENT_PLAYERS_TITLE="Current Players"
+STR_DEPARTED_PLAYERS_TITLE="Recent Players"
+STR_TITLE_PLAYERS_DEFAULT="Players"
+STR_TITLE_PLAYERS_DEPARTED_ONLY="Recent Players"
+STR_TITLE_PLAYERS_CURRENT_ONLY="Current Players"
+STR_STATUS_PLAYERS_NO_PLAYERS="No players found."
+STR_STATUS_PLAYERS_NO_PLAYERS_FILTERED="No players found."
+STR_STATUS_PLAYERS_NO_DEPARTED_PLAYERS="No players found."
+STR_ACTION_PLAYERS_FEEDBACK="Feedback"
+STR_ACTION_PLAYERS_UNMUTE="Unmute"
+STR_ACTION_PLAYERS_MUTE="Mute"
+STR_ACTION_PLAYERS_SEND_FRIEND_REQUEST="Send Friend Request"
+STR_ACTION_PLAYERS_CANCEL_FRIEND_REQUEST="Cancel Friend Request"
+STR_ACTION_PLAYERS_ACCEPT_FRIEND_REQUEST="Accept Friend Request"
+STR_ACTION_PLAYERS_DECLINE_FRIEND_REQUEST="Decline Friend Request"
+STR_ACTION_PLAYERS_NEVER_ACCEPT_FRIEND_REQUEST="Block future requests"
+STR_ACTION_PLAYERS_REMOVE_FRIEND="Remove Friend"
+STR_ACTION_FEEDBACK_GOOD_ATTITUDE="Good attitude"
+STR_ACTION_FEEDBACK_GREAT_SESSION="Great session"
+STR_ACTION_FEEDBACK_BAD_NAME="Bad name"
+STR_ACTION_FEEDBACK_CHEATING="Cheating"
+STR_ACTION_FEEDBACK_SCREAMING="Screaming"
+STR_ACTION_FEEDBACK_THREATS="Threats or harassment"
+STR_ACTION_FEEDBACK_CURSING="Cursing or lewdness"
+STR_ACTION_FEEDBACK_HARASSING_MESSAGE="Harassing voice message"
+STR_ACTION_FEEDBACK_OFFENSIVE_MESSAGE="Offensive voice message"
+STR_ACTION_FEEDBACK_SPAM_MESSAGE="Spam"
+STR_VOICEMAIL_FRIEND_REQUEST="Do you want to send a voice message with this friend request?"
+STR_VOICEMAIL_GAME_INVITE="Send game invite with voice message"
+STR_VOICEMAIL_ATTACHED="Voice Message Included\n"
+STR_VOICEMAIL_TITLE="Voice Message"
+STRP_VOICEMAIL_TO="To: %s"
+STRP_VOICEMAIL_FROM="From: %s"
+STR_VOICEMAIL_SUBJECT_FRIEND_REQUEST="Subject: Friend Request"
+STR_VOICEMAIL_SUBJECT_GAME_INVITE="Subject: Game Invite"
+STRP_VOICEMAIL_SENT="Sent: %s"
+STR_VOICEMAIL_FEEDBACK="Feedback On This Voice Message"
+STR_VOICEMAIL_FEEDBACK_MULTIPLE_ERROR="You can submit feedback only once per voice message."
+STR_VOICEMAIL_RECORD="Record Voice Message"
+STR_VOICEMAIL_STOP="Stop"
+STR_VOICEMAIL_PLAY="Play Voice Message"
+STR_VOICEMAIL_SEND="Send Voice Message"
+STR_VOICEMAIL_COMM_ERROR="Please connect the Xbox Communicator to continue."
+STR_VOICEMAIL_MESSAGE_UNAVAILABLE="Voice message no longer available."
+STR_VOICEMAIL_RETRY="Please sign out of Xbox Live, then sign in again to send or receive this voice message."
+
+</pre>
+    <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

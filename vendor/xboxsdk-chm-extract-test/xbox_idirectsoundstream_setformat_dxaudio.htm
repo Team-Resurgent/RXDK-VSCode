@@ -1,0 +1,60 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>IDirectSoundStream::SetFormat</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="F" Term="SetFormat"/>
+<MSHelp:Keyword Index="K" Term="SetFormat (IDirectSoundStream)"/>
+<MSHelp:Keyword Index="K" Term="IDirectSoundStream::SetFormat"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>IDirectSoundStream::SetFormat</h1>
+<p>Changes the data format of the stream without releasing and recreating any objects.</p>
+<pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>SetFormat(</b>
+    <b>LPCWAVEFORMATEX</b> <i>pwfxFormat</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+            <dt><i>pwfxFormat</i></dt>
+                <dd>Address of a <a href="_dx_waveformatex_dxaudio.htm">WAVEFORMATEX</a> or <a href="_dx_waveformatextensible_dxaudio.htm">WAVEFORMATEXTENSIBLE</a> structure that describes the new format for the DirectSound stream.</dd>
+            
+        </dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>Returns S_OK if successful, an error code otherwise.</p>
+<h4><a name="remarks"></a>Remarks</h4>
+<p>The <b>SetFormat</b> method has the following restrictions:</p>
+<ul>
+
+	<li>This function stops the voice if it is playing. All pending packets are also flushed.</li>
+	<li>If the number of hardware voices has to change (1 hardware voice per 2 channels), the voice resources are freed and reallocated. Because of this, <b>SetFormat</b> may fail due to insufficient voices or buffer SGEs.</li>
+    <li><p><b>SetFormat</b> always resets mixbin assignments. Calling <b>SetFormat</b> with a <b>WAVEFORMATEXTENSIBLE</b> structure that has its <b>dwChannelMask</b> member filled in will reset the mixbins to the channels supplied in the format.</p>
+		<p>Because <b>SetFormat</b> resets the mixbin assignments, it should be called before calling <a href="xbox_idirectsoundstream_setoutputbuffer_dxaudio.htm">SetOutputBuffer</a> or <a href="xbox_jc_idirectsoundstream_setmixbins_dxaudio.htm">SetMixBins</a>. Calling <b>SetOutputBuffer</b> before calling <b>SetFormat</b> will cause <b>SetFormat</b> to <i>add</i> the default speaker mixbins to the original buffer. Similarly, calling <b>SetMixBins</b> before calling <b>SetFormat</b> will <i>reset</i> the mixbins to the default speaker mixbins.</p></li>
+    <li>3D voices must be mono.</li>
+</ul>        
+        <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in DSound.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use DSound.lib.</p>
+    <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Updating Game Sessions</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Updating Game Sessions"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Updating Game Sessions</h1>
+<p>The information associated with an online-game session changes over time. The title must periodically update the matchmaking service with any changes in the session information. How often the title needs to update the server depends on: 1) the attributes used, and 2) the design of the game title itself. However, almost all game titles should update the server at the following times:</p><ul>
+		    <li>Creating a new game</li>
+		    <li>Loading a game level </li>
+		    <li>Changing game options (game type, for example)</li>
+		    <li>Players leaving or joining the session (changes in player configuration 
+		    	affect any session attributes aggregated for the current set of players)</li>
+		</ul>
+<p>Use the <a href="XOnlineMatchSessionUpdate.htm">XOnlineMatchSessionUpdate</a> function to update online-game session information in the matchmaking service. The set of parameters for <b>XOnlineMatchSessionUpdate</b> is similar to that for <a href="XOnlineMatchSessionCreate.htm">XOnlineMatchSessionCreate</a>. However, <b>XOnlineMatchSessionUpdate</b> also takes the session ID returned from <a href="XOnlineMatchSessionGetInfo.htm">XOnlineMatchSessionGetInfo</a>. In addition, set the <b>fChanged</b> member of <a href="XONLINE_ATTRIBUTE.htm">XONLINE_ATTRIBUTE</a> to TRUE for attributes that are new or have changed since the call to <b>XOnlineMatchSessionCreate</b>.</p><p>The following topics contain information on specific situations in which game session information may need to be updated.</p><ul>
+<li><a href="#IDAPBIV">Continuing a Matchmaking Session Across Reboots</a></li><li><a href="#IDANDIV">Host Migration</a></li><li><a href="#IDA1DIV">Network Proximity in Matchmaking Queries</a></li></ul>
+<h2><a name="IDAPBIV"></a>Continuing a Matchmaking Session Across Reboots</h2>
+<p>Both the client and the server (game host) must perform specific tasks in order to preserve a matchmaking session across reboots. These tasks are listed below. Certain conditions cause a matchmaking session to be lost and they are also explained in this section.</p><ul>
+<li><a href="#IDAYBIV">Game Host/Server</a></li><li><a href="#IDAGCIV">Game Client</a></li><li><a href="#IDAWCIV">Conditions that Cause Session Loss</a></li></ul>
+<p>
+                Game titles sometimes need to reboot between game levels. Use the following 
+                procedure to reestablish the matchmaking session after such a reboot.
+            </p><h3><a name="IDAYBIV"></a>Game Host/Server</h3>
+<ol>
+	
+	                <li>At the end of the first level, pass the current session ID (XNKID) to the 
+	                next level by means of the command line or a persistent memory page.</li>
+	
+	                <li>Reboot into the next level.</li>
+	
+	                <li>Create a new matchmaking session that is similar to the original, but set 
+	                the "PreviousSessionID" attribute to the value passed in on the command line. 
+	                This attribute is used to link the "thread" of match sessions together for the 
+	                clients to follow. When advertising the first level, either don't set this 
+	                attribute or set it to all zeros.</li>
+	
+	                <li>Wait for all of the previous players to rejoin. Your title may need to allow new join-in-progress players as well. The title may not want to open up any "official" publicly available matchmaking slots until all previous clients have had a reasonable opportunity to rejoin the session (30 seconds or so, depending on the reboot cycle time). Alternatively, for join-in-progress games, the title could open up the number of slots that were previously still available. For example, if the title was playing with only five out of eight possible players, it could immediately advertise three slots.</li>
+	            </ol>
+<h3><a name="IDAGCIV"></a>Game Client</h3>
+<ol>
+	                <li>At the end of the first level, pass the current session ID (XNKID) to the next 
+	                level by means of the command line or a persistent memory page.</li>
+	
+	                <li>Reboot into the next level.</li>
+	
+	                <li>Run a matchmaking query that searches for sessions that have a "PreviousSessionID" (the old XNKID) passed as the only query parameter. This query will return either zero or one record, depending on the relative reboot speeds of the client and the host/server.</li>
+	
+	                <li>If the title gets a record back from step #3, attempt to "rejoin" the session. The game host will need to redistribute the XNADDRs for all peers to every participating Xbox because these XNADDRs will have all changed across the reboot.</li>
+	
+	                <li>If the title does not get a record back, the title should wait 5 to 10 
+	                seconds, and then go back to step #3. After about four retries, titles should 
+	                give up and assume the host lost its connection during the transition.</li>
+	            </ol>
+<h3><a name="IDAWCIV"></a>Conditions that Cause Session Loss</h3>
+<p>The following conditions cause matchmaking sessions to be lost.</p><ul>
+					<li>
+						<p>The Xbox that called <b>XOnlineMatchSessionCreate</b> is no longer logged on to <i>Live</i>, usually as the result of a reset.</p>
+						<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;The MatchSim tool does not cause sessions to expire based on this condition.</p>
+					</li>
+					<li>The title has not called <b>XOnlineMatchSessionUpdate</b> in a time interval longer than the session expiration specified in the XMS file created in MatchSim.</li>
+				</ul>
+<h2><a name="IDANDIV"></a>Host Migration</h2>
+<p>
+                In the event of a host disconnection, host migration is recommended. Host 
+                migration is the ability of a title's networking system to automatically promote 
+                a new Xbox console to session host, with little or no effect on game play, if the 
+                current host is reset or drops its connection.
+            </p><p>
+                The best practice recommendation for host migration is for the new host to advertise a new session.  All consoles currently in the game already have established connectivity.  Any new consoles use the key associated with the new session. The new host would need to remember both old and new keys.  This all assumes a client/server topology rather than a peer-to-peer topology.  In a peer-to-peer topology the new key would have to be sent to all the consoles in the session and connectivity reestablished with the new key.
+            </p><p>
+                For more information on host migration, see the <a href="xbox_samp_hostmigration.htm">Host Migration</a> sample.
+            </p><h2><a name="IDA1DIV"></a>Network Proximity in Matchmaking Queries</h2>
+<p>
+                The Xbox network proximity system uses many overlapping sources of data to build a mapping table from IP addresses to geographical areas.  It then computes an area-to-area distance matrix.  The result of looking up the host IP address and the querying Xbox's IP address in the distance matrix becomes the "Network Distance" value used by the matchmaking servers to sort sessions by distance. The "rough proximity" system takes all of the proximity distance values and groups them into five 20-percent ranges. These ranges, plus the possibility of two Xbox systems being in the same range, yield six possible values: 0&#8211;5, which is used as specified in the query definition to sort sessions.  The rough proximity system enables the title to do fuzzy matching and prioritization, taking into account proximity as well as other sorting criteria.
+            </p><p>
+                Rough proximity is used in the following pattern of sort operators:
+            </p>
+<pre class="clsCode">
+
+&lt;Game-specific sort criteria A-1&gt;
+      ...
+&lt;Game-specific sort criteria A-n&gt;
+&lt;Sort by rough proximity ascending&gt;
+&lt;Game-specific sort criteria B-1&gt;
+      ...
+&lt;Game-specific sort criteria B-n&gt;
+&lt;Sort by network proximity ascending&gt;
+            
+</pre>
+    <p>
+                Typically, games using rough proximity will not include any sort operators in 
+                group A above. Also, there should always be at least one sort criteria 
+                separating rough proximity from network proximity. Otherwise, the rough 
+                proximity sort operator should be removed.
+            </p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

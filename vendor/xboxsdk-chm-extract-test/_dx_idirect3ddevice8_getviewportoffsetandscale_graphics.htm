@@ -1,0 +1,118 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>IDirect3DDevice8::GetViewportOffsetAndScale</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="F" Term="GetViewportOffsetAndScale"/>
+<MSHelp:Keyword Index="K" Term="GetViewportOffsetAndScale (IDirect3DDevice8)"/>
+<MSHelp:Keyword Index="K" Term="IDirect3DDevice8::GetViewportOffsetAndScale"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>IDirect3DDevice8::GetViewportOffsetAndScale</h1>
+<p>Retrieves the viewport offset and scale that are normally set into vertex shader constants c[-38] and c[-37].</p>
+<pre class="syntax" xml:space="preserve"><b>void</b> <b>GetViewportOffsetAndScale(</b>
+    <b>D3DVECTOR4</b> *<i>pOffset</i><b>,</b>
+    <b>D3DVECTOR4</b> *<i>pScale</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+			<dt><i>pOffset</i></dt>
+<dd>[out]  Pointer to a <a href="_dx_d3dvector4_graphics.htm">D3DVECTOR4</a> structure that receives the viewport offset.</dd>
+			<dt><i>pScale</i></dt>
+<dd>[out]  Pointer to a <b>D3DVECTOR4</b> structure that receives the viewport scale.</dd>
+		</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>None.</p>
+<h4><a name="remarks"></a>Remarks</h4>
+<p>The following functions and renderstates affect the values returned by <b>GetViewportOffsetAndScale</b>; therefore <b>GetViewportOffsetAndScale</b> should only be called after these functions are called, after the renderstates set, and immediately before calling <a href="_dx_idirect3ddevice8_drawprimitive_graphics.htm">IDirect3DDevice8::DrawPrimitive</a>.</p>
+
+<table>
+<tr>
+<th>Functions</th>
+<th>Renderstates</th>
+</tr>
+
+<tr>
+<td>
+<ul>
+<li><a href="_dx_idirect3d8_createdevice_graphics.htm">IDirect3D::CreateDevice</a></li>
+<li><a href="_dx_idirect3ddevice8_reset_graphics.htm">IDirect3DDevice8::Reset</a></li>
+<li><a href="_dx_idirect3ddevice8_setbackbufferscale_graphics.htm">IDirect3DDevice8::SetBackBufferScale</a></li>
+<li><a href="_dx_idirect3ddevice8_setrendertarget_graphics.htm">IDirect3DDevice8::SetRenderTarget</a></li>
+<li><a href="_dx_idirect3ddevice8_setscreenspaceoffset_graphics.htm">IDirect3DDevice8::SetScreenSpaceOffset</a></li>
+<li><a href="_dx_idirect3ddevice8_setviewport_graphics.htm">IDirect3DDevice8::SetViewport</a></li>
+</ul>
+</td>
+
+<td>
+<ul>
+<li><a href="_dx_d3drenderstatetype_graphics.htm#_dx_d3drs_multisampleantialias_graphics">D3DRS_MULTISAMPLEANTIALIAS</a></li>
+<li><a href="_dx_d3drenderstatetype_graphics.htm#_dx_d3drs_multisamplemode_graphics">D3DRS_MULTISAMPLEMODE</a></li>
+<li><a href="_dx_d3drenderstatetype_graphics.htm#_dx_d3drs_multisamplerendertargetmode_graphics">D3dRS_MULTISAMPLERENDERTARGETMODE</a></li>
+</ul>
+</td>
+
+</tr>
+
+
+</table>
+		
+		<p>If a title wants to move vertex shader constants c[-38] and c[-37] into other constant locations, the title should take steps similar to those shown in the sample code below:</p>
+
+
+<pre class="clsCode">
+// This code assumes that the title has written a #pragma screenspace
+// vertex shader that performs its viewport scale and offset in c[0] and c[1].
+
+// Set all render states and texture states.
+// ...
+
+// Get the offset and scale.
+D3DVECTOR4 vOffset, vScale;
+pDevice-&gt;GetViewportOffsetAndScale( &amp;vOffset, &amp;vScale );
+
+// Load the vertex shader.
+pDevice-&gt;SetShaderConstantMode( D3DSCM_NORESERVEDCONSTANTS );
+pDevice-&gt;SetVertexShader( dwVertexShader );
+
+// Load the offset and scale into the new constant locations.
+pDevice-&gt;SetVertexShaderConstant( 0, &amp;vOffset, 1 );
+pDevice-&gt;SetVertexShaderConstant( 1, &amp;vScale, 1 );
+
+// Load the other vertex shader constants.
+// ...
+
+// And finally, render.
+pDevice-&gt;DrawPrimitive( D3DPT_TRIANGLESTRIP, 0, dwNumPrimitives );
+</pre>
+    
+
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in D3d8.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use D3d8.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p><a href="xbox_dxg_idirect3ddevice8_SetShaderConstantMode.htm">IDirect3DDevice8::SetShaderConstantMode</a></p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

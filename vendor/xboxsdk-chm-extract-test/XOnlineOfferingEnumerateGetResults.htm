@@ -1,0 +1,93 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineOfferingEnumerateGetResults</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineOfferingEnumerateGetResults"/>
+<MSHelp:Keyword Index="F" Term="XOnlineOfferingEnumerateGetResults"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineOfferingEnumerateGetResults</h1>
+<p>Retrieves the results of an offering enumeration initiated with a call to <a href="XOnlineOfferingEnumerate.htm">XOnlineOfferingEnumerate</a>.</p><pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineOfferingEnumerateGetResults(</b>
+    <b>XONLINETASK_HANDLE</b> <i>hTask</i><b>,</b>
+    <b>PXONLINEOFFERING_INFO</b> **<i>prgpOfferingInfo</i><b>,</b>
+    <b>DWORD</b> *<i>pdwReturnedResults</i><b>,</b>
+    <b>BOOL</b> *<i>pfMoreResults</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+<dt><i>hTask</i></dt>
+<dd>[in]  Online task handle returned by the call to <b>XOnlineOfferingEnumerate</b> that began the enumeration.</dd>
+            
+<dt><i>prgpOfferingInfo</i></dt>
+<dd>[out]  Pointer to a variable that receives the address of an array of pointers to <a href="XONLINEOFFERING_INFO.htm">XONLINEOFFERING_INFO</a> structures.  Each pointer in the returned array will point to an <b>XONLINEOFFERING_INFO</b> structure representing a single offering in the enumeration.</dd>
+            
+<dt><i>pdwReturnedResults</i></dt>
+<dd>[out]  Pointer to a variable that receives the number of structure pointers returned in the <i>prgpOfferingInfo</i> array.</dd>
+            
+<dt><i>pfMoreResults</i></dt>
+<dd>[out]  Pointer to a variable that receives TRUE if more records are available for enumeration, and FALSE otherwise.</dd>
+            
+</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>If the function succeeds, the return value is S_OK.</p><h4><a name="remarks"></a>Remarks</h4>
+<p>If <i>pfMoreResults</i> is set to TRUE on return, the function should continue the offering enumeration by calling <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> until more results or task completion is indicated, then making another call to <b>XOnlineOfferingEnumerateGetResults</b>.</p>
+
+<p>The title does not need to free the data pointed to by <i>prgpOfferingInfo</i>, but should, when done accessing that data and when enumeration is complete, call <a href="XOnlineTaskClose.htm">XOnlineTaskClose</a> with the enumeration task handle in order to free the resources associated with the enumeration.</p>
+
+<p>The following code snippet demonstrates calling <b>XOnlineOfferingEnumerateGetResults</b> and displaying to the debugger the type of each offering returned:</p>
+
+
+<pre class="clsCode">
+
+PXONLINEOFFERING_INFO *rgpOfferingInfo;
+DWORD dwResults, i;
+CHAR szBuf[15];
+HRESULT hr;
+BOOL fMore;
+
+
+hr = XOnlineOfferingEnumerateGetResults( hTask, &amp;rgpOfferingInfo, &amp;dwResults, &amp;fMore );
+if( !SUCCEEDED( hr ) )
+{
+	return hr;
+}
+
+for( i = 0; i &lt; dwResults; i++ )
+{
+    wsprintf( szBuf, "%u\n", rgpOfferingInfo[i]-&gt;dwOfferingType );
+    OutputDebugString( szBuf );
+};
+
+</pre>
+    
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p><a href="x_mt_xonline_functions.htm">Xbox Live Functions</a> | <a href="XOnlineOfferingEnumerate.htm">XOnlineOfferingEnumerate</a>, <a href="XOnlineOfferingEnumerateMaxSize.htm">XOnlineOfferingEnumerateMaxSize</a>, <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a>, <a href="XOnlineTaskClose.htm">XOnlineTaskClose</a>
+</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

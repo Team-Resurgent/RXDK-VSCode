@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>CreateMutex</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="CreateMutex">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="CreateMutex"/>
+<MSHelp:Keyword Index="F" Term="CreateMutex"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_createmutex"></A>CreateMutex</H1>
+
+<P>The <B>CreateMutex</B> function creates or opens a named or unnamed mutex object. </P>
+
+<PRE class=syntax><B>HANDLE CreateMutex(
+  LPSECURITY_ATTRIBUTES</B><I> lpMutexAttributes</I><B>,</B>  // SD
+<B>  BOOL</B><I> bInitialOwner</I><B>,                       </B>// initial owner
+<B>  LPCSTR</B><I> lpName</I>                             // object name
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>lpMutexAttributes</I></DT>
+
+<DD>[in] Ignored; use NULL.
+</DD>
+
+<DT><I>bInitialOwner</I></DT>
+
+<DD>[in] Specifies the initial owner of the mutex object. If this value is TRUE and the caller created the mutex, the calling thread obtains ownership of the mutex object. Otherwise, the calling thread does not obtain ownership of the mutex. To determine if the caller created the mutex, see the Return Values section.</DD>
+
+<DT><I>lpName</I></DT>
+
+<DD>[in] Pointer to a null-terminated string specifying the name of the mutex object. Name comparison is case insensitive. 
+
+<P>If <I>lpName</I> matches the name of an existing named mutex object, the <I>bInitialOwner</I> parameter is ignored because it was already set when the mutex was created.</P>
+
+<P>If <I>lpName</I> is NULL, the mutex object is created without a name.</P> 
+
+<P>If <I>lpName</I> matches the name of an existing event, semaphore, or waitable timer, the function fails and the <A HREF="errors_3uwi.htm">GetLastError</a> function returns ERROR_INVALID_HANDLE. This occurs because these objects share the same namespace.</P> 
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is a handle to the mutex object. If the named mutex object existed before the function call, the function returns a handle to the existing object and <A HREF="errors_3uwi.htm">GetLastError</a> returns ERROR_ALREADY_EXISTS. Otherwise, the caller created the mutex.</P>
+
+<P>If the function fails, the return value is NULL. To get extended error information, call <A HREF="errors_3uwi.htm">GetLastError</a>. </P>
+
+<H4>Remarks</H4>
+
+<P>The handle returned by <B>CreateMutex</B> can be used in any function that requires a handle to a mutex object. </P>
+
+<P>Any thread can specify the mutex-object handle in a call to one of the wait functions. The single-object wait functions return when the state of the specified object is signaled. The multiple-object wait functions can be instructed to return either when any one or when all of the specified objects are signaled. When a wait function returns, the waiting thread is released to continue its execution. </P>
+
+<P>The state of a mutex object is signaled when it is not owned by any thread. The creating thread can use the <I>bInitialOwner</I> flag to request immediate ownership of the mutex. Otherwise, a thread must use one of the wait functions to request ownership. When the mutex's state is signaled, one waiting thread is granted ownership, the mutex's state changes to nonsignaled, and the wait function returns. Only one thread can own a mutex at any given time. The owning thread uses the <A HREF="synchro_59o8.htm">ReleaseMutex</a> function to release its ownership. </P>
+
+<P>The thread that owns a mutex can specify the same mutex in repeated wait function calls without blocking its execution. Typically, you would not wait repeatedly for the same mutex, but this mechanism prevents a thread from deadlocking itself while waiting for a mutex that it already owns. However, to release its ownership, the thread must call <A HREF="synchro_59o8.htm">ReleaseMutex</a> once for each time that the mutex satisfied a wait. </P>
+
+<P>Two or more threads or libraries can call <B>CreateMutex</B> to create the same named mutex. The first call to <B>CreateMutex</B> actually creates the mutex, and subsequent calls open a handle to the existing mutex. This enables multiple threads or libraries to get handles to the same mutex, while avoiding the problem of ensuring that a particular thread or library is started first. When using this technique, you should set the <I>bInitialOwner</I> flag to FALSE; otherwise, it can be difficult to be certain which thread has initial ownership.</P>
+
+<P>Multiple libraries can have handles to the same mutex object, enabling use of the object for synchronization. The following object-sharing mechanisms are available: 
+
+<UL>
+	<LI>A library can share the handle directly with another library.  However, if one library closes the handle, it will invalidate it for the other library.</LI>
+	
+	<LI>A library can specify the mutex object handle in a call to the <A HREF="handobj_2pyd.htm">DuplicateHandle</a> function to create a duplicate handle that can be used by another library.</LI>
+
+	<LI>A library can specify the name of a mutex object in a call to the <A HREF="synchro_5myc.htm">OpenMutex</a> or <B>CreateMutex</B> function.</LI>
+</UL>
+
+<P>Use the <A HREF="handobj_289x.htm">CloseHandle</a> function to close the handle.  The mutex object is destroyed when its last handle has been closed.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p><H4>See Also</H4>
+<P>
+
+<a href="xbox_mt_xtl_sll_synchronization_functions.htm">Synchronization Functions</a> | 
+<A HREF="handobj_289x.htm">CloseHandle</a>,  <A HREF="handobj_2pyd.htm">DuplicateHandle</a>,  <A HREF="synchro_82pk.htm">OpenMutex</a>,  <A HREF="synchro_59o8.htm">ReleaseMutex</a> </P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

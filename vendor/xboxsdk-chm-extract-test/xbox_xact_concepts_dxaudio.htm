@@ -1,0 +1,85 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XACT Concepts</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XACT Concepts"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+		<MSHelp:VTopic Name="waves"/>
+<MSHelp:Keyword Index="K" VTopic="waves" Term="waves, overview"/>
+		<MSHelp:VTopic Name="wave_banks"/>
+<MSHelp:Keyword Index="K" VTopic="wave_banks" Term="wave banks, overview"/>
+		<MSHelp:VTopic Name="sound_banks"/>
+<MSHelp:Keyword Index="K" VTopic="sound_banks" Term="sound banks, overview"/>
+		<MSHelp:Keyword Index="K" Term="sounds, overview"/>
+		<MSHelp:Keyword Index="K" Term="cues, overview"/>
+		<MSHelp:Keyword Index="K" Term="sound groups"/>
+		<MSHelp:Keyword Index="K" Term="sound categories"/>
+		<MSHelp:Keyword Index="K" Term="sound layers"/>
+		<MSHelp:Keyword Index="K" Term="streaming, zero-latency"/>
+		<MSHelp:Keyword Index="K" Term="zero-latency streaming"/>
+		<MSHelp:Keyword Index="K" Term="ADPCM, looping and streaming"/>
+		<MSHelp:Keyword Index="K" Term="triggering a cue"/>
+		<MSHelp:Keyword Index="K" Term="wave file formats, Xbox support for"/>
+	</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XACT Concepts</h1>
+<p>This section discusses general terms and concepts of the Xbox Audio Creation Tool (XACT) and provides more in-depth detail of streaming wave banks.</p>
+<ul>
+<li><a href="#IDASBYK">Terminology</a></li><li><a href="#IDAGFYK">Streaming Wave Banks</a></li><li><a href="#IDANBZK">Related Topics</a></li></ul>
+<h2><a name="IDASBYK"></a>Terminology</h2>
+<p>Working with XACT requires a working knowledge of some general terminology and concepts. This section discusses these terms as they apply to XACT.</p><ul>
+<li><a href="#waves">Waves</a></li><li><a href="#wave_banks">Wave Banks</a></li><li><a href="#IDA0CYK">Sounds</a></li><li><a href="#IDACDYK">Cues</a></li><li><a href="#sound_banks">Sound Banks</a></li><li><a href="#IDA1DYK">Groups</a></li><li><a href="#IDADEYK">Categories</a></li><li><a href="#IDALEYK">Layers</a></li></ul>
+<h3><a name="waves"></a>Waves</h3>
+<p><i>Waves</i> are PCM, ADPCM, AIF, AIFF, or WMA data files that are used as the basic materials for creating sounds. You can use any of several commercially available applications to create waves. For more information about wave file formats, see <a href="xbox_wave_format_support_on_xbox.htm">Wave Format Support on Xbox</a>.</p><h3><a name="wave_banks"></a>Wave Banks</h3>
+<p>A <i>wave bank</i> is a collection of waves logically grouped into a single .xwb file by a sound designer. For example, user interface waves that are always resident in memory may be stored in one wave bank, while waves used for sound effects are stored in another. Furthermore, wave banks can be <i>streaming</i> or <i>non-streaming</i>. The sound designer may decide to group larger files, such as background music or ambient waves, into a streaming wave bank to reduce the audio memory footprint.</p><img src="images/xbox_xact_wavebank_dxaudio.gif"><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Wave banks that contain WMA wave files must be streaming wave banks. Also, because each WMA file played through the XACT API incurs a separate WMA decoding (done in software), you need to keep the number of concurrent WMA streams to a minimum. You can use all other wave file types in both streaming and non-streaming wave banks.</p><h3><a name="IDA0CYK"></a>Sounds</h3>
+<p><i>Sounds</i> specify how one or more waves should be played. The wave file(s) can reside in one or more wave banks. A sound also has specific properties such as volume, DirectSound 3D rolloff, and Parametric EQ. These properties can be adjusted by the sound designer and auditioned on the Xbox hardware.</p><h3><a name="IDACDYK"></a>Cues</h3>
+<p><i>Cues</i> are what programmers use to play sounds. (Sometimes playing a cue is called "triggering" a cue.) Cues are typically played when certain game events, such as footsteps or gunshots, occur. A cue has an associated sound, so when the cue is played (or triggered), the associated sound is heard.</p><p>By abstracting sounds from cues, a sound designer can easily re-assign sounds to a cue without programmer intervention. For example, a sound designer can try various gunshot sounds associated with a particular game event without requiring the programmer to change their code or constantly rename sounds.</p><h3><a name="sound_banks"></a>Sound Banks</h3>
+<p>A <i>sound bank</i> is a collection of sounds and cues logically grouped by the sound designer into a single .xsb file. A sound bank does not contain wave data. (That information resides exclusively in the associated wave bank(s).) Rather, a sound bank contains information about how to map cues to sounds, and sounds to wave data.</p><p>The following image is an example mapping:</p><img src="images/xbox_xact_soundbank_wavebank_dxaudio.gif"><h3><a name="IDA1DYK"></a>Groups</h3>
+<p><i>Groups</i> offer a convenient way for the sound designer to view and set properties of sounds. A sound designer might, for example, group sounds by character, level, and so on for easy reference and editing. Groups are available as a convenience for the sound designer and are not used by the programmer.</p><h3><a name="IDADEYK"></a>Categories</h3>
+<p>Categories are also set by the sound designer. Programmers can use the XACT API to change the relative volumes of different categories individually&#8212;for example, if a title allows the user set the relative volumes for Music, Sound Effects, and Voice. XACT supports up to 255 categories.</p><h3><a name="IDALEYK"></a>Layers</h3>
+<p>Layers are different from groups or categories. Layers help specify how different sounds interact with one another. For example, by placing sounds on the same layer, a sound designer can specify that one piece of music stop when another piece starts. Likewise, a sound designer can specify cross-fade parameters on a per-layer basis.</p><p>The following example shows the interaction that results when sounds reside on separate layers.</p><img src="images/xbox_xact_layers1_dxaudio.gif"><p>By default, sounds cut one another off when they reside on the same layer, as this next example shows.</p><img src="images/xbox_xact_layers2_dxaudio.gif"><p>For sounds on the same layer, you can specify linear and logarithmic fade in/out, as in this example.</p><img src="images/xbox_xact_layers3_dxaudio.gif"><p>You can also queue sounds for sequential playback, as in the following example.</p><img src="images/xbox_xact_layers4_dxaudio.gif"><h2><a name="IDAGFYK"></a>Streaming Wave Banks</h2>
+<p>This section discusses streaming wave banks and how to use them under different circumstances.</p><ul>
+<li><a href="#IDANFYK">Streaming from DVD and the Hard Disk</a></li><li><a href="#IDATFYK">Using Multiple Streaming Wave Banks</a></li><li><a href="#XACT_zero_latency_streaming">Zero-Latency Streaming</a></li><li><a href="#IDAIAZK">Looping and Streaming ADPCM</a></li><li><a href="#IDAYAZK">Speech and Streaming Wave Banks</a></li></ul>
+<h3><a name="IDANFYK"></a>Streaming from DVD and the Hard Disk</h3>
+<p>The main differences between streaming wave banks from DVD and the hard disk are latency (hard disk seek time) and throughput. The hard disk is much faster and has greater throughput than the DVD drive. This is useful when streaming a large number of sounds with low latency. DVDs have a much larger storage capacity than the utility partition on the hard disk, so DVDs can hold larger wave banks.</p><h3><a name="IDATFYK"></a>Using Multiple Streaming Wave Banks</h3>
+<p>It is important to keep all sounds in a single wave bank that will be played concurrently from DVD or the hard disk. Keeping all the data in the same wave bank means the various waves are physically close to each other on the source media, so latency is minimized.</p><h3><a name="XACT_zero_latency_streaming"></a>Zero-Latency Streaming</h3>
+<p>One of the biggest problems associated with console audio is fitting all the desired sounds within the memory footprint allocated by the game. Typically, this footprint is just a few megabytes, so to fit all the sounds in memory, a sound designer either down-samples or compresses the sounds, or both. These actions can reduce the fidelity of the sounds.</p><p>The XACT solution to this problem is <i>zero-latency streaming</i>, sometimes called <i>primed streaming</i>. Zero-Latency streaming allows a sound designer to create a large wave bank, tens of megabytes or larger. The wave bank itself is copied to the utility cache partition of the Xbox hard disk. For each of the waves in the wave bank, only a small amount of the beginning of the sound is  loaded into system RAM; the rest remains on the Xbox hard disk. When the wave is played, it can be played with zero latency, because the beginning of the sound is stored in system RAM. As it plays, XACT asynchronously streams the rest of the sound, using only small buffers, on the order of 10&#8211;20 KB. The Xbox can handle over 100 concurrent streams off the hard disk. So by using this technique, a sound designer can have zero-latency access to large wave banks, with only a small system RAM footprint.</p><h4><a name="IDAIGYK"></a>Using DVD and Zero-Latency Streaming</h4>
+<p>Zero-latency streaming is possible from the DVD, but is not recommended. Because the DVD has a much higher latency than the hard disk, each sound requires a greater amount of system RAM. Also, it is not possible to have as many concurrent streams.</p><h4><a name="IDAOGYK"></a>System RAM and Zero-Latency Streaming</h4>
+<p>How much RAM a particular streaming wave uses depends on two things: the format of the sound and a particular programmer API setting (the <i>dwPacketSizeInMilliSecs</i> member of the <a href="xbox_xactwavebankstreamingparameters_dxaudio.htm">XACT_WAVEBANK_STREAMING_PARAMETERS</a> structure). A non-looping sound uses three buffers; a looping sound uses four. The size of each buffer is specified in <i>dwPacketSizeInMilliSecs</i>; the number of bytes in a packet depends on the format. The packet size is then rounded up to the "sector size" (512 bytes for hard disk wave banks, 2048 bytes for DVD).</p><p><b>Example</b></p><p>Sound format, 44.1-kHz Mono, 16-bit, non-looping, <i>dwPacketSizeInMilliSecs</i> = 25 ms</p><p>RAM for one buffer = 44,100 (samples per second) * 2 (bytes per sample) * 0.025 (25-ms buffer) = 2205 bytes (rounded up to 2560)</p><p>Non-looping sound uses 3 buffers, so 3 * 2560 = 7680 bytes.</p><p>Notice that the amount of system RAM required does <i>not</i> depend on the length of the sound. It depends only on the format and the value specified in <i>dwPacketSizeInMilliSecs</i>.</p><p><b>Example</b></p><p>Zero-latency wave bank with 200 44.1-kHz 16-bit looping entries, and <i>dwPacketSizeInMilliSecs</i> of 25ms</p><p>Average wave size length: 3 seconds: Wave bank size approximately 52 MB</p><p>RAM usage for one buffer: 2560 bytes</p><p>4 buffers per sound = 10,240 bytes per sound</p><p>40 concurrent sounds * 10,240 bytes per sound = 409 KB</p><p>As demonstrated in the previous example, XACT can provide zero-latency access to 52 MB of 44.1-kHz/16-bit audio data, using less than 500 KB of system RAM.</p><h4><a name="IDA4HYK"></a>ADPCM and Zero-Latency Streaming</h4>
+<p>It is possible to use ADPCM in zero-latency streaming wave banks, but there are side effects. Due to a quirk in the interaction between the ADPCM decoder and the hard disk alignment restrictions, an ADPCM zero-latency buffer must be a multiple of about 18 KB. Because you have three (or four) buffers per sound, that is almost 60 KB. Yes, ADPCM will take up more RAM than linear PCM! Of course, ADPCM wave banks will require less hard disk space than corresponding PCM wave banks.</p><h3><a name="IDAIAZK"></a>Looping and Streaming ADPCM</h3>
+<p>The XACT engine properly streams ADPCM waves only where the loop region is the size of the play region. In other words, the entire ADPCM wave can be looped when streaming, but not parts of it. ADPCM waves with arbitrary loop regions may not be sector aligned and are therefore not supported with streaming.</p><p>If you need arbitrary loop points, you have two possible options.</p><ol>
+						<li>Add the ADPCM wave data to an in-memory wave bank.</li>
+						<li>Use PCM wave data instead. This is probably the preferred route, because it requires less memory.</li>
+					</ol>
+<p>Again, this restriction applies only when looping streaming ADPCM wave data.</p><h3><a name="IDAYAZK"></a>Speech and Streaming Wave Banks</h3>
+<p>Generally, if your title has a large number of speech phrases, it is best to place them all in one large DVD streaming wave bank. This gives moderate latency access (around 100 ms or so), and the phrases never need to be copied to the hard disk.</p><p>In some cases, you may need to synchronize the speech with animations. This can be difficult without knowing the exact latency of a given DVD-streamed sound. XACT provides two ways to address this problem.</p><ol>
+						<li>You can <i>prime</i> the sound cue. This reads a bit of the beginning of the wave into memory. After the priming is complete, notification is sent. Once the cue is primed, it can be played with zero latency and synchronized with the animation. For more information, see the <a href="xbox_ixactsoundbank_prepare_dxaudio.htm">IXACTSoundBank::Prepare</a> function.</li>
+						<li>You can set XACT to signal a notification when the cue starts. After a play is issued, the title can wait for notification that the cue has started, and then synchronize the animation.</li>
+					</ol>
+<h2><a name="IDANBZK"></a>Related Topics</h2>
+<p>For more information about XACT, see the following topics.</p><ul>
+				<li><a href="xbox_xact_overview_dxaudio.htm">XACT Overview</a></li>
+				<li><a href="xbox_xact_authoring_dxaudio.htm">XACT Authoring Guide</a></li>
+				<li><a href="xbox_xact_programmerguide_dxaudio.htm">XACT Programming Guide</a></li>
+				<li><a href="xbox_xact_xact_dxaudio.htm">XACT Graphical User Interface Commands</a></li>
+				<li><a href="xbox_xact_xactbld_dxaudio.htm">XACT (xactbld) Command-Line Commands</a></li>
+			</ul>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

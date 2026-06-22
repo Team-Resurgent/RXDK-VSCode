@@ -1,0 +1,392 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Xbox Audio Content </TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Xbox Audio Content "/>
+<MSHelp:Keyword Index="F" Term="Xbox Audio Content "/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1 class="heading"><A NAME=""></A>Xbox Audio Content </H1>
+
+<p><i>By Scott Selfon, Audio Content Consultant, Xbox Content and Design Team</i></P>
+
+<H2>Introduction</H2>
+
+<p>This document will discuss the formats and kinds of audio content that are supported on the Xbox&#174; video game system from Microsoft. As discussed in chapter 1, the Xbox implements a platform-specific version of the Microsoft&#174; DirectX&#174; 8.0 libraries. Many of the file formats and content specifics supported by the Microsoft&#174; Windows&#174; APIs are supported on Xbox, even while the interfaces to play that content may be modified. If you have questions about content compatibility and authoring, please contact us at <a href="mailto:content@xbox.com">content@xbox.com</a>.</p>
+
+<p><b><i>Note</i></b>&nbsp;&nbsp; This document is not a complete specification of the Microsoft&#174; DirectSound&#174; and Microsoft&#174; DirectMusic&#174; file formats, but rather a list of the content formats supported. For more detailed information, please consult the Xbox Development Kit (XDK) documentation.</p>
+
+<h2>DirectSound (Wave) Content for Xbox</h2>
+
+<p>The Xbox Media Communications Processor (MCP) is a powerful hardware synthesis engine, with advanced audio synthesis and processing capabilities. The goal is to give audio designers much more flexibility when authoring a variety of content while still minimizing disk and memory footprint for the running application. The presence of the Xbox MCP means that many scenarios that would require multiple versions of content to be authored on other platforms can now use the same source media to accomplish these effects. For instance, the real-time hardware occlusion and obstruction filtering means a single source wave can be used when a sound originates right in front of the player as well as when it comes from behind a door or wall.</p>
+
+<h3>Comparisons with DirectSound on the Windows Platform</h3>
+
+<p>Wave files continue to be the preferred format used for DirectSound playback of audio data. However, there are a few differences to note:</p>
+
+<ul>
+<li>The DirectSound libraries for Xbox system software natively support adaptive differential pulse code modulation (ADPCM) and Microsoft&#174; Windows Media&#174; Audio (WMA) compression only. Unlike the Windows platform, Xbox system software does not have an Audio Compression Manager (ACM). This means that compression schemes other than those listed below require the authoring and delivery of an Xbox Media Object along with the title, which decodes the audio data in software.</li>
+<li>Xbox supports multichannel source audio. You should use linear uncompressed pulse code modulation (PCM) WaveFormatEx wave files (which can be authored using the XDK wavmerge tool), or WaveFormatExtensible wave files for this. </li>
+<li>For optimal performance, rather than delivering multiple wave files in a directory, wave data should be bundled where possible. The Xbox Audio Creation Tool (XACT) can be used to create soundbanks that are binary images that can be loaded into memory (or streamed). </li>
+</ul>
+
+<h3>Wave Formats Supported by Xbox</h3>
+
+<p>The Xbox supports 8- and 16-bit PCM data, 4-bit Xbox ADPCM data (proprietary format), and WMA-compressed wave data. An Xbox-specific implementation of WAVEFORMATEX is used to specify the number of channels. The WAVEFORMATEXTENSIBLE format is also supported. Up to six interleaved channels of data may be used per wave. The following wave formats and specifications are supported:</p>
+
+<table>
+<tr>
+ <th>Specification</th>  
+ <th>Supported Formats</th>  
+ <th>Comments</th>
+</TR>
+<TR>  
+ <td>Wave format (uncompressed)</TD>
+ <td>Linear PCM</TD>
+ <td>XACT also supports AIFF</TD>
+</TR>
+<TR>  
+ <td>Wave format (compressed)</TD>
+ <td>ADPCM, WMA</TD>
+ <td>DLS-2 collections only support ADPCM</TD>
+</TR>
+<TR>  
+ <td>Channels</TD>
+ <td>Mono, stereo, 4.0, 5.1 (up to six discrete channels)</TD>
+ <td>Already encoded Dolby&#174; Digital ("AC-3") source waves are not supported as source content within the Xbox MCP; ADPCM and WMA compression support mono and stereo only</TD>
+</TR>
+<TR>  
+ <td>Sampling rate</TD>
+ <td>188 Hz to 48 kHz</TD>
+ <td>Upsampled in hardware to 48 kHz (multipoint interpolation)</TD>
+</TR>
+<TR>  
+ <td>Bits per sample</TD>
+ <td>8 bits, 16 bits (PCM/WMA)<br>4 bits (ADPCM)</TD>
+ <td>Xbox MCP uses 24-bit resolution internally, outputs 20-bit</TD>
+</TR>
+  </TABLE>
+<h3>Unsupported Wave Formats</h3>
+<p>The Xbox MCP does not support some formats:</p>
+<table>
+<tr>
+ <th>Specification</th>  
+ <th>Unsupported Formats</th>  
+ <th>Comments</th>
+</TR>
+<TR>  
+ <td>Wave format (uncompressed)</TD>
+ <td>Pre-encoded formats, such as Dolby Digital and DTS *</TD>
+ <td>Use multichannel PCM (or manual panning) for surround</TD>
+</TR>
+<TR>  
+ <td>Wave format (compressed)</TD>
+ <td>MPEG-1 Layer 3 (MP3), Windows-supported codecs</TD>
+ <td>Use Xbox Media Objects for custom compression scheme decode (in software)</TD>
+</TR>
+<TR>  
+ <td>Channels</TD>
+ <td>3 channels, 5 channels, >6 channels</TD>
+ <td>Use 6 or 4 channel waves (automatically mixed down to stereo for analog outputs)</TD>
+</TR>
+</TABLE>	
+
+<p>* A title could potentially bypass the Xbox MCP entirely and write directly to the analog or digital outputs, which would allow for such custom-encoded formats. But this is generally not recommended, as the switch could generate pops or clicks, and once the Xbox MCP is bypassed, the title loses all hardware mixing, volume control, and realtime effects. For other issues with this, see the white paper <a href="cd_aud_wp_surround.htm">The Surround Experience: Authoring for and Implementing Multichannel Audio Playback</a>.</p>
+
+<h3>Prerecorded Audio Recommendations</h3>
+
+<p>For prerecorded musical scores and ambience, we recommend delivering six channel audio data, which is mixed down by the Encode Processor for analog outputs. Alternatively, you could author two versions of audio:</p>
+
+<ul>
+<li>48-kHz PCM wave with six discrete channels (for 5.1 playback)</li>
+<li>48-kHz PCM wave with two discrete channels (for stereo playback), optionally Dolby&#174; Surround encoded</li>
+</ul>
+
+<p>If you want to deliver prerecorded audio in compressed form, remember that each hardware buffer can be routed to up to eight mixbins, including the six specific output channels, as you see fit. Note that ADPCM compression is only supported on mono and stereo waves. But you could create three stereo ADPCM streams (which would be six discrete channels of audio) and map them to the 5.1 speaker channels in hardware. This would not be recommended for WMA, because the software decode is typically approximately 5 percent of the CPU per WMA stream. Also, watch for bandwidth and seek time issues if you don't position the audio streams close to each other on the DVD or hard disk.</p>
+
+<p>The following behaviors are used when downmixing from Dolby Digital to other formats:</p>
+
+<ul>
+<li>Any existing LFE channel is ignored and discarded.</li>
+<li>Discrete left and right surround channels are merged into single mono surround (for Dolby Surround), or are mixed with the front speakers at reduced volume (for stereo and mono).</li>
+<li>Typically nothing will be sent to the center channel unless it is explicitly addressed to the center mixbin, or if 5-channel HRTF panning is used.</li>
+</ul>
+
+<p>While 3D voices require mono source material, stereo and multichannel waves can be mixed down and 3D positioned. The Xbox Audio Creation Tool does this automatically when non-mono sounds are played onto a 3D sound source.</p>
+
+<p>For more information on multichannel authoring and implementation, see the white paper entitled <a href="cd_aud_wp_surround.htm">The Surround Experience: Authoring for and Implementing Multichannel Audio Playback</a>.</p>
+
+<h3>Looping Waves</h3>
+
+<p>DirectSound supports a single pair of loop points within a wave, so the entire buffer does not need to be looped. Looping on "one-shot" (in memory) waves is performed in hardware. Four pieces of information must be supplied:</p>
+
+<ul>
+<li>Sample start</li>
+<li>Loop start</li>
+<li>Loop end</li>
+<li>Sample end</li>
+</ul>
+
+<p>These pieces of information must also be specified for DLS-2 waves (if DirectMusic is used). Note that the use of a release phase upon wave stop will require a non-zero release amplitude envelope. This can be set programmatically using <b>IDirectSoundBuffer8::SetEG</b>, or by a content author in the XACT authoring tool with an Amplitude Envelope event.</p>
+<p>Sample-accurate looping is guaranteed for PCM waves on any boundary. ADPCM waves require 64-sample (36 byte for mono; 72 byte for stereo) boundaries for loop points. Sample accuracy cannot be guaranteed for WMA waves.</p>
+
+<h2>XACT Content for Xbox</h2>
+
+<p>The Xbox Audio Creation Tool can be used to author content even if you choose not to use the XACT engine for playback. There are two file types and three object types to keep in mind: </p>
+
+<ol>
+<li><em>Wave banks (file extension .xwb).</em> Consist of bundled wave data. The authoring tool supports WMA, ADPCM, PCM (8-bit and 16-bit), and AIFF formats. Wavebanks can be used by developers for optimized content streaming and in-memory playback without using the full XACT engine; see the WaveBank and WaveBankStream samples in the XDK for code that demonstrates this. Wave banks can be authored as: <br><br>
+<ul>
+<li><em>In memory.</em> An exact binary image that can be loaded and used with SetBufferData </li>
+<li><em>Streaming.</em> Wave data is placed on sector-aligned boundaries for DVD or hard disk for optimal playback performance. Specific waves within the bank can be:<br><br><ul>
+<li><em>Non-primed.</em> Latency for playback while drive seeks to wave and begins filling buffers for playback. </li>
+<li><em>Primed (zero-latency).</em> he very beginning of the wave is loaded into memory. When the wave is played, the beginning is immediately available and the rest of the wave is streamed in, giving you zero latency (and small memory footprint) access to large amounts of audio data. </li>
+</ul></li>
+</ul></li>
+<li><em>Sound banks (file extension .xsb).</em> Consist of sounds and cues. <b>Sounds</b> specify one or more waves to play against a timeline, possibly with variation, hardware filtering settings, volume, and so on. <b>Cues</b> specify what sound to playback and how it should interact with other sounds on its layer (crossfade, replace, queue, etc.). Cues are the only aspect the programmer generally needs to be aware of&#8212;what sound(s) a cue points to, as well as how those sounds are constructed, is the realm of the content creator. Cues and sounds are kept separate in part to allow for easy in-game auditioning; it's much easier to dynamically point a cue at a new sound than to be changing out content directly accessed by the game on the fly. </li>
+</ol>
+
+<p>For more details on XACT, see <a href="cd_aud_wp_bp_chap9.htm">Chapter 9 of the Audio Best Practices Guide</a>, which focuses on content creation, and <a href="cd_aud_wp_bp_chap10.htm">Chapter 10 of the Audio Best Practices Guide</a>, which looks at XACT and the programmer's role.</p>
+
+<h2>DirectMusic Content for Xbox</h2>
+
+<p>Though the programming interface feature set is much leaner than the Windows APIs, the actual content supported remains mostly intact. Some features (detailed below) have been omitted because they depend on unsupported interfaces and methods (see chapter 1 of this document).</p>
+<h3>DirectMusic Behavior for Xbox System Software</h3>
+
+<p>See <a href="cd_aud_wp_bp_chap4.htm">Chapter 4</a> of the Audio Best Practices Guide for more details on authoring and auditioning DirectMusic content on Xbox hardware.</p>
+
+<p>The following DirectX 8 features are not supported by the DirectMusic library or DirectMusic Producer authoring tool on Xbox:</p>
+
+<ul>
+<li>Effects control using parameter control tracks (effects can be adjusted through code by the programmer)</li>
+<li>Playback of WMA-compressed waves</li>
+<li>Editing of 4.0 or 5.1 waves in DirectMusic Producer for Xbox </li>
+</ul>
+
+<h3>DirectMusic Content Supported on Xbox</h3>
+
+<h4>Track Types</h4>
+
+<p>DirectMusic on Xbox supports most of the DirectMusic track types present in Windows DirectMusic, with several limitations or differences:</p>
+
+<table>
+<tr>
+  <th>Track Type</th>  
+  <th>Description</th>  
+  <th>Limitations/Differences on Xbox</th>
+</TR>
+<TR>  
+ <td>Band Track</TD>
+ <td>Links DLS-2 custom waves to MIDI sequences</TD>
+ <td>No GM.DLS collection supplied with Xbox System Software</TD>
+</TR>
+<TR>  
+ <td>Tempo Track</TD>
+ <td>Provides music tempo information</TD>
+ <td></TD>
+</TR>
+<TR>  
+ <td>Time Signature Track</TD>
+ <td>Provides musical time signature information</TD>
+ <td></TD>
+</TR>
+<TR>  
+ <td>Sequence Track</TD>
+ <td>Basic MIDI sequence</TD>
+ <td></TD>
+</TR>
+<TR>  
+ <td>Wave Track</TD>
+ <td>Time-sequenced, variable wave playback</TD>
+ <td>PCM and ADPCM compression only</TD>
+</TR>
+<TR>  
+ <td>Script Track</TD>
+ <td>Calls script routines</TD>
+ <td>Microsoft&#174; Visual Basic&#174; Scripting Edition not supported; AudioVBScript is supported</TD>
+</TR>
+<TR>  
+ <td>Style Track</TD>
+ <td>Interactive, variable DLS-2 music playback</TD>
+ <td></TD>
+</TR>
+<TR>  
+ <td>Marker Track</TD>
+ <td>Sets marker positions</TD>
+ <td></TD>
+</TR>
+<TR>  
+ <td>Groove Track</TD>
+ <td>Sets style intensity or use embellishments</TD>
+ <td></TD>
+</TR>
+<TR>  
+ <td>Chord Track</TD>
+ <td>Defines a scale and chord over which to play content</TD>
+ <td></TD>
+</TR>
+<TR>  
+ <td>Chordmap Track</TD>
+ <td>Defines chord progression paths to use variably</TD>
+ <td></TD>
+</TR>
+<TR>  
+ <td>Signpost Track</TD>
+ <td>Uses chord from a specific chordmap signpost group</TD>
+ <td></TD>
+</TR>
+<TR>  
+ <td>Mute Track</TD>
+<td>Selectively mutes/remaps performance channel(s)</TD>
+ <td></TD>
+</TR>
+<TR>  
+ <td>Segment Trigger Track</TD>
+ <td>Triggers secondary or primary segments to begin playing</TD>
+ <td></TD>
+</TR>
+<TR>  
+ <td>Lyric Track</TD>
+ <td>Allows placement of text lyrics that tools can intercept and use</TD>
+ <td></TD>
+</TR>
+  </TABLE>		
+  <BR>
+  
+<H4>File Formats</H4>
+
+<P>DirectMusic on Xbox supports a subset of the DirectMusic file types present in Windows DirectMusic.</P>
+
+<table>
+<TR>  
+ <th>File Format (extensions)</th>
+ <th>Description</th>
+ <th>Limitations on Xbox</th>
+</TR>
+<TR>  
+ <td>Chordmap (.cdp/.cdm)</TD>
+ <td>Defines chord progression paths to use variably</TD>
+ <td></TD>
+</TR>
+<TR>  
+ <td>Container (.cop/.con)</TD>
+ <td>Packages up one or more other files for easier delivery and use</TD>
+ <td></TD>
+</TR>
+<TR>  
+ <td>DLS Collection (.dlp/.dls)</TD>
+ <td>Defines DLS-2 custom wavetable instruments</TD>
+ <td>Conditional chunks not supported; ADPCM is only compression format supported</TD>
+</TR>
+<TR>  
+ <td>Script (.spp/.spt)</TD>
+ <td>Routines and variables to communicate between content and application</TD>
+ <td>VBScript not supported (AudioVBScript only)</TD>
+</TR>
+<TR>  
+ <td>Segment (.sgp/.sgt)</TD>
+ <td>Primary playback mechanism, embedded or referenced content</TD>
+ <td>See Track Types list</TD>
+</TR>
+<TR>  
+ <td>Style (.stp/.sty)</TD>
+ <td>Collection of rhythmic and melodic patterns, motifs, and embellishments	</TD>
+ <td></TD>
+</TR>
+<TR>  
+ <td>Wave (.wvp/.wav)</TD>
+ <td>Fixed playback of sampled sound that can be played in a segment</TD>
+ <td>See wave format restrictions in DirectSound section of this chapter; optimized streaming (XACT, DirectSound sample code) not supported</TD>
+</TR>
+  </TABLE>
+  
+<h3>Unsupported DirectMusic Content Formats</h3>  
+
+<p>Xbox does not support the following features:</p>
+
+<ul>
+<li>DirectX Media Objects (DMOs)&#8212;supplanted by hardware effects in the Xbox MCP and Xbox Media Objects. Your developer can author a GP program that uses these effects and route DirectMusic content to such effects paths. See the section Authoring for Hardware DSP Effects (Global Processor of Xbox MCP) for more details.</li>
+<li>DirectX Audio Scripting using VBScript (Xbox supports AudioVBScript only)&#8212;VBScript depends on oleaut32.dll, vbscript.dll, and several other files (~1 MB footprint) not native to Xbox, so it is not supported.</li>
+</ul>
+
+<h4>Track Types</h4>
+
+<table>
+<tr>
+<th>Track Type</th>
+<th>Description</th>
+<th>Reason Omitted</th>
+</TR>
+<TR>  
+ <td>Parameter Control Track</TD>
+ <td>Modifies DMO effect parameters</TD>
+ <td>PC DMO software effects not supported; effects can be manipulated programmatically</TD>
+</TR>
+</TABLE>
+<p>All other track types (in segments) are supported. See table above for limitations.</p>
+<h4>File Formats</h4>
+<p>The following file types are not supported.</p>
+<table>
+<TR>  
+<th>File Format (extensions)</th>  
+ <th>Description</th>  
+ <th>Reason Omitted</th>
+</TR>
+<TR>  
+ <td>Audiopath (.aup/.aud)</TD>
+ <td>Mixes down performance channels, adds audio effects</TD>
+ <td>Use standard or mixbin audiopaths</TD>
+</TR>
+<TR>  
+ <td>Band (.bnp/.bnd)</TD>
+ <td>Separates band (DLS-2 instrument lists) files</TD>
+ <td>Bands in segments provide full feature set</TD>
+</TR>
+<TR>  
+ <td>MIDI (.smf/.mid/.mff/.rmi)</TD>
+ <td>Standard MIDI sequences</TD>
+ <td>Import as segment and add band data (no General MIDI collection supplied by console)</TD>
+</TR>
+<TR>  
+ <td>Template (.tpp/.tpl)</TD>
+ <td>Legacy (DirectX 7) composable segments</TD>
+ <td>Supplanted by segments for DirectX 8</TD>
+</TR>
+<TR>  
+ <td>Toolgraph (.tgp/.tgr)</TD>
+ <td>Real-time effects on MIDI data</TD>
+ <td>Can be accomplished in code via IDirectMusicTool8 interface</TD>
+</TR>
+  </TABLE>
+  
+<h3>Authoring for Hardware DSP Effects (Global Processor of Xbox MCP)</h3>  
+
+<p>GP DSP programs can be authored by a developer or content creator using the DSP Builder tool supplied with the XDK (and available for separate download from Xbox Central). Real-time changes to effect parameters and programs can be auditioned from DSP Builder if your title is compiled using the instrumented XACT library (or from the Audio Console Application). For more details on DSP Builder and DSP Server, see the white paper <a href="cd_aud_wp_authoring.htm">Authoring and Auditioning Effects Programs</a>. To use GP programs with DirectMusic content, use a mixbin audiopath to specify which mixbin(s) a pchannel is sent to. </p>
+
+<p>Note that Xbox hardware effects cannot be effectively simulated using (software) PC DirectX Media Objects. You&#39;ll generally want to experiment with them on the actual Xbox hardware. </p>
+
+<h3>DirectMusic Producer Demo Content</h3>
+
+<p>In a subdirectory of DirectMusic Producer on the XDK download (and also available at <a href="http://msdn.microsoft.com" target="blank">http://msdn.microsoft.com</a>), there is a self-extracting executable containing a sample project called "Demo8." This project highlights some of the many features of DirectMusic and how they are exposed in DirectMusic Producer. Because DirectMusic Producer for Xbox differs somewhat from the PC version, some of the content in Demo8 is not applicable to the Xbox. In particular:</p>
+
+<ul>
+<li>Much of the content uses instruments from the General MIDI DLS collection (GM.dls), which is delivered with Windows operating systems. This content will not work on Xbox without first authoring custom DLS instruments.</li>
+</ul>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

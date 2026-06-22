@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>CreateThread</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="CreateThread">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="CreateThread"/>
+<MSHelp:Keyword Index="F" Term="CreateThread"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_createthread"></A>CreateThread</H1>
+
+<P>The <B>CreateThread</B> function creates a new thread to execute within the title. </P>
+
+<PRE class=syntax><B>HANDLE CreateThread(
+  LPSECURITY_ATTRIBUTES</B><I> lpThreadAttributes</I><B>, </B>// SD
+<B>  DWORD</B><I> dwStackSize</I><B>,                        </B>// initial stack size
+<B>  LPTHREAD_START_ROUTINE</B><I> lpStartAddress</I><B>,    </B>// thread function
+<B>  LPVOID</B><I> lpParameter</I><B>,                       </B>// thread argument
+<B>  DWORD</B><I> dwCreationFlags</I><B>,                    </B>// creation option
+<B>  LPDWORD</B><I> lpThreadId</I>                        // thread identifier
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>lpThreadAttributes</I></DT>
+
+<DD>[in] Ignored; use NULL.
+</DD>
+
+<DT><I>dwStackSize</I></DT>
+
+<DD>[in] Specifies the initial commit size of the stack, in bytes. The system rounds this value to the nearest page. If this value is zero, the default stack size of the title is used.
+
+<p class=note><B><I>Note</I></B>&nbsp;&nbsp;&nbsp;Currently a minimum of 12 KB will be allocated and committed for the thread's stack, even if a smaller size is specified.</p></DD>
+
+<DT><I>lpStartAddress</I></DT>
+
+<DD>[in] Pointer to the application-defined function of type <B>LPTHREAD_START_ROUTINE</B> to be executed by the thread; represents the starting address of the thread. </DD>
+
+<DT><I>lpParameter</I></DT>
+
+<DD>[in] Specifies a single parameter value passed to the thread. </DD>
+
+<DT><I>dwCreationFlags</I></DT>
+
+<DD>[in] Specifies additional flags that control the creation of the thread. If the CREATE_SUSPENDED flag is specified, the thread is created in a suspended state and will not run until the <A HREF="prothred_59no.htm">ResumeThread</A> function is called. If this value is zero, the thread runs immediately after creation. At this time, no other values are supported.</DD>
+
+<DT><I>lpThreadId</I></DT>
+
+<DD>[out] Pointer to a variable that receives the thread identifier. 
+
+<P>If this parameter is NULL, the thread identifier is not returned.</p>
+
+
+
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is a handle to the new thread.</P>
+
+<P>If the function fails, the return value is NULL. To get extended error information, call <A HREF="errors_3uwi.htm">GetLastError</A>.</P>
+
+<P>Note that <B>CreateThread</B> may succeed even if <I>lpStartAddress</I> points to data, code, or is not accessible. If the start address is invalid when the thread runs, an exception occurs and the thread terminates. Thread termination due to a invalid start address is handled as an exception with the title.</P>
+
+<H4>Remarks</H4>
+
+<P>The default stack size for the title can be set with the linker's STACK switch.</P>
+
+<P>The stack size specified (or the default if zero is used) represents the reserved and committed size of the stack. The stack will not grow beyond this size. The end of the stack is protected by an uncommitted page entry. Overflowing the stack results in a stack overflow exception. This stack overflow exception cannot be caught by the title using an exception handler, so the exception will cause the console to freeze.</P>
+
+<P>The stack is used for thread local storage as well as for program stack, so a title that uses many variables declared as '__declspec(thread)' may need to specify a larger stack size.</P>
+
+<P>The number of threads a title can create is limited by available memory.  If you reduce the default stack size, you can create more threads.</P>
+
+<P>The thread execution begins at the function specified by the <I>lpStartAddress</I> parameter. If this function returns, the <B>DWORD</B> return value is used to terminate the thread in an implicit call to the <A HREF="prothred_531g.htm">ExitThread</A> function. Use the <A HREF="prothred_9350.htm">GetExitCodeThread</A> function to get the thread's return value. </P>
+
+<P>The thread is created with a thread priority of THREAD_PRIORITY_NORMAL. Use the <A HREF="prothred_9uk9.htm">GetThreadPriority</A> and <A HREF="prothred_9f5l.htm">SetThreadPriority</A> functions to get and set the priority value of a thread. </P>
+
+<P>When a thread terminates, the thread object attains a signaled state, satisfying any threads that were waiting on the object. </P>
+
+<P>The thread object remains in the system until the thread has terminated and all handles to it have been closed through a call to <A HREF="handobj_289x.htm">CloseHandle</A>. </P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p><H4>See Also</H4>
+<P>
+<a href="xbox_mt_xtl_sll_threads_overview.htm">Thread Overview</A>,
+<a href="xbox_mt_xtl_sll_threads_functions.htm">Thread Functions</A> | 
+<A HREF="handobj_289x.htm">CloseHandle</A>,  <A HREF="prothred_531g.htm">ExitThread</A>,  <A HREF="prothred_9350.htm">GetExitCodeThread</A>,  <A HREF="prothred_9uk9.htm">GetThreadPriority</A>,  <A HREF="prothred_59no.htm">ResumeThread</A>,  <A HREF="prothred_9f5l.htm">SetThreadPriority</A> </P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

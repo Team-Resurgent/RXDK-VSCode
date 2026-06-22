@@ -1,0 +1,108 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>ITitleXHV::MicrophoneRawDataReady</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="F" Term="MicrophoneRawDataReady"/>
+<MSHelp:Keyword Index="K" Term="MicrophoneRawDataReady (ITitleXHV)"/>
+<MSHelp:Keyword Index="K" Term="ITitleXHV::MicrophoneRawDataReady"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+  <MSHelp:Keyword Index="K" Term="VAD (voice activation detection)"/>
+  <MSHelp:Keyword Index="K" Term="XHV_VOICE_FRAMETIME"/>
+  <MSHelp:Keyword Index="F" Term="XHV_VOICE_FRAMETIME"/>
+  <MSHelp:Keyword Index="K" Term="XHV_SAMPLE_RATE"/>
+  <MSHelp:Keyword Index="F" Term="XHV_SAMPLE_RATE"/>
+  <MSHelp:Keyword Index="K" Term="XHV_BYTES_PER_SAMPLE"/>
+  <MSHelp:Keyword Index="F" Term="XHV_BYTES_PER_SAMPLE"/>
+  <MSHelp:Keyword Index="K" Term="XHV_NUMBER_OF_SAMPLES"/>
+  <MSHelp:Keyword Index="F" Term="XHV_NUMBER_OF_SAMPLES"/>
+  <MSHelp:Keyword Index="K" Term="XHV_PCM_FRAMELENGTH"/>
+  <MSHelp:Keyword Index="F" Term="XHV_PCM_FRAMELENGTH"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>ITitleXHV::MicrophoneRawDataReady</h1>
+<p>Title-defined callback called by the XHV engine to submit raw microphone (voice) data to the title before that data is encoded by the engine.  This function is called at DPC level (see <a href="x_mt_softarch_kernel_dpc.htm">Kernel DPC Callbacks</a>).</p><pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>MicrophoneRawDataReady(</b>
+    <b>DWORD</b> <i>dwLocalPort</i><b>,</b>
+    <b>DWORD</b> <i>dwSize</i><b>,</b>
+    <b>VOID</b> *<i>pData</i><b>,</b>
+    <b>BOOL</b> *<i>pVoiceDetected</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+<dt><i>dwLocalPort</i></dt>
+<dd>[in]  Port of the local talker associated with the microphone data callback.</dd>
+<dt><i>dwSize</i></dt>
+<dd>[in]  Size of raw microphone data.</dd>
+<dt><i>pData</i></dt>
+<dd>[in]  Pointer to raw microphone data.</dd>
+<dt><i>pVoiceDetected</i></dt>
+<dd>[out]  Pointer to a variable that receives a <b>BOOL</b> indicating whether the title detected voice in the microphone data.  Ignored unless the title has enabled custom VAD detection (see <a href="ITitleXHV_MicrophoneRawDataReady.htm#remarks">Remarks</a> below).</dd>
+</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>Returns S_OK if successful, an error code otherwise.  A title can return E_NOTIMPL if it does not implement <b>MicrophoneRawDataReady</b>.</p><h4><a name="remarks"></a>Remarks</h4>
+<p>Titles use this callback to process voice data from the microphone before that data is encoded and processed by the XHV engine.  The raw data can be modified by the title as desired (to add voice effects, for example) before returning from the callback function.  This function is called at DPC level, so the normal restrictions for executing at that level apply.</p>
+
+<p>The <i>pVoiceDetected</i> parameter is used by the title to return a custom voice activation detection (VAD) result to the engine to indicate whether voice was detected in the packet.  This custom VAD result is used only if the <b>bCustomVADProvided</b> member of the <a href="XHV_RUNTIME_PARAMS.htm">XHV_RUNTIME_PARAMS</a> structure was set to TRUE when <a href="XHVEngineCreate.htm">XHVEngineCreate</a> was called.  Otherwise, the engine performs its own VAD pass.  If the title has enabled custom VAD detection, it cannot return E_NOTIMPL for <b>MicrophoneRawDataReady</b>.</p>
+
+<p>The following constants, defined in xhv.h, describe the format of raw microphone data.</p>
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>XHV_VOICE_FRAMETIME</td>
+<td>Frame time, in milliseconds.</td>
+</tr>
+<tr>
+<td>XHV_SAMPLE_RATE</td>
+<td>Sample rate, in Hz.</td>
+</tr>
+<tr>
+<td>XHV_BYTES_PER_SAMPLE</td>
+<td>Bytes per sample.</td>
+</tr>
+<tr>
+<td>XHV_NUMBER_OF_SAMPLES</td>
+<td>Number of samples in a frame (XHV_VOICE_FRAMETIME * XHV_SAMPLE_RATE / 1000)</td>
+</tr>
+<tr>
+<td>XHV_PCM_FRAMELENGTH</td>
+<td>Length of a frame, in bytes (XHV_NUMBER_OF_SAMPLES * XHV_BYTES_PER_SAMPLE)</td>
+</tr>
+</table>
+
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xhv.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xvoice.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="x_mt_softarch_kernel_dpc.htm">Kernel DPC Callbacks</a> |
+<a href="IXHVEngine_SetCallbackInterface.htm">IXHVEngine::SetCallbackInterface</a>,
+<a href="XHVEngineCreate.htm">XHVEngineCreate</a>,
+<a href="XHV_RUNTIME_PARAMS.htm">XHV_RUNTIME_PARAMS</a>
+</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

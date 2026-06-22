@@ -1,0 +1,127 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>DmWalkModuleSections</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="CreateFile">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="DmWalkModuleSections"/>
+<MSHelp:Keyword Index="F" Term="DmWalkModuleSections"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<DIV STYLE="display:none;">
+
+</DIV>
+
+
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_createfile"></A>DmWalkModuleSections</H1>
+
+<P class="content">Provides a way to
+examine information about each section of a loaded module. Call
+<b>DmWalkModuleSections</b> repeatedly to iterate over the list of loaded
+sections.</P>
+
+<PRE class=syntax><b>DMHRAPI DmWalkModuleSections(</b>
+  <B>PDM_WALK_MODSECT</B> <I>*ppWalkModSect</I><B>,</B> 
+  <B>LPCSTR</B>           <I>lzModName</I>
+  <B>PDMN_SECTIONLOAD</B> <I>pSecLoad</I>
+  <b>);</b></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+
+<DT><I>ppWalkModSect</I></DT>
+
+<DD>Pointer to a structure that <b>DmWalkModuleSections</b> uses internally to
+    iterate over the list of <a
+    href="xbox_jbh_debugapi_struct_DMN_SECTIONLOAD.htm">DMN_SECTIONLOAD</a>
+    structures. Set <i>ppWalkModSect</i> to NULL on the first call to
+    <B>DmWalkModuleSections</B>; the function allocates memory to store a list
+    of loaded module sections and sets the <i>ppWalkModSect</i> pointer to the address
+    of beginning of that list.</DD>
+
+<DT><I>lzModName</I></DT>
+<DD>Name of the module to walk.</DD>
+
+<DT><I>pSecLoad</I></DT>
+
+<DD>Pointer to a <a
+    href="xbox_jbh_debugapi_struct_DMN_SECTIONLOAD.htm">DMN_SECTIONLOAD</a> structure
+    that contains information about the next loaded module section.</DD>
+
+</DL>
+
+<H4>Return Values</H4>
+
+<P class="content">XBDM_NOERR is returned if the call to <B>DmWalkModuleSections</B> is successful and the end of the list has not been reached. XBDM_ENDOFLIST is returned when the walk is complete. Otherwise, an error value is returned.</P>
+
+
+<H4>Remarks</H4>
+
+<P class="content">If the return is not XBDM_NOERR or XBDM_ENDOFLIST, then an
+error has occurred and the walk should be discontinued. After using
+<b>DmWalkModuleSections</b>, you must free the memory allocated to store the
+list of sections by calling <A
+HREF="xbox_jbh_debugapi_function_dmcloseloadedmodules.htm"><B>DmCloseModuleSections</B></A>,
+passing it the value stored in the <i>ppWalkModSect</i> pointer.</P>
+
+<p class="content">The following example illustrates how to use
+<b>DmWalkModuleSections</b> and <b>DmCloseModuleSections</b> to iterate over the
+list of sections in a loaded module.</p>
+
+
+<pre>
+DMHRAPI error;
+PDM_WALK_MODSECT *ppWalkModSect = NULL;
+DMN_SECTIONLOAD sectLoad;
+
+do
+{
+    error = DmWalkModuleSections(ppWalkModSect, lzModName, &amp;sectLoad);
+
+    // Examine the contents of sectLoad here.
+}
+while (error == XBDM_NOERR);
+
+if (error != XBDM_ENDOFLIST)
+{
+    // Handle error.
+}
+
+DmCloseModuleSections(*ppWalkModSect);
+</pre>
+
+
+<h4>Requirements</h4>
+
+<p class="content">
+<b>Header:</b> Declared in XbDm.h and XboxDbg.h
+<br><b>Import Library:</b> Use XbDm.lib for target system code; and XboxDbg.lib for development system code.
+</p>
+
+<H4>See Also</H4>
+<p class="content">
+<A HREF="xbox_jbh_debugapi_function_dmcloseloadedmodules.htm">DmCloseModuleSections</A>,
+<a href="xbox_jbh_debugapi_struct_DMN_SECTIONLOAD.htm">DMN_SECTIONLOAD</a>
+</p>
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

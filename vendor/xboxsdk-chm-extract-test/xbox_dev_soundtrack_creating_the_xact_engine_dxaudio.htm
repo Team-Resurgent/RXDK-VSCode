@@ -1,0 +1,72 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Creating the XACT Engine</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Creating the XACT Engine"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+  <MSHelp:Keyword Index="K" Term="XACT engine, creating and initializing"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Creating the XACT Engine</h1>
+<p>Before XACT can be used, the XACT engine must be created and initialized. Calling the <a href="xbox_xactenginecreate_dxaudio.htm">XACTEngineCreate</a> function returns a pointer to the engine that can then be used for other XACT functionality. We can control the maximum number of 2D voices, 3D voices, concurrent streams available, and notifications by filling out the <a href="xbox_xactruntimeparameters_dxaudio.htm">XACT_RUNTIME_PARAMETERS</a> structure as a parameter to the <b>XACTEngineCreate</b> function. The example code below shows some initial values used in the <b>XACT_RUNTIME_PARAMETERS</b> structure that may be changed depending upon the particular needs of a given game title.</p>
+<p>Also listed in the example code below are the soundtrack structure and global variables that will be discussed throughout the examples to follow:</p>
+<pre class="clsCode">
+#include &lt;xtl.h&gt;
+#include &lt;assert.h&gt;
+#include &lt;dsstdfx.h&gt;
+#include &lt;xact.h&gt;
+#include &lt;vector&gt;
+
+using namespace std;
+
+struct SOUNDTRACK
+{
+    UINT  uSoundtrackID;                 // Soundtrack's ID
+    UINT  uSongCount;                    // Number of songs in the soundtrack
+    WCHAR strName[MAX_SOUNDTRACK_NAME];  // Name of the soundtrack
+};
+
+IXACTEngine*       g_pXACT = NULL;                 // Pointer to the XACT engine
+BYTE*              g_pbSoundBankData = NULL;       // Pointer to the sound bank data buffer
+PXACTSOUNDBANK     g_pSoundBank = NULL;            // Pointer to the XACT sound bank
+DWORD              g_dwSoundCueIndex = 0;          // Index of the sound cue
+PXACTWMAPLAYLIST   g_pWMAPlaylist = NULL;          // Pointer to the XACT WMA play list
+vector&lt;SOUNDTRACK&gt; g_vSoundtracks;                 // Vector of soundtrack information
+UINT               g_uCurrentSoundtrackIndex = 0;  // Index of the current soundtrack in the soundtrack vector
+HANDLE             g_hGamePad = NULL;              // Handle of the game pad
+XINPUT_STATE       g_XInputLastState = { 0 };      // Last input state of the game pad
+
+void CreateXACTEngine()
+{
+    // Set up runtime parameters struct
+    XACT_RUNTIME_PARAMETERS Params;
+    memset( &amp;Params, 0, sizeof( Params ) );
+    Params.dwMax2DHwVoices = 64;
+    Params.dwMax3DHwVoices = 32;
+    Params.dwMaxConcurrentStreams = 32;
+    Params.dwMaxNotifications = 32;
+
+    // Create the XACT engine
+    HRESULT hr = XACTEngineCreate( &amp;Params, &amp;g_pXACT );
+    assert( SUCCEEDED( hr)  );
+}
+</pre>
+    <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

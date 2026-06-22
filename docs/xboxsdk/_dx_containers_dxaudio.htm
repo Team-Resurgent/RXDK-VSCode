@@ -1,0 +1,77 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Containers</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Containers"/>
+<MSHelp:Keyword Index="F" Term="Containers"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H3><A NAME="_dx_containers_dxaudio"></A>Containers</H3>
+
+<P>Containers are objects representing files that contain various objects. A container file might hold all the data necessary for a performance, including segments, styles, and DLS collections. Container files are typically created in DirectMusic Producer. Containers can also exist within segment and script files.</P>
+
+<P>You load a container like any other object, using <A HREF="_dx_idirectmusicloader8_loadobjectfromfile_dxaudio.htm"><B>IDirectMusicLoader8::LoadObjectFromFile</B></A> or <A HREF="_dx_idirectmusicloader8_getobject_dxaudio.htm"><B>IDirectMusicLoader8::GetObject</B></A>.</P>
+
+<P>The following sample function loads a container, retrieves a segment from it, and returns an <B>IDirectMusicSegment</B> interface. For purposes of demonstration, the container object is created and released within the function; in practice, this should be done only once during the life of the application, to prevent duplication of objects.</P>
+
+<PRE>IDirectMusicSegment* LoadSegmentFromContainer (
+        IDirectMusicLoader8* pLoader, 
+        CHAR* szFileName, 
+        CHAR* szSegmentName )
+ 
+{
+  DMUS_OBJECTDESC objDesc; 
+  IDirectMusicSegment* pSegment = NULL;
+  IUnknown* pUnk = NULL;
+
+// Load the container. 
+  HRESULT hr = pLoader-&gt;LoadObjectFromFile(CLSID_DirectMusicContainer,
+      IID_IUnknown, szFileName, (void**)&amp;pUnk);
+  if (FAILED(hr)) 
+        return NULL;
+ 
+// Describe the segment.
+ 
+  ZeroMemory(&amp;objDesc, sizeof(objDesc));
+  objDesc.dwSize = sizeof(objDesc);
+  objDesc.dwValidData = DMUS_OBJ_CLASS | DMUS_OBJ_NAME;
+  objDesc.guidClass = CLSID_DirectMusicSegment;
+  mbstowcs(objDesc.wszName, szSegmentName, DMUS_MAX_NAME - 1);
+  objDesc.wszName[DMUS_MAX_NAME - 1] = 0;
+ 
+// Load the segment.
+ 
+  hr = pLoader-&gt;GetObject(&amp;objDesc, IID_IDirectMusicSegment, 
+      (void**) &amp;pSegment);
+ 
+// Release the container from the cache and destroy the object.
+
+  if (pUnk)
+  {  
+    IDirectMusicObject *pObject = NULL;
+    pUnk-&gt;QueryInterface(IID_IDirectMusicObject,
+            (void **)&amp;pObject);
+    if (pObject)
+    {
+      pLoader->ReleaseObjectByUnknown((IUnknown *)pObject);
+      pObject->Release();
+    }
+  pUnk-&gt;Release();
+  }
+  if (S_OK != hr) return NULL;
+  return pSegment;
+}
+</PRE>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

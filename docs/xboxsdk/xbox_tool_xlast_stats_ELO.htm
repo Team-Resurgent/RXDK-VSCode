@@ -1,0 +1,112 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>The ELO Rating System</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="The ELO Rating System"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>The ELO Rating System</h1>
+<p>XLAST and the Xbox Title Libraries now support player and team ratings using 
+	the ELO rating system. This system, which is widely used in both online 
+	gaming and traditional games such as chess, was invented by Dr. Arpad Elo in the 
+	early 1960's. The system uses a zero-sum ranking for teams or players. That is, 
+	for a two-player competition, player 1 loses a rating point for every point player 
+	2 gains, and vice versa.</p><p>There are various versions of the ELO rating system. Xbox <i>Live</i> 
+	uses a version in which each player enters the competition with an initial rating. 
+	Each competition event causes the player's rating to rise or fall. Victories over 
+	opponents whose ratings are significantly higher cause the player's rating to go 
+	up more than victories over opponents whose ratings are more comparable to the 
+	player's.</p><h2><a name="IDAHZYK"></a>Calculating the ELO Rating</h2>
+<p>The ELO rating for a pair of players (or teams) is calculated as follows.</p><ul>
+<li><a href="#IDAOZYK">Step 1: Calculate the expected outcome for a player</a></li><li><a href="#IDAZ0YK">Step 2: Determine the outcome type</a></li><li><a href="#IDAJ1YK">Step 3: Calculate the final ELO rating for a player</a></li></ul>
+<h3><a name="IDAOZYK"></a>Step 1: Calculate the expected outcome for a player</h3>
+<p>Given two players in a competition, the expected outcome for player 1 is</p><p><i>ExpectedOutcomeP1</i> =
+			1/<i>RatingsDenominator</i></p><p>where:</p><ul>
+			<li><i>RatingsDenominator</i> = (1 + 
+			<b>exp</b>((<i>CurrentRatingP2</i> &#8722;
+			<i>CurrentRatingP1</i>)/K)</li>
+			
+			<li><i>CurrentRatingP1</i> and <i>CurrentRatingP2</i> are 
+			the current ELO rating scores for players 1 and 2, respectively. If a player 
+			has not yet competed in an event, you simply use the player's initial rating.</li>
+			
+			<li>K is a constant that determines how a difference in player ratings affects 
+			the rating change for a given match.</li> 
+			</ul>
+<p>For player 2, <i>ExpectedOutcomeP2</i> = 1 &#8722;
+			<i>ExpectedOutcomeP1</i>.</p><h3><a name="IDAZ0YK"></a>Step 2: Determine the outcome type</h3>
+<p>The outcome type for a player is a title-specified value between 0 and 1,
+			where 0 is a total loss, 1 is a crushing win, and 0.5 is a tie. The respective 
+			outcome types for players 1 and 2 are <i>OutcomeTypeP1</i> and
+			<i>OutcomeTypeP2</i>, with <i>OutcomeTypeP2</i> = 1 &#8722;
+			<i>OutcomeTypeP1</i>.</p><h3><a name="IDAJ1YK"></a>Step 3: Calculate the final ELO rating for a player</h3>
+<p>Once you have a player's outcome type, you can calculate the final ELO
+			rating using the following formula.</p><p><i>FinalRatingP</i><sub>i</sub> =
+			<i>CurrentRatingP</i><sub>i</sub> +
+			C<sub>Pi</sub> &#0215;
+			C<sub>fPi</sub>
+			&#0215; (<i>OutcomeTypeP</i><sub>i</sub> &#8722;
+			<i>ExpectedOutcomeP</i><sub>i</sub>)</p><p>where:</p><ul>
+			<li><i>i</i> is the current player, either 1 or 2.</li>
+			
+			<li>C<sub>Pi</sub> is the weighting factor for player 1 corresponding 
+			to a given subrange within a range of points in your game's point system. 
+			You can define up to five such subranges for a given range.</li>
+			
+			<li>F<sub>Pi</sub> is a title-specified fraction of C<sub>Pi</sub> that is 
+			used for a specific	ELO score update. </li>
+			
+			</ul>
+<p>If your game has a point range of 0 to 1000, for instance, you might divide 
+			the range into five 200-point subranges, each with its own weighting factor, as 
+			shown in the following table. </p><table>
+				<tr>
+<th>Point Range</th>
+<th>Weighting factor (C)</th>
+</tr>
+				<tr>
+<td>1&#8211;200</td>
+<td>32</td>
+</tr>
+				<tr>
+<td>201&#8211;400</td>
+<td>16</td>
+</tr>			
+				<tr>
+<td>401&#8211;600</td>
+<td>8</td>
+</tr>
+				<tr>
+<td>601&#8211;800</td>
+<td>4</td>
+</tr>
+				<tr>
+<td>801&#8211;1000+<sup>1</sup></td>
+<td>2</td>
+</tr>
+			</table>
+<p><sup>1</sup> Players scoring greater than 1000 points are considered experts.</p><ul>
+      <li>Clients can specify different C<sub>f</sub> values for the same session, so that C<sub>fp1</sub> != C<sub>fp2</sub></li>
+
+      <li>If the client-specified C<sub>f</sub> values are not the same for all players, the C<sub>f</sub> is set to 1 (full weight configured on the server for that bucket), for all players in buckets &gt; 1. </li>
+      </ul>
+<p>For example: A player in bucket 1 plays against a player in bucket 2. The client-specified max weight ratios (C<sub>f</sub>) are different. The player in bucket 1 is allowed his client-specified max weight ratio, but because the C<sub>f</sub> for all players in the game is not the same the player in bucket 2 is forced to the server-set max weight.</p><p>For more information about how to define the subranges and C weighting factors,
+			see <a href="xbox_tool_xlast_stats_leaderboard_prop.htm">Setting Leaderboard Properties</a>.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

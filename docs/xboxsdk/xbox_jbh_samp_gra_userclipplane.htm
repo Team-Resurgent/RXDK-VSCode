@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>UserClipPlane Sample</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="UserClipPlane Sample"/>
+<MSHelp:Keyword Index="F" Term="UserClipPlane Sample"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>UserClipPlane Sample</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<!--****Intro paragraph. Should be a three or four sentence summary of the topic.****-->
+<P class="intro">The UserClipPlane sample demonstrates how to use pixel shaders to implement
+user clip planes.  Using one stage of the pixel shader, four different user clip
+planes can be achieved.  The ClipPlane pixel shader stage operates by 
+discarding the fragment if any of the texture coordinate values are negative
+(or optionally, nonnegative).</P>
+<!--*********************************************************************************-->
+
+<!--****Stock text. Do not change.****-->
+<h3 class="overview">Overview</H3>
+<!--**********************************-->
+
+<!--****Content paragraph. To use multiple paragraphs, copy and paste this tag.****-->
+<P class="content">To get the right values into the texture coordinates, a vertex shader is used with a transform matrix to generate the texture coordinates.  </P>
+
+<P class="content">A plane can be defined by a normal n = (A, B, C) for the plane and a point on the plane p0 = (x0, y0, z0).  A point p1 = (x1, y1, z1) is on the plane if (p1 &#8211 p0) dot n == 0.  If the result is negative instead of 0, p1 is on the negative side of the plane.  If the result is positive, p1 is on the positive side of the plane. So by putting any point into this equation, we can determine which side of the plane it is on.  </P>
+
+<P class="content">We can rewrite the above equation as p1 dot n &#8211 p0 dot n == 0.  </P>
+
+<P class="content">Since we're operating on homogenous vectors, we can define a vector L as (A, B, C, &#8211; (p0 dot n) ).  Then L dot (x1, y1, z1, 1) performs the test above.</P>
+
+<P class="content">We can fit four such vectors into a matrix and transform p1 by this matrix to perform four tests at once.  Unused rows of the matrix can be set to 0.</P>
+
+<!--*******************************************************************************-->
+
+<H3 class="hdcontrols">Controls</H3>
+
+<P class="content">For a complete list of controller mappings, press the <B>Back</B> button on the Xbox controller while this sample is running.</P>
+
+
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

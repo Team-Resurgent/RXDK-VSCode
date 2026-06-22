@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>WIN32_FIND_DATA</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="WIN32_FIND_DATA">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="WIN32_FIND_DATA"/>
+<MSHelp:Keyword Index="F" Term="WIN32_FIND_DATA"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_win32_find_data_str"></A>WIN32_FIND_DATA</H1>
+
+<P>The <B>WIN32_FIND_DATA</B> structure describes a file found by the <A HREF="filesio_4qcl.htm">FindFirstFile</A> or <A HREF="filesio_4ndx.htm">FindNextFile</A> function. </P>
+
+<PRE class=syntax>typedef struct _WIN32_FIND_DATA {
+  DWORD    dwFileAttributes; 
+  FILETIME ftCreationTime; 
+  FILETIME ftLastAccessTime; 
+  FILETIME ftLastWriteTime; 
+  DWORD    nFileSizeHigh; 
+  DWORD    nFileSizeLow; 
+  DWORD    dwReserved0; 
+  DWORD    dwReserved1; 
+  CHAR     cFileName[ MAX_PATH ]; 
+  CHAR     cAlternateFileName[ 14 ]; 
+} WIN32_FIND_DATA, *PWIN32_FIND_DATA; </PRE>
+
+<H4>Members</H4>
+
+<DL>
+<DT><B>dwFileAttributes</B></DT>
+
+<DD>Specifies the file attributes of the file found. This member can be one or more of the following values. 
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=33%>Attribute</TH>
+<TH align=left width=67%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=33%>FILE_ATTRIBUTE_ARCHIVE</TD>
+<TD width=67%>The file or directory is an archive file or directory. Applications use this attribute to mark files for backup or removal.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=33%>FILE_ATTRIBUTE_DIRECTORY</TD>
+<TD width=67%>The handle identifies a directory.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=33%>FILE_ATTRIBUTE_HIDDEN</TD>
+<TD width=67%>The file or directory is hidden. It is not included in an ordinary directory listing.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=33%>FILE_ATTRIBUTE_NORMAL</TD>
+<TD width=67%>The file or directory has no other attributes set. This attribute is valid only if used alone.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=33%>FILE_ATTRIBUTE_READONLY</TD>
+<TD width=67%>The file or directory is read-only. Applications can read the file but cannot write to it or delete it. In the case of a directory, applications cannot delete it.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=33%>FILE_ATTRIBUTE_SYSTEM</TD>
+<TD width=67%>The file or directory is part of the system or is used exclusively by the system software.</TD>
+</TR>
+
+</TABLE><BR>
+
+</DD>
+
+<DT><B>ftCreationTime</B></DT>
+
+<DD>Specifies a <A HREF="time_0fzm.htm">FILETIME</A> structure containing the time the file was created. <A HREF="filesio_4qcl.htm">FindFirstFile</A> and <A HREF="filesio_4ndx.htm">FindNextFile</A> report file times in Coordinated Universal Time (UTC) format. These functions set the <B>FILETIME</B> members to zero if the file system containing the file does not support this time member. You can use the <A HREF="time_2fj9.htm">FileTimeToLocalFileTime</A> function to convert from UTC to local time, and then use the <A HREF="time_8cdh.htm">FileTimeToSystemTime</A> function to convert the local time to a <B>SYSTEMTIME</B> structure containing individual members for the month, day, year, weekday, hour, minute, second, and millisecond. </DD>
+
+<DT><B>ftLastAccessTime</B></DT>
+
+<DD>Specifies a <B>FILETIME</B> structure containing the time that the file was last accessed. The time is in UTC format; the <B>FILETIME</B> members are zero if the file system does not support this time member.</DD>
+
+<DT><B>ftLastWriteTime</B></DT>
+
+<DD>Specifies a <B>FILETIME</B> structure containing the time that the file was last written to. The time is in UTC format; the <B>FILETIME</B> members are zero if the file system does not support this time member.</DD>
+
+<DT><B>nFileSizeHigh</B></DT>
+
+<DD>Specifies the high-order <B>DWORD</B> value of the file size, in bytes. This value is zero unless the file size is greater than <B>MAXDWORD</B>. The size of the file is equal to (<B>nFileSizeHigh</B> <B>*</B> (<B>MAXDWORD</B>+1)) + <B>nFileSizeLow</B>.</DD>
+
+<DT><B>nFileSizeLow</B></DT>
+
+<DD>Specifies the low-order <B>DWORD</B> value of the file size, in bytes.</DD>
+
+<DT><B>dwReserved0</B></DT>
+
+<DD>Reserved for future use.</DD>
+
+<DT><B>dwReserved1</B></DT>
+
+<DD>Reserved for future use.</DD>
+
+<DT><B>cFileName</B></DT>
+
+<DD>A null-terminated string that is the name of the file. </DD>
+
+<DT><B>cAlternateFileName</B></DT>
+
+<DD>Unused; will always be a NULL string. 
+</DD>
+</DL>
+
+<H4>Remarks</H4>
+
+<P>Not all file systems can record creation and last access time and not all file systems record them in the same manner. For example, on FAT, create time has a resolution of 10 milliseconds, write time has a resolution of 2 seconds, and access time has a resolution of 1 day (really, the access date).  Furthermore, FAT records times on disk in local time, while other file systems might record times in UTC.</P>
+
+<h4>Requirements</h4>
+
+<p>
+<B>Header: </B>Declared in Winbase.h; include Xtl.h.<BR>
+</p>
+<H4>See Also</H4>
+<P>
+
+<A HREF="xbox_mt_xtl_sll_file_io_structures.htm">File I/O Structures</A> | 
+<A HREF="time_0fzm.htm">FILETIME</A>,  <A HREF="filesio_4qcl.htm">FindFirstFile</A>, <A HREF="filesio_4ndx.htm">FindNextFile</A>,  <A HREF="time_2fj9.htm">FileTimeToLocalFileTime</A>,  <A HREF="time_8cdh.htm">FileTimeToSystemTime</A></P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

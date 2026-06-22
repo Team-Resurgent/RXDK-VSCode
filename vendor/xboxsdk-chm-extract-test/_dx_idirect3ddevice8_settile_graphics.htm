@@ -1,0 +1,71 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirect3DDevice8::SetTile</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="IDirect3DDevice8::SetTile [C++]">
+<META NAME="MS-HKWD" CONTENT="SetTile (IDirect3DDevice8) [C++]">
+<META NAME="MS-HKWD" CONTENT="SetTile [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="SetTile (IDirect3DDevice8)"/>
+<MSHelp:Keyword Index="K" Term="IDirect3DDevice8::SetTile"/>
+<MSHelp:Keyword Index="F" Term="SetTile"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_idirect3ddevice8_SetTile_graphics"></A>IDirect3DDevice8::SetTile</H1>
+
+<P>Assigns a range of memory to a tile, for efficient render target rendering.  Tiles are GPU views that significantly improve rendering speed for render targets and depth buffers by reorganizing memory to improve bandwidth, and by allowing depth buffers to be compressed.</P>
+
+<PRE class=syntax><b>HRESULT WINAPI SetTile(
+  DWORD</b> <i>Index</i>, 
+  <b>CONST D3DTILE</b> <i>*pTile</i>
+<b>);</b>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>Index</I></DT>
+
+<DD>[in] <i>Index</i> is the zero-based index of the tile to be used. There are a total of D3DTILE_MAXTILES (8) tiles available.  Tiles 0 and 1 are reserved by Direct3D for the primary render target and primary depth buffer.</DD>
+
+<DT><I>pTile</I></DT>
+
+<DD>[in] Pointer to a <A HREF="_dx_d3dtile_graphics.htm">D3DTILE</A> structure, describing the new tile. If <i>pTile</i> is NULL, or if <i>pTile-&gt;pMemory</i> is NULL, the tile is disabled.  If <i>pTile</i> is non-NULL and <i>pTile-&gt;pMemory</i> is non-NULL, the tile is enabled and configured according to the <b>D3DTILE</b> description.  A tile must be disabled before it can be re-enabled.
+</DD>
+
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the method succeeds, the return value is S_OK.</P>
+
+<h4>Remarks</h4>
+
+<p>This function is intended for use only with surfaces created in contiguous memory via <a href="xbox_dxg_D3D_AllocContiguousMemory.html">D3D_AllocContiguousMemory</A> and registered with Direct3D via <a href="xbox_dxg_IDirect3DResource8_Register.htm">IDirect3DResource8::Register</A>. Tiles have strict alignment and pitch requirements.  Note that multiple surfaces may share the same tile, so long as the same pitch is used for each</p>
+
+<p><b>IDirect3DDevice8::SetTile</b> is not synchronized to the push-buffer, and so always takes effect immediately at the time of the function execution.  Consequently, it is the caller's responsibility to ensure that the GPU is no longer referencing tiled memory when the corresponding tile is either enabled or disabled. This may be done via synchronization means such as <a href="xbox_dxg_IDirect3DDevice8_BlockUntilIdle.htm">IDirect3DDevice8::BlockUntilIdle</A> or <a href="xbox_dxg_IDirect3DDevice8_IsBusy.htm">IDirect3DDevice8::IsBusy</A>.</p>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in D3d8.h.<BR>
+<B>&nbsp;&nbsp;Import Library:</B> Use D3d8.lib.</P>
+
+<h4>See Also</h4>
+
+<p><a href="_dx_d3dtile_graphics.htm">D3DTILE</A>, <a href="_dx_idirect3ddevice8_gettile_graphics.htm">IDirect3DDevice8::GetTile</A></p>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

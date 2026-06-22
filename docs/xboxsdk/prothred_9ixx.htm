@@ -1,0 +1,161 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Using Thread Local Storage</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Using Thread Local Storage"/>
+<MSHelp:Keyword Index="F" Term="Using Thread Local Storage"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR></TR>
+</TABLE>
+<!--**********************************-->
+
+<H3><A NAME="_win32_using_thread_local_storage"></A>Using Thread Local Storage</H3>
+
+<P>Thread local storage (TLS) enables multiple threads to use an index allocated by the <A HREF="prothred_986b.htm"><B>TlsAlloc</B></A> function to store and retrieve a value that is local to the thread. In this example, an index is allocated when the title starts. When each thread starts, it allocates a block of dynamic memory and stores a pointer to this memory at the TLS index. The TLS index is used by the locally defined <CODE>CommonFunc</CODE> function to access the data local to the calling thread. In this case, the data is a text string identifying the thread.  Before each thread terminates, it releases its dynamic memory. </P>
+
+<PRE>
+//------------------------------------------------------------------------------ 
+// tls.cpp
+//
+// Simple example that demonstrates the use of thread local storage.
+// 
+//------------------------------------------------------------------------------ 
+
+#undef UNICODE
+#undef _UNICODE
+
+#include &lt;xtl.h&gt;
+
+
+// Number of threads to create. 
+#define THREADCOUNT 4 
+
+// Global TLS index to use.
+DWORD g_dwTlsIndex; 
+ 
+
+//
+// Error reporting function.
+//
+DWORD DoError( LPTSTR ptszMessage )
+{
+    TCHAR tszBuf[50];
+
+    wsprintf( tszBuf, TEXT(" failed, error: %u.\r\n"), GetLastError() );
+    OutputDebugString( ptszMessage );
+    OutputDebugString( tszBuf );
+    return 0;
+}
+
+
+//
+// Example function that uses thread local variables.
+// 
+void CommonFunc( void ) 
+{ 
+    LPTSTR ptszText; 
+
+
+    // Retrieve the data pointer for the current thread. 
+    ptszText = (LPTSTR)TlsGetValue( g_dwTlsIndex ); 
+
+    // Print out the string.
+    if( ptszText ) {
+        OutputDebugString( ptszText );
+    } else {
+        if( NO_ERROR != GetLastError() ) {
+            DoError( TEXT("TlsGetValue") );
+        }
+    }
+
+    return;  
+} 
+
+
+//
+// The thread entry point (thread function).
+// 
+DWORD WINAPI ThreadFunc( LPVOID pvParam ) 
+{ 
+    LPTSTR ptszText;
+
+
+    // Alloc the data for this thread.
+    ptszText = (LPTSTR)HeapAlloc( GetProcessHeap(), 0, 50 * sizeof(TCHAR) );
+    wsprintf( ptszText, TEXT("Thread number: %d.\r\n"), (int)pvParam );
+
+    // Set this thread's value at the TLS index.
+    if( !TlsSetValue( g_dwTlsIndex, ptszText ) ) { 
+        DoError( TEXT("TlsSetValue") );
+    }
+
+    // Perform processing for this thread.
+    CommonFunc(); 
+ 
+    // Release the dynamic memory before the thread returns. 
+    if( ptszText = (LPTSTR)TlsGetValue( g_dwTlsIndex ) ) { 
+        HeapFree( GetProcessHeap(), 0, ptszText ); 
+    }
+     
+    return 0; 
+} 
+ 
+
+void __cdecl main( void ) 
+{ 
+    DWORD dwThreadId; 
+    HANDLE hThread;
+    int i; 
+ 
+
+    // Allocate a TLS index. 
+    if( (g_dwTlsIndex = TlsAlloc()) != -1 ) {
+ 
+        // Create multiple threads. 
+        for( i = 0; i &lt; THREADCOUNT; i++ ) {
+            hThread = CreateThread(
+                            NULL,
+                            0,
+                            ThreadFunc,
+                            (LPVOID)i,
+                            0,
+                            &amp;dwThreadId );
+            if( INVALID_HANDLE_VALUE != hThread ) {
+                CloseHandle( hThread );
+            } else {
+                DoError( TEXT("CreateThread") );
+            }
+        }
+
+    } else {
+        DoError( TEXT("TlsAlloc") );
+    }
+
+     
+    // Don't return from main!
+    Sleep( INFINITE );
+} 
+</PRE>
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

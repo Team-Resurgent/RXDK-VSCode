@@ -1,0 +1,88 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Tuning Up Your XMV Encoding: Recommendations for WM8EUtil and XMVTool</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Tuning Up Your XMV Encoding: Recommendations for WM8EUtil and XMVTool"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+  <MSHelp:Keyword Index="K" Term="WM8EUtil, tips"/>
+  <MSHelp:Keyword Index="K" Term="XMVTool, tips"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Tuning Up Your XMV Encoding: Recommendations for WM8EUtil and XMVTool</h1>
+<p><i>By Gus Apostol and Mark Mansur, Xbox Advanced Technology Group</i></p><p>Video compression comprises both science and art. The science part is that you know what numbers (video dimensions, frame rate, audio quality, and so on) you want to start with and the restrictions (bit rate, size of final video, and so on) that you have to follow to produce a final result. The art part is to make the final product look and sound good within the constraints of the system. This paper will help you with the science part. You will have to determine whether the your video looks good, or good enough.</p><p>Keep in mind that, in general, one set of encoding options that result in a good final video compression may not work on another video. The process of video encoding requires you to:</p><ol>
+<li>Encode.</li>
+<li>View the output.</li>
+<li>If the output isn't satisfactory, change encoding options and go back to 1.</li>
+</ol>
+<p>Xbox Media Video (XMV) is not an encoded video format. It is just a Windows Media Video (WMV) file with the data reordered for performance on the Microsoft&reg; Xbox&reg; video game system. All encoding is done when going from raw video (AVI) to WMV. WMV encoding was not designed for full motion video. It was designed for streaming video over the Internet, with bandwidth as low as a 56-KB line. Keep this in mind when your XMV video does not look as good as MPEG2.</p><h2><a name="IDAHBEV"></a>AVI Recommendations</h2>
+<p>For capturing motion, enable vertical lock to eliminate tearing. For capturing stills, enable antialiasing. We recommend exporting the video and audio separately and adding them later during the WMV to XMV conversion stage (see Step 6 in the <a href="prog_wp_tuneupencoding.htm#settings">XMVTool Tips and Recommended Settings</a> section, following). The following are a few setting recommendations:</p><ul>
+<li>Size: 720&#0215;480 pixels, unless the content is already 640&#0215;480</li>
+<li>Pixel ratio: 1.0, square</li>
+<li>Frames 29.97 with none dropped</li>
+<li>Interlaced</li>
+<li>24 bit, no alpha channel</li> 
+<li>No audio compression</li>
+</ul>
+<p>If resizing or deinterlacing is required, you can perform it using the tool of your choice. For resizing, choose a resolution of 640&#0215;480 and a precise bicubic filter, if available. Make sure the AVI output is uncompressed to retain full quality. Using a compressed format reduces the final XMV quality.</p><h2><a name="IDAICEV"></a>WM8EUtil Tips and Recommended Settings</h2>
+<p>In working with converting AVI to WMV for performance and quality, we can make some recommendations as a starting point. The following settings for the Windows Media Encoding Utility (WM8EUtil) tool have worked well for our tested content:</p>
+<pre class="clsCode">
+wm8eutil -input &lt;avi file&gt; -output &lt;wmv file&gt; -v_mode 1 -v_bitrate 1600000 -v_keydist 4 -v_buffer 10000 -v_quality 97
+</pre>
+    <p>or, for slightly higher quality:</p>
+<pre class="clsCode">
+wm8eutil -input &lt;file&gt;.avi -output &lt;file&gt;.wmv -v_mode 0 -v_bitrate 2300000 -v_keydist 3 -v_buffer 5000 -v_quality 100 -a_setting 0
+</pre>
+    <p>Notice, from the example above, that the bit rate is 2.3 megabits per second (Mbps). This rate is for streaming from a hard drive. It's nearly impossible to achieve this rate on a DVD.</p><p>WM8EUtil has two constant bit rate (CBR) and two variable bit rate (VBR) mode settings. If you require streaming, use the setting <b>-v_mode 1</b> as it produces a better encoding with two passes, versus the one pass of <b>-v_mode 0</b>. The first VBR mode is <b>-v_mode 2</b>, which is quality-based; it uses the <b>-v_quality</b> argument to select how much compression to do and uses whatever bit rate is needed based on compression requirements. The other mode is <b>-v_mode 3</b>, which is bit rate&#8211;based. This mode uses the contents of the <b>-v_bitrate</b> argument to select how much compression to do. So, for example, you might use either <b>-v_mode 3</b> <b>-v_quality 100</b> or <b>-v_mode 2</b> <b>-v_bitrate 75000000</b>.</p><h2><a name="settings"></a>XMVTool Tips and Recommended Settings</h2>
+<p>In working with tuning XMV file playback for performance and quality, we have found that it is not an exact science and requires quite a bit of tweaking for each individual scenario. We can, however, make some recommendations as a starting point.</p><ol>
+<li>XMV videos look quite a bit smoother when rendered at 60 frames per second (fps). If you can spare the bandwidth and you can generate the art at 60 fps, you will want to try this.</li>
+<li>Try to encode the video with <b>-v_mode 2</b> and <b>-v_quality 100</b>, which tells Xbox Media Video Tool (XMVTool) to produce a video based on the highest quality setting. XMVTool spits out what the average bit rate is after it is finished. This rate will most likely be too high, so you will need to lower the bit rate for hard drive or DVD streaming.</li>
+<li>The video data rate should not be too high. Most Xbox systems cannot play back Bink videos at a rate higher than 1.3 Mbps, let alone XMV files. We can only guarantee streaming at 1.0 Mbps on all different DVD drives. However, you can get away with larger values, up to 1.6&#8211;1.8 Mbps. As a starting point, try setting the bit rate argument as follows: <b>-v_bitrate 1300000</b></li>
+<li>Try to up the buffer time in the XMVTool. We try to buffer enough audio to prevent it from dropping out if a frame takes too long to decode. Normally, when you get audio clipping it means that you are bumping into some kind of reading problem. The problem is usually that you do not have enough bandwidth to read the video off the disk or something related to that. If you are playing video off a DVD, try to play it off the hard disk to see if the problem goes away. You can also try moving the movie to an outer track on the DVD to eliminate the problem.</li>
+<li>Determine how often you are calling the <a href="xmvdecoder_getnextframe_media.htm">GetNextFrame</a> function. Once per field (that is, 50 or 60 times a second) is ideal. Calling once per field does the same amount of work but reduces the chance of any audio dropping out.</li>
+<li>Take your audio directly from the AVI file instead of sending it through the WMV decoder. Doing so causes XMVTool to steal the audio from the AVI file and avoid an unnecessary compression/decompression cycle. You can encode the video as normal, but the XMVTool command line should look like this:</li>
+
+<pre class="clsCode">
+xmvtool -a mymovie.avi -v mymovie.wmv -o mymovie.xmv
+</pre>
+    
+<li>To encode Dolby&reg; Digital 5.1 audio into XMV:</li>
+<ul>
+<li>Use the Wavmerge.exe utility in the Xbox Development Kit (XDK) to create a 5.1 .wav file by bundling six mono .wav files into a single 5.1 audio stream with pulse code modulation (PCM).</li>
+<li>Compress stereo pairs&#8212;fronts, rears, and center plus Low Frequency Encoding (LFE)&#8212;into ADPCM and feed these into XMVTool, as follows:</li>
+
+<pre class="clsCode">
+xmvtool -v VideoSource.wmv -a AudioSourceLR.wav -a AudioSourceCLFE.wav
+	-a AudioSourceLSRS.wav -o MyVideo.xmv
+</pre>
+    
+<li>You can use the <a href="xmvdecoder_getaudiodescriptor_media.htm">XMVDecoder::GetAudioDescriptor</a> method to determine in which format the audio is encoded.</li>
+</ul>
+<li>Depending on the nature of your video content, a good deal of tweaking may be required in order to produce the best image quality and playback performance. In order to provide a starting point, here are the arguments that have yielded the best results with the videos we have tested:</li>
+
+<pre class="clsCode">
+-v_mode 3 -v_bitrate 1500000 -v_buffer 2000 -v_quality 95 -v_keydist 10
+ 
+-v_mode 1 -a_setting 96_44_2 -v_bitrate 1600000 -v_buffer 10000 -v_quality 97 -v_keydist 10
+</pre>
+    
+</ol>
+<h2><a name="IDAWFEV"></a>XMVCompare Sample and XMVEncoder Tool</h2>
+<p>Two tools added in the December 2003 release of the XDK make the process of tuning your videos considerably easier. The XMVCompare sample can be found in your XDK installation directory under Samples\Xbox\Video\XMVCompare\, and the XMVEncoder tool can be found under Tools\Win32\Graphics\XMVEncoder\.</p><p>The XMVCompare sample lets you quickly and easily compare the differences between encoder settings by displaying two videos side by side and seamlessly. Videos are uploaded to your Xbox development kit (or debug kit) into the sample's Media\Videos directory and are then immediately available to the sample for display. Consult the sample Readme.txt file and the sample's Help screen for more information on basic usage. The following illustration shows a typical XMVCompare screen.</p><img src="images/tuneup1.jpg"><p>The XMVEncoder tool makes use of WM8EUtil and XMVTool to make encoding of video files a single-tool, GUI-enabled process. Use of XMVEncoder assumes basic knowledge of WM8EUtil and XMVTool.</p><p>XMVEncoder also integrates use of the XMVCompare sample by uploading freshly encoded videos directly to the sample's video directory and assigning the encoded video to the side of the XMVCompare display specified in the encoding tool. XMVEncoder then plays your original video and your newly encoded video using the XMVCompare sample. Using this process, the effects of changes made during the encoding process using both WM8EUtil and XMVTool are immediately apparent, allowing rapid tweaking and tuning of your videos. The following illustration shows the XMVEncoder interface.</p><img src="images/tuneup2.jpg"><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

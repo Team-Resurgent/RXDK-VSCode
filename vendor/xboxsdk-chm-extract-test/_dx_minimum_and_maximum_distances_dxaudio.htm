@@ -1,0 +1,46 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Minimum and Maximum Distances</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Minimum and Maximum Distances"/>
+<MSHelp:Keyword Index="F" Term="Minimum and Maximum Distances"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H4><A NAME="_dx_minimum_and_maximum_distances_dxaudio"></A>Minimum and Maximum Distances</H4>
+
+<P>As a listener approaches a sound source, the sound gets louder; the volume doubles when the distance is halved. Past a certain point, however, it is not reasonable for the volume to continue to increase. This is the <I>minimum distance</I> for the sound source.</P>
+
+<P>The minimum distance is especially useful when an application must compensate for the difference in absolute volume levels of different sounds. Although a jet engine is much louder than a bee, for practical reasons these sounds must be recorded at similar absolute volumes. An application might use a minimum distance of 100 meters for the jet engine and 2 centimeters for the bee. With these settings, the jet engine would be at half volume when the listener was 200 meters away, but the bee would be at half volume when the listener was 4 centimeters away. </P>
+
+<P>The default minimum distance for a sound buffer, DS3D_DEFAULTMINDISTANCE, is defined as 1 unit, or 1 meter at the default distance factor. Unless you change this value, the sound is at full volume when it is 1 meter away from the listener, half as loud at 2 meters, a quarter as loud at 4 meters, and so on. For most sounds you will probably want to set a larger minimum distance so that the sound does not fade so rapidly as it moves away.</P>
+
+<P>The <I>maximum distance</I> for a sound source is the distance beyond which the sound does not get any quieter. The default maximum distance for a DirectSound 3D buffer (DS3D_DEFAULTMAXDISTANCE) is 1 billion, meaning that in most cases the attenuation will continue to be calculated long after the sound has moved out of hearing range. To avoid unnecessary processing, applications should set a reasonable maximum distance.</P>
+
+<P>The maximum distance can also be used to prevent a sound from becoming inaudible. For example, if you have set the minimum distance for a sound at 100 meters, that sound might become effectively inaudible at 1,000 meters or less. By setting the maximum distance at 800 meters, you ensure that the sound always has at least one-eighth of its maximum volume regardless of the distance.</P>
+
+<P>The following illustration shows how minimum and maximum distance affect the loudness of a jet and a bee at increasing distances.</P>
+
+<P><IMG SRC="images/minmax.gif" ALT="" BORDER=0></P>
+
+<P>An application sets the minimum distance value by using the <A HREF="xbox_jc_idirectsoundbuffer8_setmindistance_dxaudio.htm"><B>IDirectSoundBuffer8::SetMinDistance</B></A> method. Similarly, it can set the maximum distance value by using the <A HREF="xbox_jc_idirectsoundbuffer8_setmaxdistance_dxaudio.htm"><B>IDirectSoundBuffer8::SetMaxDistance</B></A> method.</P>
+
+<P>By default, distance values are expressed in meters. See <A HREF="_dx_distance_factor_dxaudio.htm"><B>Distance Factor</B></A>.</P>
+
+<P>To adjust the effect of distance on volume for all sound buffers, you can change the <A HREF="_dx_rolloff_factor_dxaudio.htm"><B>Rolloff Factor</B></A>.</P>
+
+<H4>Defining Your Own Rolloff Curve</H4>
+
+<P>An application can override the default rolloff calculations for a sound source with a specified curve. This is done by supplying a series of points to the <B>SetRolloffCurve</B> functions for DirectSound buffers and streams. For more information, see <A NAME="xbox_idirectsoundbuffer8_setrolloffcurve_dxaudio.htm"><B>IDirectSoundBuffer8::SetRolloffCurve</B></A> and <A NAME="xbox_idirectsoundstream_setrolloffcurve_dxaudio.htm"><B>IDirectSoundStream::SetRolloffCurve</B></A>.</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

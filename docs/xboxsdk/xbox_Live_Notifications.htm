@@ -1,0 +1,88 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Notifications and State Information</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Notifications and State Information"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Notifications and State Information</h1>
+<p>The notifications service is used to notify titles of real-time events. The list of possible events is currently restricted to friend requests and game invitations, but the service might be extended in the future to support a wider variety of notifications. The notification system is designed primarily for service-to-Xbox communication. It is not expected to support any form of real-time messaging.</p><p>Notifications are an automatic part of the underlying network traffic between the Xbox secure network stack and the Xbox <i>Live</i> service. On the client Xbox, incoming notifications are queued by the low-level network stack and are retrieved by the title code with the <b>XOnlineNotification</b> family of functions.</p><p>None of the notification functions require an <a href="XOnlineFriendsStartup.htm">XOnlineFriendsStartup</a> task or <a href="XOnlineFriendsEnumerate.htm">XOnlineFriendsEnumerate</a> task to be active.</p><table>
+<tr>
+<th>Function</th>
+<th>Description</th>
+<th>Memory Use</th>
+</tr>
+<tr>
+<td><a href="XOnlineGetNotification.htm">XOnlineGetNotification</a></td> 
+<td>Access notification information.</td> 
+<td>No</td>
+</tr>
+<tr>
+<td> <a href="XOnlineNotificationSetState.htm">XOnlineNotificationSetState</a></td> 
+<td>Sets presence information for a specified player.</td> 
+<td>No</td>
+</tr>
+</table>
+<ul>
+<li><a href="#IDA0REV">Notifications</a></li><li><a href="#IDAAVEV">Presence Information</a></li></ul>
+<h2><a name="IDA0REV"></a>Notifications</h2>
+<p>The notifications can be interpreted by the title by means of the <a href="XOnlineGetNotification.htm">XOnlineGetNotification</a> or <a href="XOnlineGetNotificationEx.htm">XOnlineGetNotificationEx</a> functions, which allow Boolean conditions to be checked.  This check is fast, does not generate any network traffic, and depends only on the <a href="XOnlineLogon.htm">XOnlineLogon</a> task handle being open. Hence, it is practical to use during gameplay.</p><p>New titles should use <b>XOnlineGetNotificationEx</b> rather than <a href="XOnlineGetNotification.htm">XOnlineGetNotification</a>. <b>XOnlineGetNotificationEx</b> provides access to notifications for new features such as teams. When a message comes in, <b>XOnlineGetNotificationEx</b> passes the notification type, ID, and some flags through the <a href="XONLINE_NOTIFICATION_EX_INFO.htm">XONLINE_NOTIFICATION_EX_INFO</a> structure pointed to by the <i>pNotificationInfo</i> parameter. If you want your title to take action on the notification or get more information, have it call one of the <b>XOnlineMessage</b> family of functions.</p><p>If there are more notifications, <b>XOnlineGetNotificationEx</b> sends back  XONLINE_NOTIFICATION_STATE_FLAG_MORE_ITEMS through the <i>pdwStateFlags</i> parameter. At that point, your title should call <b>XOnlineGetNotificationEx</b> again to retrieve the remaining notifications.  Because the notification queue is set to a fixed size, it is possible (but unlikely) for it to overflow. If too many notifications occur between calls,  <b>XOnlineGetNotificationEx</b> sets <i>pdwStateFlags</i> to XONLINE_NOTIFICATION_STATE_FLAG_OVERFLOW_ITEMS. In this event, your title should call <a href="XOnlineMessageEnumerate.htm">XOnlineMessageEnumerate</a> to retrieve the current state.</p><p><b>XOnlineGetNotificationEx</b> also enables titles to determine the state of message retrieval.  The logon task completes prior to the full messaging list being available.  The download continues in subsequent logon task continue calls.  Until the specified subscriber's list is ready to use, the <b>XOnlineGetNotificationEx</b> passes back the value XONLINE_NOTIFICATION_STATE_FLAG_PENDING_SYNC through its <i>pdwStateFlags</i> parameter.  The message list is also empty.  When the logon task completes, titles can be sure that an empty list really means the user doesn't have any messages.</p><table>
+<tr>
+<th>Notification Type</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>XONLINE_NOTIFICATION_FRIEND_REQUEST</td> 
+<td>Returns true if any new friend requests have been received from other players since either: 1) the last call to <a href="XOnlineLogon.htm">XOnlineLogon</a>, or 2) the <a href="XOnlineFriendsEnumerate.htm">XOnlineFriendsEnumerate</a> task was last closed. Titles can use this to detect the first new friends request received during gameplay, or to indicate a new friends request is present when displaying a menu.</td>
+</tr>
+<tr>
+<td>XONLINE_NOTIFICATION_GAME_INVITE</td> 
+<td>Returns true if any new game invitations have been received from other players since either: 1) the last call to <a href="XOnlineLogon.htm">XOnlineLogon</a>, or 2) the <a href="XOnlineFriendsEnumerate.htm">XOnlineFriendsEnumerate</a> task was last closed. Titles can use this to detect the first new game invitation received during gameplay, or to indicate a game invitation is present when displaying a menu.</td>
+</tr>
+<tr>
+<td>XONLINE_NOTIFICATION_NEW_GAME_INVITE</td> 
+<td>Returns true if any new game invitation has been received from a friend since the last time <b>XOnlineGetNotificationEx</b> was called. Titles can use this to detect each invitation received throughout gameplay, so the player can be notified by means of a glyph.</td>
+</tr>
+</table>
+<p>Currently, all notifications are only actionable by means of enumerating the friends list.</p><h2><a name="IDAAVEV"></a>Presence Information</h2>
+<p>Player state can be set by means of the <a href="XOnlineNotificationSetState.htm">XOnlineNotificationSetState</a> function. This function does not immediately create any network activity, so it is practical to call during gameplay. The information specified by this function is communicated through the online heartbeat, which is processed by the task created by <a href="XOnlineLogon.htm">XOnlineLogon</a>. Redundant and rapid changes are consolidated throughout the system. Because of this, state information can take several seconds to propagate to a player's friends, and should not be used if more current information is available by means of the current game session. State information is split into three pieces: state flags, session ID, and state data.</p><p>State flags communicate core information about a player's state across all games by means of the friends list.</p><table>
+<tr>
+<th>State Flag</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>XONLINE_FRIENDSTATE_FLAG_ONLINE</td> 
+<td>Indicates if the player should appear online to his or her friends. If this flag is cleared, the player will appear offline to each of his or her friends. The player will appear offline to each of his or her friends unless the player sends an invitation to his or her friends, or accepts an invitation from them. Titles can have a player appear offline at either the player's request or if the player is busy with non-game activity (such as downloading new content).</td>
+</tr>
+<tr>
+<td>XONLINE_FRIENDSTATE_FLAG_PLAYING</td> 
+<td>Indicates if the player is in an active game session (as opposed to being in a lobby or navigating menus, and so on).  Specific interpretation of this state flag is left up to individual titles.</td>
+</tr>
+<tr>
+<td>XONLINE_FRIENDSTATE_FLAG_VOICE</td> 
+<td>Indicates whether the player's voice peripheral is active. This state flag must be clear if the peripheral is inactive or if the player's voice has been suspended by policy.</td>
+</tr>
+<tr>
+<td>XONLINE_FRIENDSTATE_FLAG_JOINABLE</td> 
+<td>Indicates the player's session can be joined by his or her friends without needing an invitation. To avoid lots of friends racing for the same slot, it is recommended that titles set this state flag only if there are a large number of open slots for a game.</td>
+</tr>
+</table>
+<p>The <i>sessionID</i> parameter identifies the matchmaking session the player is currently in. If the player is not in a session, it must be zeroed out. The session ID must be updated when the player enters, creates, re-creates, or exits a game. It is used by the player's friends to determine whether game invitations are still current. Furthermore, it is used in combination with the XONLINE_FRIENDSTATE_FLAG_JOINABLE state flag to communicate which matchmaking session to join.</p><p>Finally, the <i>pbStateData</i> buffer is 8 bytes that titles can use to encode title-specific data. Examples include current score, time remaining in game, character status (for example, surrounded by aliens and about to die), and character location.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

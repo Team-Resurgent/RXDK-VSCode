@@ -1,0 +1,38 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Publisher Common Data Storage Region</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Publisher Common Data Storage Region"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Publisher Common Data Storage Region</h1>
+<p>The publisher common data region stores persistent data and settings accessible to all of a publisher's titles.  A separate common data region exists for each publisher, and all titles belonging to a single publisher can access the data in that publisher's region, to read or modify existing data and to write new data.  </p><p>This region enables many cross-title scenarios, for example: 
+<ul>
+<li>Using a common game engine and storing user preferences that apply across all titles using that engine.</li>
+<li>Transitioning characters and other items from one game to another (even, potentially, from newer games to older games).</li>
+<li>Detecting the number of a particular publisher's titles a gamer owns and giving rewards or bonuses based on that number.</li>
+</ul>
+</p><p>Use this region for cross-title data exchange, not for temporary storage or caching.  This region does not allow the exchange of data between titles belonging to different publishers.</p><p>Data in this region is hidden from the user.  Users are not aware of the data's existence, and they cannot move, copy, or delete the data.  There is no indication in the Xbox Dashboard that the data exists.  The common data region persists as long as any user data storage regions (saved games) or title persistent storage regions exist for any of the publisher's titles.  When a user removes all saved games and all title persistent data for all of the publisher's titles from the console, the system automatically deletes the publisher common data region for that publisher.</p><p>To access the publisher common data region, titles must have an alternate title identifier that represents the data region.  See <a href="x_mt_storage_ov_using_common.htm">Using the Publisher Common Data Region</a>.</p><p>Because potentially all of the publisher's titles can read and use data in the common region, those titles must ensure that code for reading and writing data files is robust and will not fail in a way that will impact any titles that might access the data.  For example, titles should avoid creating different file formats that are not readable by all of the titles.  In cases where a title cannot read the data files for some reason (corruption, unknown formats, and so on), the title should not lose any basic functionality.  At worst, the user may not be able to unlock particular bonus features enabled by the data in the file.  Otherwise, the title should work and all standard features should be accessible.  A problem reading the file should result in the same game behavior as if the extra data was not available at all.</p><p>Within the common data region, titles can organize data, files, and directories as necessary.  There may be restrictions placed on the amount of data that can be stored in the common data region; these restrictions may come in the form of TCRs or checks by the system itself.  Even in the absence of such restrictions, it is expected that a total of no more than 5 MB of data be stored in each publisher's common data region.</p><p>Using the publisher common data region is similar to using <a href="x_mt_storage_ov_using_alternate.htm">Alternate Title Data</a>, but differs as follows:</p><ul>
+<li>The publisher common data region is not tied to a particular title.  The common data region is removed only after all title data for the publisher is removed, whereas a title's persistent data region is removed when the user chooses to do so within the Xbox Dashboard.</li>
+<li>The publisher common data region is not visible to users, and users cannot move, copy, or delete it.</li>
+<li>Unlike the title-persistent and user data storage regions, the publisher common data region does not contain metadata files with image and title information.  Because the Xbox Dashboard displays no UI for the common data region, no such metadata information is necessary.</li>
+</ul>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

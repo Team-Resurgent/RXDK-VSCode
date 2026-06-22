@@ -1,0 +1,50 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Reading Stats from Leaderboards</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Reading Stats from Leaderboards"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Reading Stats from Leaderboards</h1>
+<p>To read stats for one or more players, your title calls the <a href="XOnlineStatRead.htm">XOnlineStatRead</a> and <a href="XOnlineStatReadGetResult.htm">XOnlineStatReadGetResult</a> functions. The <b>XOnlineStatRead</b> function begins the asynchronous task of retrieving statistical information. It passes a handle back to your title through its <i>phTask</i> parameter. To continue work on this task, your title must call the <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> function. When <b>XOnlineTaskContinue</b> indicates that the task is complete, your title calls <b>XOnlineStatReadGetResult</b> to obtain the results of the task. Finally, close the task by calling <a href="XOnlineTaskClose.htm">XOnlineTaskClose</a>.</p><p>The <b>XOnlineStatRead</b> function takes an array of <a href="XONLINE_STAT_SPEC.htm">XONLINE_STAT_SPEC</a> structures that specify the players for whom to obtain stats. The <b>dwLeaderBoardID</b> member of each <b>XONLINE_STAT_SPEC</b> structure specifies the leaderboard from which to obtain the stats. Because the leaderboard is specified on a per-player basis, a single call to <b>XOnlineStatRead</b> can be used to obtain stats from users on multiple leaderboards. The <b>pStats</b> member of each <b>XONLINE_STAT_SPEC</b> structure points to an array of <a href="XONLINE_STAT.htm">XONLINE_STAT</a> structures that specify which stats to retrieve.</p><p>Use the <b>XONLINE_STAT</b> structures to specify both title-defined stats and service-defined stats such as rating, rank, and nickname. Because the stats to retrieve are specified on a per-player basis, a different set of stats can be obtained for each player. <b>XOnlineStatRead</b> creates an asynchronous task to retrieve the stats from the stats service. When this task completes, call <a href="XOnlineStatReadGetResult.htm">XOnlineStatReadGetResult</a> to obtain the stats. The title must pass <b>XOnlineStatReadGetResult</b> the same set of <b>XONLINE_STAT_SPEC</b> and <b>XONLINE_STAT</b> structures that the title passed to <b>XOnlineStatRead</b>.</p><p>The <a href="XOnlineStatLeaderEnumerate.htm">XOnlineStatLeaderEnumerate</a> and <a href="XOnlineStatLeaderEnumerateGetResults.htm">XOnlineStatLeaderEnumerateGetResults</a> functions retrieve an ordered contiguous listing of players from a specified leaderboard. As with <b>XOnlineStatRead</b> and <b>XOnlineStatReadGetResult</b>, your program must call <b>XOnlineTaskContinue</b> and <b>XOnlineTaskClose</b> to perform this task. The listing retrieved by <a href="XOnlineStatLeaderEnumerate.htm">XOnlineStatLeaderEnumerate</a> and <b>XOnlineStatLeaderEnumerateGetResults</b>is sorted by player ranking. Unlike the listing from the <b>XOnlineStatRead</b> and <b>XOnlineStatReadGetResult</b>functions, the <b>XOnlineStatLeaderEnumerate</b> and <b>XOnlineStatLeaderEnumerateGetResults</b> functions retrieve players and their stats from only a single leaderboard per call. Also, the set of stats retrieved is the same for each player.</p><p>
+                The <i>dwPageSize</i> parameter for <a href="XOnlineStatLeaderEnumerate.htm">XOnlineStatLeaderEnumerate</a> 
+                specifies the number of players to retrieve. The title can specify which players to 
+                retrieve in one of two ways. The first is to specify the leaderboard entry at 
+                which to begin the enumeration. Specify the entry in the <i>dwPageStart</i> 
+                parameter for <b>XOnlineStatLeaderEnumerate</b>. For example, to start 
+                the enumeration at the top of the leaderboard, specify a value of one. A second 
+                way to specify the players to retrieve is to specify a player who should be located 
+                in the middle of the list. Specify the player by passing the <a href="xuid.htm">XUID</a> 
+                structure for the player as the <i>pxuidPagePivot</i> parameter. 
+				<b>XOnlineStatLeaderEnumerate</b> 
+                attempts to retrieve an equal number of players above and below the specified 
+                pivot player. A title can request no more than 100 players with one invocation of 
+				<b>XOnlineStatLeaderEnumerate</b>.</p><p>
+                The <a href="XOnlineStatLeaderEnumerateGetResults.htm">XOnlineStatLeaderEnumerateGetResults</a> function retrieves the 
+                leaderboard entries requested by <a href="XOnlineStatLeaderEnumerate.htm">XOnlineStatLeaderEnumerate</a>. 
+				The <i>pUsers</i> 
+                parameter points to a buffer that receives an array of <a href="XONLINE_STAT_USER.htm">XONLINE_STAT_USER</a> 
+                structures that correspond to the players retrieved. The <i>pStats</i> 
+                parameter points to a buffer that receives an array of <b>XONLINE_STAT</b> 
+                structures containing the stats for these players. The <i>pdwReturnedResults</i> 
+                parameter receives the number of players retrieved, and the <i>pdwLeaderboardSize</i> 
+                parameter receives the total number of players listed on the leaderboard.
+            </p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

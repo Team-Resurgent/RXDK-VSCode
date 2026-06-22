@@ -1,0 +1,120 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>listen</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="listen">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="listen"/>
+<MSHelp:Keyword Index="F" Term="listen"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="xbox_listen_winsock"></A>listen</H1>
+
+<P>Places a socket in a state where it is listening for an incoming connection.</P>
+
+<PRE class=syntax><B>int listen(
+  SOCKET</B><I> s</I>,<B>    </B>
+<B>  int</B><I> backlog  </I>
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>s</I></DT>
+
+<DD>[in] Descriptor identifying a bound, unconnected socket.</DD>
+
+<DT><I>backlog</I></DT>
+
+<DD>[in] Maximum length of the queue of pending connections. If set to SOMAXCONN, the underlying service provider responsible for socket <I>s</I> will set the backlog to a maximum reasonable value. There is no standard provision to obtain the actual backlog value, but Xbox Winsock has a backlog range of from 1 to 5 pending connections.
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If no error occurs, <B>listen</B> returns zero. Otherwise, a value of SOCKET_ERROR is returned, and a specific error code can be retrieved by calling <A HREF="xbox_wsagetlasterror_winsock.htm">WSAGetLastError</A>.</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=41%>Error code</TH>
+<TH align=left width=59%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>WSANOTINITIALISED</TD>
+<TD width=59%>A successful <A HREF="xbox_wsastartup_winsock.htm">WSAStartup</A> call must occur before using this function.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>WSAEINPROGRESS</TD>
+<TD width=59%>A blocking call is in progress.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>WSAEINVAL</TD>
+<TD width=59%>The socket has not been bound with <A HREF="xbox_bind_winsock.htm">bind</A>.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>WSAEISCONN</TD>
+<TD width=59%>The socket is already connected.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>WSAENOBUFS</TD>
+<TD width=59%>No buffer space is available.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>WSAENOTSOCK</TD>
+<TD width=59%>The descriptor is not a socket.</TD>
+</TR>
+
+</TABLE><BR>
+
+<H4>Remarks</H4>
+
+<P>To accept connections, a socket is first created with the <A HREF="xbox_socket_winsock.htm">socket</A> function and bound to a local address with the <A HREF="xbox_bind_winsock.htm">bind</A> function, a backlog for incoming connections is specified with <B>listen</B>, and then the connections are accepted with the <A HREF="xbox_accept_winsock.htm">accept</A> function. Sockets that are connection oriented, those of type <B>SOCK_STREAM</B> for example, are used with <B>listen</B>. The socket <I>s</I> is put into passive mode where incoming connection requests are acknowledged and queued pending acceptance by the process.</P>
+
+<P>The <B>listen</B> function is typically used by servers that can have more than one connection request at a time. If a connection request arrives and the queue is full, the client will receive an error with an indication of <A HREF="xbox_winsock_error_codes_winsock.htm#_win32_wsaeconnrefused_2">WSAECONNREFUSED</A>.</P>
+
+<P>If there are no available socket descriptors, <B>listen</B> attempts to continue to function. If descriptors become available, a later call to <B>listen</B> or <B>accept</B> will refill the queue to the current or most recent backlog, if possible, and resume listening for incoming connections.</P>
+
+<P>A title can call <B>listen</B> more than once on the same socket. This has the effect of updating the current backlog for the listening socket. Should there be more pending connections than the new backlog value, the excess pending connections will be reset and dropped.</P>
+
+<H4>Compatibility</H4>
+
+<P>The <I>backlog</I> parameter is limited (silently) to a reasonable value as determined by the underlying service provider. Illegal values are replaced by the nearest legal value. There is no standard provision to find out the actual backlog value, but Xbox Winsock has a backlog range of from 1 to 5 pending connections.</P>
+
+<H4>Requirements</H4>
+<p>
+<b>Header: </b>Declared in winsockx.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xnet.lib for titles that only support system link play, XOnline.lib for titles that support online play. Use the secure versions of the library file (Xnets.lib or XOnlines.lib) for final testing.
+</p>
+
+
+<H4>See Also</H4>
+
+<P>
+<a href="xbox_winsock_overview_winsock.htm">Winsock Overview</A>,
+<a href="xbox_winsock_functions_winsock.htm">Winsock Functions</A> |
+  <A HREF="xbox_accept_winsock.htm">accept</A>, <A HREF="xbox_connect_winsock.htm">connect</A>, <A HREF="xbox_socket_winsock.htm">socket</A> </P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

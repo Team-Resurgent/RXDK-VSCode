@@ -1,0 +1,263 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>PSRGBOutputs[0-7] and PSAlphaOutputs[0-7]</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="PSRGBOutputs[0-7] and PSAlphaOutputs[0-7]"/>
+<MSHelp:Keyword Index="F" Term="PSRGBOutputs[0-7] and PSAlphaOutputs[0-7]"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1><A NAME=""></A>PSRGBOutputs[0-7] and PSAlphaOutputs[0-7]</H1>
+<!--***********************************************************-->
+
+<p>The <b>PSRGBOutputs[0-7]</b> and <b>PSAlphaOutputs[0-7]</b> fields specify the outputs for the RGB and alpha portions of each combiner stage. The <b>PS_COMBINEROUTPUTS(</b><i>ab</i>,<i>cd</i>,<i>mux_sum</i>,<i>flags</i><b>)</b> macro can be used to specify the three outputs as well as some additional flags to set the output mapping and other options. The macro is defined as below:</p>
+
+<a name="ps_combineroutputs"></a><pre class=syntax>#define PS_COMBINEROUTPUTS(ab,cd,mux_sum,flags) (((flags)&lt;&lt;12)|((mux_sum)&lt;&lt;8)|((ab)&lt;&lt;4)|(cd))</pre>
+
+<p>The <I>ab,</I> <I>cd,</I> and <I>mux_sum</I> parameters are the <a href="#destination_register"><b>destination registers</b></a> for the outputs referred to as d0, d1, and d2. The <a href="#flags"><b><I>flags</I></b></a> parameter is used to specify various output modifiers.</p>
+
+<a name="destination_register"></a><h4>Destination Registers</h4>
+
+<p>The following registers are valid destination registers:</p>
+
+<dl>
+<dt><a name="ps_register_discard"></a>PS_REGISTER_DISCARD</dt>
+
+<dd>Discard the result. This register may be specified multiple times in each combiner stage.</dd>
+
+<dt><a name="ps_register_vo"></a>PS_REGISTER_V0</dt>
+
+<dd>Fragment diffuse color.</dd>
+
+<dt><a name="ps_register_v1">PS_REGISTER_V1</dt>
+
+<dd>Fragment specular color.</dd>
+
+<dt><a name="ps_register_t0">PS_REGISTER_T0</dt>
+
+<dd>Texture 0 output.</dd>
+
+<dt><a name="ps_register_t1">PS_REGISTER_T1</dt>
+
+<dd>Texture 1 output.</dd>
+
+<dt><a name="ps_register_t2">PS_REGISTER_T2</dt>
+
+<dd>Texture 2 output.</dd>
+
+<dt><a name="ps_register_t3">PS_REGISTER_T3</dt>
+
+<dd>Texture 3 output.</dd>
+
+<dt><a name="ps_register_r0">PS_REGISTER_R0</dt>
+
+<dd>Temporary register 0. The output of the pixel shader is written to this register in the final active combiner stage.</dd>
+
+<dt><a name="ps_register_r1">PS_REGISTER_R1</dt>
+
+<dd>Temporary register 1.</dd>
+
+</dl>
+
+<p>The mux_sum output must be set to PS_REGISTER_DISCARD if a dot product operation is selected for the ab or the cd output. </p>
+
+<a name="flags"></a><h4>Flags</h4>
+
+<p>The flags field contains one or more flags logically ORed together. Only one flag should be selected from each flag type.
+<table>
+<tr>
+<th>Flag Type</th>
+<th>Flag Name</th>
+</tr>
+
+<tr>
+<td>Output mapping</td>
+<td><a href="#ps_combineroutput_identity"><b>PS_COMBINEROUTPUT_IDENTITY</b></a></td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+<td><a href="#ps_combineroutput_bias"><b>PS_COMBINEROUTPUT_BIAS</b></a></td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+<td><a href="#ps_combineroutput_shiftleft1"><b>PS_COMBINEROUTPUT_SHIFTLEFT_1</b></a></td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+<td><a href="#ps_combineroutput_shiftleft1_bias"><b>PS_COMBINEROUTPUT_SHIFTLEFT_1_BIAS</b></a></td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+<td><a href="#ps_combineroutput_shiftleft2"><b>PS_COMBINEROUTPUT_SHIFTLEFT_2</b></a></td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+<td><a href="#ps_combineroutput_shiftright1"><b>PS_COMBINEROUTPUT_SHIFTRIGHT_1</b></a></td>
+</tr>
+
+<tr>
+<td>MUX operation</td>
+<td><a href="#ps_combineroutput_ab_cd_sum"><b>PS_COMBINEROUTPUT_AB_CD_SUM</b></a></td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+<td><a href="#ps_combineroutput_ab_cd_mux"><b>PS_COMBINEROUTPUT_AB_CD_MUX</b></a></td>
+</tr>
+
+<tr>
+<td>Function for ab side</td>
+<td><a href="#ps_combineroutput_ab_multiply"><b>PS_COMBINEROUTPUT_AB_MULTIPLY</b></a></td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+<td><a href="#ps_combineroutput_ab_dot_product"><b>PS_COMBINEROUTPUT_AB_DOT_PRODUCT</b></a></td>
+</tr>
+
+<tr>
+<td>Function for cd side</td>
+<td><a href="#ps_combineroutput_cd_multiply"><b>PS_COMBINEROUTPUT_CD_MULTIPLY</b></a></td>
+</tr>
+
+<tr>
+<td>&nbsp;</td>
+<td><a href="#ps_combineroutput_cd_dot_product"><b>PS_COMBINEROUTPUT_CD_DOT_PRODUCT</b></a></td>
+</tr>
+
+<tr>
+<td>Blue to alpha for ab side&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td><a href="#ps_combineroutput_ab_blue_to_alpha"><b>PS_COMBINEROUTPUT_AB_BLUE_TO_ALPHA</b></a></td>
+</tr>
+
+<tr>
+<td>Blue to alpha for cd side</td>
+<td><a href="#ps_combineroutput_cd_blue_to_alpha"><b>PS_COMBINEROUTPUT_CD_BLUE_TO_ALPHA</b></a></td>
+</tr>
+
+</table>
+
+<p>These flags specify the output mapping for all three outputs. In the descriptions, x is the value calculated in the combiner stage and y is the value actually written to the destination register.</p>
+
+<dl>
+
+<dt><a name="ps_combineroutput_identity"></a>PS_COMBINEROUTPUT_IDENTITY</dt>
+
+<dd>y = x</dd>
+
+<dt><a name="ps_combineroutput_bias"></a>PS_COMBINEROUTPUT_BIAS</dt>
+
+<dd>y = x - 0.5</dd>
+
+<dt>P<a name="ps_combineroutput_shiftleft1"></a>S_COMBINEROUTPUT_SHIFTLEFT_1</dt>
+
+<dd>y = x * 2</dd>
+
+<dt><a name="ps_combineroutput_shiftleft1_bias"></a>PS_COMBINEROUTPUT_SHIFTLEFT_1_BIAS</dt>
+
+<dd>y = (x - 0.5) * 2</dd>
+
+<dt><a name="ps_combineroutput_shiftleft2"></a>PS_COMBINEROUTPUT_SHIFTLEFT_2</dt>
+
+<dd>y = x * 4</dd>
+
+<dt><a name="ps_combineroutput_shiftright1"></a>PS_COMBINEROUTPUT_SHIFTRIGHT_1</dt>
+
+<dd>y = x / 2</dd>
+
+</dl>
+
+<p>The following flags specify whether the mux_sum output is the result of an addition or a mux operation:</p>
+
+<dl>
+<dt><a name="ps_combineroutput_ab_cd_sum"></a>PS_COMBINEROUTPUT_AB_CD_SUM</dt>
+
+<dd>mux_sum = ab + cd</dd>
+
+<dt><a name="ps_combineroutput_ab_cd_mux"></a>PS_COMBINEROUTPUT_AB_CD_MUX</dt>
+
+<dd>If the mux bit is set (mux behavior is determined by <a href="_dx_pscombinercount_graphics.htm#ps_combinercount_mux_lsb"><b>PS_COMBINERCOUNT_MUX_LSB</b></a> and <a href="_dx_pscombinercount_graphics.htm#ps_combinercount"><b>PS_COMBINERCOUNT_MUX_MSB</b></a>), mux_sum = cd, otherwise, mux_sum = ab.</dd>
+
+</dl>
+
+<p>Note that if the mux operation is selected, either the least significant bit (lsb) or most significant bit (msb) of r0.a is used to select the output. Register r0 does not have to be an input to the stage.</p>
+
+<p>The following flags specify the operation to perform on the ab side of the RGB combiner. These flags are valid for the RGB portion of the combiner only.</p>
+
+<dl>
+<dt><a name="ps_combineroutput_ab_multiply"></a>PS_COMBINEROUTPUT_AB_MULTIPLY</dt>
+
+<dd>ab = a * b</dd>
+
+<dt><a name="ps_combineroutput_ab_dot_product"></a>PS_COMBINEROUTPUT_AB_DOT_PRODUCT</dt>
+
+<dd>ab = a &middot; b
+
+<p>If this is specified, the third output (mux_sum) is not available and must be set to PS_REGISTER_DISCARD.</p></dd>
+
+</dl>
+
+<p>This group of flags specifies the operation to perform on the cd side of the RGB combiner. These flags are valid for the RGB portion of the combiner only.</p>
+
+<dl>
+<dt><a name="ps_combineroutput_cd_multiply"></a>PS_COMBINEROUTPUT_CD_MULTIPLY</dt>
+
+<dd>cd = c * d</dd>
+
+<dt><a name="ps_combineroutput_cd_dot_product"></a>PS_COMBINEROUTPUT_CD_DOT_PRODUCT</dt>
+
+<dd>cd = c &middot; d
+
+<p>If this is specified, the third output (mux_sum) is not available and must be set to PS_REGISTER_DISCARD.</p></dd>
+
+</dl>
+
+<p>Each of the last two flags may be specified with the other flags.</p>
+
+<dl>
+
+<dt><a name="ps_combineroutput_ab_blue_to_alpha"></a>PS_COMBINEROUTPUT_AB_BLUE_TO_ALPHA</dt>
+
+<dd>Causes the value from the blue channel of the result to be written to the alpha channel of the destination register. This is the only case where the RGB portion of the combiner can write to the alpha channel of the destination register. Note that this does not necessarily mean that the alpha portion output is discarded. The alpha portion could write to the alpha channel of an entirely different destination register.</dd>
+
+<dt><a name="ps_combineroutput_cd_blue_to_alpha"></a>PS_COMBINEROUTPUT_CD_BLUE_TO_ALPHA</dt>
+
+<dd>Causes the value from the blue channel of the result to be written to the alpha channel of the destination register. This is the only case where the RGB portion of the combiner can write to the alpha channel of the destination register. Note that this does not necessarily mean that the alpha portion output is discarded. The alpha portion could write to the alpha channel of an entirely different destination register.</dd>
+
+</dl>
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

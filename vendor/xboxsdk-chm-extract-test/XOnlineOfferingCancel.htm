@@ -1,0 +1,66 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineOfferingCancel</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineOfferingCancel"/>
+<MSHelp:Keyword Index="F" Term="XOnlineOfferingCancel"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineOfferingCancel</h1>
+<p>Creates an asynchronous task to cancel a specified online offering owned by a specified user.</p><pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineOfferingCancel(</b>
+    <b>DWORD</b> <i>dwUserIndex</i><b>,</b>
+    <b>XOFFERING_ID</b> <i>OfferingId</i><b>,</b>
+    <b>HANDLE</b> <i>hWorkEvent</i><b>,</b>
+    <b>PXONLINETASK_HANDLE</b> <i>phTask</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+<dt><i>dwUserIndex</i></dt>
+<dd>[in]  Controller index (zero-based) of the user who will be canceling the offering. The user must have been successfully logged on with a previous call to <a href="XOnlineLogon.htm">XOnlineLogon</a>.</dd>
+            
+<dt><i>OfferingId</i></dt>
+<dd>[in]  Unique identifier associated with the offering to be canceled. This identifier is obtained from an <a href="XONLINEOFFERING_INFO.htm">XONLINEOFFERING_INFO</a> structure when offerings are enumerated.</dd>
+            
+<dt><i>hWorkEvent</i></dt>
+<dd>[in, optional]  Handle to an event that will be signaled when there is work to be done on the cancel task. This parameter can be NULL if no such event is required.</dd>
+            
+<dt><i>phTask</i></dt>
+<dd>[out]  Address of an <b>XONLINETASK_HANDLE</b> that receives the offering cancel task. This task sends the cancellation request to the offering service and receives the response. This handle must be pumped to completion by <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a>. After the task has completed, call <a href="XOnlineTaskClose.htm">XOnlineTaskClose</a> to close the task.</dd>
+            
+</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>Returns S_OK if successful.</p><h4><a name="remarks"></a>Remarks</h4>
+<p><b>XOnlineOfferingCancel</b> returns an asynchronous task which must be pumped with <b>XOnlineTaskContinue</b> until that function returns XONLINETASK_S_SUCCESS, indicating that the cancel request has completed, or until an error code is returned, indicating that the cancel has failed.  The task handle should then be closed with <b>XOnlineTaskClose</b>.  Calling <b>XOnlineTaskClose</b> before the task completes or indicates an error will not succeed in closing the task.</p>
+<p>Among the error codes that <b>XOnlineTaskContinue</b> may return for the cancel task are those that indicate specific billing or provider errors, such as the specified offering being non-cancelable or nonexistent.  These errors code are defined in the xonline.h header, and are in the XONLINE_E_OFFERING family.</p>
+<p><b>XOnlineOfferingCancel</b> cancels an online offering that has been previously purchased by the specified user.  The offering must be cancelable, which is usually indicative of an offering with a recurring charge.  Free offers cannot be canceled.  If the user owns multiple instances of the specified offering, an arbitrary one will be canceled.</p>
+<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;The instance count returned by <a href="XOnlineOfferingDetails.htm">XOnlineOfferingDetails</a> may not reflect offerings that have been recently (within the last few seconds) canceled by the <b>XOnlineOfferingCancel</b> function.  Offering instance counts are decremented asynchronously, not immediately upon success of an <b>XOnlineOfferingCancel</b> operation.  <b>XOnlineOfferingDetails</b> should not be used to verify instance counts immediately following offering cancellation.  The success of the <b>XOnlineOfferingCancel</b> operation itself is sufficient guarantee that the instant count will be subsequently decremented.  Also note that this applies to premium <i>subscriptions</i> only, not to content (because content is not cancelable).</p>
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p><a href="x_mt_xonline_functions.htm">Xbox Live Functions</a> | <a href="XOnlineOfferingPurchase.htm">XOnlineOfferingPurchase</a>, <a href="XRemoveContent.htm">XRemoveContent</a>, <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a>, <a href="XOnlineTaskClose.htm">XOnlineTaskClose</a></p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

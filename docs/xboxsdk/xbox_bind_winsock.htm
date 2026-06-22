@@ -1,0 +1,156 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>bind</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="bind">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="bind"/>
+<MSHelp:Keyword Index="F" Term="bind"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="xbox_bind_winsock"></A>bind</H1>
+
+<P>Associates a local address with a socket.</P>
+
+<PRE class="syntax"><B>int bind(</B>
+    <B>SOCKET</B> <I>s</I>,
+    <B>const struct sockaddr FAR</B> <I>*name</I>,
+    <B>int</B> <I>namelen</I>
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>s</I></DT>
+
+<DD>[in] Descriptor identifying an unbound socket.</DD>
+
+<DT><I>name</I></DT>
+
+<DD>[in] Address to assign to the socket from the <A HREF="xbox_sockaddr_winsock.htm">SOCKADDR</A> structure.</DD>
+
+<DT><I>namelen</I></DT>
+
+<DD>[in] Length of the value in the <I>name</I> parameter.
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If no error occurs, <B>bind</B> returns zero. Otherwise, it returns SOCKET_ERROR, and a specific error code can be retrieved by calling <A HREF="xbox_wsagetlasterror_winsock.htm">WSAGetLastError</A>.</P>
+
+<H4>Remarks</H4>
+
+<P>The <B>bind</B> function is used on an unconnected socket before subsequent calls to the <A HREF="xbox_connect_winsock.htm">connect</A> or <A HREF="xbox_listen_winsock.htm">listen</A> functions. It is used to bind to either connection-oriented (stream) or connectionless (datagram) sockets. When a socket is created with a call to the <A HREF="xbox_socket_winsock.htm">socket</A> function, it exists in a name space (address family), but it has no name assigned to it. Use the <B>bind</B> function to establish the local association of the socket by assigning a local name to an unnamed socket.</P>
+
+<P>A name consists of three parts when using the Internet address family:</P>
+
+<UL>
+	<LI>The address family.</LI>
+	<LI>A host address.</LI>
+	<LI>A port number that identifies the title.</LI>
+</UL>
+
+<P>For Xbox Winsock, the <I>name</I> parameter is interpreted as a pointer to a <A HREF="xbox_sockaddr_winsock.htm">SOCKADDR_IN</A> structure.</P>
+
+
+<P>The <B>sin_addr</B> member of the <B>SOCKADDR_IN</B> structure (whose type is an <B>in_addr</B> structure) must have its <B>s_addr</B> member set to INADDR_ANY.</P>
+
+<P>The following example shows a call to the <B>bind</B> function.</P>
+
+<PRE>
+// Create UDP socket
+SOCKET sLBrd = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
+
+// Bind to INADDR_ANY
+SOCKADDR_IN sa;
+sa.sin_family = AF_INET;
+sa.sin_addr.s_addr = INADDR_ANY;
+sa.sin_port = htons( GAME_BROADCAST_PORT );
+INT err = bind( sLBrd, (const sockaddr*)( &amp;sa ),
+                sizeof( SOCKADDR_IN ) );
+</PRE>
+
+<!-- OMIT: 
+<P>If a title does not care what local address is assigned, specify the manifest constant value INADDR_ANY for the <B>sa_data</B> member of the <I>name</I> parameter. This allows the underlying service provider to use any appropriate network address, potentially simplifying title programming.</P>
+
+<P>If the port is specified as zero, the service provider assigns a unique port to the title with a value between 1024 and 5000. The title can use <A HREF="xbox_getsockname_winsock.htm">getsockname</A> after calling <B>bind</B> to learn the port that has been assigned to it. If the address is equal to INADDR_ANY, <B>getsockname</B> will not supply the address until the socket is connected.</P>
+
+-->
+
+<H4>Error Codes</H4>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=39%>Error code</TH>
+<TH align=left width=61%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=39%><A HREF="xbox_winsock_error_codes_winsock.htm#_win32_wsanotinitialised_2">WSANOTINITIALISED</A></TD>
+<TD width=61%>A successful <A HREF="xbox_wsastartup_winsock.htm">WSAStartup</A> call must occur before using this function.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=39%><A HREF="xbox_winsock_error_codes_winsock.htm#_win32_wsaeaddrinuse_2">WSAEADDRINUSE</A> </TD>
+<TD width=61%>A process on the machine is already bound to the same fully qualified address and the socket has not been marked to allow address reuse with <B>SO_REUSEADDR</B>. For example, the IP address and port are bound in the af_inet case). (See the <B>SO_REUSEADDR</B> socket option under <A HREF="xbox_setsockopt_winsock.htm">setsockopt</A>.)</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=39%><A HREF="xbox_winsock_error_codes_winsock.htm#_win32_wsaeaddrnotavail_2">WSAEADDRNOTAVAIL</A></TD>
+<TD width=61%>The specified address is not a valid address for this machine.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=39%>WSAEINPROGRESS</TD>
+<TD width=61%>A blocking call is in progress.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=39%>WSAEINVAL</TD>
+<TD width=61%>The socket is already bound to an address.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=39%>WSAENOBUFS</TD>
+<TD width=61%>Not enough buffers available, too many connections.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=39%>WSAENOTSOCK</TD>
+<TD width=61%>The descriptor is not a socket.</TD>
+</TR>
+</TABLE><BR>
+
+<H4>Requirements</H4>
+<p>
+<b>Header: </b>Declared in winsockx.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xnet.lib for titles that only support system link play, XOnline.lib for titles that support online play. Use the secure versions of the library file (Xnets.lib or XOnlines.lib) for final testing.
+</p>
+
+
+<H4>See Also</H4>
+
+<P>
+<a href="xbox_winsock_overview_winsock.htm">Winsock Overview</A>,
+<a href="xbox_winsock_functions_winsock.htm">Winsock Functions</A> |
+  <A HREF="xbox_connect_winsock.htm">connect</A>, <A HREF="xbox_getsockname_winsock.htm">getsockname</A>, <A HREF="xbox_listen_winsock.htm">listen</A>, <A HREF="xbox_setsockopt_winsock.htm">setsockopt</A>, <A HREF="xbox_socket_winsock.htm">socket</A> </P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

@@ -1,0 +1,126 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>LD_DEMO</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="LD_DEMO"/>
+<MSHelp:Keyword Index="F" Term="LD_DEMO"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+    <body topmargin="0">
+        <table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+        <h1>LD_DEMO</h1>
+
+        
+        
+<p>Required for launching into and out of demos. The launch data type is LDT_TITLE.</p>
+
+	
+		
+
+<pre class="syntax">typedef struct _LD_DEMO{
+    DWORD dwID;
+    DWORD dwRunmode;
+    DWORD dwTimeout;
+    CHAR szLauncherXBE[64];
+    CHAR szLaunchedXBE[64];
+    BYTE Reserved[MAX_LAUNCH_DATA_SIZE - 140];
+} LD_DEMO, *PLD_DEMO;</pre>
+                    
+                
+            
+            
+                <h4><a name="members"></a>Members</h4>
+<dl>
+
+<dt><b>dwID</b></dt>
+<dd>Value that identifies the structure as demo launch data. This value is set by the demo launcher and is defined as LAUNCH_DATA_DEMO_ID.</dd>
+
+<dt><b>dwRunmode</b></dt>
+<dd>Determines whether the demo was run in kiosk mode or whether the user explicitly selected to run the demo. Can be either of the following values:</dd>
+<table>
+	<tr>
+		<th>Flag</th>
+		<th>Description</th>
+	</tr>
+	<tr>
+		<td>XLDEMO_RUNMODE_KIOSKMODE</td>
+		<td>The demo was run in kiosk mode.</td>
+	</tr>
+	<tr>
+		<td>XLDEMO_RUNMODE_USERSELECTED</td>
+		<td>The demo was selected by the user.</td>
+	</tr>
+</table>
+
+
+<dt><b>dwTimeout</b></dt>
+<dd>Number of milliseconds of inactivity after which the demo game should return to the demo launcher. This value corresponds to the CDX timeout value.</dd>
+
+<dt><b>szLauncherXBE</b></dt>
+<dd>Path to the demo launcher. The demo game should use this value to return to the demo launcher after the timeout has expired or as the result of the player selecting to return to the demo launcher.</dd>
+
+<dt><b>szLaunchedXBE</b></dt>
+<dd>Path to demo game.</dd>
+
+<dt><b>Reserved</b></dt>
+<dd>Reserved for use by the demo launcher. The demo game
+should not alter this data.</dd>
+</dl>
+                <h4><a name="remarks"></a>Remarks</h4>
+<p>The demo should never assume it was launched by CDX. It should instead determine if it was launched by CDX by doing the following:</p>
+
+
+<pre class="clsCode">
+DWORD dwLaunchStatus = XGetLaunchInfo( &amp;dwLaunchDataType, &amp;LaunchData );
+if( dwLaunchStatus == ERROR_SUCCESS )
+{
+   if( dwLaunchDataType == LDT_TITLE )
+   {
+      PLD_DEMO pDemoLauncher = (PLD_DEMO)(&amp;LaunchData);
+      if( pDemoLauncher-&gt;dwID == LAUNCH_DATA_DEMO_ID )
+      {
+         bLaunchedByCDX = TRUE;
+      }
+   }
+}
+</pre>
+    
+
+<p>A demo game can return to CDX by calling</p>
+
+
+<pre class="clsCode">
+XLaunchNewImage( pDemoLauncher-&gt;szLauncherXBE, &amp;LaunchData );
+</pre>
+    
+
+<p>Notice that the original <i>LaunchData</i> should be passed back to CDX unchanged.</p>
+
+				
+            
+                <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xbox.h.</p>
+            
+                
+
+        <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+    </body>
+    </html>

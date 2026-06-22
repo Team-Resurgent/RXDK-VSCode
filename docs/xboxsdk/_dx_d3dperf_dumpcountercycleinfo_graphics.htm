@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>D3DPERF_DumpCounterCycleInfo</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="D3DPERF_DumpCounterCycleInfo [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="D3DPERF_DumpCounterCycleInfo"/>
+<MSHelp:Keyword Index="F" Term="D3DPERF_DumpCounterCycleInfo"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="D3DPERF_DumpCounterCycleInfo"></A>D3DPERF_DumpCounterCycleInfo</H1>
+
+<P>This is the default handler for the DumpWaitCycleTimesThreshold. It dumps information about PERF_OBJECTLOCK_WAITS.</P>
+
+<PRE class=syntax><B>void WINAPI D3DPERF_DumpCounterCycleInfo(
+  D3DPERF_PerformanceCounters</b> <i>perfctr</i>,
+  <b>ULONGLONG</b> <i>Cycles</i>
+<b>);</b>
+</PRE>
+
+<H4>Parameters</H4>
+
+<dl>
+<dt><i>perfctr</i></dt>
+
+<dd>[in] Member of the <a href="_dx_d3dperf_performancecounters_graphics.htm"><b>D3DPERF_PerformanceCounters</b></a> enumeration. <i>perfctr</i> describes the performance counter about which cycle information is to be dumped.</dd>
+
+<dt><i>Cycles</i></dt>
+
+<dd>[in] The number of cycles since the last call to <a href="_dx_d3dperf_reset_graphics.htm"><b>D3DPERF_Reset</b></a>.</dd>
+
+</dl>
+
+<H4>Return Values</H4>
+
+<P>None.</P>
+
+<h4>Remarks</h4>
+
+<p>This is the default function used to display cycle information. It is called automatically when the threshold cycle count is hit as was set in the <b>m_DumpWaitCycleTimesThreshold</b> member of <a href="_dx_d3dperf_graphics.htm"><b>D3DPERF</b></a>.</p>
+
+<p>This function displays the number of OBJECTLOCK_WAITS and the number of cycles and time (in milliseconds) since the last call to <b>D3DPERF_RESET</b>.
+
+<p>This function can be used as the basis for developing a customized handler. It is defined as below:</p>
+
+<pre>extern "C"
+void WINAPI D3DPERF_DumpCounterCycleInfo(D3DPERF_PerformanceCounters perfctr,
+  ULONGLONG Cycles)
+{
+  if(perfctr == PERF_OBJECTLOCK_WAITS)
+  {
+    DbgPrint("#%Lu) %s %I64u cycles (%Lums)\n",
+      g_PerfCounters.m_PerformanceCounters[perfctr].Count,
+      g_PerfNames.m_PerformanceCounterNames[perfctr],
+      Cycles,
+      Cycles / 733000);
+    }
+}
+</pre>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in d3d8perf.h.<BR>
+<B>&nbsp;&nbsp;Import Library:</B> Use d3d8i.lib or d3d8d.lib.</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

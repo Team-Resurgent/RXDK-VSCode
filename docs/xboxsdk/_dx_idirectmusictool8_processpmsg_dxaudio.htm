@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirectMusicTool8::ProcessPMsg</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="IDirectMusicTool8::ProcessPMsg [C++]">
+<META NAME="MS-HKWD" CONTENT="ProcessPMsg (IDirectMusicTool8) [C++]">
+<META NAME="MS-HKWD" CONTENT="ProcessPMsg [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="ProcessPMsg (IDirectMusicTool8)"/>
+<MSHelp:Keyword Index="K" Term="IDirectMusicTool8::ProcessPMsg"/>
+<MSHelp:Keyword Index="F" Term="ProcessPMsg"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_idirectmusictool8_processpmsg_dxaudio"></A>IDirectMusicTool8::ProcessPMsg</H1>
+
+<P>Performs the main task of the tool. It is called from inside the performance's real-time thread for all messages that match the types specified by <A HREF="_dx_idirectmusictool8_getmediatypes_dxaudio.htm"><B>IDirectMusicTool8::GetMediaTypes</B></A>. </P>
+
+<PRE class="syntax"><B>HRESULT ProcessPMsg(</B>
+    <B>IDirectMusicPerformance</B> <I>*pPerf</I>,
+    <B>DMUS_PMSG</B> <I>*pPMSG</I>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>pPerf</I></DT>
+
+<DD>Performance that is generating messages.</DD>
+
+<DT><I>pPMSG</I></DT>
+
+<DD>Message to process.
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>Return values are determined by the implementation. If the method succeeds, the return value can be one of the following:</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TD width=100%><A HREF="_dx_directmusic_return_values_by_name_dxaudio.htm#_dx_dmus_s_requeue_dxaudio"><B>DMUS_S_REQUEUE</B></A></TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=100%><A HREF="_dx_directmusic_return_values_by_name_dxaudio.htm#_dx_dmus_s_free_dxaudio"><B>DMUS_S_FREE</B></A></TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=100%><A HREF="_dx_directmusic_return_values_by_name_dxaudio.htm#_dx_s_ok_dxaudio"><B>S_OK</B></A></TD>
+</TR>
+</TABLE><BR>
+
+<P>If it fails, the method can return <A HREF="_dx_directmusic_return_values_by_name_dxaudio.htm#_dx_e_pointer_dxaudio"><B>E_POINTER</B></A>.</P>
+
+<H4>Remarks</H4>
+
+<P>This method should return DMUS_S_REQUEUE when the tool wants the message to be requeued. This allows the tool to put a new time stamp and parameters on the message and requeue it, or to requeue the message with a different delivery type. If the tool wants the message to be sent on to the next tool in the chain, it calls <A HREF="_dx_idirectmusicgraph8_stamppmsg_dxaudio.htm"><B>IDirectMusicGraph8::StampPMsg</B></A> to reassign the PMsg and then return DMUS_S_REQUEUE.</P>
+
+<P>This method should return DMUS_S_FREE when the tool wants the message freed automatically and does not want to requeue the message.</P>
+
+<P>This method should return S_OK when the tool does not want the message to be freed automatically. Perhaps the tool is holding on to the message for some reason or has freed it itself. For example, if the tool wants to send the message itself (like an echo that creates multiple copies), it calls <B>StampPMsg</B> on the message and <A HREF="_dx_idirectmusicperformance8_sendpmsg_dxaudio.htm"><B>IDirectMusicPerformance8::SendPMsg</B></A> to send it. Then it returns S_OK, since it is now done with the PMsg.</P>
+
+<P>Tools should not perform time-consuming activities because doing so can severely affect overall performance. Also be sure not to create a circular reference to the performance represented by <I>pPerf</I>. For more information, see <A HREF="_dx_directmusic_tools_dxaudio.htm"><B>DirectMusic Tools</B></A>.</P>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in DMusici.h.</P>
+
+<H4>See Also</H4>
+
+<P><A HREF="_dx_idirectmusicperformance8_sendpmsg_dxaudio.htm"><B>IDirectMusicPerformance8::SendPMsg</B></A>, <A HREF="_dx_messages_dxaudio.htm"><B>Messages</B></A>, <A HREF="_dx_message_creation_and_delivery_dxaudio.htm"><B>Message Creation and Delivery</B></A></P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

@@ -1,0 +1,119 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Adding Formatted Attributes to Leaderboards</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Adding Formatted Attributes to Leaderboards"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+	<MSHelp:Keyword Index="K" Term="scoreboards, adding formatted attributes to"/>
+	<MSHelp:Keyword Index="K" Term="leaderboards, adding formatted attributes to"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Adding Formatted Attributes to Leaderboards</h1>
+<p>Leaderboards can have zero or more formatted attributes. A formatted attribute is an 
+attribute whose information is calculated dynamically when the player views the leaderboard. When 
+you add a formatted attribute to a leaderboard, you specify the formula used to calculate the 
+attribute's value.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Neither XLAST nor the XTL places a limit on the number of formatted attributes a leaderboard contains. It is 
+left to the developer to decide how many formatted attributes are appropriate for a leaderboard.</p><p>Use the following procedure to add a formatted attribute to a leaderboard.</p><ol>
+	<li>Right-click the leaderboard to which you would like to add a formatted attribute. In the 
+	menu that appears, click <b>Add Formatted Attributes</b>.</li>
+	
+	<li>XLAST displays the <b>Add Formatted Attributes</b> dialog box. Enter the number of 
+	attributes to create. The default is 1.</li>
+	
+	<li>If you are creating just one attribute, enter its ID. If you are creating a group of attributes, 
+	enter the ID of the first attribute in the group.</li>
+	
+	<li>You can optionally use the drop-down list to select an attribute to use as a template. This enables you 
+	to create one attribute, configure it, and then use it to create more attributes with the same characteristics.</li>
+	
+	<li>Click <b>OK when you are ready to create the attribute(s).</b>.</li>
+	
+	<li>Click the new attribute to select it, and then it again to edit its name. Set the name of the attribute to 
+	something meaningful to you. Players do not see this name.</li>
+	
+	<li>Use the <b>Return Type</b> drop-down list to specify the type of the attribute's 
+	data. Formatted attributes can have a return types of Integer, Float, Percent, Gamertag, TimeStamp, 
+	Milliseconds, TenMilliseconds, HundredMilliseconds, Seconds, Minutes, Hours, Days, String, or Team.
+	<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;The selections TenMilliseconds and HundredMilliseconds mean that the value specified is 
+	in tens and hundreds of milliseconds, respectively. So setting the return type to TenMilliseconds and 
+	returning a value of 2 indicates a time span of 20 milliseconds.</p></li>
+	
+	<li>Use the <b>Locale</b> drop-down list to select a locale. Use the edit box 
+	immediately to the right to enter the attribute's localized name. This is the attribute name 
+	that players see when they look at the leaderboard. To support additional locales, click the 
+	root node of the project tree and click the check boxes in the <b>Supported Locales</b> list for the 
+	additional locales you want to support on your leaderboard. </li>
+	
+	<li>
+		<p>Enter a formula into the formatted attribute's <b>Formula</b> box. The formula can be any C# 
+		formula, with certain restrictions. The C# expression can use Attr[i] to refer to the 
+		leaderboard's base attributes. It can use Gamertag(PUID) to resolve a Gamertag from a PUID, 
+		and any C# expression operators except: new, assignment, increment/decrement (++/--), 
+		function invocation, accessing properties on any object other than this, attr[i], or its 
+		contents. Formulas can use the Math class. They can also contain the following Stats functions:</p>
+		<table>
+			<tr>
+				<th>Function Name</th>	<th>Function Prototype</th>
+			</tr>
+			<tr>
+				<td><b>FormatTime</b></td>
+				<td><b>protected string FormatTime(object</b> <i>AttributeId</i><b>, string</b> <i>FormatString</i><b>);</b></td>
+			</tr>
+			<tr>
+				<td><b>AddLong</b></td>
+				<td><b>protected long AddLong(object</b> <i>Val1</i><b>, object</b> <i>Val2</i><b>);</b></td>
+			</tr>
+			<tr>
+				<td><b>SubtractLong</b></td>
+				<td><b>protected long SubtractLong(object</b> <i>Val1</i><b>, object</b> <i>Val2</i><b>);</b></td>
+			</tr>
+			<tr>
+				<td><b>MultiplyLong</b></td>
+				<td><b>protected long MultiplyLong(object</b> <i>Val1</i><b>, object</b> <i>Val2</i><b>);</b></td>
+			</tr>
+			<tr>
+				<td><b>DivideLong</b></td>
+				<td><b>protected long DivideLong(object</b> <i>Val1</i><b>, object</b> <i>Val2</i>);</td>
+			</tr>
+			<tr>
+				<td><b>AddDouble</b></td>
+				<td><b>protected double AddDouble(object</b> <i>Val1</i><b>, object</b> <i>Val2</i><b>);</b></td>
+			</tr>
+			<tr>
+				<td><b>SubtractDouble</b></td>
+				<td><b>protected double SubtractDouble(object</b> <i>Val1</i>, object <i>Val2</i><b>);</b></td>
+			</tr>
+			<tr>
+				<td><b>MultiplyDouble</b></td>
+				<td><b>protected double MultiplyDouble(object</b> <i>Val1</i><b>, object</b> <i>Val2</i><b>);</b></td>
+			</tr>
+			<tr>
+				<td><b>DivideDouble</b></td>
+				<td><b>protected double DivideDouble(object</b> <i>Val1</i><b>, object</b> <i>Val2</i><b>);</b></td>
+			</tr>
+			<tr>
+				<td><b>SubInt</b></td>
+				<td><b>protected int SubInt(int</b> <i>AttributeId</i><b>, int</b> <i>StartBit</i><b>, int</b> <i>NumOfBytes</i><b>);</b></td>
+			</tr>
+		</table>
+	</li>
+</ol>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

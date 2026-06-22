@@ -1,0 +1,98 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>IXACTEngine::GetNotification</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="F" Term="GetNotification"/>
+<MSHelp:Keyword Index="K" Term="GetNotification (IXACTEngine)"/>
+<MSHelp:Keyword Index="K" Term="IXACTEngine::GetNotification"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>IXACTEngine::GetNotification</h1>
+<p>Gets a particular notification from the IXACTEngine.</p>
+<pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>GetNotification(</b>
+    <b>PCXACT_NOTIFICATION_DESCRIPTION</b> <i>pNotificationDesc</i><b>,</b>
+    <b>PXACT_NOTIFICATION</b> <i>pNotification</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+			<dt><i>pNotificationDesc</i></dt>
+				<dd>[in]  A pointer to an <a href="xbox_xactnotificationdescription_dxaudio.htm">XACT_NOTIFICATION_DESCRIPTION</a> structure describing the notification to get. If this parameter is NULL, the <i>pNotification</i> parameter returns the next pending notification.</dd>
+				<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;The <i>pSoundCue</i> parameter of the XACT_NOTIFICATION_DESCRIPTION structure will be set to the instance pointer of a sound cue, if the notification was registered on a sound cue index.</p>
+			
+			<dt><i>pNotification</i></dt>
+				<dd>[out]  A pointer to the <a href="xbox_xactnotification_dxaudio.htm">XACT_NOTIFICATION</a> structure returned.</dd>
+			
+		</dl>
+<h4><a name="return"></a>Return Values</h4>
+            <p>Returns DS_OK if successful; an error code otherwise.</p>
+        <h4><a name="remarks"></a>Remarks</h4>
+			<p>Once notifications have been registered using <a href="xbox_ixactengine_registernotification_dxaudio.htm">IXACTEngine::RegisterNotification</a>, they can be retrieved using <b>GetNotification</b>.</p>
+			<p>It is important to note when to expect certain notifications:</p>
+			<ul>
+				<li>A start notification is sent at the time stamp of the first play event on a track. It will trigger on the first play event of <i>any</i> track, where multiple tracks are involved.</li>
+				<li>A stop notification is sent at the time stamp of the last stop event, when the sound ends normally, or when <a href="xbox_ixactsoundbank_stop_dxaudio.htm">IXACTSoundBank::Stop</a> is called&#8212;whichever comes first.</li>
+			</ul>
+			
+			<p>If the XACT_FLAG_NOTIFICATION_SOUNDCUE_DESTROYED flag is set in the returned <b>XACT_NOTIFICATION_DESCRIPTION</b> structure, the cue has been freed and no calls can be made using the returned <b>pSoundCue</b> pointer.</p>
+
+			<p>The following example illustrates how to get start notifications from a sound bank using a particular cue index:</p>
+
+<pre class="clsCode">
+// This code assumes that g_pXACTEngine is a valid pointer to the
+// XACT engine and pSoundBank is a valid pointer to an IXACTSoundBank.
+
+XACT_NOTIFICATION_DESCRIPTION Desc;
+XACT_NOTIFICATION Notify;
+DWORD dwSoundCueIndex;
+
+memset(&amp;Notify, 0, sizeof(Notify));
+pSoundBank-&gt;GetSoundCueIndexFromFriendlyName("CUE0", &amp;dwSoundCueIndex);
+
+memset(&amp;Desc, 0, sizeof(Desc));
+Desc.wFlags = XACT_FLAG_NOTIFICATION_USE_SOUNDCUE_INDEX;
+Desc.dwSoundCueIndex = dwSoundCueIndex;
+Desc.u.pSoundBank = pSoundBank;
+Desc.wType = eXACTNotification_Start;
+
+if (g_pXACTEngine-&gt;GetNotification(&amp;Desc, &amp;Notify) == S_OK)
+{
+	// Start notification was received
+}
+</pre>
+    
+			<p>To clear pending notifications, call <a href="xbox_ixactengine_flushnotification_dxaudio.htm">IXACTEngine::FlushNotification</a>.</p>
+		<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in XACT.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use XACTEng.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+			<a href="xbox_ixactengine_registernotification_dxaudio.htm">IXACTEngine::RegisterNotification</a>,
+			<a href="xbox_ixactsoundbank_stop_dxaudio.htm">IXACTSoundBank::Stop</a>,
+			<a href="xbox_xactnotificationdescription_dxaudio.htm">XACT_NOTIFICATION_DESCRIPTION</a>, 
+			<a href="xbox_xactnotification_dxaudio.htm">XACT_NOTIFICATION</a>
+		</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>PSDotMapping</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="PSDotMapping"/>
+<MSHelp:Keyword Index="F" Term="PSDotMapping"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1><A NAME=""></A>PSDotMapping</H1>
+<!--***********************************************************-->
+
+<p>Each texture stage that is set to perform a dot product must convert the 32-bit output of a texture stage to three floating-point numbers that take part in the dot product. This field specifies how this conversion is to take place. The <b>PS_DOTMAPPING(</b><i>t0</i>,<i>t1</i>,<i>t2</i>,<i>t3</i><b>)</b> macro allows the dot mapping mode to be set for each texture stage. The macro is defined as follows:</p>
+
+<a name="ps_dotmapping"></a><pre class=syntax>#define PS_DOTMAPPING(t0,t1,t2,t3) (((t3)&lt;&lt;8)|((t2)&lt;&lt;4)|(t1))</pre>
+
+<p>Note that even though t0 appears as an argument to the macro, it is ignored in the body of the macro because no dot product texture modes can be specified in stage 0.</p>
+
+<p>The following dot mapping modes may be specified:</p>
+<DL>
+<a name="ps_dotmapping_zero_to_one"></a><dt>PS_DOTMAPPING_ZERO_TO_ONE</dt>
+
+<dd>Treat the 32-bit output as a concatenation of four unsigned 8-bit numbers, argb. Remap the color components from [0,255] to [0.0,1.0], and use the vector (r,g,b).</dd>
+
+<a name="ps_dotmapping_minus1_to_1_d3d"></a><dt>PS_DOTMAPPING_MINUS1_TO_1_D3D</dt>
+
+<dd>Treat the 32-bit output as a concatenation of four unsigned 8-bit numbers, argb. Remap the color components as follows, and use the vector (r,g,b). 0x0 maps to -128/127 (-1.007874016), 0x1 maps to -1.0, 0x80 maps to 0.0, 0xff maps to 1.0.</dd>
+
+<a name="ps_dotmapping_minus1_to_1_gl"></a><dt>PS_DOTMAPPING_MINUS1_TO_1_GL</dt>
+
+<dd>Treat the 32-bit output as a concatenation of four unsigned 8-bit numbers, argb. Remap the color components as follows, and use the vector (r,g,b).  0x80 maps to -1.0, 0x7f maps to 1.0 (2's complement).</dd>
+
+<a name="ps_dotmapping_minus1_to_1"></a><dt>PS_DOTMAPPING_MINUS1_TO_1</dt>
+
+<dd>Treat the 32-bit output as a concatenation of four unsigned 8-bit numbers, argb. Remap the color components as follows and use the vector (r,g,b). 0x80 maps to -128/127, 0x7f maps to 1.0 (2's complement).</dd>
+
+<a name="ps_dotmapping_hilo_1"></a><dt>PS_DOTMAPPING_HILO_1</dt>
+
+<dd>Treat the 32-bit output as a concatenation of two unsigned 16-bit numbers, hl. Remap the color components as follows and use the vector (h,l,1.0). 0x0 maps to 0.0, 0xffff maps to 1.0.</dd>
+
+<a name="ps_dotmapping_hilo_hemisphere"></a><dt>PS_DOTMAPPING_HILO_HEMISPHERE</dt>
+
+<dd>Treat the 32-bit output as a concatenation of two unsigned 16-bit numbers, hl. Remap the color components as follows and use the vector (h,l,sqrt(1-h*h-l*l)). 0x8000 maps to -32768/32767, 0x8001 maps to -1.0, 0x0 maps to 0.0, 0x7fff maps to 1.0.</dd>
+</DL>
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

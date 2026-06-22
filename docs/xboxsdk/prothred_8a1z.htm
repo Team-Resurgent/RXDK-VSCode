@@ -1,0 +1,55 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>When to Use Multithreading</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="When to Use Multithreading"/>
+<MSHelp:Keyword Index="K" Term="multithreading, when to use"/>
+<MSHelp:Keyword Index="F" Term="When to Use Multithreading"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<H3><A NAME="_win32_when_to_use_multithreading"></A>When to Use Multithreading</H3>
+
+<P>In multithreading, the system divides the available processor time among the threads that need it. Xbox uses preemptive multitasking&mdash;it allocates a processor time slice to each thread it executes. The currently executing thread is suspended when its time slice elapses, allowing another thread to run. When the system switches from one thread to another, it saves the context of the preempted thread and restores the saved context of the next thread in the queue.</P> 
+
+<P>Because each time slice is small (approximately 20 milliseconds), multiple threads appear to be executing at the same time. However, you must use caution when using multiple threads in a title, because system performance can decrease if there are too many threads.  The <a href="XSetProcessQuantumLength.htm">XSetProcessQuantumLength</a> function can be use to change the default time slice (called the <I>quantum</I>).</P>
+
+<P>A multithreaded title can manage mutually exclusive tasks with threads, such as updating the screen and performing background calculations. Creating a multithreaded title can also be a convenient way to structure a program that performs several similar or identical tasks concurrently. For example, a thread could be created to manage calculations for each player in the game. A title could also use multiple threads to manage input and output from several devices and to distinguish tasks of varying priority. A high-priority thread manages time-critical tasks, and a low-priority thread performs other tasks.</P>
+
+<P>The XTL and system software also provide alternative methods that can be used in the place of multithreading. The most significant of these methods are asynchronous input and output (I/O), I/O completion ports, asynchronous procedure calls (APC), and the ability to wait for multiple events.</P>
+
+<P>A single thread can initiate multiple time-consuming I/O requests that can run concurrently using asynchronous I/O. Asynchronous I/O can be performed on storage, audio, and network devices.
+
+<!-- For more information, see <A HREF="synchro_4ur8.htm">Synchronization and Overlapped Input and Output</A>. -->
+</P>
+
+<P>A single thread can block its own execution while waiting for any one or all of several events to occur. This is more efficient than using multiple threads, each waiting for a single event, and more efficient than using a single thread that consumes processor time by continually checking for events to occur.
+
+<!-- For more information, see <A HREF="synchro_5vqr.htm">Wait Functions</A>. -->
+</P>
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+
+</BODY>
+</HTML>

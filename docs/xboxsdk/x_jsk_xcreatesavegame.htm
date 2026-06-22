@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>XCreateSaveGame</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="XCreateSaveGame">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XCreateSaveGame"/>
+<MSHelp:Keyword Index="F" Term="XCreateSaveGame"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_xbox_xcreatesavegame"></A>XCreateSaveGame</H1>
+
+<P>The <B>XCreateSaveGame</B> function creates a new instance of a save game container in the specified user data storage region.  The location of the save game (hard disk, memory unit, and so on) is dependent on the storage region specified.</P>
+
+<PRE class=syntax><B>DWORD XCreateSaveGame(</B>
+  <b>LPCSTR</b><I> lpRootPathName</I><b>,</b>
+  <b>LPCWSTR</b><I> lpSaveGameName</I><b>,</b>
+  <b>DWORD</b><I> dwCreationDisposition</I><b>,</b>
+  <b>DWORD</b><I> dwCreateFlags</I><b>,</b>
+  <b>LPSTR</b><I> lpPathBuffer</I><b>,</b>
+  <b>UINT</b><I> uSize</I>
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>lpRootPathName</I></DT>
+<DD>[in] Pointer to a null-terminated string that specifies the root directory of the user data storage region where the save game will be created.  The parameter must contain only a drive letter, colon, and trailing backslash; a subdirectory cannot be specified.
+</DD>
+
+<DT><I>lpSaveGameName</I></DT>
+<DD>[in] Pointer to a null-terminated string that specifies the name of the save game.  The name is limited to MAX_GAMENAME characters.</DD>
+
+<DT><I>dwCreationDisposition</I></DT>
+<DD>[in] Value that indicates whether a new save game is being created or an existing save game is being opened. This parameter must be one of the following values:
+
+<P>
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=44%>Value name</TH>
+<TH align=left width=56%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=44%>CREATE_NEW</TD>
+<TD width=56%>Create a new save game. If the specified save game already exists, the function fails.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=44%>OPEN_EXISTING</TD>
+<TD width=56%>Open an existing save game.  The function fails if the save game does not exist.
+</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=44%>OPEN_ALWAYS</TD>
+<TD width=56%>Open the save game if it exists. If it does not exist, the function creates the save game as if <I>dwCreationDisposition</I> were CREATE_NEW.
+</TD>
+</TR>
+</TABLE>
+
+</DD>
+
+<DT><I>dwCreateFlags</I></DT>
+<DD>[in] Can be zero or XSAVEGAME_NOCOPY.  If XSAVEGAME_NOCOPY is specified, the save game is marked as not copyable&mdash;the Xbox Dashboard will not allow the user to copy the save game to a different location.  XSAVEGAME_NOCOPY is valid only if <I>dwCreateDisposition</I> is CREATE_NEW or OPEN_ALWAYS.</DD>
+
+<DT><I>lpPathBuffer</I></DT>
+<DD>[out] Pointer to a buffer that receives the directory path of the save game container.  The buffer must be large enough to contain the returned directory path string, including a terminating null character.  The directory path returned is the directory of the save game container.  This directory will contain the data and metadata for the specified save game.</DD>
+
+<DT><I>uSize</I></DT>
+<DD>[in] The size, in characters, of the buffer pointed to by the <I>lpPathBuffer</I> parameter.</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is ERROR_SUCCESS.</P>
+
+<P>If the function fails, the return value is an error code defined in Winerror.h.  The function does not use <B>SetLastError</B> to set the calling thread's last-error code.</P>
+
+<H4>Remarks</H4>
+
+<P>The storage region specified in <I>lpRootPathName</I> can be the title's user data region on the hard disk (U:\), a mapped user data region for an alternate title (X:\), or the title's user data region of a mounted memory unit (F:\ through M:\).</P>
+
+<P>If the buffer specified in <I>lpPathBuffer</I> is not large enough to contain the returned directory path, the path will be truncated and the function will indicate success.</P>
+
+<P>The directory returned in <I>lpPathBuffer</I> is the directory that will hold the data and metadata files containing the information representing the saved game.  After creating a save game container, the title uses the standard file I/O functions (<B>CreateFile</B>, <B>WriteFile</B>, <B>ReadFile</B>, and so on) to create, write, and manipulate files in that directory.</P>
+
+<P>The XSAVEGAME_NOCOPY flag of the <I>dwCreateFlags</I> parameter is valid only if <I>dwCreateDisposition</I> is CREATE_NEW or OPEN_ALWAYS.  The non-copyable property can be applied only to save games being newly created.  If XSAVEGAME_NOCOPY and OPEN_ALWAYS are specified and the save game already exists, the XSAVEGAME_NOCOPY flag is ignored (in debug builds, a warning message is output to the debugger).</P>
+
+<P>A call to <B>XCreateSaveGame</B> to create a new save game or overwrite an existing one (by specifying either CREATE_NEW or OPEN_ALWAYS for <i>dwCreationDisposition</i>) updates the time stamp for the save game container directory.  Specifying OPEN_EXISTING for <i>dwCreationDisposition</i> does not update the time stamp.  The Xbox Dashboard displays available save games in an MRU (most recently used) order.</P>
+
+<P>For more information on save games and save game signing, See the <b>Save Game Signing</b> section of <A HREF="x_mt_softarch_xtl_services.htm">XTL Services</a>, the <A HREF="xbox_jbh_samp_refui_loadsave.htm">LoadSave Sample</A>, the <A HREF="xbox_jbh_samp_techcertgame.htm">Xbox Technical Certification Game</A>, and <A HREF="x_mt_input_ov_savegame.htm">Save Games</A>.</p>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Xbox.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+<BR><B><A HREF="xbox_mt_xtl_sll_strings_oview_unioview.htm">Unicode</a>:</B> Requires both Unicode and ANSI parameters.<BR>
+
+
+<H4>See Also</H4>
+<P>
+<A HREF="x_jsk_xdeletesavegame.htm">XDeleteSaveGame</a>,
+<A HREF="x_jsk_xfindfirstsavegame.htm">XFindFirstSaveGame</a>,
+<A HREF="x_jsk_xfindnextsavegame.htm">XFindNextSaveGame</a>,
+<A HREF="x_jsk_xfindclose.htm">XFindClose</a>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

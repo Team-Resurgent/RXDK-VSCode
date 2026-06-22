@@ -1,0 +1,37 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Clock Time vs. Music Time</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Clock Time vs. Music Time"/>
+<MSHelp:Keyword Index="F" Term="Clock Time vs. Music Time"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H4><A NAME="_dx_clock_time_vs._music_time_dxaudio"></A>Clock Time vs. Music Time</H4>
+
+<P>In DirectX for C++, the time returned by the master clock is a 64-bit value defined as type <B>REFERENCE_TIME</B>. Reference time is measured in units of approximately 100 nanoseconds, so the clock ticks about 10 million times each second.</P>
+
+<P>Music time is a 32-bit value defined as type <B>MUSIC_TIME</B>. It is not an absolute measure of time but is relative to the tempo. The clock is started when the performance is initialized and ticks DMUS_PPQ times for each quarter-note. DMUS_PPQ is defined as 768.</P>
+
+<P>When a performance is initialized, it starts keeping an internal clock. You can retrieve the current performance time in both reference time and music time by using the <A HREF="_dx_idirectmusicperformance8_gettime_dxaudio.htm"><B>IDirectMusicPerformance8::GetTime</B></A> method. </P>
+
+<P>To convert between the two kinds of time in a performance, you can use the <A HREF="_dx_idirectmusicperformance8_musictoreferencetime_dxaudio.htm"><B>IDirectMusicPerformance8::MusicToReferenceTime</B></A> and <A HREF="_dx_idirectmusicperformance8_referencetomusictime_dxaudio.htm"><B>IDirectMusicPerformance8::ReferenceToMusicTime</B></A> methods. These methods convert between time offsets within the performance, taking into account all tempo changes that have taken place since the performance started.</P>
+
+<P>When a segment is cued to play by a call to <A HREF="_dx_idirectmusicperformance8_playsegmentex_dxaudio.htm"><B>IDirectMusicPerformance8::PlaySegmentEx</B></A>, and the start time is given in reference time, DirectMusic must convert the start time to music time. If no primary segment is currently playing, the conversion is made immediately, based on the current tempo. Otherwise, if another segment is playing, the start time of the cued segment is not converted to music time until the start time has been reached. </P>
+
+<P>If the tempo is changed before the segment starts playing, the actual start time can be affected, or the segment might not start on the desired boundary. In the first case, in which the conversion to music time is done immediately, the start time (in reference time) is advanced if the tempo speeds up and delayed if the tempo slows down. In the second case, in which conversion is made at start time, a change in tempo can mean that the segment does not start at correct resolution boundaries. For example, if the segment is supposed to start on a measure boundary (as indicated in the <I>dwFlags</I> parameter of <B>PlaySegmentEx</B>), the actual start time (in reference time) is calculated when the segment is cued. However, if the tempo then changes, a measure boundary might not fall at that time.</P>
+
+<P>When a primary segment is played with the DMUS_SEGF_QUEUE flag (see <A HREF="_dx_dmus_segf_flags_dxaudio.htm"><B>DMUS_SEGF_FLAGS</B></A>), the <I>i64StartTime</I> parameter is ignored, and the segment is cued to play after any primary segments whose start times have already been converted. If a previously cued segment is still stamped in reference time, that segment will play at its designated time, perhaps interrupting another segment.</P>
+
+<P>For example, say you have three segments, each 10 seconds in length. You cue segment A to play 5 seconds from now. Because no primary segment is currently playing, the start time is immediately converted to music time. At 6 seconds, you cue segment B to play at 20 seconds. In this case, because music is already playing and the tempo might change, the conversion to music time is not made immediately. Then you cue segment C with the DMUS_SEGF_QUEUE flag so that it starts immediately after segment A finishes, at 15 seconds. At 20 seconds, segment B starts playing and interrupts segment C.</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

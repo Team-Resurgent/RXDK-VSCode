@@ -1,0 +1,300 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Bundler Tool (Bundler)</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Bundler Tool (Bundler)"/>
+<MSHelp:Keyword Index="K" Term="resource definition files, syntax"/>
+<MSHelp:Keyword Index="F" Term="Bundler Tool (Bundler)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Bundler Tool (Bundler)</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<P class="intro">The Bundler tool creates binary Microsoft&#174
+Direct3D&#174 resource files that are optimized for loading on the Xbox.  An
+Xbox game title can simply stream Direct3D resource data from a file into
+contiguous memory, create the resource header structure, and then call <a
+href="xbox_dxg_IDirect3DResource8_Register.htm">Register</a> to map the
+data address to physical memory.</P>
+
+<H3 class="overview">Overview</H3>
+   
+<P class="content">The Bundler tool creates three output files: a packed
+resource file (.xpr format), a header file, and an error file. All three of
+these file names may be specified using command-line switches. The packed
+resource file contains all of the resources in binary format. The header file
+contains a number of <b>#define</b> statements that specify offsets into the file
+for each resource.  The error file contains errors that occur during
+processing.</P>
+
+<H3 class="overview">Usage</H3>
+
+<PRE>USAGE: bundler file.rdf [switches]</PRE>
+
+<TABLE class="tblcontrols">
+<!--**Stock Text. Do not change.****-->
+<TR VALIGN="top"><TH align=left width=40%>Switch</TH><TH align=left width=60%>Description</TH></TR>
+<!--**Use this set of tags for a row. Copy and paste for additional rows.**-->
+
+<TR><td><b>-o</b> <i>filename</i></td>     <td>Packed resource file name</td></TR>
+<TR><td><b>-h</b> <i>filename</i></td>     <td>Header file name</td></TR>
+<TR><td><b>-e</b> <i>filename</i></td>     <td>Error file name</td></TR>
+<tr><td><b>-p</b> <i>prefix</i></td>       <td>Prefix for header file constants. The
+                                 Bundler tool adds <i>prefix</i> to the
+                                 front of constant names it generates in the
+                                 header file. Using the <b>-p</b> switch allows you to
+                                 customize the header file constants to match
+                                 your own variable naming conventions.</td></tr>
+
+</TABLE>
+
+<P class="content">The name of the resource definition file (<i>file.rdf</i>) is 
+required. The Bundler tool supports a special mode in which a single texture file is 
+converted to the .xpr format without an .rdf file being required. To enable this 
+mode, substitute a file name with .bmp, .jpg, .tga, .dds, or .png extension for the 
+usual .rdf file. The single texture file mode is useful for converting individual 
+images to a format that can be loaded by the Xbox Dashboard.</P>
+
+
+<H3 class="overview">Resource Definition File Syntax</H3>
+
+<P class="content">The Bundler tool takes an .rdf file as its input. This file describes the resources that should be packed into the Xbox Packed
+Resource file. The .rdf file can specify the following:</P>
+   
+<TABLE class="tblcontrols">
+<!--**Stock Text. Do not change.****-->
+<TR VALIGN="top"><TH align=left width=40%>Property</TH><TH align=left width=60%>Description</TH></TR>
+<!--**Use this set of tags for a row. Copy and paste for additional rows.**-->
+
+<TR><td>OUT_HEADER filename</td>             <td>Overrides <b>-h</b> switch</td></TR>
+<TR><td>OUT_PACKEDRESOURCE filename</td>     <td>Overrides <b>-o</b> switch</td></TR>
+<TR><td>OUT_ERROR filename</td>              <td>Overrides -<b>e</b> switch</td></TR>
+<tr><td>OUT_VERSION [XPR0 | XPR1]</td>		 <td>Disables (XPR0) or enables (XPR1) resource offset tables.</td></tr>
+<TR><td>Texture texture_name</td>            <td>Texture</td></TR>
+<TR><td>Cubemap cubemap_name</td>            <td>Cubemap</td></TR>
+<TR><td>VolumeTexture volumetexture_name</td><td>Volume texture</td></TR>
+<TR><td>Vertexbuffer vb_name</td>            <td>Vertex buffer</td></TR>
+
+</TABLE>
+
+<p>If resource offset tables are enabled (by inserting OUT_VERSION XPR1 in the .rdf file), 
+you can specify resources by name rather than using resource identifiers. To do so, you use 
+the optional resource property called <b>Name</b> to connect the identifier to a name. The 
+following example shows how this is done.</p>
+<code><pre>Texture BigMap
+{
+    Name	fromMax:Bigmap.tga
+    Source	Bigmap.tga
+}
+</pre></code>
+
+<H3 class="overview">Texture</H3>
+
+<P class="content">A texture must be followed by a series of properties that are enclosed in curly braces {}.  Supported properties are:</P>
+   
+   <UL>
+   <LI><B>Source</B> <I>filename</I></LI>
+   <LI><B>Format</B> <I>D3D_format </I> &#8211; Defaults to source format.</LI>
+   <LI><B>Width</B> <I>image_width</I> &#8211; Defaults to source width.</LI>
+   <LI><B>Height</B> <I>image_height</I> &#8211; Defaults to source height.</LI>
+   <LI><B>Levels</B> <I>number_of_mipmap_levels</I> &#8211; Defaults to 1 (0 means as many as possible).</LI>
+   <LI><B>Alphasource</B> <I>filename</I></LI>
+   </UL>
+   
+   <BR>
+
+<P class="content">For example:</P>
+   
+   
+<PRE>   Texture MyTex
+   {
+      Source c:\images\landscape.bmp
+      Format D3DFMT_DXT1
+      Width 256
+      Height 256
+      // Levels will default to 1
+   }</PRE>
+
+
+<H3 class="overview">Cubemap</H3>
+
+<P class="content">A cubemap must be followed by a series of properties that are enclosed in curly braces {}. Supported properties are:</P>
+   
+   <UL>
+   <LI><B>SourceXP</B> <I>filename</I></LI>
+   <LI><B>SourceXN</B> <I>filename</I></LI>
+   <LI><B>SourceYP</B> <I>filename</I></LI>
+   <LI><B>SourceYN</B> <I>filename</I></LI>
+   <LI><B>SourceZP</B> <I>filename</I></LI>
+   <LI><B>SourceZN</B> <I>filename</I></LI>
+   <LI><B>Format</B> <I>D3D_format</I> &#8211; Defaults to source format. Linear formats are not allowed.</LI>
+   <LI><B>Size</B>   <I>image_size</I> &#8211; The size must be a power of two.</LI>
+   <LI><B>Levels</B> <I>number_of_mipmap_levels</I> &#8211; Defaults to 1 (0 means as many as possible).</LI>
+   <LI><B>AlphasourceXP</B> <I>filename</I></LI>
+   <LI><B>AlphasourceXN</B> <I>filename</I></LI>
+   <LI><B>AlphasourceYP</B> <I>filename</I></LI>
+   <LI><B>AlphasourceYN</B> <I>filename</I></LI>
+   <LI><B>AlphasourceZP</B> <I>filename</I></LI>
+   <LI><B>AlphasourceZN</B> <I>filename</I></LI>
+   </UL>
+   
+   <BR>
+
+<P class="content">For example:</P>
+   
+   
+<PRE>   Cubemap Lobby
+   {
+      SourceXP Media\Textures\LobbyXP.bmp
+      SourceXN Media\Textures\LobbyXN.bmp
+      SourceYP Media\Textures\LobbyYP.bmp
+      SourceYN Media\Textures\LobbyYN.bmp
+      SourceZP Media\Textures\LobbyZP.bmp
+      SourceZN Media\Textures\LobbyZN.bmp
+      Format   D3DFMT_A8R8G8B8
+      Size     256
+   }</PRE>
+
+
+<H3 class="overview">Volume Texture</H3>
+
+<P class="content">A volume texture must be followed by a series of properties that are enclosed in curly braces {}.  Supported properties are:</P>
+   
+   <UL>
+   <LI><B>Format</B> <I>D3D_format</I> &#8211; Defaults to source format.</LI>
+   <LI><B>Width</B>  <I>image_width</I> &#8211; Defaults to source width.</LI>
+   <LI><B>Height</B> <I>image_height</I> &#8211; Defaults to source height.</LI>
+   <LI><B>Depth</B>  <I>image_depth</I> &#8211; Specifies the number of volume slices (the depth) of the texture. The depth must be specified before any image sources are specified, since the bundler must know how many sources to expect.</LI>
+   <LI><B>Levels</B> <I>number_of_mipmap_levels</I> &#8211; Defaults to 1 (0 means as many as possible).</LI>
+   <LI><B>Source</B> <I>filename</I> &#8211; There must be a number of sources equal to the previously specified depth.</LI>
+   <LI><B>Alphasource</B> <I>filename</I> &#8211; There must be a number of alpha sources equal to the previously specified depth.</LI>
+   </UL>
+   
+   <BR>
+
+<P class="content">For example:</P>
+   
+   
+<PRE>   VolumeTexture ParticleVolume
+   {
+      Width  16
+      Height 16
+      Depth   4
+      Source Media\Textures\ParticleA.bmp
+      Source Media\Textures\ParticleB.bmp
+      Source Media\Textures\ParticleC.bmp
+      Source Media\Textures\ParticleD.bmp
+      Levels 0
+   }</PRE>
+
+
+<H3 class="overview">Vertex Buffer</H3>
+
+<P class="content">A vertex buffer must be followed by a series of properties that are enclosed in 
+   curly braces {}.  Supported properties are:</P>
+
+   <UL>
+   <LI><B>VertexFormat</B> {<I>List of attribute formats</I>}</LI>
+   <LI><B>VertexData</B>   {<I>List of numbers</I>}</LI>
+   </UL>
+
+
+<P class="content">The data for each vertex in the vertex buffer is specified as a series
+   of floating-point, integer, or hexadecimal numbers. A separate number should
+   be provided for each component of each attribute. For example, a normal
+   consists of three components (x,y,z), so it should be specified with 
+   three separate numbers. The formats specify how to convert the numbers
+   into packed data in the vertex buffer. For example, a VertexFormat and
+   VertexData are defined as follows:</P>
+
+<PRE>    VertexFormat { D3DVSDT_FLOAT3 D3DVSDT_NORMPACKED3 }
+    VertexData {1.0 2.0 3.0 0.5 0.2 0.2}</PRE>
+
+<P class="content">The above definition would result in a vertex buffer that contains a single vertex defined
+   by 16 bytes (three floats 1.0 2.0 3.0 and 0.5 0.2 and 0.2 packed into a 
+   single <b>DWORD</b>).  Note that no formatting information is stored in the .xpr 
+   file.  The primitive type and vertex buffer format must be specified by 
+   the title that uses the vertex buffer.</P>
+   
+<P class="content">The following is an example vertex buffer definition:</P>
+
+<PRE>   VertexBuffer QuadVB
+   {
+       VertexFormat {D3DVSDT_FLOAT3 D3DVSDT_FLOAT3 D3DVSDT_D3DCOLOR D3DVSDT_FLOAT1 D3DVSDT_FLOAT1}
+       VertexData 
+       { 
+           -0.5 -0.5 1.0 0.0 0.0 -1.0 1 1 1 1 0.0 1.0      // v0
+           -0.5  0.5 1.0 0.0 0.0 -1.0 1 1 1 1 0.0 0.0      // v1
+            0.5 -0.5 1.0 0.0 0.0 -1.0 1 1 1 1 1.0 1.0      // v2
+            0.5  0.5 1.0 0.0 0.0 -1.0 1 1 1 1 1.0 0.0      // v3    
+       }
+   }</PRE>
+
+<P class="content"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;Both // and /* */ comment constructs are supported.</P>
+
+
+<H3 class="overview">Index Buffer</H3>
+
+<P class="content">An index buffer must be followed by a series of properties
+   that are enclosed in curly braces {}.  The only supported property is:</P>
+
+   <UL>
+     <LI><B>IndexData</B>   {<I>list of numbers</I>}</LI>
+   </UL>
+	 
+<P class="content">The following is an example index buffer definition:</P>
+
+<PRE>
+   IndexBuffer MyIndex
+   {
+      IndexData
+      {
+         1 2 3 4 5 6 7 8
+      }
+   }</PRE>
+
+   
+<H3 class="overview">Programming Notes</H3>
+
+<P class="content">The .xpr format is designed to use the <B>Register</B> function to fastload Direct3D
+resources. The Bundler tool processes the
+resources (format conversion, swizzling, and so on), and then writes out the texture
+data in the format used by the Xbox GPU. As a result, the texture data can be read
+into a contiguous block of memory, and Direct3D textures can then be pointed at
+the data by means of the <B>Register</B> routine.</p> 
+
+<P class="content">For more details, see the <a href="xbox_jbh_samp_gra_xprviewer.htm">XboxPackedResource sample</a> and <a
+href="xbox_dxg_IDirect3DResource8_Register.htm">Register</a> documentation.</P>
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>
+<!--  LocalWords:  rdf
+ -->

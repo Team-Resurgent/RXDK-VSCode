@@ -1,0 +1,127 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>SetThreadPriority</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="SetThreadPriority">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="SetThreadPriority"/>
+<MSHelp:Keyword Index="F" Term="SetThreadPriority"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_setthreadpriority"></A>SetThreadPriority</H1>
+
+<P>The <B>SetThreadPriority</B> function sets the priority value for the specified thread.</P>
+
+<PRE class=syntax><B>BOOL SetThreadPriority(
+  HANDLE</B><I> hThread</I><B>, </B>// handle to the thread
+<B>  int</B><I> nPriority</I>   // thread priority level
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>hThread</I></DT>
+
+<DD>[in] Handle to the thread whose priority value is to be set. 
+</DD>
+
+<DT><I>nPriority</I></DT>
+
+<DD>[in] Specifies the priority value for the thread. This parameter can be one of the following values: 
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=35%>Priority</TH>
+<TH align=left width=65%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>THREAD_PRIORITY_IDLE</TD>
+<TD width=65%>Indicates a base-priority level of 1.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>THREAD_PRIORITY_LOWEST</TD>
+<TD width=65%>Indicates 2 points below normal priority.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>THREAD_PRIORITY_BELOW_NORMAL</TD>
+<TD width=65%>Indicates 1 point below normal priority.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>THREAD_PRIORITY_NORMAL</TD>
+<TD width=65%>Indicates a base-priority level of 8.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>THREAD_PRIORITY_ABOVE_NORMAL</TD>
+<TD width=65%>Indicates 1 point above normal priority.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>THREAD_PRIORITY_HIGHEST</TD>
+<TD width=65%>Indicates 2 points above normal priority.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>THREAD_PRIORITY_TIME_CRITICAL</TD>
+<TD width=65%>Indicates a base-priority level of 15.</TD>
+</TR>
+</TABLE><BR>
+
+
+
+<P>This parameter can also be -7, -6, -5, -4, -3, 3, 4, 5, or 6.</P> 
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is nonzero.</P>
+
+<P>If the function fails, the return value is zero. To get extended error information, call <A HREF="errors_3uwi.htm">GetLastError</a>. </P>
+
+<H4>Remarks</H4>
+
+<P>Every thread has a base priority level determined by the thread's priority value. The system uses the base priority level of all executable threads to determine which thread gets the next slice of CPU time. Threads are scheduled in a round-robin fashion at each priority level, and only when there are no executable threads at a higher level does scheduling of threads at a lower level take place. </P>
+
+<P>The <B>SetThreadPriority</B> function enables setting the base priority level of a thread. For example, specifying THREAD_PRIORITY_HIGHEST in a call to <B>SetThreadPriority</B> sets the thread's base priority level to 10.</P>
+
+<P>The system dynamically boosts a thread's base priority level when events occur that are important to the thread.</P>
+
+<P>All threads initially start at THREAD_PRIORITY_NORMAL. Use the <A HREF="prothred_9uk9.htm">GetThreadPriority</a> function to get the priority value of a thread.</P>
+
+<P>Use thread priority values to differentiate the relative priorities of tasks. For example, a thread that handles input could have a higher priority level than a thread that performs intensive calculations for the CPU. </P>
+
+<P>When manipulating priorities, be very careful to ensure that a high-priority thread does not consume all of the available CPU time. A thread with a base priority level above 11 interferes with the normal operation of the system software. Using THREAD_PRIORITY_TIME_CRITICAL may cause disk caches to not flush, and so on.  In general, a high priority thread should spend most of its time in a wait state so that it doesn't interfere with other threads.  The high priority thread completes the wait, quickly performs some operation, and then re-enters the wait state.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p><H4>See Also</H4>
+<P> 
+<a href="xbox_mt_xtl_sll_threads_overview.htm">Thread Overview</a>,
+<a href="xbox_mt_xtl_sll_threads_functions.htm">Thread Functions</a> | 
+<A HREF="prothred_9uk9.htm">GetThreadPriority</a></P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

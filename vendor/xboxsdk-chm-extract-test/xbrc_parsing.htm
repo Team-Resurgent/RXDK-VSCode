@@ -1,0 +1,314 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Parsing Using CXBParser (XbRC)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Parsing Using CXBParser (XbRC)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Parsing Using CXBParser (XbRC)</h1>
+<p>The following diagram shows how an XDX file is parsed:</p><p><img src="images/xbrc_fig2.jpg"></p><p>The MSXML parser is invoked with this call:</p>
+<pre class="clsCode">
+hr = pRdr-&gt;parseURL( URL );
+</pre>
+    <p>The function returns the error condition in <i>hr</i> when the parsing is complete. Parsing ends for one of two reasons. Either we reached the end of the file to parse, or there was a call to the <a href="xbrc_error_handler.htm#fatal">fatalError</a> error handler. The result of <b>parseURL</b> is S_OK if parsing was successful. This would include any warnings or recoverable errors. The result of <b>parseURL</b> is the <b>HRESULT</b> returned by <b>fatalError</b> if there was a call to the <b>fatalError</b> error handler during parsing. At this point, XbRC ceases compilation and returns the error code to the command line. Otherwise, when XbRC is complete, it returns S_OK.</p><p>The <b>CXBParser</b> class is the workhorse for the compiler. It not only implements the content and error handler functions needed by the MSXML SAX parser, it also stores the list of containers that are created during the compile phase. The class also keeps track of the current context we are in while parsing by storing the current container on a list that acts as a stack. The current context is used to validate the XML and to make sure that the parsed data is parented to the correct containers. The class also implements the functions needed to create the containers. It implements the compile, optimize, and link functions, which iterate through the list of containers and call the appropriate compile, optimize, and link container functions.</p><p>The <a href="xbrc_content_handler.htm#start">startElement</a>, <a href="xbrc_content_handler.htm#end">endElement</a>, and <a href="xbrc_content_handler.htm#char">characters</a> content handlers are where most of the parsing work is done. To illustrate how they are called and what happens inside the <b>CXBParser</b> class itself, let's run through a small XDX file and describe the parsing steps.</p><p>Given the following XDX file to parse:</p>
+<pre class="clsCode">
+&lt;?xml version="1.0"?&gt;
+&lt;?xml-stylesheet type="text/xsl" href="xdx.xsl"?&gt;
+&lt;XDX version="1.0"&gt;
+
+    &lt;cubeMap id="reflection00" levels="8"&gt;
+    	&lt;cubeFace face="XP" source="Desert_posx.bmp" /&gt;
+    	&lt;cubeFace face="XN" source="Desert_negx.bmp" /&gt;
+    	&lt;cubeFace face="YP" source="Desert_posy.bmp" /&gt;
+    	&lt;cubeFace face="YN" source="Desert_negy.bmp" /&gt;
+    	&lt;cubeFace face="ZP" source="Desert_posz.bmp" /&gt;
+    	&lt;cubeFace face="ZN" source="Desert_negz.bmp" /&gt;
+    &lt;/cubeMap&gt;
+
+    &lt;texture id="diffuse04_05" format="D3DFMT_A8" levels="8" alphaSource="Wings_mask.tga"/&gt;
+
+&lt;/XDX&gt;
+</pre>
+    <p>The first call that the <b>CXBParser</b> does work in is the call to <a href="xbrc_content_handler.htm#startdoc">CXBParser::startDocument</a>. In this handler, we simply store the path and file name so that our error messages will match the Visual C++ Compiler in format.</p><p>The next call that XbRC would get from the MSXML SAX Parser would be the call to <b>CXBParser::startElement</b> with the tag name of &lt;<a href="xdx_element_XDX.htm">XDX</a>&gt; and the attributes of version = "1.0".  <b>CXBParser</b> tracks the current context in a list that acts like a stack so that it can correctly hand off the elements it finds. Since you are just starting, the current context would be NULL because the current context list starts empty. You then call into a switch statement to correctly handle the element passed in based on the context identifier. In the NULL case, this corresponds to XBRC_INVALID_RESOURCE. In this context, ONLY an XDX tag is valid. Since that is what you have, there is no problem. If the &lt;<a href="xdx_element_cubeMap.htm">cubeMap</a>&gt; tag had been the first element, this would have generated a <b>fatalError</b> call and parsing (and compilation) would have ended at this point. Each element tag has a function defined for it in <b>CXBParser</b> class. They are generally of the form Begin_<i>tagName</i>. In this case, the function is <a href="xbrc_parsing.htm#begin_xdx">Begin_XDX</a>, and it takes a pointer to the attributes.</p><p>Looking at the <b>Begin_XDX</b> function:</p><h2><a name="begin_xdx"></a></h2>
+<pre class="clsCode">
+HRESULT CXBParser::Begin_XDX( ISAXAttributes *pAttributes )
+{
+    XBRCXDXData *pXDXData = new XBRCXDXData( pAttributes );
+    if ( pXDXData == NULL )
+    {
+        // Appropriate error handling here.
+    }
+
+    // Check if pXDXData is actually an XDX Context.
+    // It might not be if version number was wrong.
+    if( pXDXData-&gt;getResourceType() != XBRC_XDX )
+    {
+        // Appropriate error handling here.
+    }
+
+    // Push current context into master list and the current context stack.
+    m_vRawData.push_back(pXDXData);
+    m_vStack.push_back(pXDXData);
+
+    return S_OK;
+}
+</pre>
+    <p>First, you create an instance of the <a href="xbrc_parsing.htm#xbrcxdxdata">XBRCXDXData</a> class and pass the constructor the pointer to the attributes. <b>XBRCXDXData</b> is an example of a container that holds the data we are parsing from the file. Each container class is derived from the <b>XBRCRawData</b> class. This base class contains a number of pure virtual functions that must be overridden to ensure that the containers work properly. <b>XBRCXDXData</b> has a member <b>m_dwResourceType</b> (inherited from <b>XBRCRawData</b>) of type <a href="xbrc_parsing.htm#xbrcresourcetype">XBRCResourceType</a>, which describes what kind of resource container this class represents. This <b>m_dwResourceType</b> variable must be one of the following values.</p><h2><a name="xbrcresourcetype"></a></h2>
+<pre class="clsCode">
+enum XBRCResourceType
+{
+    XBRC_INVALID_RESOURCE = -1,
+    XBRC_XDX,
+    XBRC_INCLUDE,
+    XBRC_TEXTURE,
+    XBRC_CUBEMAP,
+    XBRC_VOLUMETEXTURE,
+    XBRC_PALETTETEXTURE,
+    XBRC_INDEXBUFFER,
+    XBRC_VERTEXBUFFER,
+    XBRC_VERTEXBUFFERDECL,
+    XBRC_VERTEXBUFFERVREG,
+    XBRC_VERTEX,
+    XBRC_VERTEXSHADER,
+    XBRC_PIXELSHADER,
+    XBRC_VERTEXSHADERDECL,
+    XBRC_VERTEXSHADERSTREAM,
+    XBRC_VERTEXSHADERVREG,
+    XBRC_VERTEXSHADERASM,
+    XBRC_VERTEXSHADERCONSTANT,
+    XBRC_PIXELSHADERASM,
+    XBRC_PIXELSHADERCONSTANT,
+    XBRC_FRAME,
+    XBRC_MODEL,
+    XBRC_PASS,
+    XBRC_DRAW,
+    XBRC_SKELETON,
+    XBRC_RENDERSTATE,
+    XBRC_TEXTURESTATE,
+    XBRC_MATRIX,
+    XBRC_TRANSLATE,
+    XBRC_ROTATE,
+    XBRC_SCALE,
+    XBRC_ANIMOUTPUT,
+    XBRC_ANIMATE,
+    XBRC_VALUES,
+    XBRC_KEYTIMES,
+    XBRC_MATRIXMAPPING,
+    XBRC_MAP,
+};
+</pre>
+    <p>These represent all of the possible, valid tags we can find in an XDX file. Each tag has its own container class derived from <b>XBRCRawData</b>.</p><p>Here is the <b>XBRCXDXData</b> class:</p><h2><a name="xbrcxdxdata"></a></h2>
+<pre class="clsCode">
+class XBRCXDXData : public XBRCRawData
+{
+    protected:
+        string    m_strVersion;
+
+    public:
+        XBRCXDXData()
+        {
+            m_dwResourceType = XBRC_XDX;
+            m_strVersion = "INVALID_VERSION";
+        }
+
+        XBRCXDXData( ISAXAttributes *pAttributes );
+
+        virtual ~XBRCXDXData()
+        {
+            m_dwResourceType = XBRC_INVALID_RESOURCE;
+        }
+
+        //Adds data to the class from XML file.
+        virtual HRESULT addData( WCHAR *pwchChars, int cchChars );
+
+        // Compiles resource into binary format.
+        virtual HRESULT compile();
+
+        // optimizes binary format.  (Stripify triangles, etc.)
+        virtual HRESULT optimize();
+
+        // links resource into final bundled format.
+        virtual HRESULT link();
+
+        // Writes intermediate file containing compiled/optimized binary data.
+        virtual HRESULT outputIntermediateFile();
+
+        // Reads intermediate file containing compiled/optimized binary data.
+        virtual HRESULT inputIntermediateFile();
+
+        // Checks dependencies to see if resource needs to be compiled.
+        virtual BOOL needsCompiling();
+
+        string getVersionString()
+        {
+            return m_strVersion;
+        }
+};
+</pre>
+    <p>Note that the only data it will store is a string corresponding to the version number. This will be passed in as an attribute during construction. There is also a method for getting that version string from the class. During the constructor, you parse out the attributes from the pointer passed in. This code is nearly identical for every container class.</p>
+<pre class="clsCode">
+// Parse the attributes for this context.
+int iAttributeCount;
+pAttributes-&gt;getLength( &amp;iAttributeCount );
+if( FAILED( result ) )
+{
+    // Appropriate error handling here.
+}
+
+for( int iAttribute = 0; iAttribute &lt; iAttributeCount; iAttribute++ )
+{
+    WCHAR *pwchLocalName;
+    int cchLocalName;
+    result = pAttributes-&gt;getLocalName( iAttribute, &amp;pwchLocalName, 
+                                        &amp;cchLocalName ); 
+    if( FAILED( result ) )
+    {
+        // Appropriate error handling here.
+    }
+
+    WCHAR *pwchValue;
+    int cchValue;
+    result = pAttributes-&gt;getValue( iAttribute, &amp;pwchValue, &amp;cchValue );
+    if( FAILED( result ) )
+    {
+        // Appropriate error handling here.
+    }
+
+    if ( Match( g_strXBRC_Version,pwchLocalName, cchLocalName ) )
+    {
+        m_strVersion = CXBParser::CharString( pwchValue, cchValue );
+    }
+    else
+    {
+        // Do we need to fail if we find an attribute we don't recognize?
+        // Or can we just continue after informing the user?
+        g_pXBParser-&gt;UnexpectedToken( pwchLocalName, cchLocalName, E_FAIL );
+        g_pXBParser-&gt;m_bErrorSuppress = false;
+    }
+}
+</pre>
+    <p>You simply loop through all of the attributes and make sure that the attribute you found is valid for this tag. If it is not valid, call <b>UnexpectedToken</b> with the attribute data found. This generates a <a href="xbrc_error_handler.htm#fatal">fatalError</a> call, which stops parsing and compiling at this point. It would be trivially easy to change this to an <a href="xbrc_error_handler.htm#warning">ignorableWarning</a> call instead, which is what the comment is alluding to.  </p><p>After parse the attributes, you check the version number found for validity. If it is a valid version number, set the resource type to XBRC_XDX and return. Since the constructor cannot return a value other then the pointer, you use the resource type to indicate to <b>CXBParser</b> that everything was OK or that an error occurred. Looking back at the code in <b>Begin_XDX</b>, note that the next line after the constructor is checking that you didn't get NULL back and that you did, in fact, create an XBRC_XDX resource type container. If the version was wrong, the resource type would have been set to XBRC_INVALID_RESOURCE and you would call <b>fatalError</b>. After insuring that you created the correct kind of container, add the container to the <b>m_vRawData</b> vector and the <b>m_vStack</b> vector, both stored in <b>CXBParser</b>. </p><p>The <b>m_vRawData</b> vector is the master list of all parsed data found. Every tag you find will be on this list either directly or inside of a container on this list. For example, the tags associated with the &lt;<a href="xdx_element_cubeMap.htm">cubeMap</a>&gt; tag in the example you are parsing will be on a list in the <a href="xbrc_parsing.htm#xbrccubemapdata">XBRCCubeMapData</a> container instead of on the main list by themselves. You'll see why in a moment.</p><p>The <b>m_vStack</b> vector is a stack that holds the current context you are parsing so that calls to <a href="xbrc_content_handler.htm#start">startElement</a>, <a href="xbrc_content_handler.htm#end">endElement</a>, and <a href="xbrc_content_handler.htm#char">characters</a> will know what context they are in. As you call <b>endElement</b> for each tag, you pop that context off of the stack. Thus, the call to <b>endElement</b> for &lt;/XDX&gt; will first check that you are in the XDX context. If not, a tag probably didn't have an end tag associated with it in the XML file. The result is a fatal error. If you are in the XDX context, you call a function that is generally of the form End_<i>tag</i>. In this case, it would be <b>End_XDX</b>. The <b>End_XDX</b> function pops the XDX context off of the stack and makes sure that it was an XDX context. This is typically what all of the End_<i>tag</i> functions do.</p><p>But we are getting ahead of ourselves! Going back to file parsing already in progress, the next thing that happens is a call to <b>CXBParser::startElement</b> with the &lt;<b>cubeMap</b>&gt; tag. The <b>startElement</b> function now finds that the context is XBRC_XDX. It also discovers that a &lt;<b>cubeMap</b>&gt; tag is valid in this context. It then calls <b>Begin_CubeTexture</b> with the pointer to the attributes passed in. <b>Begin_CubeTexture</b> calls the constructor for <b>XBRCCubeMapData</b> with the attributes, handles any errors that occur, and pushes this container onto the stack to let us know we are now in this context. It also adds this container class to the <b>m_vRawData</b> list.  Looking at the <b>XBRCCubeMapData</b> class:</p><h2><a name="xbrccubemapdata"></a></h2>
+<pre class="clsCode">
+class XBRCCubeMapData : public XBRCRawData
+{
+    protected:
+        string                  m_strIdentifier;
+        string                  m_strFilter;
+        string                  m_strFormat;
+        DWORD                   m_dwSize;
+        DWORD                   m_dwLevels;
+        string                  m_strMapData;
+        DWORD                   m_dwNormalMap;
+        DWORD                   m_dwSizeSpecified;
+
+        CCubemapCompiler        *m_pCubeMap;
+
+    public:
+        XBRCCubeMapData()
+        {
+            m_dwResourceType = XBRC_CUBEMAP;
+        }
+
+        XBRCCubeMapData( ISAXAttributes *pAttributes );
+
+        virtual ~XBRCCubeMapData();
+
+        virtual HRESULT addData( WCHAR *pwchChars, int cchChars );
+
+        virtual HRESULT compile();
+        virtual HRESULT optimize();
+        virtual HRESULT link();
+
+        virtual HRESULT outputIntermediateFile();
+        virtual HRESULT inputIntermediateFile();
+
+        virtual BOOL needsCompiling();
+
+        virtual string *getResourceIdentifier()
+        {
+            return &amp;( m_strIdentifier );
+        }
+
+        vector&lt;XBRCRawData *&gt;   m_vCubeData;
+};
+</pre>
+    <p>You will find that there is quite a bit of data stored in this container. The attributes passed in from the XDX file are &lt;cubeMap id="reflection00" levels="8"&gt;, which doesn't cover all of the above data items you might expect. Again, the constructor makes the decisions about whether a given attribute must exist or whether it can be filled in with a default value at compile time. The only required attribute in this case is the id, which is needed to identify this resource at compile and link time. All of the other values are set to defaults or are based on the textures used to construct the cube map. These defaults are covered in-depth for cube maps in the XDX to XBR Resource Conversion white paper.  </p><p>Two other pieces of data do not come from the attributes. The first is the <b>CCubeMapCompiler</b> class pointer. This is a pointer to the class that will construct the cubeMap Direct3D Xbox data, and then save it out. In this case, it is derived (copied almost intact, but for bug fixes!) from the old Bundler code that created cube maps from a list of textures supplied in an RDF file. Bundler is used extensively in the Xbox sample code to construct the data needed for the samples. The end user can replace this class with whatever output format would be desired for this container. For example, this class could be replaced by a class to output the DirectX 9 format CubeMap instead of the Xbox format or a custom format for a specific game engine. How this replacement occurs is up to the developer. You could include all of the output formats desired and only output the desired format based on a compiler command-line switch. You could also use #if constructions in the code and build different versions of XbRC for different platforms or game engines.</p><p>The other piece of data is a vector containing the individual cube map faces. This will be filled out with the individual faces as they are parsed out of the file. Let's look at that next.</p><p>You are now in an XBRC_CUBEMAP context, and the next call to <a href="xbrc_content_handler.htm">CXBParser::startElement</a> will be with the tag &lt;<a href="xdx_element_cubeFace.htm">cubeFace</a>&gt;. This tag is valid only inside an XBRC_CUBEMAP context. This generates a call to <a href="xbrc_parsing.htm#begin_localtexture">Begin_LocalTexture</a>. Generally, functions of the form <b>Begin_Local</b><i>tag</i> do not add to the main list. Instead, they add to a local list, like the vector contained in <a href="xbrc_parsing.htm#xbrccubemapdata">XBRCCubeMapData</a>. Here is the function <b>Begin_LocalTexture</b>:</p><h2><a name="begin_localtexture"></a></h2>
+<pre class="clsCode">
+HRESULT CXBParser::Begin_LocalTexture( ISAXAttributes *pAttributes,
+                                       XBRCRawData *pLocalData )
+{
+    XBRCTextureData *pTextureData = new XBRCTextureData( pAttributes );
+    if ( pTextureData == NULL )
+    {
+                // Appropriate error handling here.
+    }
+
+    // Check if pTextureData is actually a Texture Context.
+    // It might not be if source files were not found.
+    if( pTextureData-&gt;getResourceType() != XBRC_TEXTURE )
+    {
+                // Appropriate error handling here.
+    }
+
+    // Push onto Local List passed in.
+    if( pLocalData-&gt;getResourceType() == XBRC_CUBEMAP )
+    {
+        ((XBRCCubeMapData *)pLocalData)-&gt;m_vCubeData.push_back( pTextureData );
+    }
+    else if( pLocalData-&gt;getResourceType() == XBRC_VOLUMETEXTURE )
+    {
+        ((XBRCVolumeTextureData *)pLocalData)-&gt;m_vVolumeData.
+                                                               push_back( pTextureData );
+    }
+    else if( pLocalData-&gt;getResourceType() == XBRC_TEXTURE )
+    {
+        ((XBRCTextureData *)pLocalData)-&gt;m_vTextureData.push_back( pTextureData );
+    }
+    else
+    {
+                // Appropriate error handling here.
+    }
+
+    return S_OK;
+}
+</pre>
+    <p>The first part of the function should be familiar by now. It takes the attributes and creates an <b>XBRCTextureData</b> from them. The difference is that you are not going to add this container to the main list. Instead, you add it to the list inside the container you passed in. Note that you also generate an error if the context passed in was wrong. During the compile phase, simply traverse this list and build up your cube map out of the textures supplied in this local list of texture containers.</p><p>Looking back at the XDX file, you'll see that this tag has the end element marker inside the tag itself &lt;cubeFace face="XP" source="Desert_posx.bmp" /&gt;. This means that the next call to <b>CXBParser</b> will be the <a href="xbrc_content_handler.htm#end">endElement</a> handler. You are still in an XBRC_CUBEMAP context, and <b>endElement</b> is passed the tag name "cubeFace" as the element you are ending. Fortunately, this is valid for this context and you call <b>End_LocalTexture</b>. Because you have nothing to pop (because the cubeFace container was added to a local list inside of the cubeMap container) this function simply returns S_OK.</p><p>You then repeat the above steps for each &lt;<b>cubeFace</b>&gt; tag you find. You then hit the &lt;/cubeMap&gt; tag, which calls <b>endElement</b> with this tag. This generates a call to <a href="xbrc_parsing.htm#end_cubetexture">End_CubeTexture</a>. Here is that function:</p><h2><a name="end_cubetexture"></a></h2>
+<pre class="clsCode">
+HRESULT CXBParser::End_CubeTexture()
+{      
+    // Make sure the current context matches this one!
+    XBRCRawData *pCubeMapData = NULL;
+    LONG topOfStack = m_vStack.size() - 1;
+    if( topOfStack != -1 )
+        pCubeMapData = m_vStack[topOfStack];
+
+    if ( pCubeMapData &amp;&amp; ( pCubeMapData-&gt;getResourceType() != XBRC_CUBEMAP ) )
+    {
+        // Appropriate error handling here.
+    }
+
+    // Pop the last element off of the stack.
+    m_vStack.erase( &amp;m_vStack[topOfStack], &amp;m_vStack[topOfStack+1] );
+
+    return S_OK;
+}
+</pre>
+    <p>You grab the top of the stack and make sure it is an XBRC_CUBEMAP context. If not, trigger a <a href="xbrc_error_handler.htm#fatal">fatalError</a> call and stop parsing. Otherwise, simply pop it off of the context stack.</p><p>The next call is to <a href="xbrc_content_handler.htm#start">CXBParser::startElement</a> with the tag &lt;<a href="xdx_element_texture.htm">texture</a>&gt;. This works much as already described. You call <b>Begin_Texture</b> (not <a href="xbrc_parsing.htm#begin_localtexture">Begin_LocalTexture</a>, because you are back in an XDX context, and you want to add this texture to the main list) and create an <b>XBRCTextureData</b> container with the data in the attributes. You then add that container to both the main list and the stack. This container also has a compiler that can be changed out to write whatever format is desired for a texture. When you hit the end of the line in the XML file, call <b>CXBParser::endElement</b> because the end of the tag is at the end of the line. This pops the XBRC_TEXTURE context, and you are back to the XBRC_XDX context.</p><p>You then hit the &lt;/XDX&gt; tag and pop the XBRC_XDX context, which leaves the stack empty. Then, hit the end of the file, and the <a href="xbrc_content_handler.htm#enddoc">CXBParser::endDocument</a> handler is called, which makes sure that the stack is empty. </p><p>The parser then returns S_OK and we are now free to compile the data in our containers.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

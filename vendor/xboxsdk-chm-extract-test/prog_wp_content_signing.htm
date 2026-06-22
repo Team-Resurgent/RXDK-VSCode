@@ -1,0 +1,720 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Xbox Content Signing Options</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="content signing options"/>
+<MSHelp:Keyword Index="K" Term="security, content signing"/>
+<MSHelp:Keyword Index="K" Term="signing techniques for security"/>
+<MSHelp:Keyword Index="K" Term="content signing options"/>
+<MSHelp:Keyword Index="F" Term="Xbox Content Signing Options"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<h1>Xbox Content Signing Options</h1>
+
+<p><i>By Pete Isensee, Development Lead, Xbox Advanced Technology Group</i></p>
+
+<p>In order to protect content on the hard disk and memory units, the Xbox&#174; video game system from Microsoft&#174; provides a variety of signing techniques.</p>
+
+<p>This white paper lists the various available options and describes when and how to use each method. It also includes detailed information on how various signatures are calculated. For information on testing content signatures, refer to the <a href="https://xds.xbox.xom/bpproginfo.asp?page=content/prog_wp_contentprotection.htm" target="blank">Content Protection on Xbox</a> white paper.</p>
+
+<h2>By Data Region</h2>
+
+<p>Each data region on an Xbox console is designed to store different types of information. The regions have different requirements when it comes to security.</p>
+
+<h3>User Region</h3>
+
+<p>User data regions are locations where players can store saved games, profiles, and other user-generated data. Xbox Memory Units are always user data regions. The U: partition on the Xbox hard disk is also a user data region. Technical Certification Requirements (TCRs) state that all content written to user data regions must be signed. User data can be signed as roamable (usable on other consoles), non-roamable (locked to one console) or Live (requires an Xbox <i>Live</i>&#8482; connection). User data must be signed and verified using the <b>XCalculateSignature</b> family of functions.</p>
+
+<h3>Persistent Data Region</h3>
+
+<p>The Xbox persistent data region is the T: hard disk partition, dedicated to storing generic, non-user-specific data, including things such as high-score tables, new levels, custom maps, or other game content. Content downloaded from Xbox <i>Live</i> is stored on the T: drive. TCRs mandate that all content written to persistent data regions be signed as non-roamable (locked to one console). Content downloaded from Xbox <i>Live</i> is automatically signed during the <b>XOnlineContentInstall</b> process and must be verified using <b>XLocateSignatureByName</b>/<b>Index</b> along with <b>XCalculateContentSignature</b>. Content created by the game must be signed using the <b>XCalculateSignature</b> family of functions and the CONTENT flag. Content that could conceivably be shared online with other consoles or uploaded to Xbox <i>Live</i> must be signed using <b>XCalculateSignature</b> with the flag ONLINE. Shared online content must be verified using <b>XOnlineVerifySignature</b>.</p>
+
+<h3>Utility Data Region</h3>
+
+<p>The Xbox utility data region is the Z: hard disk partition. It is designed as a fast cache or scratch area, useful for storing audio assets or level data. Data in the utility region is not required to be signed. Developers are encouraged to validate content on the utility region when it makes sense. For instance, it's rarely useful to sign texture data or raw audio. The performance overhead is too high, and even if the data is corrupted the worse outcome is a video or audio glitch. However, it is important to validate file headers and other content when corrupt content could allow exploitation. For instance, file manifests, configuration files, AI scripts, and world state data should be signed. The <b>XCalculateSignature</b> family of functions can be used to sign this data. Use the NON_ROAMABLE flag.</p>
+
+<h2>Xbox Storage Signature Options</h2>
+
+<p>Determining the best way of signing content is a product of both security and flexibility. For instance, signing saved games with Xbox <i>Live</i> keys is extremely secure, but those save games can be read and written only while the player is online. The following tables show the various options available for protecting data.</p>
+
+<p>In these tables, low security means that modified data can be easily re-signed by a dedicated attacker, transferred to another console, and still validate properly. High security means that even though data can be easily re-signed, it will not validate on another console. Highest security means that it is quite difficult to re-sign modified data.</p>
+
+<h3>By Xbox Data Region</h3>
+<table>
+	<tr>
+		<th>Partition</th>
+		<th>Signature required</th>
+		<th>Signature options</th>
+		<th>Security</th>
+		<th>Xbox <i>Live</i> sign-in required</th>
+	</tr>
+	<tr>
+		<td rowspan="3">F&#8211;M, U (user data)</td>
+		<td rowspan="3">Yes</td>
+		<td>Roamable</td>
+		<td>Low</td>
+		<td>No</td>
+	</tr>
+	<tr>
+		<td>Non-roamable</td>
+		<td>High</td>
+		<td>No</td>
+	</tr>
+	<tr>
+		<td>Xbox <i>Live</i></td>
+		<td>Highest</td>
+		<td>Yes</td>
+	</tr>
+	<tr>
+		<td rowspan="2">T (persistent)</td>
+		<td rowspan="2">Yes</td>
+		<td>Non-roamable</td>
+		<td>High</td>
+		<td>No</td>
+	</tr>
+	<tr>
+		<td>Xbox <i>Live</i></td>
+		<td>Highest</td>
+		<td>Yes</td>
+	</tr>
+	<tr>
+		<td rowspan="2">Z (utility)</td>
+		<td rowspan="2">No</td>
+		<td>No signature</td>
+		<td>None</td>
+		<td>No</td>
+	</tr>
+	<tr>
+		<td>Non-roamable</td>
+		<td>High</td>
+		<td>No</td>
+	</tr>
+</table>
+
+<h3>By Content Type</h3>
+
+<table>
+	<tr>
+		<th>Content</th>
+		<th>Signature required</th>
+		<th>Signature options</th>
+		<th>Security</th>
+		<th>Xbox <i>Live</i> sign-in required</th>
+	</tr>
+	<tr>
+		<td rowspan="3">Save games, profiles, user data</td>
+		<td rowspan="3">Yes</td>
+		<td>Roamable</td>
+		<td>Low</td>
+		<td>No</td>
+	</tr>
+	<tr>
+		<td>Non-roamable</td>
+		<td>High</td>
+		<td>No</td>
+	</tr>
+	<tr>
+		<td>Xbox <i>Live</i></td>
+		<td>Highest</td>
+		<td>Yes</td>
+	</tr>
+	<tr>
+		<td rowspan="2">Downloads, high scores</td>
+		<td rowspan="2">Yes</td>
+		<td>Non-roamable</td>
+		<td>High</td>
+		<td>No</td>
+	</tr>
+	<tr>
+		<td>Xbox <i>Live</i></td>
+		<td>Highest</td>
+		<td>Yes</td>
+	</tr>
+	<tr>
+		<td rowspan="2">Cached data</td>
+		<td rowspan="2">No</td>
+		<td>No signature</td>
+		<td>None</td>
+		<td>No</td>
+	</tr>
+	<tr>
+		<td>Non-roamable</td>
+		<td>High</td>
+		<td>No</td>
+	</tr>
+	<tr>
+		<td>Xbox <i>Live</i> uploads, shared online data</td>
+		<td>Yes</td>
+		<td>Xbox <i>Live</i></td>
+		<td>Highest</td>
+		<td>Yes</td>
+	</tr>
+</table>
+
+<h3>By Security Level</h3>
+
+<table>
+  <tr>
+    <th>Security</th>	
+	<th>Signature options</th>
+	<th>Xbox <i>Live</i> sign-in required</th>
+  </tr>	
+  <tr>	
+	<td>None</td>	
+	<td>No signature</td>	
+	<td>No</td>
+  </tr>
+  <tr>
+	<td>Low</td>	
+	<td>Roamable</td>
+	<td>No</td>
+  </tr>	
+  <tr>
+	<td>High</td>
+	<td>Non-roamable</td>
+	<td>No</td>
+  </tr>
+  <tr>
+	<td>Highest</td>
+	<td>Xbox <i>Live</i></td>
+	<td>Yes</td>
+  </tr>
+</table>  
+  
+<h3>By Function and Flag</h3>
+
+<table>
+  <tr>
+	<th>Function</th>
+	<th>XCALCSIG Flag</th>
+	<th>Content</th>
+  </tr>
+  <tr>
+	<td><b>XCalculateContentSignature</b></td>
+	<td>N/A</td>	
+	<td>Persistent data</td>
+  </tr>
+  <tr>
+	<td><b>XCalculateSignatureBegin</b></td>	
+	<td>SAVE_GAME or 0</td>	
+	<td>Roamable user data</td>
+  </tr>
+  <tr>
+	<td><b>XCalculateSignatureBegin</b></td>	
+	<td>NON_ROAMABLE</td>
+	<td>Non-roamable user data</td>
+  </tr>	
+  <tr>
+    <td><b>XCalculateSignatureBegin</b></td>	
+	<td>CONTENT</td>
+	<td>Persistent data</td>
+  </tr>
+  <tr>
+	<td><b>XCalculateSignatureBegin</b></td>	
+	<td>ONLINE</td>
+	<td>Shared online data</td>
+  </tr>
+  <tr>
+	<td><b>XCalculateSignatureBeginEx</b></td>	
+	<td>SAVE_GAME or 0</td>
+	<td>Roamable user data for alternate titles</td>
+  </tr>
+  <tr>
+	<td><b>XCalculateSignatureBeginEx</b></td>	
+	<td>NON_ROAMABLE</td>
+	<td>Non-roamable user data or persistent data for alternate titles</td>
+  </tr>
+  <tr>
+	<td><b>XInstallContentSignatures</b></td>	
+	<td>N/A</td>
+	<td>Persistent data installed via game disc</td>
+  </tr>	
+  <tr>
+	<td><b>XLoadContentSignatures</b></td>	
+	<td>N/A</td>
+	<td>Persistent data</td>
+  </tr>	
+  <tr>
+	<td><b>XLoadContentSignaturesEx</b></td>	
+	<td>N/A</td>
+	<td>Persistent data for alternate titles</td>
+  </tr>	
+  <tr>
+	<td><b>XLocateSignatureByName</b></td>	
+	<td>N/A</td>
+	<td>Persistent data</td>
+  </tr>
+  <tr>
+	<td><b>XLocateSignatureByIndex</b></td>	
+	<td>N/A</td>
+	<td>Persistent data</td>
+  </tr>
+  <tr>
+	<td><b>XOnlineSignatureVerify</b></td>	
+	<td>N/A</td>
+	<td>Shared online data</td>
+  </tr>
+</table>
+
+<ul>
+	<li>User data includes save games, profiles, etc.</li>
+	<li>Persistent data includes content installed via <b>XInstallContentSignatures</b> content downloaded via <b>XOnlineInstallContent</b> or content on the persistent data region signed with the CONTENT flag.</li>
+	<li>Shared online data includes future online uploads (such as game clips) as well as content intended to be shared online with other consoles.</li>
+</ul>
+
+<h2>Xbox Live Signatures</h2>
+
+<p>Xbox <i>Live</i> signatures provide the highest security level. They are designed for hard disk content that will be uploaded to the Xbox <i>Live</i> service or transmitted to another Xbox console's hard disk. The reason secure signatures are so important in these scenarios is that shared content introduces a high risk to the Xbox platform. A hacker could introduce modified content that could potentially be distributed to thousands of consoles. Truly malicious hackers could render multiple consoles unusable.</p>
+
+<p>Any content read or written to the Xbox hard disk that could ever be transmitted and stored on either the Xbox <i>Live</i> service or another Xbox console should be Xbox <i>Live</i> signed. The signature must be recomputed whenever the content is modified and rewritten. A single failure to sign or verify content introduces a security hole. <i>Live</i> signatures require that players be connected to <i>Live</i> whenever the content is read or written to the hard disk. Content that has been created or modified while the player was offline cannot be safely shared, because an attacker could modify the content without detection. Similarly, content that has been transmitted using system link play can also not be safely shared for the same reason. In general, the only time the console is considered secure is when the console is signed into Xbox <i>Live</i>.</p>
+
+<p>Because of these complexities, it's important to design the game so that potentially shared content can be created and modified only while a player is online. The actual signing process is similar to offline signing. Use the <b>XCalculateSignature</b> ONLINE flag over all files that may be shared. Store the signature on disk along with the data. <i>Live</i> signatures contain more information than just cryptographic bits. They also contain data about the game, Xbox, time, and signed-in users. This information allows content to be revoked at a high level of granularity.</p>
+
+<p>The Xbox <i>Live</i> verification process is completely different than offline verification. At verification time, the digest of the content is recomputed using the DIGEST flag. The original signature is read from storage. Both the digest and the original signature are sent to the <i>Live</i> service for validation. The relevant verification functions are <b>XOnlineVerifySignature</b> and <b>XOnlineVerifySignatureGetResults</b>. The <i>Live</i> service evaluates the incoming digest and original signature to determine whether the content is valid. The service also evaluates whether the signature should be revoked based on the title, Xbox, or player(s) who signed the content.</p>
+
+<p>Creating Xbox <i>Live</i> signatures and verifying them requires that the player be signed in to Xbox <i>Live</i>. Signatures cannot be created or verified without a <i>Live</i> connection.</p> 
+
+<p>By default, <i>Live</i> signatures are roamable. Data signed on one console can be transmitted, stored, and verified on another console. Non-roamable <i>Live</i> signatures can be created by computing a signature using the NON_ROAMABLE flag, then signing that signature with the ONLINE flag. At verification time, re-compute the NON_ROAMABLE signature, and send the DIGEST of that signature along with the saved <i>Live</i> signature for validation. Because the non-roamable signature is different on every console, only content that was signed by the same console will validate properly.</p>
+
+<h2>Keys</h2>
+
+<p>Secure signing involves the use of cryptographic keys. See the Xbox Security Architecture white paper for additional information. The <b>XCalculateSignatureBegin</b> flags indicate what type of key (or keys) will be used during the signing process. The following table shows what keys are used based on the signing function and input flag.</p>
+
+<table>
+  <tr>
+    <th>Function</th>
+	<th>XCALCSIG_FLAG_...</th>
+	<th>Key data</th>
+  </tr>
+  <tr>	
+	<td><b>XCalculateSignatureBegin</b></td>	
+	<td>0 or SAVE_GAME</td>	
+	<td>Per-title key</td>
+  </tr>
+  <tr>	
+	<td><b>XCalculateSignatureBegin</b></td>	
+	<td>NON_ROAMABLE</td>	
+	<td>Per-title key + Xbox key</td>
+  </tr>
+  <tr>	
+	<td><b>XCalculateSignatureBegin</b></td>	
+	<td>CONTENT</td>	
+	<td>None</td>
+  </tr>
+  <tr>	
+	<td><b>XCalculateSignatureBegin</b></td>	
+	<td>DIGEST</td>	
+	<td>None</td>
+  </tr>
+  <tr>	
+	<td><b>XCalculateSignatureBegin</b></td>	
+	<td>ONLINE</td>	
+	<td>Xbox <i>Live</i> key</td>
+  </tr>
+  <tr>	
+	<td><b>XCalculateSignatureBeginEx</b></td>	
+	<td>0 or SAVE_GAME</td>	
+	<td>Alternate title key</td>
+  </tr>
+  <tr>	
+	<td><b>XCalculateSignatureBeginEx</b></td>	
+	<td>NON_ROAMABLE</td>	
+	<td>Alternate title key + Xbox key</td>
+  </tr>
+  <tr>	
+	<td><b>XCalculateContentSignature</b></td>	
+	<td>N/A</td>	
+	<td>None</td>
+  </tr>
+  <tr>	
+	<td><b>XLoadContentSignatures</b></td>	
+	<td>N/A</td>	
+	<td>Per-title key + Xbox key</td>
+  </tr>
+  <tr>	
+	<td><b>XLoadContentSignaturesEx</b></td>	
+	<td>N/A</td>	
+	<td>Alternate title key + Xbox key</td>
+  </tr>
+</table>
+
+<p>The SAVE_GAME flag computes a hash using the following formula:</p>
+
+<pre>    Signature = HMAC SHA-1( Per-title key, Data )</pre>
+
+<p>The NON_ROAMABLE flag computes a hash using:</p>
+
+<pre>    Signature = HMAC SHA-1( Per-title key + Xbox key, Data )</pre>
+
+<p>The DIGEST flag computes a hash without any key data. A digest computed by title A on one Xbox will exactly match a digest computed by title B on a different Xbox. Digests are not by themselves secure. Digests are generated using the following formula:</p>
+
+<pre>    Signature = Digest = SHA-1( Data )</pre>
+
+<p>Interestingly, the CONTENT flag gives the same results as the DIGEST flag. Content package signatures are in fact a combination of digests and signatures. For maximum performance, content packages contain a list of digests (often one per file, although files may have multiple digests to facilitate loading smaller blocks of the file quickly), and the digests themselves are signed with per-title and Xbox keys, just like standard non-roamable content. The integrity of content packages is checked using <b>XLoadContentSignatures</b>, which validates the digests using <b>XCalculateSignatureBegin</b>(NON_ROAMABLE), and <b>XCalculateContentSignature</b>, which validates a piece of content against an already valid digest using <b>XCalculateSignatureBegin</b>(DIGEST). The <b>XLocateSignatureByName</b>/<b>Index</b> functions locate a specific digest from the list.</p>
+
+<p>The Xbox <i>Live</i> key used by the ONLINE flag is generated by the Xbox <i>Live</i> service during the <b>XOnlineLogon</b> process. Every time a player (or players) sign in, the Signature Service generates a new key, using the following formula:</p>
+
+<pre>    XboxConfigInfo = TitleID + XboxID + XUID(s) of players + FILETIME
+    LiveKey = HMAC SHA-1( LiveMasterKey, XboxConfigInfo )</pre>
+
+<p>The XboxConfigInfo is sent to the Xbox <i>Live</i> service at logon, which "signs" the configuration data using a master key it has stored. The resulting signature becomes the LiveKey used by the console for the online session. The master key is never transmitted. The ONLINE flag performs the following calculation:</p>
+
+<pre>    Digest = SHA-1( Data )
+    LiveSig = HMAC SHA-1( LiveKey, Digest )</pre>
+
+<p>The full Xbox <i>Live</i> signature is a binary block of data (BLOB) that consists of the LiveSig plus XboxConfigInfo. The title stores this signature BLOB on the HD or MU. Then, at <b>XOnlineSignatureVerify</b> time, the client sends a newly computed digest along with the stored signature BLOB. The Xbox <i>Live</i> service then recomputes the LiveKey and the signature, and compares the computed signature with the one received by the client.</p>
+
+<pre>    Xbox Live key = HMAC SHA-1( LiveMasterKey, XboxConfigInfo )
+    Signature = HMAC SHA-1( LiveKey, Digest )</pre>
+
+<p>If the signatures match, then the content has not been tampered with. The Xbox <i>Live</i> service can also fail the verification if the XboxConfigInfo identifies a banned player or banned console.</p>
+
+<h2>Performance</h2>
+
+<p>The <b>XCalculateSignature</b> functions can process approximately 35 MB/sec. Performance is gated on the speed of the SHA-1 calculation, which has been optimized and tuned for Xbox (Pentium III).</p>
+
+<h2>Code Snippets</h2>
+
+<p>The following code snippets show how to sign and verify signatures for various types of content.</p>
+
+<h3>Building Signatures Piecemeal</h3>
+
+<p>Signatures are created using three functions that all start with <b>XCalculateSignature</b> and end with <b>Begin</b> (or <b>BeginEx</b>), <b>Update</b>, or <b>End</b>. This set of functions allows signatures to be created without requiring the entire data block to be in memory simultaneously. It also allows signatures to be generated when files are streamed in from disk.</p>
+
+<pre>    // Begin signature calculation
+    HANDLE hSig = XCalculateSignatureBegin( XCALCSIG_FLAG_WHATEVER );
+    for( ... ) // for each file chunk
+    {
+        // Read and hash the chunk of data
+        ReadFile( hFile, pData, dwDataSize, &amp;dwRead, NULL );
+        XCalculateSignatureUpdate( hSig, pData, dwDataSize );
+    }
+    // Extract the final signature
+    VOID* pSig = _alloca( XCalculateSignatureGetSize( XCALCSIG_FLAG_WHATEVER ) );
+    XCalculateSignatureEnd( hSig, pSig );</pre>
+
+<h3>Saved Games</h3>
+<p>Save games, profiles, and other user data are typically signed with the SAVE_GAME flag, which specifies that the data is roamable. They may also be signed with the NON_ROAMABLE flag. Here's how to sign a save game:</p>
+
+<pre>    // Signature is only a few dozen bytes so allocated on stack
+    DWORD dwSigType = XCALCSIG_FLAG_SAVE_GAME; // or XCALCSIG_FLAG_NON_ROAMABLE
+    DWORD dwSigSize = XCalculateSignatureGetSize( dwSigType );
+    VOID* pSig = _alloca( dwSigSize );
+
+    // Calculate signature of the data
+    HANDLE hSig = XCalculateSignatureBegin( dwSigType );
+    XCalculateSignatureUpdate( hSig, pData, dwDataSize );
+    XCalculateSignatureEnd( hSig, pSig );
+
+    // Write the signature and the data to disk or MU
+    WriteFile( hFile, pSig, dwSigSize, &amp;dwWritten, NULL );
+    WriteFile( hFile, pData, dwDataSize, &amp;dwWritten, NULL );</pre>
+
+<p>To verify the save, follow the same steps and compare signatures:</p>
+
+<pre>    // Read the signature and the data from disk or MU
+    DWORD dwSigSize = XCalculateSignatureGetSize( dwSigType );
+    VOID* pSigFromFile = _alloca( dwSigSize );
+    ReadFile( hFile, pSigFromFile, dwSigSize, &amp;dwRead, NULL );
+    ReadFile( hFile, pData, dwDataSize, &amp;dwRead, NULL );
+
+    // Re-compute signature
+    VOID* pSig = _alloca( dwSigSize );
+    HANDLE hSig = XCalculateSignatureBegin( dwSigType );
+    XCalculateSignatureUpdate( hSig, pData, dwDataSize );
+    XCalculateSignatureEnd( hSig, pSig );
+
+    // Compare signatures
+    if( memcmp( pSigFromFile, pSig, dwSigSize ) != 0 )
+        ; // data is invalid</pre>
+	
+<h3>Content Packages Downloaded from Xbox Live</h3>
+
+<p>Content packages installed by Downloader.XBE are automatically signed. If your game downloads content using <b>XOnlineContentInstall</b> directly, the content is also automatically signed:</p>
+
+<pre>    // Download, unpack, and sign the content as non-roamable
+    HRESULT hr = XOnlineContentInstall( OfferingID, NULL, &amp;hInstall );
+    do
+        hr = XOnlineTaskContinue( hInstall );
+    while( hr == XONLINETASK_S_RUNNING );
+    XOnlineTaskClose( hInstall );</pre>
+
+<p>Whether Downloader is used or not, games must include the proper verification code for content packages:</p>
+
+<pre>    // Enumerate content packages; in this case just get the first one
+    HANDLE hFind = XFindFirstContent( "T:\\", 0xFFFFFFFF, &amp;FindData );
+    XFindClose( hFind );
+
+    // Load signatures of selected package into memory
+    HANDLE hSig = XLoadContentSignatures( FindData.szContentDirectory );
+    if( hSig == NULL )
+        ; // invalid content
+    
+    // Find the signature for the file (or file block) that's being loaded
+    BYTE* pSigFromFile;
+    XLocateSignatureByName( hSig, strFile, dwOffset, dwDataSize,
+                            &amp;pSigFromFile, &amp;dwSigSize );
+
+    // Read the data from disk
+    HANDLE hFile = CreateFile( strFile, ... );
+    SetFilePointer( hFile, dwOffset, NULL, FILE_BEGIN );
+    ReadFile( hFile, pData, dwDataSize, &amp;dwRead, NULL );
+
+    // Re-compute signature
+    BYTE* pSig = (BYTE*)_alloca( dwSigSize );
+    XCalculateContentSignature( pData, dwDataSize, pSig, &amp;dwSigSize );
+
+    // Compare signatures
+    if( memcmp( pSigFromFile, pSig, dwSigSize ) != 0 )
+        ; // data is invalid
+
+    // Free signature resources
+    XCloseContentSignatures( hSig );</pre>
+
+<p>Note that <b>XCalculateContentSignature</b> is implemented in terms of the <b>XCalculateSignature</b>. It's equivalent to the following:</p>
+
+<pre>    *pdwSigSize = XCalculateSignatureGetSize( XCALCSIG_FLAG_CONTENT );
+    HANDLE hSig = XCalculateSignatureBegin( XCALCSIG_FLAG_CONTENT );
+    XCalculateSignatureUpdate( hSig, pData, dwDataSize );
+    XCalculateSignatureEnd( hSig, pSig );</pre>
+
+<h3>Shared Content Copied Between Consoles</h3>
+
+<p>Content that's stored on one Xbox console and then transmitted and stored on another Xbox console using Xbox <i>Live</i> must be signed with Xbox <i>Live</i> signatures.</p>
+
+<pre>    // Request signature service at sign-in
+    DWORD Services[] = { XONLINE_SIGNATURE_SERVICE };
+    XOnlineLogon( NULL, Services, 1, NULL, &amp;hLogon );
+
+    // Signature is only 100 bytes so allocated on stack
+    DWORD dwLiveSigSize = XCalculateSignatureGetSize( XCALCSIG_FLAG_ONLINE );
+    VOID* pLiveSig = _alloca( dwLiveSigSize );
+
+    // Calculate the Xbox Live signature; requires a valid Xbox Live connection
+    HANDLE hSig = XCalculateSignatureBegin( XCALCSIG_FLAG_ONLINE );
+    XCalculateSignatureUpdate( hSig, pData, dwDataSize );
+    XCalculateSignatureEnd( hSig, pLiveSig );
+
+    // Write the signature and the data to disk or MU
+    WriteFile( hFile, pLiveSig, dwLiveSigSize, &amp;dwWritten, NULL );
+    WriteFile( hFile, pData, dwDataSize, &amp;dwWritten, NULL );</pre>
+
+<p>Both the data and signature must be sent to the receiver.</p>
+
+<pre>    // Send both the signature and the data to another console
+    send( sock, (const char*)pLiveSig, dwLiveSigSize, 0 );
+    send( sock, (const char*)pData, dwDataSize, 0 );
+
+    // On other console, write the signature and data to disk or MU
+    WriteFile( hFile, pLiveSig, dwLiveSigSize, &amp;dwWritten, NULL );
+    WriteFile( hFile, pData, dwDataSize, &amp;dwWritten, NULL );</pre>
+
+<p>Verifying the signature requires recalculating the digest based on the data, then sending the digest and the stored signature to Xbox <i>Live</i> for validation.</p>
+
+<pre>    // Request signature service at sign in
+    DWORD Services[] = { XONLINE_SIGNATURE_SERVICE };
+    XOnlineLogon( NULL, Services, 1, NULL, &amp;hLogon );
+
+    // Read the Xbox Live signature and the data from disk or MU
+    DWORD dwLiveSigSize = XCalculateSignatureGetSize( XCALCSIG_FLAG_ONLINE );
+    BYTE* pLiveSigFromFile = (BYTE*)_alloca( dwLiveSigSize );
+    ReadFile( hFile, pLiveSigFromFile, dwLiveSigSize, &amp;dwRead, NULL );
+    ReadFile( hFile, pData, dwDataSize, &amp;dwRead, NULL );
+
+    // Calculate the digest of the data
+    DWORD dwDigestSize = XCalculateSignatureGetSize( XCALCSIG_FLAG_DIGEST );
+    BYTE* pDigest = (BYTE*)_alloca( dwDigestSize );
+    HANDLE hDigest = XCalculateSignatureBegin( XCALCSIG_FLAG_DIGEST );
+    XCalculateSignatureUpdate( hDigest, pData, dwDataSize );
+    XCalculateSignatureEnd( hDigest, pDigest );
+
+    // Prepare to verify the Xbox Live signature
+    XONLINE_SIGNATURE_TO_VERIFY SigVerify;
+    SigVerify.cbDigest = dwDigestSize;
+    SigVerify.pbDigest = pDigest;
+    SigVerify.cbOnlineSignature = dwLiveSigSize;
+    SigVerify.pbOnlineSignature = pLiveSigFromFile;
+
+    // Contact the Xbox Live service to verify the signature
+    HRESULT hr = XOnlineSignatureVerify( &amp;SigVerify, 1, NULL, &amp;hVerify );
+    do
+        hr = XOnlineTaskContinue( hVerify );
+    while( hr == XONLINETASK_S_RUNNING );
+
+    HRESULT* pResult;
+    XOnlineSignatureVerifyGetResults( hVerify, &amp;pResult, &amp;dwResults );
+    if( FAILED( pResult[0] ) )
+        ; // data is invalid or has been revoked
+    
+    XOnlineTaskClose( hVerify );</pre>
+
+<h3>Shared Content Used Both Offline and Online</h3>
+
+<p>Content used in offline modes (single player, system link, etc.) that is also transferred and stored online must have both an Xbox <i>Live</i> signature and a non&#8211;Xbox <i>Live</i> signature. In offline modes, the content can be validated with the offline signature. The content must only be created and modified while online.</p>
+
+<pre>    // Request signature service at sign-in
+    DWORD Services[] = { XONLINE_SIGNATURE_SERVICE };
+    XOnlineLogon( NULL, Services, 1, NULL, &amp;hLogon );
+
+    // Allocate space on the stack for the signatures. Content can be offline signed
+    // as roamable or non-roamable, depending on the intended usage. Non-roamable
+    // content must be resigned when it is transferred.
+    DWORD dwOfflineSigSize = XCalculateSignatureGetSize( XCALCSIG_FLAG_NON_ROAMABLE );
+    DWORD dwLiveSigSize = XCalculateSignatureGetSize( XCALCSIG_FLAG_ONLINE );
+    BYTE* pOfflineSig = (BYTE*)_alloca( dwOfflineSigSize );
+    VOID* pLiveSig = _alloca( dwLiveSigSize );
+
+    // Calculate offline and Xbox Live signatures of the data
+    HANDLE hOfflineSig = XCalculateSignatureBegin( XCALCSIG_FLAG_NON_ROAMABLE );
+    HANDLE hLiveSig = XCalculateSignatureBegin( XCALCSIG_FLAG_ONLINE );
+    XCalculateSignatureUpdate( hOfflineSig, pData, dwDataSize );
+    XCalculateSignatureUpdate( hLiveSig, pData, dwDataSize);
+    XCalculateSignatureEnd( hOfflineSig, pOfflineSig );
+    XCalculateSignatureEnd( hLiveSig, pLiveSig );
+
+    // Write the signatures and the data to disk or MU
+    WriteFile( hFile, pOfflineSig, dwOfflineSigSize, &amp;dwWritten, NULL );
+    WriteFile( hFile, pLiveSig, dwLiveSigSize, &amp;dwWritten, NULL );
+    WriteFile( hFile, pData, dwDataSize, &amp;dwWritten, NULL );</pre>
+
+<p>To verify for offline read-only usage, validate the offline signature.</p>
+
+<pre>    // Read offline signature and data from disk or MU; skip Xbox Live signature
+    DWORD dwOfflineSigSize = XCalculateSignatureGetSize( XCALCSIG_FLAG_NON_ROAMABLE );
+    DWORD dwLiveSigSize = XCalculateSignatureGetSize( XCALCSIG_FLAG_ONLINE );
+    BYTE* pOfflineSigFromFile = (BYTE*)_alloca( dwOfflineSigSize );
+    ReadFile( hFile, pOfflineSigFromFile, dwOfflineSigSize, &amp;dwRead, NULL );
+    SetFilePointer( hFile, dwLiveSigSize, NULL, FILE_CURRENT );
+    ReadFile( hFile, pData, dwDataSize, &amp;dwRead, NULL );
+
+    // Re-compute offline signature
+    VOID* pOfflineSig = _alloca( dwOfflineSigSize );
+    HANDLE hSig = XCalculateSignatureBegin( XCALCSIG_FLAG_NON_ROAMABLE );
+    XCalculateSignatureUpdate( hSig, pData, dwDataSize );
+    XCalculateSignatureEnd( hSig, pOfflineSig );
+
+    // Compare signatures
+    if( memcmp( pOfflineSigFromFile, pOfflineSig, dwOfflineSigSize ) != 0 )
+        ; // data is invalid</pre>
+
+<p>To verify for online usage, validate the Xbox <i>Live</i> signature.</p>
+
+<pre>    // Request signature service at sign in
+    DWORD Services[] = { XONLINE_SIGNATURE_SERVICE };
+    XOnlineLogon( NULL, Services, 1, NULL, &amp;hLogon );
+
+    // Read the Xbox Live signature and the data from disk or MU; skip offline sig
+    DWORD dwOfflineSigSize = XCalculateSignatureGetSize( XCALCSIG_FLAG_NON_ROAMABLE );
+    DWORD dwLiveSigSize = XCalculateSignatureGetSize( XCALCSIG_FLAG_ONLINE );
+    BYTE* pLiveSigFromFile = (BYTE*)_alloca( dwLiveSigSize );
+    SetFilePointer( hFile, dwOfflineSigSize, NULL, FILE_BEGIN );
+    ReadFile( hFile, pLiveSigFromFile, dwLiveSigSize, &amp;dwRead, NULL );
+    ReadFile( hFile, pData, dwDataSize, &amp;dwRead, NULL );
+
+    // Calculate the digest of the data
+    DWORD dwDigestSize = XCalculateSignatureGetSize( XCALCSIG_FLAG_DIGEST );
+    BYTE* pDigest = (BYTE*)_alloca( dwDigestSize );
+    HANDLE hDigest = XCalculateSignatureBegin( XCALCSIG_FLAG_DIGEST );
+    XCalculateSignatureUpdate( hDigest, pData, dwDataSize );
+    XCalculateSignatureEnd( hDigest, pDigest );
+
+    // Prepare to verify the Xbox Live signature
+    XONLINE_SIGNATURE_TO_VERIFY SigVerify;
+    SigVerify.cbDigest = dwDigestSize;
+    SigVerify.pbDigest = pDigest;
+    SigVerify.cbOnlineSignature = dwLiveSigSize;
+    SigVerify.pbOnlineSignature = pLiveSigFromFile;
+
+    // Contact the Xbox Live service to verify the signature
+    HRESULT hr = XOnlineSignatureVerify( &amp;SigVerify, 1, NULL, &amp;hVerify );
+    do
+        hr = XOnlineTaskContinue( hVerify );
+    while( hr == XONLINETASK_S_RUNNING );
+
+    HRESULT* pResult;
+    XOnlineSignatureVerifyGetResults( hVerify, &amp;pResult, &amp;dwResults );
+    if( FAILED( pResult[0] ) )
+        ; // data is invalid or has been revoked</pre>
+
+<p>If the content has been transferred to another console, once the Xbox <i>Live</i> signature has been initially verified, the content can be re-signed with a new non-roamable signature that locks the content to the box.</p>
+
+<pre>    DWORD dwOfflineSigSize = XCalculateSignatureGetSize( XCALCSIG_FLAG_NON_ROAMABLE );
+    BYTE* pOfflineSig = (BYTE*)_alloca( dwOfflineSigSize );
+
+    // Calculate new non-roamable offline signature
+    HANDLE hOfflineSig = XCalculateSignatureBegin( XCALCSIG_FLAG_NON_ROAMABLE );
+    XCalculateSignatureUpdate( hOfflineSig, pData, dwDataSize );
+    XCalculateSignatureEnd( hOfflineSig, pOfflineSig );
+
+    // Update the signature
+    WriteFile( hFile, pOfflineSig, dwOfflineSigSize, &amp;dwWritten, NULL );</pre>
+
+<h3>Game Clips (Statistics Attachments)</h3>
+
+<p>The signing of attachments happens automatically during <b>XOnlineStorageUpload</b>.</p>
+
+<pre>    // Store statistics
+    HRESULT hr = XOnlineStatWrite( 1, &amp;Spec, NULL, &amp;hStatWrite );
+    do
+        hr = XOnlineTaskContinue( hStatWrite );
+    while( hr == XONLINETASK_S_RUNNING );    
+
+    // If attachment allowed, upload it. The content is automatically
+    // Xbox Live-signed by the XOnlineStorageUpload task.
+    if( hr == XONLINE_S_STAT_CAN_UPLOAD_ATTACHMENT )
+    {
+        hr = XOnlineStatWriteGetResult( hStatWrite, &amp;hUploadServer, &amp;pRefs, &amp;dwRefs );
+        hr = XOnlineStorageUpload( hUploadServer, strDir, 0, NULL, &amp;hUpload );
+        do
+            hr = XOnlineTaskContinue( hUpload );
+        while ( hr == XONLINETASK_S_RUNNING );
+        XOnlineTaskClose( hUpload );
+    }
+
+    XOnlineTaskClose( hStatWrite );</pre>
+
+<p>The verification of attachments happens automatically during <b>XOnlineStorageDownload</b>. The API is somewhat misnamed, because it will access (and verify) cached attachments if they are already on the player's HD.</p>
+
+<pre>    // Read statistics
+    HRESULT hr = XOnlineStatReadGetResult( hStatRead, 1, &amp;Spec, dwExtra, pExtra );
+    XOnlineTaskClose( hStatRead );
+
+    // If attachment found, download it. The content is automatically verified
+    // by the XOnlineStorageDownload task.
+    if( Spec.pStats[ ID_ATTACHMENT ].type == XONLINE_STAT_LPCWSTR )
+    {
+        hr = XOnlineStorageDownload( XONLINESTORAGE_FACILITY_STATS, 0, 
+                                     Spec.pStats[ ID_ATTACHMENT ].lpString,
+                                     NULL, 0, NULL, &amp;hDownload );
+        do 
+            hr = XOnlineTaskContinue( hDownload );
+        while ( hr == XONLINETASK_S_RUNNING );
+        XOnlineTaskClose( hDownload );
+    }</pre>
+
+<h2>Best Practices</h2>
+<ul>
+	<li>Sign all content on the hard disk and MUs, with the exception of cached audio, video, and texture data on the Z: drive.</li>
+	<li>On the Z: drive, validate file headers, manifests, configuration files, AI scripts, and state data.</li>
+	<li>For maximum security, prefer Xbox <i>Live</i> signatures or non-roamable signatures. Avoid roamable signatures unless the content must truly be roamable.</li>
+	<li>Most signatures are 20 bytes. Xbox <i>Live</i> signatures are 100 bytes because they include additional information. For best performance, allocate signature storage on the stack using <b>_alloca</b>.</li>
+	<li>Xbox <i>Live</i> signatures require an online connection whenever shared content is written or read from storage. Design games that share content online so that potentially shared content can be created and modified only while a player is online.</li>
+	<li>Signing and authenticating data doesn't guarantee that your game is safe from hackers. Hackers have successfully modified and re-signed content without the game detecting it. Follow secure coding guidelines. Assume that all content coming from the hard disk or MUs is bogus, even if the signature is valid. See the <a href="prog_bp_xbox_security.htm">Xbox Security Best Practices</a> white paper for more information.</li>
+</ul>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

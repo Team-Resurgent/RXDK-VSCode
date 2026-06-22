@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirect3DDevice8::SetModelView</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="IDirect3DPushBuffer8::SetModelView [C++]">
+<META NAME="MS-HKWD" CONTENT="SetModelView (IDirect3DPushBuffer8) [C++]">
+<META NAME="MS-HKWD" CONTENT="SetModelView [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="SetModelView (IDirect3DDevice8)"/>
+<MSHelp:Keyword Index="K" Term="IDirect3DDevice8::SetModelView"/>
+<MSHelp:Keyword Index="F" Term="SetModelView"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_IDirect3DPushBuffer8_SetModelView_graphics"></A>IDirect3DPushBuffer8::SetModelView</H1>
+
+<P>Used only within a <a href="_dx_idirect3dpushbuffer8_beginfixup_graphics.htm"><b>IDirect3DPushBuffer8::BeginFixup</b></a>/<a href="_dx_idirect3dpushbuffer8_endfixup_graphics.htm"><b>IDirect3DPushBuffer8::EndFixup</b></a> bracket to modify the corresponding call to <a href="_dx_idirect3ddevice8_setmodelview_graphics.htm"><b>IDirect3DDevice8::SetModelView</b></a> as it was recorded in the push-buffer. This method is a faster alternative to <a href="_dx_idirect3ddevice8_settransform_graphics.htm"><b>IDirect3DDevice8::SetTransform</b></a>, and it works with push-buffer fix-ups.</P>
+
+<PRE class=syntax><B>HRESULT SetModelView(
+  DWORD</b> <i>Offset</i>,
+  <b>CONST D3DMATRIX</b> <i>*pModelView</i>, 
+  <b>CONST D3DMATRIX</b> <i>*pInverseModelView</i>, 
+  <b>CONST D3DMATRIX</b> <i>*pComposite</i>
+<b>);</b>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+
+<dt><i>Offset</i></dt>
+<dd>[in] The offset determined during the recording in the push-buffer as returned from <a href="_dx_idirect3ddevice8_getpushbufferoffset_graphics.htm"><b>IDirect3DDevice8::GetPushBufferOffset</b></a> just before <b>IDirect3DDevice8::SetModelView</b> was recorded.</dd>
+
+<DT><I>pModelView</I></DT>
+
+<DD>[in] Pointer to the model-view transform.</DD>
+
+<DT><I>pInverseModelView</I></DT>
+
+<DD>[in] Pointer to the inverse of the model-view transform. This may be NULL if lighting and texture generation are disabled.</DD>
+
+<DT><I>pComposite</I></DT>
+
+<DD>[in] Pointer to a <b>D3DMATRIX</b> that is the product of the model-view transform and the projection/viewport (as returned by <a href="_dx_idirect3ddevice8_getprojectionviewportmatrix_graphics.htm"><b>IDirect3DDevice8::GetProjectionViewportMatrix</b></a> matrices).</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the method succeeds, the return value is S_OK.</P>
+
+<H4>Remarks</H4>
+
+<p>This method can only be called while D3DRS_VERTEXBLEND is FALSE. It also cannot be called while in D3DSCM_192CONSTANTS mode because it would overwrite some of the negative shader constants.</p>
+
+<p>When <b>IDirect3DDevice8::SetModelView</b> is called with a non-NULL <i>pModelView</i> pointer, the method takes control of the GPU's transform registers until <b>IDirect3DDevice8::SetModelView</b> is called with a NULL <i>pModelView</i> pointer. While the function has control, any calls to <b>IDirect3DDevice8::SetTransform</b> will be effectively ignored.</p>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in D3d8.h.<BR>
+<B>&nbsp;&nbsp;Import Library:</B> Use D3d8.lib.</P>
+
+<h4>See Also</h4>
+
+<p><a href="_dx_pushbuffer_overview_graphics.htm"><b>Push-Buffer Overview</b></a></p>
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

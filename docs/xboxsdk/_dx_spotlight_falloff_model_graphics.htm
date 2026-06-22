@@ -1,0 +1,41 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Spotlight Falloff Model</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Spotlight Falloff Model"/>
+<MSHelp:Keyword Index="F" Term="Spotlight Falloff Model"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_spotlight_falloff_model_graphics"></A>Spotlight Falloff Model</H1>
+
+<P>Spotlights emit a cone of light that has two parts: a bright inner cone and an outer cone. Light is brightest in the inner cone and isn't present outside the outer cone, with light intensity attenuating between the two areas. This type of attenuation is commonly referred to as <A HREF="f.htm#_dx_falloff_glos">falloff</A>.</P>
+
+<P>How much light a vertex receives is based on the vertex's location in the inner or outer cones. Direct3D computes the dot product of the spotlight's direction vector (<I>L</I>) and the vector from the vertex to the light (<I>D</I>). This value is equal to the cosine of the angle between the two vectors, and serves as an indicator of the vertex's position that can be compared to the light's cone angles to determine where the vertex might lie in the inner or outer cones. The following illustration provides a graphical representation of the association between these two vectors.</P>
+
+<P><IMG SRC="images/spotalg1.gif" ALT="" BORDER=0></P>
+
+<P>Next, the system compares this value to the cosine of the spotlight's inner and outer cone angles. In the light's <A HREF="_dx_d3dlight8_graphics.htm">D3DLIGHT8</A> structure, the <B>Theta</B> and <B>Phi</B> members represent the total cone angles for the inner and outer cones. Because the attenuation occurs as the vertex becomes more distant from the center of illumination, rather than across the total cone angle, Direct3D halves these cone angles before calculating their cosines.</P>
+
+<P>If the dot product of vectors <I>L</I> and <I>D</I> is less than or equal to the cosine of the outer cone angle, the vertex lies beyond the outer cone and receives no light. If the dot product of <I>L</I> and <I>D</I> is greater than the cosine of the inner cone angle, then the vertex is within the inner cone and receives the maximum amount of light, still considering attenuation over distance. If the vertex is somewhere between the two regions, Direct3D calculates falloff for the vertex by using the following formula.</P>
+
+<P><IMG SRC="images/falloff.gif" ALT="" BORDER=0></P>
+
+<P>In the formula, <I>I<SUB>f</SUB></I> is light intensity, after falloff, for the vertex being lit, &alpha; is the angle between vectors <I>L</I> and <I>D</I>, <I>&phi;</I> is half of the outer cone angle, &theta; is half of the inner cone angle, and <I>p</I> is the spotlight's falloff property&#8212;<B>Falloff</B> in the <B>D3DLIGHT8</B> structure. This formula generates a value between 0.0 and 1.0 that scales the light's intensity at the vertex to account for falloff. Attenuation as a factor of the vertex's distance from the light is also applied. The <I>p</I> value corresponds to the <B>Falloff</B> member of the <B>D3DLIGHT8</B> structure and controls the shape of the falloff curve. The following illustration shows how different <B>Falloff</B> values can affect the falloff curve.</P>
+
+<P><IMG SRC="images/fallgraf.gif" ALT="" BORDER=0></P>
+
+<P>The effect of various <B>Falloff</B> values on the actual lighting is subtle, and a small performance penalty is incurred by shaping the falloff curve with <B>Falloff</B> values other than 1.0. For these reasons, this value is typically set to 1.0.</P>
+
+<P>For more information, see <A HREF="_dx_light_attenuation_over_distance_graphics.htm">Light Attenuation Over Distance</A>.</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

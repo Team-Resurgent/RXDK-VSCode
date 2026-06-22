@@ -1,0 +1,48 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Integration of Vertex Shaders into the Geometry Pipeline</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Integration of Vertex Shaders into the Geometry Pipeline"/>
+<MSHelp:Keyword Index="F" Term="Integration of Vertex Shaders into the Geometry Pipeline"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_integration_of_vertex_shaders_into_the_geometry_pipeline_graphics"></A>Integration of Vertex Shaders into the Geometry Pipeline</H1>
+
+<P>When in operation, a programmable vertex shader replaces the transformation and lighting module in the Microsoft&#174; Direct3D&#174; geometry pipeline. In effect, state information regarding transformation and lighting operations is ignored. However, when the vertex shader is disabled and fixed function processing is returned, all current state settings apply.</P>
+
+<P>Any tessellation of high-order primitives should be done before execution of the vertex shader. Implementations that perform surface tessellation after the shader processing must do so in a way that is not apparent to the application and shader code. Because no semantic information is normally provided before the shader, a special token is used to identify which input stream component represents the base position relative to which all other components are interpolated. No non-interpolable data channels are supported. </P>
+
+<P>On output, the vertex shader must generate vertex positions in homogeneous clip space. Additional data that can be generated includes texture coordinates, colors, fog factors, and so on.</P>
+
+<P>The standard graphics pipeline processes the vertices output by the shader, including the following tasks.
+
+<UL>
+	<LI>Primitive assembly</LI>
+	<LI>Clipping against the frustum and user clipping planes</LI>
+	<LI>Homogeneous divide</LI>
+	<LI>Viewport scaling</LI>
+	<LI>Backface and viewport culling</LI>
+	<LI>Triangle setup</LI>
+	<LI>Rasterization</LI>
+</UL>
+
+<P>Note that the clipping space for DirectX 8.0 vertex shaders is the same as for DirectX 7.0 and DirectX 8.0 fixed-function vertex processing. For details, see <A HREF="_dx_clipping_volumes_graphics.htm">Clipping Volumes</A>.</P>
+
+<P>Programmable geometry is a mode within the Direct3D API. When it is enabled, it partially replaces the vertex pipeline. When it is disabled, the API has normal controloperating as in DirectX 6.0 and 7.0. Execution of vertex shaders does not change the internal Direct3D state, and no Direct3D state is available for shaders. </P>
+
+<P>Calling <A HREF="_dx_idirect3ddevice8_createvertexshader_graphics.htm">IDirect3DDevice8::CreateVertexShader</A> with the <I>pFunction</I> parameter equal to NULL is used to create a shader for the fixed-function pipeline. When <I>pFunction</I> is not NULL, the shader is programmable. A call to <A HREF="_dx_idirect3ddevice8_setvertexshader_graphics.htm">IDirect3DDevice8::SetVertexShader</A> sets the current active shader, which defines whether the rendering pipeline should use programmable or fixed-function vertex processing.</P>
+
+<p>If the vertex shaders are small, it is possible to have several in the GPU at the same time.  The vertex shaders can be loaded using <a href="xbox_dxg_IDirect3DDevice8_LoadVertexShader.htm">IDirect3DDevice8::LoadVertexShader</a> and then selected using <a href="xbox_dxg_IDirect3DDevice8_SelectVertexShader.htm">IDirect3DDevice8::SelectVertexShader</a>. Calling <b>IDirect3DDevice8::SetVertexShader</b> will invalidate any shaders loaded using <b>IDirect3DDevice8::LoadVertexShader</b>.</p>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>HeapSize</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="HeapSize">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="HeapSize"/>
+<MSHelp:Keyword Index="F" Term="HeapSize"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_heapsize"></A>HeapSize</H1>
+
+<P>The <B>HeapSize</B> function returns the size, in bytes, of a memory block allocated from a heap by the <A HREF="memman_6krn.htm">HeapAlloc</a> or <A HREF="memman_6ahv.htm">HeapReAlloc</a> function. </P>
+
+<PRE class=syntax><B>DWORD HeapSize(
+  HANDLE</B><I> hHeap</I><B>,  </B>// handle to heap
+<B>  DWORD</B><I> dwFlags</I><B>, </B>// heap size options
+<B>  LPCVOID</B><I> lpMem  </I>// pointer to memory
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>hHeap</I></DT>
+
+<DD>[in] Specifies the heap in which the memory block resides. This handle is returned by the <A HREF="memman_5z6t.htm">HeapCreate</a> or <A HREF="memman_5u7k.htm">GetProcessHeap</a> function. </DD>
+
+<DT><I>dwFlags</I></DT>
+
+<DD>[in] Specifies several controllable aspects of accessing the memory block. Specifying the following value overrides the corresponding value specified in the <I>flOptions</I> parameter when the heap was created by using the <B>HeapCreate</B> function. 
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=35%>Value</TH>
+<TH align=left width=65%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>HEAP_NO_SERIALIZE</TD>
+<TD width=65%>Specifies that mutual exclusion will not be used while <B>HeapSize</B> is accessing the heap. 
+<P>This value should not be specified when accessing the process heap. The system may create additional threads within the application's process, such as a CTRL+C handler, that simultaneously access the process heap. </P>
+</TD>
+</TR>
+</TABLE><BR>
+
+</DD>
+
+<DT><I>lpMem</I></DT>
+
+<DD>[in] Pointer to the memory block whose size the function will obtain. This is a pointer returned by the <A HREF="memman_6krn.htm">HeapAlloc</a> or <A HREF="memman_6ahv.htm">HeapReAlloc</a> function. 
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is the size, in bytes, of the allocated memory block.</P>
+
+<P>If the function fails, the return value is -1. The function does not call <B>SetLastError</B>. An application cannot call <B>GetLastError</B> for extended error information.</P>
+
+<H4>Remarks</H4>
+
+<P>Serialization ensures mutual exclusion when two or more threads attempt to simultaneously allocate or free blocks from the same heap. There is a small performance cost to serialization, but it must be used whenever multiple threads allocate and free memory from the same heap. Setting the HEAP_NO_SERIALIZE value eliminates mutual exclusion on the heap. Without serialization, two or more threads that use the same heap handle might attempt to allocate or free memory simultaneously, likely causing corruption in the heap. The HEAP_NO_SERIALIZE value can, therefore, be safely used only in the following situations: 
+
+<UL>
+	<LI>The process has only one thread. </LI>
+
+	<LI>The process has multiple threads, but only one thread calls the heap functions for a specific heap. </LI>
+
+	<LI>The process has multiple threads, and the application provides its own mechanism for mutual exclusion to a specific heap. </LI>
+</UL>
+
+<P class=note><B>Note</B>&nbsp;&nbsp;To guard against an access violation, use structured exception handling to protect any code that writes to or reads from a heap. For more information on structured exception handling with memory accesses, see <a href="unresolved.htm">Reading and Writing</a> and <A HREF="unresolved.htm">Structured Exception Handling</a>.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p><H4>See Also</H4>
+<P> 
+
+<a href="xbox_mt_xtl_sll_memory_management_functions.htm">Memory Management Functions</a> | 
+<A HREF="memman_5u7k.htm">GetProcessHeap</a>, <B> <A HREF="memman_6krn.htm">HeapAlloc</a></B>,  <A HREF="memman_5z6t.htm">HeapCreate</a>,  <A HREF="memman_862h.htm">HeapDestroy</a>,  <A HREF="memman_7b1h.htm">HeapFree</a>,  <A HREF="memman_6ahv.htm">HeapReAlloc</a>,  <A HREF="errors_48tu.htm">SetLastError</a> </P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

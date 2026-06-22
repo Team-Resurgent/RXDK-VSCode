@@ -1,0 +1,85 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineGetNotificationEx</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineGetNotificationEx"/>
+<MSHelp:Keyword Index="F" Term="XOnlineGetNotificationEx"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineGetNotificationEx</h1>
+<p>Requests extended notification information for a given player.</p><pre class="syntax" xml:space="preserve"><b>BOOL</b> <b>XOnlineGetNotificationEx(</b>
+    <b>DWORD</b> <i>dwUserIndex</i><b>,</b>
+    <b>PXONLINE_NOTIFICATION_EX_INFO</b> <i>pNotificationInfo</i><b>,</b>
+    <b>DWORD</b> *<i>pdwStateFlags</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+		<dt><i>dwUserIndex</i></dt>
+<dd>[in]  Controller index (zero-based) of the player making the request.</dd>
+            
+
+		<dt><i>pNotificationInfo</i></dt>
+<dd>[out]  Pointer to an <a href="XONLINE_NOTIFICATION_EX_INFO.htm">XONLINE_NOTIFICATION_EX_INFO</a> structure to receive notification information.</dd>
+            
+
+		<dt><i>pdwStateFlags</i></dt>
+<dd>[out]  Pointer to a <b>DWORD</b> to return additional information about the notification system:</dd>
+			<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+				<tr>
+<td>XONLINE_NOTIFICATION_STATE_FLAG_PENDING_SYNC</td>
+<td>Messaging is currently synchronizing with the server.</td>
+</tr>
+				<tr>
+<td>XONLINE_NOTIFICATION_STATE_FLAG_MORE_ITEMS</td>
+<td>There are still more unread notifications available.</td>
+</tr>
+				<tr>
+<td>XONLINE_NOTIFICATION_STATE_FLAG_OVERFLOW_ITEMS</td>
+<td>One or more notifications have been dropped and will not be reported.</td>
+</tr>
+			</table>
+		
+	</dl>
+<h4><a name="return"></a>Return Values</h4>
+		<p>TRUE &#8211; A notification had been read, and the information is returned in <i>pNotificationInfo</i>. Additional state information is returned in <i>pdwStateFlags</i>.</p>
+            
+		<p>FALSE &#8211; There are no notifications available to retrieve.  The contents of <i>pNotificationInfo</i> will be zeroed out, and <i>pdwStateFlags</i> will be either 0 or XONLINE_NOTIFICATION_STATE_FLAG_PENDING_SYNC.</p>
+            
+	<h4><a name="remarks"></a>Remarks</h4>
+		<p>The title may call this in a loop to return multiple notifications (if available) until the function returns FALSE. In case of multiple notifications, the function returns notifications in the order where the oldest notification is returned first.</p>
+		<p>If the title calls <b>XOnlineGetNotificationEx</b> infrequently enough, it is possible that the notification queue will overflow.  This will result in loss of notification items.  In this case, <i>pdwStateFlags</i> will contain XONLINE_NOTIFICATION_STATE_FLAG_OVERFLOW_ITEMS, and the title is encouraged to refresh its state by enumerating the messages using <a href="XOnlineMessageEnumerate.htm">XOnlineMessageEnumerate</a>.</p>
+		<p>In order to receive notifications of XONLINE_MSG_TYPE_TITLE_CUSTOM or XONLINE_MSG_TYPE_TEAM_RECRUIT messages generated using a family title ID, callers must have previously specified the family title ID to <a href="XOnlineMessageEnableReceivingFamilyTitleIDs.htm">XOnlineMessageEnableReceivingFamilyTitleIDs</a>.</p>
+	<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p><a href="x_mt_xonline_functions.htm">Xbox Live Functions</a></p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

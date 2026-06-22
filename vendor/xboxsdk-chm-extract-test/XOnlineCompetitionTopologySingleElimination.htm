@@ -1,0 +1,158 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineCompetitionTopologySingleElimination</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineCompetitionTopologySingleElimination"/>
+<MSHelp:Keyword Index="F" Term="XOnlineCompetitionTopologySingleElimination"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineCompetitionTopologySingleElimination</h1>
+            <p>Searches the topology of a single-elimination competition.</p>
+        <pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineCompetitionTopologySingleElimination(</b>
+    <b>DWORD</b> <i>dwTemplate</i><b>,</b>
+    <b>ULONGLONG</b> <i>qwCompetitionID</i><b>,</b>
+    <b>DWORD</b> <i>dwOriginEventTopologyID</i><b>,</b>
+    <b>DWORD</b> <i>dwRoundsForward</i><b>,</b>
+    <b>DWORD</b> <i>dwRoundsBackward</i><b>,</b>
+    <b>DWORD</b> <i>dwTopWidth</i><b>,</b>
+    <b>DWORD</b> <i>dwNumResultAttributeSpecs</i><b>,</b>
+    <b>const XONLINE_ATTRIBUTE_SPEC</b> *<i>pResultAttributeSpecs</i><b>,</b>
+    <b>HANDLE</b> <i>hWorkEvent</i><b>,</b>
+    <b>PXONLINETASK_HANDLE</b> <i>phTask</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+            <dt><i>dwTemplate</i></dt>
+				<dd>[in]  ID of the data set associated with the competition.</dd>
+            
+			
+            <dt><i>qwCompetitionID</i></dt>
+				<dd>[in]  Unique ID for the competition.</dd>
+            
+			
+            <dt><i>dwOriginEventTopologyID</i></dt>
+				<dd>[in]  Topology ID of the focal event. For more information about competition 
+				events and topologies, see <a href="XOnlineCompetitionTopology.htm">XOnlineCompetitionTopology</a>.</dd>
+            
+			
+            <dt><i>dwRoundsForward</i></dt>
+				<dd>[in]  Number of rounds subsequent to <i>dwOriginEventTopologyID</i> to retrieve.</dd>
+            
+			
+            <dt><i>dwRoundsBackward</i></dt>
+				<dd>[in]  Number of rounds prior to <i>dwOriginEventTopologyID</i> to retrieve.</dd>
+            
+			
+            <dt><i>dwTopWidth</i></dt>
+				<dd>[in]  Number of events in the lowest round to be returned.</dd>
+            
+			
+            <dt><i>dwNumResultAttributeSpecs</i></dt>
+				<dd>[in]  Number of attribute specifiers in the <i>pResultAttributeSpecs</i> 
+				parameter.</dd>
+            
+			
+            <dt><i>pResultAttributeSpecs</i></dt>
+				<dd>[in]  Array of <a href="XONLINE_ATTRIBUTE_SPEC.htm">XONLINE_ATTRIBUTE_SPEC</a> structures containing title-specific attributes 
+				associated with the competition. This array must start with an integer attribute whose type is set 
+				to XONLINE_QUERY_ENTITY_ID. It is followed by the list and size of the return values configured in 
+				the <a href="xbox_tool_xlast_competitions_queries.htm">Topology query in XLAST</a>.</dd>
+            
+			
+            <dt><i>hWorkEvent</i></dt>
+				<dd>[in, optional]  Handle of an event (not a game event) you want to associate with this task. The 
+				event is fired after the task completes. If you do not want to associate an event with this task, set 
+				this parameter to NULL.</dd>
+            
+			
+            <dt><i>phTask</i></dt>
+				<dd>[out]  Address of an <b>XONLINETASK_HANDLE</b> variable that receives the 
+				handle for the task created by this function.</dd>
+            
+			
+        </dl>
+<h4><a name="return"></a>Return Values</h4>
+            
+                <p>Returns S_OK if successful, an error code otherwise. The error codes can include the following.</p>
+				<table>
+					<tr>
+						<th>Error Code</th>	<th>Description</th>
+					</tr>
+					<tr>
+						<td>XONLINE_E_QUERY_SPEC_COUNT_MISMATCH</td>
+						<td>The number of attributes specified in <i>pResultAttributeSpecs</i> does not 
+						match the list of return values on the server, which was 
+						<a href="xbox_tool_xlast_competitions_adding_attributes.htm">configured by XLAST</a>.</td>
+					</tr>
+					<tr>
+						<td>XONLINE_E_QUERY_ATTRIBUTE_TOO_LONG</td>
+						<td>A string or BLOB (binary block of data) type attribute listed in <i>pSearchAttributes</i> 
+						or <i>pResultAttributeSpecs</i> specifies a length that is smaller than the data 
+						stored on the server.</td>
+					</tr>
+					<tr>
+						<td>XONLINE_E_QUERY_DATASET_NOT_FOUND</td>
+						<td>The specified template does not correspond to a template configured in XLAST.</td>
+					</tr>
+				</table>				
+            
+        <h4><a name="remarks"></a>Remarks</h4>
+			<p>Single-elimination competitions are often represented as trees, such as the one in the following 
+			illustration. In this picture, the players are represented by the letters A, B, C, and so on. Each layer of the 
+			tree is a single round. A round consists of one or more events, which could also be called matches. 
+			A unique ID is assigned to each node in the tree, as shown in the figure below. Every node in the tree 
+			has a unique ID, called a topology ID, as shown to the right of the pair of players participating in 
+			the event.</p>
+			
+			<img src="images/SingleElimination1.JPG">
+			
+			<p>Topology ID numbers are hexadecimal numbers that are eight digits (four bytes) long. The 
+			most-significant two bytes contain the round number, which starts with 0. The least-significant 
+			two bytes contain the event number, also starting with 0. The figure shows that nodes in the first round are 
+			numbered 0x00000000, 0x00000001, and so forth. Nodes in the second round are numbered 0x00010000, 
+			0x00010001, and so on. The section of the tree that this function returns is relative to the origin event, 
+			whose topology ID number is passed into this function through the <i>qwOriginEventTopologyID</i> 
+			parameter.</p>
+			
+			<p>The <i>dwRoundsForward</i> and <i>dwRoundsBackward</i> parameters specify the number 
+			of rounds to search before and after the origin. For example, in the search illustrated by the following 
+			figure, the origin event is indicated by the red star. The events between the vertical red lines are the 
+			rounds forward and backward that are included in the search. The events between the blue horizontal lines 
+			specify the width of the search, which is passed to this function through the 
+			<i>dwTopWidth</i> parameter.</p>
+
+			<img src="images/SingleElimination2.JPG">
+			
+		<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+			<a href="XOnlineCompetitionTopology.htm">XOnlineCompetitionTopology</a>, <a href="XOnlineCompetitionTopologySingleEliminationGetResults.htm">XOnlineCompetitionTopologySingleEliminationGetResults</a>, 
+			<a href="topology_id.htm">TOPOLOGY_ID</a>
+		</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

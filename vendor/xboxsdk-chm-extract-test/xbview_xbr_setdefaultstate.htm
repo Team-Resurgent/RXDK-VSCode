@@ -1,0 +1,149 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XBR::SetDefaultState (XbView)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XBR::SetDefaultState (XbView)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XBR::SetDefaultState (XbView)</h1>
+<p><b>XBR::SetDefaultState</b> sets the render states to the defaults required for XbView.</p>
+<pre class="clsCode">
+HRESULT XBR::SetDefaultState()
+{
+    static DWORD dwALPHATESTENABLE = FALSE;
+    static DWORD dwALPHAREF = 0x08;
+    static DWORD dwTextureFactor = 0xFFFFFFFF;
+    static BOOL dwLighting = FALSE;
+    static D3DZBUFFERTYPE zb = D3DZB_TRUE;
+    static D3DCULL cull = D3DCULL_CCW;
+	
+    g_pd3dDevice-&gt;SetRenderState( D3DRS_ALPHATESTENABLE, dwALPHATESTENABLE );
+    g_pd3dDevice-&gt;SetRenderState( D3DRS_ALPHAREF, dwALPHAREF );
+    g_pd3dDevice-&gt;SetRenderState( D3DRS_ALPHABLENDENABLE, FALSE );
+    g_pd3dDevice-&gt;SetRenderState( D3DRS_TEXTUREFACTOR, dwTextureFactor );
+    g_pd3dDevice-&gt;SetRenderState( D3DRS_LIGHTING, dwLighting );
+    g_pd3dDevice-&gt;SetRenderState( D3DRS_ZENABLE, zb );
+    g_pd3dDevice-&gt;SetRenderState( D3DRS_CULLMODE, cull );
+    m_pd3dDevice-&gt;SetRenderState( D3DRS_ZWRITEENABLE, TRUE );
+    
+    static D3DTEXTURECOLORKEYOP colorkeyop = D3DTCOLORKEYOP_DISABLE;
+    static D3DCOLOR colorkeycolor = 0xff000000;
+    static D3DTEXTUREFILTERTYPE dwMagFilter = D3DTEXF_LINEAR;
+    static D3DTEXTUREFILTERTYPE dwMinFilter = D3DTEXF_POINT;
+    static DWORD dwMaxAnisotropy = 4;
+    static D3DTEXTUREALPHAKILL dwALPHAKILL = D3DTALPHAKILL_DISABLE;
+    
+    static D3DTEXTUREOP TSS0_ColorOp = D3DTOP_MODULATE;
+    static DWORD TSS0_ColorArg1 = D3DTA_TEXTURE;
+    static DWORD TSS0_ColorArg2 = D3DTA_DIFFUSE;
+    static D3DTEXTUREOP TSS0_AlphaOp = D3DTOP_SELECTARG1;
+    static DWORD TSS0_AlphaArg1 = D3DTA_TEXTURE;
+    static DWORD TSS0_AlphaArg2 = D3DTA_DIFFUSE;
+    static D3DTEXTUREADDRESS TSS0_ta = D3DTADDRESS_WRAP;
+	
+    g_pd3dDevice-&gt;SetTextureStageState( 0, D3DTSS_COLOROP, TSS0_ColorOp );
+    g_pd3dDevice-&gt;SetTextureStageState( 0, D3DTSS_COLORARG1, TSS0_ColorArg1 );
+    g_pd3dDevice-&gt;SetTextureStageState( 0, D3DTSS_COLORARG2, TSS0_ColorArg2 );
+    g_pd3dDevice-&gt;SetTextureStageState( 0, D3DTSS_ALPHAOP, TSS0_AlphaOp );
+    g_pd3dDevice-&gt;SetTextureStageState( 0, D3DTSS_ALPHAARG1, TSS0_AlphaArg1 );
+    g_pd3dDevice-&gt;SetTextureStageState( 0, D3DTSS_ALPHAARG2, TSS0_AlphaArg2 );
+    g_pd3dDevice-&gt;SetTextureStageState( 0, D3DTSS_ADDRESSU, TSS0_ta );
+    g_pd3dDevice-&gt;SetTextureStageState( 0, D3DTSS_ADDRESSV, TSS0_ta );
+    g_pd3dDevice-&gt;SetTextureStageState( 0, D3DTSS_MAGFILTER, dwMagFilter );
+    g_pd3dDevice-&gt;SetTextureStageState( 0, D3DTSS_MINFILTER, dwMinFilter );
+    g_pd3dDevice-&gt;SetTextureStageState( 0, D3DTSS_MAXANISOTROPY, dwMaxAnisotropy );
+    g_pd3dDevice-&gt;SetTextureStageState( 0, D3DTSS_ALPHAKILL, dwALPHAKILL );
+    g_pd3dDevice-&gt;SetTextureStageState( 0, D3DTSS_COLORKEYOP,    colorkeyop );
+    g_pd3dDevice-&gt;SetTextureStageState( 0, D3DTSS_COLORKEYCOLOR, colorkeycolor );
+
+    static D3DTEXTUREOP TSS1_ColorOp = D3DTOP_DISABLE;
+    static DWORD TSS1_ColorArg1 = D3DTA_TEXTURE;
+    static DWORD TSS1_ColorArg2 = D3DTA_DIFFUSE;
+    static D3DTEXTUREOP TSS1_AlphaOp = D3DTOP_DISABLE;
+    static DWORD TSS1_AlphaArg1 = D3DTA_TEXTURE;
+    static DWORD TSS1_AlphaArg2 = D3DTA_DIFFUSE;
+    static D3DTEXTUREADDRESS TSS1_ta = D3DTADDRESS_WRAP;
+	
+    g_pd3dDevice-&gt;SetTextureStageState( 1, D3DTSS_COLOROP, TSS1_ColorOp );
+    g_pd3dDevice-&gt;SetTextureStageState( 1, D3DTSS_COLORARG1, TSS1_ColorArg1 );
+    g_pd3dDevice-&gt;SetTextureStageState( 1, D3DTSS_COLORARG2, TSS1_ColorArg2 );
+    g_pd3dDevice-&gt;SetTextureStageState( 1, D3DTSS_ALPHAOP, TSS1_AlphaOp );
+    g_pd3dDevice-&gt;SetTextureStageState( 1, D3DTSS_ALPHAARG1, TSS1_AlphaArg1 );
+    g_pd3dDevice-&gt;SetTextureStageState( 1, D3DTSS_ALPHAARG2, TSS1_AlphaArg2 );
+    g_pd3dDevice-&gt;SetTextureStageState( 1, D3DTSS_ADDRESSU, TSS1_ta );
+    g_pd3dDevice-&gt;SetTextureStageState( 1, D3DTSS_ADDRESSV, TSS1_ta );
+    g_pd3dDevice-&gt;SetTextureStageState( 1, D3DTSS_MAGFILTER, dwMagFilter );
+    g_pd3dDevice-&gt;SetTextureStageState( 1, D3DTSS_MINFILTER, dwMinFilter );
+    g_pd3dDevice-&gt;SetTextureStageState( 1, D3DTSS_MAXANISOTROPY, dwMaxAnisotropy );
+    g_pd3dDevice-&gt;SetTextureStageState( 1, D3DTSS_ALPHAKILL, dwALPHAKILL );
+    g_pd3dDevice-&gt;SetTextureStageState( 1, D3DTSS_COLORKEYOP,    colorkeyop );
+    g_pd3dDevice-&gt;SetTextureStageState( 1, D3DTSS_COLORKEYCOLOR, colorkeycolor );
+
+    static D3DTEXTUREOP TSS2_ColorOp = D3DTOP_DISABLE;
+    static DWORD TSS2_ColorArg1 = D3DTA_TEXTURE;
+    static DWORD TSS2_ColorArg2 = D3DTA_DIFFUSE;
+    static D3DTEXTUREOP TSS2_AlphaOp = D3DTOP_DISABLE;
+    static DWORD TSS2_AlphaArg1 = D3DTA_TEXTURE;
+    static DWORD TSS2_AlphaArg2 = D3DTA_DIFFUSE;
+    static D3DTEXTUREADDRESS TSS2_ta = D3DTADDRESS_WRAP;
+	
+    g_pd3dDevice-&gt;SetTextureStageState( 2, D3DTSS_COLOROP, TSS2_ColorOp );
+    g_pd3dDevice-&gt;SetTextureStageState( 2, D3DTSS_COLORARG1, TSS2_ColorArg1 ); 
+    g_pd3dDevice-&gt;SetTextureStageState( 2, D3DTSS_COLORARG2, TSS2_ColorArg2 );
+    g_pd3dDevice-&gt;SetTextureStageState( 2, D3DTSS_ALPHAOP, TSS2_AlphaOp );
+    g_pd3dDevice-&gt;SetTextureStageState( 2, D3DTSS_ALPHAARG1, TSS2_AlphaArg1 );
+    g_pd3dDevice-&gt;SetTextureStageState( 2, D3DTSS_ALPHAARG2, TSS2_AlphaArg2 );
+    g_pd3dDevice-&gt;SetTextureStageState( 2, D3DTSS_ADDRESSU, TSS2_ta );
+    g_pd3dDevice-&gt;SetTextureStageState( 2, D3DTSS_ADDRESSV, TSS2_ta );
+    g_pd3dDevice-&gt;SetTextureStageState( 2, D3DTSS_MAGFILTER, dwMagFilter );
+    g_pd3dDevice-&gt;SetTextureStageState( 2, D3DTSS_MINFILTER, dwMinFilter );
+    g_pd3dDevice-&gt;SetTextureStageState( 2, D3DTSS_MAXANISOTROPY, dwMaxAnisotropy );
+    g_pd3dDevice-&gt;SetTextureStageState( 2, D3DTSS_ALPHAKILL, dwALPHAKILL );
+    g_pd3dDevice-&gt;SetTextureStageState( 2, D3DTSS_COLORKEYOP,    colorkeyop );
+    g_pd3dDevice-&gt;SetTextureStageState( 2, D3DTSS_COLORKEYCOLOR, colorkeycolor );
+
+    static D3DTEXTUREOP TSS3_ColorOp = D3DTOP_DISABLE;
+    static DWORD TSS3_ColorArg1 = D3DTA_TEXTURE;
+    static DWORD TSS3_ColorArg2 = D3DTA_DIFFUSE;
+    static D3DTEXTUREOP TSS3_AlphaOp = D3DTOP_DISABLE;
+    static DWORD TSS3_AlphaArg1 = D3DTA_TEXTURE;
+    static DWORD TSS3_AlphaArg2 = D3DTA_DIFFUSE;
+    static D3DTEXTUREADDRESS TSS3_ta = D3DTADDRESS_WRAP;
+	
+    g_pd3dDevice-&gt;SetTextureStageState( 3, D3DTSS_COLOROP, TSS3_ColorOp );
+    g_pd3dDevice-&gt;SetTextureStageState( 3, D3DTSS_COLORARG1, TSS3_ColorArg1 );
+    g_pd3dDevice-&gt;SetTextureStageState( 3, D3DTSS_COLORARG2, TSS3_ColorArg2 );
+    g_pd3dDevice-&gt;SetTextureStageState( 3, D3DTSS_ALPHAOP, TSS3_AlphaOp );
+    g_pd3dDevice-&gt;SetTextureStageState( 3, D3DTSS_ALPHAARG1, TSS3_AlphaArg1 );
+    g_pd3dDevice-&gt;SetTextureStageState( 3, D3DTSS_ALPHAARG2, TSS3_AlphaArg2 );
+    g_pd3dDevice-&gt;SetTextureStageState( 3, D3DTSS_ADDRESSU, TSS3_ta );
+    g_pd3dDevice-&gt;SetTextureStageState( 3, D3DTSS_ADDRESSV, TSS3_ta );
+    g_pd3dDevice-&gt;SetTextureStageState( 3, D3DTSS_MAGFILTER, dwMagFilter );
+    g_pd3dDevice-&gt;SetTextureStageState( 3, D3DTSS_MINFILTER, dwMinFilter );
+    g_pd3dDevice-&gt;SetTextureStageState( 3, D3DTSS_MAXANISOTROPY, dwMaxAnisotropy );
+    g_pd3dDevice-&gt;SetTextureStageState( 3, D3DTSS_ALPHAKILL, dwALPHAKILL );
+    g_pd3dDevice-&gt;SetTextureStageState( 3, D3DTSS_COLORKEYOP,    colorkeyop );
+    g_pd3dDevice-&gt;SetTextureStageState( 3, D3DTSS_COLORKEYCOLOR, colorkeycolor );
+
+    return S_OK;
+}
+</pre>
+    <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

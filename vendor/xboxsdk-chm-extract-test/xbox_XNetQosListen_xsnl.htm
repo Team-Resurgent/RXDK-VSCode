@@ -1,0 +1,154 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XNetQosListen</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XNetQosListen"/>
+<MSHelp:Keyword Index="F" Term="XNetQosListen"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XNetQosListen</h1>
+<p>
+The <b>XNetQosListen</b> function enables the QoS listener on the local Xbox console.
+</p>
+<pre class="syntax" xml:space="preserve"><b>INT</b> <b>XNetQosListen(</b>
+    <b>XNKID *</b> <i>pxnkid</i><b>,</b>
+    <b>BYTE *</b> <i>pb</i><b>,</b>
+    <b>UINT</b> <i>cb</i><b>,</b>
+    <b>DWORD</b> <i>dwBitsPerSec</i><b>,</b>
+    <b>DWORD</b> <i>dwFlags</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+
+<dt><i>pxnkid</i></dt>
+
+<dd>
+Session ID that the listener should use. This session ID must have been registered using <a href="xbox_xnetregisterkey_xsnl.htm">XNetRegisterKey</a>.
+</dd>
+
+
+<dt><i>pb</i></dt>
+
+<dd>
+Pointer to a title-specific block of data that is sent in response to QoS probes. See the <a href="xbox_XNetQosListen_xsnl.htm#remarks">Remarks</a> section below for more information.   
+</dd>
+
+
+<dt><i>cb</i></dt>
+
+<dd>
+Size of the title-specific block of data pointed to by the <i>pb</i> parameter.
+</dd>
+
+
+<dt><i>dwBitsPerSec</i></dt>
+
+<dd>
+Maximum average outbound bandwidth that QoS responses consume. See the <a href="xbox_XNetQosListen_xsnl.htm#remarks">Remarks</a> section below for more information.  
+</dd>
+
+
+<dt><i>dwFlags</i></dt>
+
+<dd>
+Flags that modify the behavior of the QoS listener. See the <a href="xbox_XNetQosListen_xsnl.htm#remarks">Remarks</a> section below for more information. This parameter is a combination of the following values:
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>XNET_QOS_LISTEN_ENABLE</td>
+<td>Responds to queries on the specified session ID.</td>
+</tr>
+<tr>
+<td>XNET_QOS_LISTEN_DISABLE</td>
+<td>Rejects queries on the specified session ID.</td>
+</tr>
+<tr>
+<td>XNET_QOS_LISTEN_SET_DATA</td>
+<td>Sets the block of data to send in response to probes.</td>
+</tr>
+<tr>
+<td>XNET_QOS_LISTEN_SET_BITSPERSEC</td>
+<td>Sets the maximum bandwidth that query responses may consume.</td>
+</tr>
+<tr>
+<td>XNET_QOS_LISTEN_RELEASE</td>
+<td>Stops listening on the specified session ID, and releases memory.</td>
+</tr>
+</table>
+
+</dd>
+
+
+</dl>
+<h4><a name="return"></a>Return Values</h4>
+Returns zero if successful, an error code otherwise.
+<h4><a name="remarks"></a>Remarks</h4>
+<p>
+Until a game title calls <b>XNetQosListen</b>, any inbound QoS probe packets from remote Xbox consoles are discarded without any response.
+</p>
+
+<p><a href="xbox_XNetQosListen_xsnl.htm">XNetQosListen</a> can be called multiple times to change the state of the listener, depending on the flags passed in.  The first call typically specifies the XNET_QOS_LISTEN_ENABLE flag.  This flag places the QoS listener in an active state. When active, the listener responds to QoS probes from other Xboxes with the title-specific data block specified using the XNET_QOS_LISTEN_SET_DATA flag.</p>
+
+<p>
+Specifying the XNET_QOS_LISTEN_DISABLE flag causes the QoS listener to respond to QoS probes from other Xbox consoles with a single "go away" response packet.  A title that is hosting an online-game session might disable its QoS listener when all of its "game slots" fill up, or if it is in the middle of a game that does not support join-in-progress. In these situations, users on remote Xbox consoles would not be able to join the session anyway. The "go away" response packet contains the title-specific data block specified using the XNET_QOS_LISTEN_SET_DATA flag.
+</p>
+
+<p>
+A game title shuts down the QoS listener for the specified session ID by specifying the XNET_QOS_LISTEN_RELEASE flag. This flag causes all memory allocated during the original call to <b>XNetQosListen</b> to be released.  Note that once the QoS listener is released on a particular session ID, inbound probes specifying that ID are discarded without a "go away" response.  If the QoS listener is enabled for a particular session ID, calling <a href="xbox_xnetunregisterkey_xsnl.htm">XNetUnregisterKey</a> on that ID automatically releases the QoS listener.
+</p>
+
+<p>The title uses the XNET_QOS_LISTEN_SET_DATA flag, along with the <i>cb</i>
+ and <i>pb</i>
+ parameters, to specify a title-specific block of data to return in response to QoS probes.  
+A game host might use this data to specify the "name" of the host server for the client to display, the set of users that are currently playing the game, or which level or track is currently being played. The title-specific data can be changed at any time by calling <a href="xbox_XNetQosListen_xsnl.htm">XNetQosListen</a> with this flag and the new block of data. In particular, the data may be changed even if the listener is in a disabled state (XNET_QOS_LISTEN_DISABLE). The data is returned in the "go away" response, and could be used by the title to give a reason why clients should not connect at that time. The maximum size of this data is specified by the <i>cfgQosDataLimitDiv4</i>
+member of the <a href="xbox_xnetstartupparams_xsnl.htm">XNetStartupParams</a> structure specified in the call to <a href="xbox_xnetstartup_xsnl.htm">XNetStartup</a> (the default is 512 bytes). The data block is automatically encrypted on the wire.
+</p>
+
+<p>
+The title uses the XNET_QOS_LISTEN_SET_BITSPERSEC flag along with the <i>dwBitsPerSec</i>
+ parameter to control the maximum average outbound bandwidth that QoS responses consume. A title might change this number depending on local conditions.  For example, the title might increase this number when waiting for players to join, and lower this number when it disables the listener.  Lowering this number increases the amount of time it takes for a client to complete its QoS probes to the host, but it doesn't affect the QoS computation because the listener reports how long it held on to the client's packets before responding. The minimum value is 4 Kbps (4,096 bps). The default is 16,384 bps (16 Kbps). A value of zero specifies that the listener should use the default.
+</p>
+
+<p>
+All of the QoS packets are protected by a 96-bit SHA hash.
+</p>
+
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Winsockx.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib or xnets.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+
+<p>
+<a href="xbox_secure_network_library_functions_xsnl.htm">Xbox Secure Network Library Functions</a> | 
+<a href="xbox_XNetQosLookup_xsnl.htm">XNetQosLookup</a>,
+<a href="XOnlineMatchSessionGetInfo.htm">XOnlineMatchSessionGetInfo</a>
+</p>
+
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

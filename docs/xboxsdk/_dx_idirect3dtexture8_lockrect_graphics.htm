@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirect3DTexture8::LockRect</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="IDirect3DTexture8::LockRect [C++]">
+<META NAME="MS-HKWD" CONTENT="LockRect (IDirect3DTexture8) [C++]">
+<META NAME="MS-HKWD" CONTENT="LockRect [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="LockRect (IDirect3DTexture8)"/>
+<MSHelp:Keyword Index="K" Term="IDirect3DTexture8::LockRect"/>
+<MSHelp:Keyword Index="F" Term="LockRect"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_idirect3dtexture8_lockrect_graphics"></A>IDirect3DTexture8::LockRect</H1>
+
+<P>Locks a rectangle on a texture resource.</P>
+
+<PRE class=syntax><B>HRESULT LockRect(
+  UINT</B><I> Level</I><B>,</B>
+<B>  D3DLOCKED_RECT*</B><I> pLockedRect</I><B>,</B>
+<B>  CONST</B> <B>RECT*<I> </I></B><I>pRect</I><B>,</B>
+<B>  DWORD</B><I> Flags</I>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>Level</I></DT>
+
+<DD>[in] Specifies the level of the texture resource to lock.</DD>
+
+<DT><I>pLockedRect</I></DT>
+
+<DD>[out] Pointer to a <A HREF="_dx_d3dlocked_rect_graphics.htm"><B>D3DLOCKED_RECT</B></A> structure describing the locked region.</DD>
+
+<DT><I>pRect</I></DT>
+
+<DD>[in] Pointer to a rectangle to lock specified by a pointer to a <B>RECT</B> structure. Passing NULL locks the entire texture level.</DD>
+
+<DT><I>Flags</I></DT>
+
+<DD>[in] A combination of zero or more locking flags, describing the type of lock to perform.
+
+<DL>
+
+<dt>D3DLOCK_TILED</dt>
+
+<dd>This flag should be used when calling <b>LockRect</b> on surfaces that reside in tiled memory (such as the default frame buffer surfaces or any surfaces residing in a <a href="_dx_idirect3ddevice8_settile_graphics.htm"><b>IDirect3DDevice8::SetTile</b></a> range). This flag has to be specified to allow CPU reads and writes to properly respect the tile remapping setting. If it is not specified on a tiled surface, the CPU rendering results may appear "jumbled." Using this flag can result in somewhat slower CPU write access and significantly slower CPU read access, and so should only be used when needed and only with tiled surfaces.</dd>
+
+<DT>D3DLOCK_READONLY</DT>
+
+<DD>Indicates that application will not write to the buffer.
+</DD>
+
+<dt>D3DLOCK_NOOVERWRITE</dt>
+<dd>This flag keeps the lock from blocking if the texture is in use by the GPU.</dd>
+
+<DT>D3DLOCK_DISCARD</DT>
+
+<DD>This flag is not supported on Xbox.</DD>
+
+</DL>
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the method succeeds, the return value is <A HREF="_dx_return_values_graphics.htm#_dx_d3d_ok_graphics">D3D_OK</A>.</P>
+
+<P>If the method fails, the return value is <A HREF="_dx_return_values_graphics.htm#_dx_e_outofmemory_graphics">E_OUTOFMEMORY</A>.</P>
+
+<h4>Remarks</h4>
+
+<p>D3DLOCK_READONLY will block if the GPU is using the texture since the texture <i>may</i> be a render target (in which case you may be reading dirty data). If you are reading from a texture that is not a render target, you should use  ( D3DLOCK_READONLY | D3DLOCK_NOOVERWRITE ) to guarantee that the lock operation does not block.</p>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in D3d8.h.<BR>
+<B>&nbsp;&nbsp;Import Library:</B> Use D3d8.lib.</P>
+
+<H4>See Also</H4>
+
+<P><A HREF="_dx_idirect3dtexture8_unlockrect_graphics.htm"><B>IDirect3DTexture8::UnlockRect</B></A></P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

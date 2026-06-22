@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>TLVertex Legacy Type</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="TLVertex Legacy Type"/>
+<MSHelp:Keyword Index="F" Term="TLVertex Legacy Type"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_tlvertex_legacy_type_graphics"></A>TLVertex Legacy Type</H1>
+
+<P>The topic shows the steps necessary to initialize and use vertices that have a transformed position, diffuse color, specular color, and texture coordinates.</P>
+
+<P>The first step is to define the custom vertex type and FVF, as in the following example.</P>
+
+<PRE>struct TLVertex
+{
+    FLOAT    x, y, z, rhw;
+    D3DCOLOR specular, diffuse;
+    FLOAT    tu, tv;
+};
+
+const DWORD VertexFVF = (D3DFVF_XYZRHW | D3DFVF_DIFFUSE |
+                         D3DFVF_SPECULAR | D3DFVF_TEX1 );
+</PRE>
+
+<P>The next step is to create a vertex buffer with enough room for four vertices by using the <A HREF="_dx_idirect3ddevice8_createvertexbuffer_graphics.htm">IDirect3DDevice8::CreateVertexBuffer</A> method as shown here.</P>
+
+<PRE>g_d3dDevice-&gt;CreateVertexBuffer(
+                 4*sizeof(TLVertex), VertexFVF, 
+                 D3DUSAGE_WRITEONLY,
+                 D3DPOOL_DEFAULT, &amp;pBigSquareVB);
+</PRE>
+
+<P>The next step is to manipulate the values for each vertex.</P>
+
+<PRE>TLVertex * v;
+pBigSquareVB-&gt;Lock( 0, 0, (BYTE**)&amp;v, 0 );
+
+v[0].x  = 0.0f;  v[0].y  = 10.0;  v[0].z  = 10.0f; v[0].rhw = 1.0f;
+v[0].diffuse  = 0xffff0000;
+v[0].specular = 0xff00ff00;
+v[0].tu = 0.0f;  v[0].tv = 0.0f;
+
+v[1].x  = 0.0f;  v[1].y  = 0.0f;  v[1].z  = 10.0f; v[1].rhw = 1.0f;
+v[1].diffuse  = 0xff00ff00;
+v[1].specular = 0xff00ffff;
+v[1].tu = 0.0f;  v[1].tv = 0.0f;
+
+v[2].x  = 10.0f; v[2].y  = 10.0f; v[2].z  = 10.0f; v[2].rhw = 1.0f;
+v[2].diffuse  = 0xffff00ff;
+v[2].specular = 0xff000000;
+v[2].tu = 0.0f;  v[2].tv = 0.0f;
+
+v[3].x  = 0.0f; v[3].y  = 10.0f;  v[3].z = 10.0f; v[3].rhw = 1.0f;
+v[3].diffuse  = 0xffffff00;
+v[3].specular = 0xffff0000;
+v[3].tu = 0.0f; v[3].tv = 0.0f;
+
+pBigSquareVB-&gt;Unlock();
+</PRE>
+
+<P>The vertex buffer has been initialized and is ready to render. The following code example shows how to use the legacy FVF to draw a square.</P>
+
+<PRE>g_d3dDevice-&gt;SetVertexShader( VertexFVF );
+g_d3dDevice-&gt;SetStreamSource( 0, pBigSquareVB, 4*sizeof(TLVertex) );
+g_d3dDevice-&gt;DrawPrimitive( D3DPT_TRIANGLESTRIP, 0, 2 );
+</PRE>
+
+<P>Passing an FVF to the <A HREF="_dx_idirect3ddevice8_setvertexshader_graphics.htm">IDirect3DDevice8::SetVertexShader</A> method tells Direct3D that a legacy FVF is being used and that stream 0 is the only valid stream.</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

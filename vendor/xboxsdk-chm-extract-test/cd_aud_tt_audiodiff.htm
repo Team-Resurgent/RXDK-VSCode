@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Meeting the Bar for Audio: The Xbox Audio Difference</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Meeting the Bar for Audio: The Xbox Audio Difference"/>
+<MSHelp:Keyword Index="F" Term="Meeting the Bar for Audio: The Xbox Audio Difference"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1 class="heading"><A NAME=""></A>Meeting the Bar for Audio: The Xbox Audio Difference</H1>
+
+<p><i>Compiled by Scott Selfon, Audio Content Consultant, Xbox Advanced Technology Group</i></p>
+
+<H2>Introduction</H2>
+<p>The audio system on the Xbox&#174; presents massive opportunities for realistic, immersive, dynamic audio. From per-voice filtering to a fully programmable realtime-effects digital signal processor (DSP); from dynamic head-relative 3D positioning to real-time simultaneous Dolby&#174; Digital and Dolby&#174; Surround encoding, Xbox provides an exceptional amount of in-console audio power.<SUP>1</SUP> No longer is one-to-one correspondence between a game event and a static wave file considered acceptable. This paper presents the four major areas in audio in which a title can differentiate itself from the pack, and set itself apart from the more limited audio experiences available on other consoles and platforms.</p>
+<p>We're looking for the best "ride" from the console audio experience: <b>R</b>ealism, <b>I</b>mmersion, <b>D</b>ramatic Impact, and <b>E</b>motion. Audio should support and anchor the visual and emotional events the user is experiencing. Remember, "the ears never blink"-and they can often give the player much more information than visuals alone. The sensitivity of our ears can make it quite challenging to maintain the suspension of disbelief necessary for a truly enveloping game, but a well-designed sound implementation can immensely augment a title's entertainment value.</p>
+
+<h2>Realism</h2>
+<p>Overview:</p>
+<ul>
+<li>Nothing shatters the illusion of reality like hearing the exact same wave played multiple times. Dialog, sound effects, ambience, and music should all be non-repetitive.</li>
+<li>Objects should not make their sounds as if in an environmental vacuum-they should interact dynamically with their environments (reverberation, occlusion/obstruction based on their position relative to listener, and so on).</li>
+<li>Environments themselves should be accurate and lifelike. Unless the player is isolated in a soundproof room, consider using some amount of ambience.</li>
+<li>Object sounds should be multi-layered, rich and full, without noticeable artifacting or clipping (unless intended).</li>
+</ul>
+
+<p>Xbox features that support this trait:</p>
+<ul><li>Nine-GB game disc and 750-MB hard disk utility drive for caching multiple dialog scenarios and variations of sound effects for rapid playback.</li>
+<li>Per-voice hardware filtering and global processor DSP effects programs for real-time audio variations.</li>
+<li>I3DL2 reverb that contains multiple presets and lower-level parameter control for environmental interaction.</li>
+<li>Per-voice filtering for occlusion, obstruction, and parametric equalization for interaction with the listener and environment.</li>
+<li>Per-voice envelopes, LFOs, pitch shifting, and so on for multi-layered sounds.</li>
+<li>PCM (hardware) and WMA (software) support for more lossless perceptual playback; ADPCM (hardware) where appropriate.</li>
+</ul>
+<p>Common mistakes/misconceptions:</p>
+<ul>
+<li>Consider how you will be recording and mixing<SUP>2</SUP> your audio assets before the project begins. Remember that Xbox does not provide the ability to amplify sounds, so in general you will want to maximize your recorded levels and programmatically add attenuation as appropriate.</li>
+<li>We have seen many examples in which a particular event consistently leads to playback of the same wave file, perhaps with some random pitch shifting. Consider creating more complex (multiple wave files) and dynamic (real-time hardware parameter control) sound effects.</li>
+<li>Content with pre-rendered reverb "locks" that content to a specific environment. Allowing the DSP to add hardware dynamic environmental reverb to dry content will avoid the need to reauthor your content for various environments, and allow for more dynamic placement of the sound in your title's acoustic "world."</li>
+<li>ADPCM can be challenging to use with some sounds, which can rapidly gain artifacts and lose fidelity when compressed. For sounds meant to be in the front of your mix, consider PCM or WMA. If memory budget is a concern, consider streaming or using hardware processing to generate effects and variation.<SUP>3</SUP> </li>
+<li>Precisely because the Xbox file system is generalized, it isn't optimized for rapidly reading hundreds of specific wave files from various directories. Consider bundling audio assets for delivery, using anything from XACT for in-memory sounds to binary concatenation for WMA and PCM streams.</li>
+</ul>
+
+<h2>Immersion</h2>
+<p>Overview:</p>
+<ul>
+<li>The player should be acoustically in the center of the action. Ambience should be wide and enveloping. Objects that are behind you in gameplay should sound, well, behind you.</li>
+<li>Where appropriate (particularly in a game musical score that is independent of gameplay), find creative ways to support user-created soundtracks (WMA files stored on hard disk). Giving players the ability to enjoy their own music during gameplay often adds to their engagement with the title.</li>
+</ul>
+
+<p>Xbox features that support this trait:</p>
+<ul>
+<li>Hardware supported 3D-positioning, and HRTF processing of up to 64 sound sources.<SUP>4</SUP> </li>
+<li>Simultaneous real-time Dolby Digital and Dolby Surround encoding in hardware.</li>
+<li>Support for user-created WMA soundtracks on hard disk.<SUP>5</SUP> </li>
+</ul>
+<p>Common mistakes/misconceptions:</p>
+<ul>
+<li>If you plan to present some of your audio content in pre-rendered multichannel, consider your strategy up front: compression, streaming, what content will be placed in which channel(s), how the content will interact with dynamically generated and positioned content, and so on.</li>
+<li>Pay attention to your mix-quite a few games are submitted without being mixed properly. At the very least, listen on a Dolby Digital receiver, on a Dolby Surround receiver, and on a stereo television to make sure everything is audible and within appropriate dynamic ranges.</li>
+<li>Make sure menu item selection sounds are audible over background score/ambience. Consider ducking music and sound effects when important dialog is being played.</li>
+<li>For pre-rendered cutscenes, there is little reason not to take advantage of multichannel audio (quad or 5.1).</li>
+<li>The human ear can perceive perhaps ten distinct sound sources before localizing sounds becomes difficult. Therefore, it is important to avoid simultaneous chaotic movement of individual voices. In addition, there can be a non-trivial CPU hit for recalculating many positions each frame.</li>
+<li>Consider playing sounds that originate in roughly the same location as regular 2D voices, and then submixing them into a single 3D-positionable voice.</li>
+</ul>
+
+<h2>Dramatic Impact</h2>
+<p>Overview:</p>
+<ul>
+<li>Audio should, where appropriate, apply filmic (and other artistic) principals to add influence to gameplay. In particular, screen-anchored sounds should come from the center speaker, and 3D-positioned sounds should move with the listener's orientation and location.</li>
+<li>Use positional auditory cues to surprise or aid the gamer. Place some ambient sounds in the rear speakers to add anxiety. Make a sound come from an unexpected angle or elevation, or from just on the other side of a door or wall.</li>
+<li>Take advantage of the low frequency effects (LFE) channel to add extra impact to explosions, engine rumbles, massive object movement, or to otherwise heighten tension.</li>
+</ul>
+<p>Xbox features that support this trait:</p>
+<ul>
+<li>Manual per-voice positioning ("panning") in up to eight mixbins (including speaker channels).</li>
+<li>Filtering (occlusion, obstruction, and general low-pass) to muffle objects that aren't visible to the player.</li>
+<li>HRTF (3D) processing on up to 64 distinct sound sources.</li>
+<li>The LFE (.1) channel. Although it is only available on Dolby Digital, make it count. At 120-Hz cutoff, "rumble" tracks can be tiny but very effective.</li>
+</ul>
+<p>Common mistakes/misconceptions:</p>
+<ul>
+<li>Don't ignore the center channel. Dialog, first person sounds, and "screen-anchored" sounds are all quite appropriate in the center channel. Unfortunately, many titles still place these kinds of sounds in the left and right speakers without using the center channel at all. Remember that the center channel is used by all of our formats (not just Dolby Digital), so take advantage of it.<SUP>6</SUP> </li>
+<li>For games utilizing dramatic camera shifts (or even filmic "cuts"), consider locking your dialog into the center channel rather than 3D positioning it. Most films keep their dialog in one location (the center speaker) during a scene, even as the camera might cut between two conversing characters.</li>
+<li>Don't just feed your left and right channels to the LFE channel; much of the data will be ignored and won't contain lower frequencies necessary to produce a good "rumble" effect.</li>
+<li>Avoid silent load screens. Even using simple audio assets to set the stage for visuals that lead into a game or level is usually better than no sound at all.</li>
+</ul>
+
+<h2>Emotion</h2>
+<p>Overview:</p>
+<ul>
+<li>Dynamic musical/ambient underscoring that reacts to the player's actions as well as to the current state of the game.</li>
+<li>Augment the volume of the most critical sounds compared to the rest of the mix.</li>
+<li>Change the characteristics of sound effects and music to manipulate the player's emotions.</li>
+</ul>
+
+<p>Xbox features that support this trait:</p>
+<ul>
+<li>Per-voice rolloff (attenuation curves) allow for important or "massive" sounds to be heard even from great distances. Conversely, sound sources meant to surprise can leap up to full volume within a very short distance.</li>
+<li>Per-voice volume, attenuation, pitch shifting, and Doppler emphasize the player's emotional state (heightened perception, injury, and so on).</li>
+<li>Microsoft&#174; DirectMusic&#174; API for dynamic, interactive musical scores and ambience.<SUP>7</SUP> </li>
+</ul>
+
+<p>Common mistakes/misconceptions:</p>
+<ul>
+<li>Don't just loop a piece of music, but come up with something that supports the action. Even a simple crossfade between different pieces (or orchestrations) of music based on what's going on can be extremely effective at lending emotional support to a game.</li>
+<li>Don't feel that you always have to have underscore-the absence of music can be as compelling (and noticeable) as its presence. It is often appropriate to let the music stop or gradually fade to a lower, more ambient level. This is particularly true when the player has paused the game or left it inactive for awhile. </li>
+<li>Make sure the most critical content is audible. If the player is being given audible directions, consider ducking music and/or effects so the instructions are intelligible.</li>
+</ul>
+
+<h2>Wrap-Up</h2>
+<p>Sound design and music composition for a game is often one of the more overlooked and underappreciated arts. The paradox of sound design is that the sound is generally only noticed if it is inappropriate. Rarely will the player notice if the ambience or underscore is dynamic or looped. More likely, sound design quality will be the difference between players accepting and fully enjoying the gaming experience, and losing the illusion of realism (and in the worst case, encouraging players to mute the volume to play their own non-interactive, but at least personalized and non-repetitive, audio). Similarly, in the game design process, audio is often noticed only when it is incorrect or misplaced, and often much more readily than graphics. A pixel shaded the wrong color or a shadow slightly misaligned is not noticed nearly as easily as audio breakups or a poorly mixed audio track.</p>
+<p>Spend time planning your audio development scheme, familiarize yourself with what the Xbox has to offer for audio design, and as always, ask questions! Remember that the Xbox Advanced Technology Group (ATG) is here to assist you with any stage of the game development process. Whether you are planning your audio strategy, are in the midst of audio production, or are figuring out how to mix everything together prior to an upcoming schedule deadline, ATG is available to provide technical, aesthetic, and creative assistance.  </p>
+
+<p>For more information about topics presented here, or for questions about your specific title, please consult the Xbox Audio Best Practices Guide, the Xbox Development Kit documentation, or the white papers on Audio Designer&#39;s Corner, or send an e-mail message to <a href="mailto:content@xbox.com">content@xbox.com</a>.</P>
+<BR>
+<HR ALIGN="left" WIDTH="300">
+<p class="footnote"><SUP>1</SUP>&nbsp;For an overview of the Xbox audio hardware and content formats supported, see <a href="cd_aud_wp_bp_chap2.htm">Xbox Audio Content</a> and <A HREF="cd_aud_wp_bp_chap3.htm">Xbox Audio Hardware</A> of the Audio Best Practices Guide.</p>
+<p class="footnote"><SUP>2</SUP>&nbsp;For a more complete discussion, see <a href="cd_aud_wp_bp_chap7.htm">Mixing Audio for Xbox</a>.</p>
+<p class="footnote"><SUP>3</SUP>&nbsp;See <a href="cd_aud_wp_bp_chap6.htm">Audio Performance and Memory Footprint Optimizations for Xbox</a> for a more complete discussion of this topic.</p>
+<p class="footnote"><SUP>4</SUP>&nbsp;While HRTF processing and 3D positioning are performed by the hardware, CPU calculations are necessary to determine distances, transforms, and coefficients. This translates into a fairly small but potentially significant CPU hit each time you reposition an object. See the <a href="https://xds.xbox.com/BPProgInfo.asp?Page=content/cd_aud_wp_DSperf_jh.htm" title="DirectSound Performance" target="blank">DirectSound Performance</a> white paper for details on minimizing this performance hit.</p>
+<p class="footnote"><SUP>5</SUP>&nbsp;The Background Music code sample provided with the XDK can be used to seamlessly integrate user-created WMA soundtracks with streamed WMA (or PCM) content that you deliver with the game disc.</p>
+<p class="footnote"><SUP>6</SUP>&nbsp;For a general discussion of multichannel authoring and mixdown implications, see <a href="cd_aud_wp_surround.htm">The Surround Experience: Authoring for and Implementing Multichannel Audio Playback</a>.</p>
+<p class="footnote"><SUP>7</SUP>&nbsp;A wide variety of papers on DirectMusic concepts and DirectMusic Producer for Xbox (the primary authoring and assembly tool for DirectMusic content) can be found on the white papers page of Audio Designer's Corner at <a href="https://xds.xbox.com/BPProgInfo.asp?Page=content/cd_aud_wp.htm#DirectMusic Content Authoring" title="DirectMusic Content Authoring and DirectMusic Producer." target="blank">DirectMusic Content Authoring and DirectMusic Producer</a>.</p>
+
+<SMALL>Friday, March 1, 2002</SMALL>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

@@ -1,0 +1,102 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XPhysicalAllocEx</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XPhysicalAllocEx"/>
+<MSHelp:Keyword Index="F" Term="XPhysicalAllocEx"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XPhysicalAllocEx</h1>
+<p>Allocates a region of contiguous physical memory within a specified memory range, and returns a pointer to the newly allocated memory.</p>
+<pre class="syntax" xml:space="preserve"><b>LPVOID</b> <b>XPhysicalAllocEx(</b>
+    <b>SIZE_T</b> <i>dwSize</i><b>,</b>
+    <b>ULONG_PTR</b> <i>ulLowestAcceptableAddress</i><b>,</b>
+    <b>ULONG_PTR</b> <i>ulHighestAcceptableAddress</i><b>,</b>
+    <b>ULONG_PTR</b> <i>ulAlignment</i><b>,</b>
+    <b>DWORD</b> <i>flProtect</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+<dt><i>dwSize</i></dt>
+<dd>[in]  Desired size, in bytes, of the memory to be allocated.  This value is rounded up to the nearest page size.</dd>
+<dt><i>ulLowestAcceptableAddress</i></dt>
+<dd>[in]  The lowest physical address that is acceptable for the allocation.  This value is rounded down to the nearest system page (4 KB) boundary.</dd>
+<dt><i>ulHighestAcceptableAddress</i></dt>
+<dd>[in]  The highest physical address that is acceptable for the allocation.  This value is rounded down to the nearest system page (4 KB) boundary.</dd>
+<dt><i>ulAlignment</i></dt>
+<dd>[in]  The desired alignment for the starting address returned for the allocated memory.  This parameter must be a power of two.  A value less than the system page size (4 KB) is rounded up to the system page size.</dd>
+
+<dt><i>flProtect</i></dt>
+<p>
+
+<dd>[in]  The access protection and optional memory type modifiers. One of the following access protection flags must be specified:</dd>
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>PAGE_READONLY</td>
+<td>Enables read and execute access to the committed region of pages. An attempt to write to the committed region results in an access violation.</td>
+</tr>
+<tr>
+<td>PAGE_READWRITE</td>
+<td>Enables read, write, and execute access to the committed region of pages.</td>
+</tr>
+</table>
+
+<p>In addition, one of the following flags may be specified to modify the characteristics of the allocated memory:</p>
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>PAGE_NOCACHE</td>
+<td>Allows no memory caching for memory in the committed region of pages. The hardware attributes for the physical memory will be treated as "no cache." This is useful for mapping a video frame buffer with no caching.</td>
+</tr>
+<tr>
+<td>PAGE_WRITECOMBINE</td>
+<td>The allocated memory has a write-combining cache policy.  This is useful for mapping a video frame buffer.  Write combining is a special caching mode that batches writes to the same cache line so they can be transferred in a single bus clock. Write combining does not preserve ordering of the writes, a tradeoff that is usually acceptable for frame buffers.</td>
+</tr>
+</table>
+</p>
+</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>If the function succeeds, the return value is the base address of the allocated region of pages.</p>
+<p>If the function fails, the return value is NULL. To get extended error information, call <a href="errors_3uwi.htm">GetLastError</a>. </p><h4><a name="remarks"></a>Remarks</h4>
+<p>The <b>XPhysicalAllocEx</b> function allocates contiguous physical memory and returns a pointer to the allocated memory.  If there is not enough contiguous physical memory available within the specified address range, the function will fail.</p>
+
+<p>The returned address will be aligned according to <i>ulAlignment</i>.  For example, if <i>ulAlignment</i> is 0x2000, the returned starting address will be aligned on an 8-KB boundary.</p>
+
+<p>The allocated memory is not initialized to any known value.  If zero-initialized memory is desired, the title must explicitly set the memory contents to zero.</p>
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xbox.h; for include use xtl.h.</p>
+            <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="xbox_mt_sll_memman_xphysicalalloc.htm">XPhysicalAlloc</a>, <a href="xbox_mt_sll_memman_xphysicalfree.htm">XPhysicalFree</a>, <a href="xbox_mt_sll_memman_xphysicalprotect.htm">XPhysicalProtect</a>, <a href="xbox_mt_sll_memman_xquerymemoryprotect.htm">XQueryMemoryProtect</a>
+</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

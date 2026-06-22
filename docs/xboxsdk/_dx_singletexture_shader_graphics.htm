@@ -1,0 +1,68 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>SingleTexture Shader</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="SingleTexture Shader"/>
+<MSHelp:Keyword Index="F" Term="SingleTexture Shader"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_singletexture_shader_graphics"></A>SingleTexture Shader</H1>
+
+<P>This topic shows the steps necessary to initialize and use a simple vertex shader that uses a position and texture coordinates.</P>
+
+<P>The first step is to declare the structures that hold the position and texture coordinates, as in the following example.</P>
+
+<PRE>struct XYZBuff
+{
+    D3DVALUE x, y, z;
+};
+
+struct TEX0Buff
+{
+    D3DVALUE tu, tv;
+};
+
+#define XYZBUFF  (D3DFVF_XYZ)
+#define TEX0BUFF (D3DFVF_TEX1)
+</PRE>
+
+<P>The next step is to create a vertex shader declaration, as shown here.</P>
+
+<PRE>DWORD decl[] =
+{
+    D3DVSD_STREAM(0),
+    D3DVSD_REG( D3DVSDE_POSITION, D3DVSDT_FLOAT3 ),
+    D3DVSD_STREAM(1),
+    D3DVSD_REG( D3DVSDE_TEXCOORD0, D3DVSDT_FLOAT2 ),
+    D3DVSD_END()
+};</PRE>
+
+<P>For details about the syntax of a vertex shader declaration, see <A HREF="_dx_vertex_shader_declaration_syntax_graphics.htm">Vertex Shader Declaration Syntax</A>.</P>
+
+<P>The next step is to call the <A HREF="_dx_idirect3ddevice8_createvertexshader_graphics.htm">IDirect3DDevice8::CreateVertexShader</A> method to create the vertex shader.</P>
+
+<PRE>g_d3dDevice-&gt;CreateVertexShader( decl, NULL, &amp;vShader, 0);
+</PRE>
+
+<P>Passing NULL to the second parameter of <B>CreateVertexShader</B> tells Direct3D that this vertex shader will use a fixed-function pipeline.</P>
+
+<P>After the vertex buffer and vertex shader have been created, they are ready to use. The code example below shows how to set the vertex shader, set the stream source, and then draw a triangle list that uses the new vertex shader.</P>
+
+<PRE>g_d3dDevice-&gt;SetVertexShader( vShader );
+g_d3dDevice-&gt;SetStreamSource( 0, xyzbuf, 4 * sizeof(FLOAT));
+g_d3dDevice-&gt;SetStreamSource( 1, tex0buf, 2 * sizeof(FLOAT));
+g_d3dDevice-&gt;SetIndices( pIB, 0 );
+g_d3dDevice-&gt;DrawIndexedPrimitive( D3DPT_TRIANGLELIST, 0, max - min + 1, 0, count / 3 );
+</PRE>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

@@ -1,0 +1,36 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>DirectMusic Tools</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="DirectMusic Tools"/>
+<MSHelp:Keyword Index="F" Term="DirectMusic Tools"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H2><A NAME="_dx_directmusic_tools_dxaudio"></A>DirectMusic Tools</H2>
+
+<P>A tool is an object that intercepts messages and handles them in some way. The tool might alter the message and then pass it on to the next tool, or free the message, or send a new message based on information in the old one.</P>
+
+<P>DirectMusic has an output tool that is normally the last to receive messages. It is this tool that converts performance messages to standard MIDI messages and streams them to the synthesizer. Other tools are implemented by the application or obtained from libraries.</P>
+
+<P>To implement a tool, you must first create an object that supports the <A HREF="_dx_idirectmusictool8_dxaudio.htm"><B>IDirectMusicTool8</B></A> interface. The object's implementation of the <B>IDirectMusicTool8</B> methods determines what messages are processed by the tool and what work is performed on these messages.</P>
+
+<P>All tools other than the output tool are collected in toolgraphs. Even if your application is using only one other tool, you must create a toolgraph to contain it. Then add this toolgraph to a segment or the performance. Toolgraphs provide a convenient mechanism for directing messages from one tool to another.</P>
+
+<P>When the performance engine is playing a segment, it enables each tool in the segment toolgraph, and then each tool in the performance toolgraph, to process each message. After a tool processes a message, it should obtain the <A HREF="_dx_idirectmusicgraph8_dxaudio.htm"><B>IDirectMusicGraph8</B></A> pointer from the <B>pGraph</B> member of the <A HREF="_dx_dmus_pmsg_dxaudio.htm"><B>DMUS_PMSG</B></A> structure and then call the <A HREF="_dx_idirectmusicgraph8_stamppmsg_dxaudio.htm"><B>IDirectMusicGraph8::StampPMsg</B></A> method to stamp the message with a pointer to the next tool, if any, that is to receive it.</P>
+
+<P>Tools process messages in a high-priority thread. Do not call time-consuming functions, such as those involving graphics or file input/output, from within a tool's <A HREF="_dx_idirectmusictool8_processpmsg_dxaudio.htm"><B>IDirectMusicTool8::ProcessPMsg</B></A> method. If a tool needs to trigger an action, it should do so by signaling a different thread, perhaps the application's main thread.</P>
+
+<P>When implementing the methods of <B>IDirectMusicTool8</B>, take care not to create circular references to parent objects. Circular references come about when one object creates another and the child keeps an additional reference to the parent. For example, suppose a tool creates a new reference to the toolgraph passed into its <A HREF="_dx_idirectmusictool8_init_dxaudio.htm"><B>IDirectMusicTool8::Init</B></A> method. If the tool fails to release this reference, there is a problem when the segment attempts to release the toolgraph. Because the tool still has a reference to the toolgraph, the toolgraph is not fully released; and because the toolgraph has a reference to the tool, the tool cannot be released either.</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

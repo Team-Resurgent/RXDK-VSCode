@@ -1,0 +1,308 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Textures, Surfaces, and Volumes</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Textures%2c Surfaces%2c and Volumes"/>
+<MSHelp:Keyword Index="F" Term="Textures%2c Surfaces%2c and Volumes"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Textures, Surfaces, and Volumes</H1>
+<!--***********************************************************-->
+
+<!--****Intro paragraph. Should be a three or four sentence summary of the topic.****-->
+<p>The resource header structures for <a href="_dx_idirect3dcubetexture8_graphics.htm">IDirect3DCubeTexture8</a>, <a href="_dx_idirect3dsurface8_graphics.htm">IDirect3DSurface8</a>, <a href="_dx_idirect3dtexture8_graphics.htm">IDirect3DTexture8</a>, <a href="_dx_idirect3dvolume8_graphics.htm">IDirect3DVolume8</a>, and <a href="_dx_idirect3dvolumetexture8_graphics.htm">IDirect3DVolumeTexture8</a> all share a similar structure definition.</p> 
+
+<p>If there is a need to manually create a resource, it is recommended that the title use <a href="xgraphics_xgsetcubetextureheader.htm">XGSetCubeTextureHeader</a>, <a href="xgraphics_xgsetsurfaceheader.htm">XGSetSurfaceHeader</a>, <a href="xgraphics_xgsettextureheader.htm">XGSetTextureHeader</a>, or <a href="xgraphics_xgsetvolumetextureheader.htm">XGSetVolumeTextureHeader</a>.</p>
+
+<pre class=syntax>struct <i>_ResourceName</i> {
+  // Resource specific declarations
+  // ...
+  
+  DWORD Common;
+  DWORD Data;
+  DWORD Lock;
+  
+  DWORD Format;
+  DWORD Size;
+};</pre>
+
+<h4>Members</h4>
+
+<dl>
+<dt><b>Common</b></dt>
+
+<dd>Holds all of the information common to all resources inheriting from <a href="_dx_idirect3dresource8_graphics.htm">IDirect3DResource8</a>. Information is stored in the following bit fields.
+
+<table>
+<tr>
+<th>Field</th>
+<th>Bits</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td>REFCOUNT</td>
+<td>16</td>
+<td>Reference count for the resource, which will be destroyed if this value ever goes to zero.</td>
+</tr>
+
+<tr>
+<td>TYPE</td>
+<td>3</td>
+<td>Holds the type of the resource. For all textures, this will be D3DCOMMON_TYPE_TEXTURE. For any surface or volume, this will be D3DCOMMON_TYPE_SURFACE.</td>
+</tr>
+
+<tr>
+<td>INTREFCOUNT</td>
+<td>4</td>
+<td>Internal reference count that is used to determine whether <a href="_dx_idirect3ddevice8_graphics.htm">IDirect3DDevice8</a> is using this resource.</td>
+</tr>
+
+<tr>
+<td>VIDEOMEMORY</td>
+<td>1</td>
+<td>This bit is not used.</td>
+</tr>
+
+<tr>
+<td>D3DCREATED</td>
+<td>1</td>
+<td>Flag to indicate that the resource was created using one of the <b>Create</b> methods of <b>IDirect3DDevice8</b>. This flag should not be set for manually created resources.</td>
+</tr>
+
+</table>
+
+<p>Surfaces have one additional flag that may get set: D3DSURFACE_OWNSMEMORY. If this flag is set, it indicates that the surface owns the memory pointed to by its <b>Data</b> field and that it should free that memory when its reference count goes to zero. The memory will be freed with <a href="xbox_dxg_D3D_FreeContiguousMemory.html">D3D_FreeContiguousMemory</a>.</p>
+
+</dd>
+
+
+<dt><b>Data</b></dt>
+
+<dd>The offset of the data for this resource in physical memory. The memory for the data of a resource must be stored in contiguous, write-combined memory. The data allocation for each resource must be aligned on a specific boundary depending on the resource type. 
+
+<p>All textures must be aligned using D3DTEXTURE_ALIGNMENT. Each face of a cube map must be aligned on a new D3DTEXTURE_CUBEFACE_ALIGNMENT byte boundary.</p>
+
+<p>All surfaces must be aligned using D3DSURFACE_ALIGNMENT.</p>
+
+<p>The contiguous memory allocation ensures that the consecutive virtual pages of the allocation will use consecutive physical pages, because the graphics processor does not have any support for virtual memory. The memory must be write combined to ensure coherency between the graphics processor and the CPU. The write-combined mapping inhibits the CPU's normal caching behavior but will combine writes in short-term buffers to improve write speeds. Direct3D automatically flushes these buffers whenever any new commands are sent to the graphics processor.</p>
+
+<p>The data for a texture consists of the raw texels for the texture; there is no header information in the data.  All of the pieces of a complicated texture (mipmaps, cube map) must be located within a single contiguous allocation that must be aligned on a 128-byte boundary.</p>
+ 
+<p>Textures with multiple mipmap levels store the levels ordered from largest to smallest with no padding between each level.  Cube-mapped textures have the full mipmap of each face aligned at the next 128-byte boundary in <a href="_dx_d3dcubemap_faces_graphics.htm">D3DCUBEMAP_FACES</a> order.</p>
+
+<p>So a 4&#215;4&#215;1 three-mipmap-level cube-mapped texture with four bytes per texel would be laid out as follows:</p>
+
+<table>
+<tr>
+<th>Offset</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td>0</td>
+<td>Data for first level (4&#215;4&#215;1), positive X face</td>
+</tr>
+
+<tr>
+<td>64</td>
+<td>Data for second level (2&#215;2&#215;1), positive X face</td>
+</tr>
+
+<tr>
+<td>80</td>
+<td>Data for third level (1&#215;1&#215;1), positive X face</td>
+</tr>
+
+<tr>
+<td>128</td>
+<td>Data for first level (4&#215;4&#215;1), negative X face</td>
+</tr>
+
+<tr>
+<td>192</td>
+<td>Data for second level (2&#215;2&#215;1), negative X face</td>
+</tr>
+
+<tr>
+<td>208</td>
+<td>Data for third level (1&#215;1&#215;1), negative X face</td>
+</tr>
+
+<tr>
+<td>256</td>
+<td>And so on</td>
+</tr>
+
+</table>
+
+<p>The data for a surface/volume consists of the raw pixels for the surface/volume with no header information.</p>
+
+</dd>
+
+<dt><b>Lock</b></dt>
+
+<dd>Contains the fence that must be crossed before this resource is no longer used by the graphics processor. It will contain zero if there is no possibility of this resource being in use or if it is currently set on the device. This field should always start out as zero and should never be modified by the title.</dd>
+
+<dt><b>Format</b></dt>
+
+<dd>Holds the description (format) of the texture or surface.
+
+<p>The formats of a texture or surface can be grouped into four categories: </p>
+<ol>
+<li>Swizzled&mdash;The swizzled formats indicate that the texels in the surface/texture have been reordered for improved locality of reference during the rendering process. Rendering will be fastest when using textures of this format, but these are not the most efficient formats for surfaces being used as a render target. Reading or writing the data of one of these textures or surfaces should be done through the swizzle helper routines defined in xgraphics.h.</li>
+
+<li>Compressed&mdash;The DXT compressed formats.</li>
+
+<li>Linear&mdash;The linear formats organize the texels in a way that is compatible with DirectX 8.0. Rendering from a linear texture will be slower than rendering from a swizzled texture. The YUV formats are considered linear formats.</li>
+
+<li>Depth&mdash;The fixed and floating-point formats that may be used as a depth buffer. The depth formats are also either linear or swizzled and must follow all of those restrictions as well. The graphics processor does not support rendering to a swizzled depth buffer.</li>
+</ol>
+
+<p>Textures and surfaces have the following restrictions:</p>
+
+<ul>
+	<li>Swizzled and compressed formats require that the dimensions of the texture/surface be a power of two.</li>
+	<li>Linear formats do not support mipmaps (mipmap level must be 1).</li>
+	<li>Linear and depth formats do not support cube maps.</li>
+	<li>Linear and depth formats do not support volumes (dimension must be 2).</li>
+	<li>2D textures/surfaces can have a maximum width/height of 4,096 texels.</li>
+	<li>3D textures/surfaces can have a maximum width/height/depth of 512 texels.</li>
+	<li>Cube maps must be square.</li>
+	<li>3D textures cannot be cube mapped.</li>
+</ul>
+
+<p>Information is stored in the following bit fields:</p>
+
+<table>
+<tr>
+<th>Field</th>
+<th>Bits</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td>DMACHANNEL</td>
+<td>2</td>
+<td>Must be D3DFORMAT_DMACHANNEL_A.</td>
+</tr>
+
+<tr>
+<td>CUBEMAP</td>
+<td>1</td>
+<td>Flag that indicates that this texture is a cube map.</td>
+</tr>
+
+<tr>
+<td>BORDERSOURCE_COLOR</td>
+<td>1</td>
+<td>When this flag is set, the color specified in the texture stage D3DTSS_BORDERCOLOR will be used as the border for the texture.</td>
+</tr>
+
+<tr>
+<td>DIMENSION</td>
+<td>4</td>
+<td>The number of dimesions of the texture or surface. This may be either two or three.</td>
+</tr>
+
+<tr>
+<td>FORMAT</td>
+<td>8</td>
+<td>The <a href="_dx_d3dformat_graphics.htm">D3DFORMAT</a> of the surface or texture.</td>
+</tr>
+
+<tr>
+<td>MIPMAP</td>
+<td>4</td>
+<td>The number of mipmap levels in this texture. For a surface, this is always one.</td>
+</tr>
+
+<tr>
+<td>USIZE</td>
+<td>4</td>
+<td>The log2 of the u-dimension of the texture or surface. This will be used only if the format of the texture or surface is either swizzled or compressed.</td>
+</tr>
+
+<tr>
+<td>VSIZE</td>
+<td>4</td>
+<td>The log2 of the v-dimension of the texture or surface. This will be used only if the format of the texture or surface is either swizzled or compressed.</td>
+</tr>
+
+<tr>
+<td>PSIZE</td>
+<td>4</td>
+<td>The log2 of the p-dimension of the texture or surface. This will be used only if the format of the texture or surface is either swizzled or compressed.</td>
+</tr>
+
+</table>
+
+</dd>
+
+<dt><b>Size</b></dt>
+
+<dd>Holds the size and pitch of linear textures. These textures do not have to have dimensions whose size is a power of two. This member will be zero for swizzled and compressed textures and will always be nonzero otherwise. Information is stored in the following bit fields:
+
+<table>
+<tr>
+<th>Field</th>
+<th>Bits</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td>WIDTH</td>
+<td>12</td>
+<td>Width-1 of the texture/surface in texels/pixels.</td>
+</tr>
+
+<tr>
+<td>HEIGHT</td>
+<td>12</td>
+<td>Height-1 of the texture/surface in texels/pixels.</td>
+</tr>
+
+<tr>
+<td>PITCHADJ</td>
+<td>8</td>
+<td>Contains the actual pitch value divided by 64 and minus 1.</td>
+</tr>
+
+</table>
+
+
+
+</dd>
+
+</dl>
+
+
+<!--*******************************************************************************-->
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

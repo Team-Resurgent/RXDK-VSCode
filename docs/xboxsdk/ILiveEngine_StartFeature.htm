@@ -1,0 +1,120 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>ILiveEngine::StartFeature</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="F" Term="StartFeature"/>
+<MSHelp:Keyword Index="K" Term="StartFeature (ILiveEngine)"/>
+<MSHelp:Keyword Index="K" Term="ILiveEngine::StartFeature"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>ILiveEngine::StartFeature</h1>
+<p>Starts an Xbox Drop-in UI feature.</p><pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>StartFeature(</b>
+    <b>UIX_FEATURE</b> *<i>FeatureID</i><b>,</b>
+    <b>const VOID</b> *<i>pFeatureParams</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+<dt><i>FeatureID</i></dt>
+<p><dd>[in]  Feature to start. Must be one of the following <b>UIX_FEATURE</b> values.</dd>
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>UIX_FRIENDS_FEATURE</td>
+<td>The friends feature.</td>
+</tr>
+<tr>
+<td>UIX_LOGON_FEATURE</td>
+<td>The logon feature.</td>
+</tr>
+<tr>
+<td>UIX_PLAYERS_FEATURE</td>
+<td>The players feature.</td>
+</tr>
+<tr>
+<td>UIX_UITEST_FEATURE</td>
+<td>The UI test feature, for testing a custom <a href="ITitleUIPlugin.htm">ITitleUIPlugin</a> interface. Available in debug builds only.</td>
+</tr>
+</table>
+</p>
+
+
+<dt><i>pFeatureParams</i></dt>
+<p><dd>[in]  Pointer to a startup parameters structure passed to the feature. The structure must be zero-initialized and the <b>StructSize</b> member set to the structure size. The structure to use depends on the feature.</dd>
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>UIX_FRIENDS_FEATURE</td>
+<td>Pointer to a <a href="UIX_FRIENDS_PARAMS.htm">UIX_FRIENDS_PARAMS</a> structure.</td>
+</tr>
+<tr>
+<td>UIX_LOGON_FEATURE</td>
+<td>Pointer to a <a href="UIX_LOGON_PARAMS.htm">UIX_LOGON_PARAMS</a> structure.</td>
+</tr>
+<tr>
+<td>UIX_PLAYERS_FEATURE</td>
+<td>Pointer to a <a href="UIX_PLAYERS_PARAMS.htm">UIX_PLAYERS_PARAMS</a> structure.</td>
+</tr>
+<tr>
+<td>UIX_UITEST_FEATURE</td>
+<td>Pointer to a UIX_UITEST_PARAMS structure.</td>
+</tr>
+</table>
+</p>
+
+</dl>
+<h4><a name="return"></a>Return Values</h4>
+	<p>Returns S_OK if successful, an error code otherwise.</p>
+	<p>Returns ERROR_NOT_FOUND if the feature has not been enabled before calling <b>StartFeature</b>.</p>
+<h4><a name="remarks"></a>Remarks</h4>
+<p>A feature must have been enabled with the <a href="ILiveEngine_EnableFeature.htm">EnableFeature</a> method before it can be started.</p>
+
+<p>Titles using Xbox High-Level Voice (XHV) should initialize the voice engine (with the <a href="XHVEngineCreate.htm">XHVEngineCreate</a> function) only <i>after</i> the logon feature reports a successful logon.</p>
+
+
+
+<p>The Xbox <i>Live</i> engine should not be released while a feature is active. The <a href="ILiveEngine_EndFeature.htm">ILiveEngine::EndFeature</a> method should be called for an active feature before the engine is released.</p>
+
+<p>A UI plug-in must be set using the <a href="ILiveEngine_SetUIPlugin.htm">ILiveEngine::SetUIPlugin</a> method before calling <b>StartFeature</b>.</p>
+
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Uix.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Uix.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="ILiveEngine_EnableFeature.htm">ILiveEngine::EnableFeature</a>,
+<a href="ILiveEngine_LogOff.htm">ILiveEngine::LogOff</a>, <a href="UIX_FRIENDS_PARAMS.htm">UIX_FRIENDS_PARAMS</a>,
+<a href="UIX_LOGON_PARAMS.htm">UIX_LOGON_PARAMS</a>,
+<a href="UIX_PLAYERS_PARAMS.htm">UIX_PLAYERS_PARAMS</a>,
+<a href="XHVEngineCreate.htm">XHVEngineCreate</a>
+</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

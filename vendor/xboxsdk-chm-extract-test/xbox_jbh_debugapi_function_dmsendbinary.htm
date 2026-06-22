@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>DmSendBinary</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="CreateFile">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="DmSendBinary"/>
+<MSHelp:Keyword Index="F" Term="DmSendBinary"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_createfile"></A>DmSendBinary</H1>
+
+<P class="content">Sends binary data from a development PC 
+over an existing connection to an Xbox.</P>
+
+<PRE class=syntax><b>DMHRAPI DmSendBinary(</b>
+  <B>PDM_CONNECTION</B> <I>pConnection</I><B>,</B> 
+  <B>LPCVOID</B> <I>pv</I><B>,</B> 
+  <B>DWORD</B> <I>cb</I>
+  <b>);</b></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+
+<DT><I>pConnection</I></DT>
+<DD>Pointer to a <b>DM_CONNECTION</b> structure that contains information about the connection.</DD>
+
+<DT><I>pv</I></DT>
+<DD>Pointer to the binary data to send.</DD>
+
+<DT><I>cb</I></DT>
+<DD>Number of bytes to send.</DD>
+
+</DL>
+
+<H4>Return Values</H4>
+
+<P class="content">Returns XBDM_NOERR if successful, an error value otherwise.</P>
+
+
+<H4>Remarks</H4>
+<P class="content">Programs on a development PC can use the <B>DmSendBinary</B> function 
+transmit binary data to an XBE running on an Xbox. To do so, programs typically call the 
+<a href = "xbox_jbh_debugapi_function_dmsendcommand.htm">DmSendCommand</a> function to tell 
+the XBE that the binary data is about to be transmitted. Next, programs call 
+<B>DmSendBinary</B> and transmit the data. The 
+<a href = "xbox_jbh_debugapi_function_dmreceivestatusresponse.htm">DmReceiveStatusResponse</a> 
+function must be called immediately after <B>DmSendBinary</B> or the debug channel gets out 
+of sync and behaves as if the session was disconnected.</P>
+
+<P class="content">To receive data, a program on a development PC typically calls 
+<b>DmSendCommand</b> to tell the XBE to transmit data. It then calls the 
+<a href = "xbox_jbh_debugapi_function_dmreceivebinary.htm">DmReceiveBinary</a> function to 
+retrieve the data.</p>
+
+<P class="content">To communicate binary data, a program running on the Xbox must have a 
+command processor function. It registers the command processor function by invoking 
+<a href = "xbox_jbh_debugapi_function_dmregistercommandprocessor.htm">DmRegisterCommandProcessor</a>. 
+At runtime, the command processor function handles commands sent to it from 
+<b>DmSendCommand</b>. When it gets a command informing it that binary data is about to be 
+transmitted, it reads the data from a buffer that is accessible in the 
+<a href = "xbox_jbh_debugapi_struct_DM_CMDCONT.htm">PDMN_CMDCONT</a> structure the 
+command processor receives through its parameter list.</p>
+
+<P class="content">The command processor also is used to transmit data to the development PC. 
+When it gets a command from <b>DmSendCommand</b> indicating that it is time to transmit data, 
+the command processor function fills the buffer in its <b>PDMN_CMDCONT</b> structure. The data 
+is sent to the development PC when the command processor function returns.</p>
+
+<h4>Requirements</h4>
+<p class="content">
+<b>Header:</b> Declared in XboxDbg.h
+<br><b>Import Library:</b> Use XboxDbg.lib
+</p>
+
+<!--
+<H4>See Also</H4>
+<P class="content"></P>
+-->
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

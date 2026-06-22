@@ -1,0 +1,60 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>DebugChannel Sample</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="DebugChannel Sample"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>DebugChannel Sample</h1>
+<p>This sample provides basic examples of what can be done through the debug channel, 
+including:</p> 
+<ul>
+	<li>Executing a function inside the running application&#8212;for example, using the 
+	RCmdTexture function to select a texture. Arguments can be pulled from parameters 
+	passed to the function. 
+	</li>
+	
+	<li>Modifying application variables. This is really just a special case of calling a 
+	function whose purpose is to modify memory. In this sample, the spin rate and light 
+	color settings can be manipulated. A notification function can also be called&#8212;
+	for example, setting a flag to denote that the light should be redefined. </li>
+
+	<li>Sending messages through the debug channel. Messages can be sent only to a 
+	console that asked for them, rather than putting them in the debug output.
+	</li>
+</ul>
+<h2><a name="IDAXKYK"></a>Overview</h2>
+<p>The DebugChannel sample demonstrates how to add code to an application so that it 
+can be controlled from the development system via the debug channel. </p><p>This program runs on the Xbox and requires the DebugConsole sample (RXCmdC) to be 
+running on the development PC. You'll find the DebugConsole sample in 
+(XDK Root)\Samples\Win32\Misc\DebugConsole. First, launch the DebugChannel sample on your 
+target console, and then connect to it through RXCmdC.</p><h2><a name="IDA5KYK"></a>Path</h2>
+<p>Source: (XDK Root)\SamplesSamples\Xbox\Misc\DebugChannel</p><h2><a name="IDAFLYK"></a>Remarks</h2>
+<p>The DebugConsole sample program sends commands to the DebugChannel sample through the 
+debug channel to the debug monitor on the Xbox machine.  The DebugChannel sample running on 
+the Xbox console receives the commands on a dedicated thread through a registered command 
+processor callback function. The callback function stores commands in a buffer. The program 
+polls this buffer once per frame, deciphering and handling the commands each time it does.</p><p>It is important to note the synchronization that is performed between the external 
+command processor function <b>RXCmdProcessorProc</b> and the polling 
+function <b>RXCmdHandleRCmds</b>. The external command processor function 
+is called from the debug monitor thread, not the application thread.  Any work done in the 
+external command processor notification function should be thread-safe or protected, as in 
+this sample.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

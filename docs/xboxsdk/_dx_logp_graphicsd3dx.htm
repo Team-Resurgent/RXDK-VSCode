@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>logp</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="logp">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="logp"/>
+<MSHelp:Keyword Index="F" Term="logp"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_logp_graphicsd3dx"></A>logp</H1>
+
+<P>Provides log<SUB>2</SUB>(x) partial support.</P>
+
+<PRE class=syntax>logp   vDest, vSrc0
+</PRE>
+
+<H4>Registers</H4>
+
+<DL>
+<DT><B>vDest</B></DT>
+
+<DD>Destination register, holding the result of the operation.</DD>
+
+<DT><B>vSrc0</B></DT>
+
+<DD>Source register, specifying the input argument.
+</DD>
+</DL>
+
+<H4>Operation</H4>
+
+<P>The following code fragment shows the operations performed by the <B>logp</B> instruction to write a result to the destination.</P>
+
+<PRE>    SetDestReg();
+    SetSrcReg(0);
+
+    float v = ABSF(m_Source[0].w);
+    if (v != 0)
+    {
+        if (v == +Inf)
+        {
+            m_TmpReg.y = 1.0;
+            m_TmpReg.x = +Inf;
+            m_TmpReg.z = +Inf;
+        }
+        else
+        {
+            m_TmpReg.y = MANTISSA(v);
+            m_TmpReg.x = EXPONENT(v);
+            m_TmpReg.z = m_TmpReg.x + LOG2(v);
+        }
+    }
+    else
+    {
+        m_TmpReg.x = -Inf;
+        m_TmpReg.y = 1.0;
+        m_TmpReg.z = -Inf;
+    }
+    m_TmpReg.w = 1.0f;
+
+    WriteResult();
+</PRE>
+
+<H4>Remarks</H4>
+
+<P>This instruction provides logarithm base 2 partial precision. It generates an approximate answer in <B>vDest</B>.z and allows for a more accurate determination of <B>vDest</B>.x + function(<B>vDest</B>.y), where function is a user approximation to log<SUB>2</SUB>(<B>vDest</B>.y) over the limited range (1.0 &lt;= <B>vDest</B>.y &lt; 2.0). </P>
+
+<P>The <B>logp</B> instruction accepts a scalar source of which the sign bit is ignored, and reduced precision arithmetic is acceptable in evaluating <B>vDest</B>.z. The approximation error must be less than 1/(2<SUP>11</SUP>) in absolute error (10-bit precision), and over the range (1.0 &lt;= t.y &lt; 2.0). A zero source argument generates the result vector (-infinity, 0.0, -infinity, 1.0).</P>
+
+<P>The following example illustrates how the <B>logp</B> instruction might be used.</P>
+
+<PRE>logp r0,r1
+</PRE>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

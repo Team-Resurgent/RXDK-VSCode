@@ -1,0 +1,170 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineStatLeaderEnumerateGetResults</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineStatLeaderEnumerateGetResults"/>
+<MSHelp:Keyword Index="F" Term="XOnlineStatLeaderEnumerateGetResults"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineStatLeaderEnumerateGetResults</h1>
+            <p>Retrieves leaderboard entries requested by the <a href="XOnlineStatLeaderEnumerate.htm">XOnlineStatLeaderEnumerate</a> function.</p>
+			<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Leaderboards are also referred to as scoreboards.</p>
+        <pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineStatLeaderEnumerateGetResults(</b>
+    <b>XONLINETASK_HANDLE</b> <i>hTask</i><b>,</b>
+    <b>DWORD</b> <i>dwUserCount</i><b>,</b>
+    <b>PXONLINE_STAT_USER</b> <i>pUsers</i><b>,</b>
+    <b>DWORD</b> <i>dwStatCount</i><b>,</b>
+    <b>PXONLINE_STAT</b> <i>pStats</i><b>,</b>
+    <b>DWORD</b> *<i>pdwLeaderboardSize</i><b>,</b>
+    <b>DWORD</b> *<i>pdwReturnedResults</i><b>,</b>
+    <b>DWORD</b> <i>dwExtraBufferSize</i><b>,</b>
+    <b>BYTE</b> *<i>pExtraBuffer</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+            <dt><i>hTask</i></dt>
+                <dd>[in]  Handle to the task returned by the <a href="XOnlineStatLeaderEnumerate.htm">XOnlineStatLeaderEnumerate</a> function.</dd>
+            
+            
+
+            <dt><i>dwUserCount</i></dt>
+                <dd>[in]  Number of <a href="XONLINE_STAT_USER.htm">XONLINE_STAT_USER</a> structures pointed to by the <i>pUsers</i> 
+				parameter.</dd>
+            
+            
+
+            <dt><i>pUsers</i></dt>
+                <dd>[out]  Points to an array of <b>XONLINE_STAT_USER</b> structures. The number of structures should 
+				be the same as the value specified by the <i>dwPageSize</i> parameter in the call to 
+				<b>XOnlineStatLeaderEnumerate</b>.</dd>
+            
+            
+
+            <dt><i>dwStatCount</i></dt>
+                <dd>[in]  Number of <a href="XONLINE_STAT.htm">XONLINE_STAT</a> structures pointed to by the <i>pStats</i> 
+				parameter.</dd>
+            
+            
+
+            <dt><i>pStats</i></dt>
+                <dd>[out]  Pointer to an array of <b>XONLINE_STAT</b> structures that receives the retrieved statistics. 
+				The number of structures in this array should be equal to the number of players being retrieved from 
+				the leaderboard times the number of stats requested per player, that is, the product of the 
+				<i>dwPageSize</i> and <i>dwNumStatsPerUser</i> values that were passed in to 
+				the original <b>XOnlineStatLeaderEnumerate</b> call.</dd>
+            
+            
+
+            <dt><i>pdwLeaderboardSize</i></dt>
+                <dd>[out]  Pointer to a <b>DWORD</b> variable that receives the total number of players 
+				listed on the leaderboard that was specified in the call to 
+				<a href="XOnlineStatLeaderEnumerate.htm">XOnlineStatLeaderEnumerate</a>.</dd>
+            
+
+            <dt><i>pdwReturnedResults</i></dt>
+                <dd>[out]  Pointer to a <b>DWORD</b> variable that receives the number of players
+				actually returned.</dd>
+            
+            
+
+            <dt><i>dwExtraBufferSize</i></dt>
+                <dd>[in]  Size, in bytes, of the buffer pointed to by the <i>pExtraBuffer</i>
+				parameter.</dd>
+            
+            
+            <dt><i>pExtraBuffer</i></dt>
+                <dd>[in, out]  Pointer to a buffer that receives variable-length data associated with the
+				retrieved statistics. See the <a href="XOnlineStatLeaderEnumerateGetResults.htm#remarks">Remarks</a> section for more information.</dd>
+            
+            
+        </dl>
+<h4><a name="return"></a>Return Values</h4>
+            
+                <p>Returns S_OK if successful.</p>
+                <p>If the function fails, it returns one of the following error codes.</p>
+                <table>
+                    <tr>
+                        <th>Value</th>
+                        <th>Description</th>
+                    </tr>
+                    <tr>
+                        <td>E_INVALIDARG</td>
+                        <td>The specified buffer size is not valid. Check the specified buffer size.</td>
+                    </tr>
+                    <tr>
+                        <td>E_FAIL</td>
+                        <td>Unspecified failure. Check your arguments to this function. If the arguments 
+                        are correct, contact developer support. If this happens in the context of a game, 
+                        try again later.</td>
+                    </tr>
+                    <tr>
+                        <td>Other</td>
+                        <td>See <a href="xbox_online_errors.htm">Online Errors</a> for information about 
+                        other possible errors.</td>
+                    </tr>
+                </table>
+            
+        <h4><a name="remarks"></a>Remarks</h4>
+            <p>
+                The <a href="XOnlineStatReadGetResult.htm">XOnlineStatReadGetResult</a> and <b>XOnlineStatLeaderEnumerateGetResults</b> 
+                functions always return title-defined statistics sorted by the statistic ID. 
+                This order may be different than the order specified by the title in the call to <a href="XOnlineStatRead.htm">XOnlineStatRead</a> 
+                or <b>XOnlineStatLeaderEnumerate</b>. The reserved attributes are always 
+                returned last. The reserved attributes are Rank, Rating, Leaderboard Size, and 
+                Nickname.
+            </p>
+
+            <p>
+                The buffer pointed to by the <i>pExtraBuffer</i> parameter receives 
+                variable-length data associated with the retrieved statistics. This buffer 
+                stores player nicknames, and statistics attachment paths. Use the following 
+                formula to calculate how much space to allocate for the buffer specified by the parameter 
+				<i>dwExtraBufferSize</i>.
+            </p>
+            <p>
+                = &lt;<i>number_of_requested_nicknames</i>&gt; * XONLINE_STAT_MAX_NICKNAME_LENGTH * 
+                sizeof(WCHAR)
+            </p>
+            <p>
+                + &lt;<i>number_of_requested_attachment_paths</i>&gt; * XONLINESTORAGE_MAX_PATH * 
+                sizeof(WCHAR)
+            </p>
+
+            <p>
+                The title does not need to parse the data in the buffer; the <b>lpString</b> 
+                member of <b>XONLINE_STAT</b> points directly to the location of the string in 
+                the buffer.
+            </p>
+
+        <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+                <a href="x_mt_xonline_functions.htm">Xbox Live Functions</a> | <a href="XOnlineStatLeaderEnumerate.htm">XOnlineStatLeaderEnumerate</a>
+        </p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Keyboard and Support Routines</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Keyboard and Support Routines"/>
+<MSHelp:Keyword Index="F" Term="Keyboard and Support Routines"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Keyboard and Support Routines</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<H3>Debug Keyboard Input</H3>
+
+<P>The code examples given in the previous topics already do most of the work required to read input from the debug keyboard.  The DeviceInit() routine creates a keyboard input queue by calling <A HREF="x_mt_xinputdebuginitkeyboardqueue.htm">XInputDebugInitKeyboardQueue</a>.  CheckDeviceChanges() dynamically handles keyboard insertions and removals.  All that needs to be done now is to ask for keystrokes:</P>
+
+<PRE>void CheckKeyboard( void )
+{
+    XINPUT_DEBUG_KEYSTROKE ks;
+    CHAR szOut[2] = "X";
+
+    if( ERROR_SUCCESS == XInputDebugGetKeystroke( &ks ) )
+    {
+        *szOut = ks.Ascii;
+        OutputDebugString( szOut );
+    }       
+}
+</PRE>
+
+<P>This simple example calls <A HREF="x_mt_xinputdebuggetkeystroke.htm">XInputDebugGetKeystroke</A> to get a keystroke (if one is available), and if so displays it to the debugger.</P>
+
+<H3>Utility Functions</H3>
+
+<P>The DbgPrintf() function referenced earlier is a simple utility function that allows sending output to the debugger (using <A HREF="debug_3pt3.htm">OutputDebugString</A>) with a format string:</P>
+
+<PRE>
+//
+// This just does OutputDebugString using a format string.
+//
+int DbgPrintf( LPTSTR ptszFormat, ...)
+{
+    TCHAR tszBuf[MAX_PATH*2];
+    va_list arglist;
+    int nRes;
+
+
+    va_start( arglist, ptszFormat );
+    nRes = _vsntprintf( tszBuf, sizeof(tszBuf), ptszFormat, arglist );
+    OutputDebugString( tszBuf );
+    va_end(arglist);
+
+    return nRes;
+}
+</PRE>
+
+<!--*******************************************************************************-->
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

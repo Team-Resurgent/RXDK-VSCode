@@ -1,0 +1,43 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>What Is the View Transformation?</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="What Is the View Transformation?"/>
+<MSHelp:Keyword Index="F" Term="What Is the View Transformation?"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_what_is_the_view_transformation_graphics"></A>What Is the View Transformation?</H1>
+
+<P>The view transformation locates the viewer in world space, transforming vertices into <A HREF="c.htm#_dx_camera_space_glos" CLASS="POPUP">camera space</A>. In camera space, the camera, or viewer, is at the origin, looking in the positive z-direction. Recall that Microsoft&#174; Direct3D&#174; uses a left-handed coordinate system, so z is positive into a scene. The view matrix relocates the objects in the world around a camera's position&#8212;the origin of camera space&#8212;and orientation.</P>
+
+<P>There are many ways to create a view matrix. In all cases, the camera has some logical position and orientation in world space that is used as a starting point to create a view matrix that will be applied to the models in a scene. The view matrix translates and rotates objects to place them in camera space, where the camera is at the origin. One way to create a view matrix is to combine a translation matrix with rotation matrices for each axis. In this approach, the following general matrix formula applies.</P>
+
+<P><IMG SRC="images/viewtran.gif" ALT="" BORDER=0></P>
+
+<P>In this formula, <I>V</I> is the view matrix being created, <I>T</I> is a translation matrix that repositions objects in the world, and <I>R<SUB>x</SUB></I> through <I>R<SUB>z</SUB></I> are rotation matrices that rotate objects along the x-, y-, and z-axis. The translation and rotation matrices are based on the camera's logical position and orientation in world space. So, if the camera's logical position in the world is &lt;10,20,100&gt;, the aim of the translation matrix is to move objects &#8211;10 units along the x-axis, &#8211;20 units along the y-axis, and &#8211;100 units along the z-axis. The rotation matrices in the formula are based on the camera's orientation, in terms of how much the axes of camera space are rotated out of alignment with world space. For example, if the camera mentioned earlier is pointing straight down, its z-axis is 90 degrees (&pi;/2 radians) out of alignment with the z-axis of world space, as shown in the following illustration.</P>
+
+<P><IMG SRC="images/camtop.gif" ALT="" BORDER=0></P>
+
+<P>The rotation matrices apply rotations of equal, but opposite, magnitude to the models in the scene. The view matrix for this camera includes a rotation of &#8211;90 degrees around the x-axis. The rotation matrix is combined with the translation matrix to create a view matrix that adjusts the position and orientation of the objects in the scene so that their top is facing the camera, giving the appearance that the camera is above the model. </P>
+
+<P>Another approach involves creating the composite view matrix directly. The <A HREF="_dx_d3dxmatrixlookatlh_graphicsd3dx.htm">D3DXMatrixLookAtLH</A> and <A HREF="_dx_d3dxmatrixlookatrh_graphicsd3dx.htm">D3DXMatrixLookAtRH</A> helper functions use this technique. This approach uses the camera's world space position and a look-at point in the scene to derive vectors that describe the orientation of the camera space coordinate axes. The camera position is subtracted from the look-at point to produce a vector for the camera's direction vector (vector <I>n</I>). Then the cross product of the vector <I>n</I> and the y-axis of world space is taken and normalized to produce a right vector (vector <I>u</I>). Next, the cross product of the vectors <I>u</I> and <I>n</I> is taken to determine an up vector (vector <I>v</I>). The right (<I>u</I>), up (<I>v</I>), and view-direction (<I>n</I>) vectors describe the orientation of the coordinate axes for camera space in terms of world space. The x, y, and z translation factors are computed by taking the negative of the dot product between the camera position and the <I>u</I>, <I>v</I>, and <I>n</I> vectors.</P>
+
+<P>These values are put into the following matrix to produce the view matrix.</P>
+
+<P><IMG SRC="images/viewmatx.gif" ALT="" BORDER=0></P>
+
+<P>In this matrix, <I>u</I>, <I>v</I>, and<I> n </I>are the up, right, and view-direction vectors, and <I>c</I> is the camera's world space position. This matrix contains all the elements needed to translate and rotate vertices from world space to camera space. After creating this matrix, you can also apply a matrix for rotation around the z-axis to allow the camera to roll.</P>
+
+<P>For information on implementing this technique, see <A HREF="_dx_setting_up_a_view_matrix_graphics.htm">Setting Up a View Matrix</A>.</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

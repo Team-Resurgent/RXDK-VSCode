@@ -1,0 +1,103 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Leaderboards</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Leaderboards"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Leaderboards</h1>
+<p>
+	        A leaderboard (often referred to as a "scoreboard") is an ordered, title-specific 
+	        listing of players and their stats. When a title stores a player's stats with 
+	        the Stats service, the title specifies a leaderboard with which to associate the 
+	        stats. Each leaderboard is identified by a unique ID. Title developers should 
+	        contact Xbox ATG to obtain unique IDs for their leaderboards.
+	    </p><p>
+	        Leaderboards are always exclusive to a particular title; they are never shared 
+	        between titles.
+	    </p><p>
+	        The stats service supports multiple leaderboards per title. The current limit on 
+	        the number of leaderboards per title is 100, which includes all individual and team leaderboards. A title may store the stats for a player on more than one leaderboard.
+	    </p><ul>
+<li><a href="#IDAVAEV">Rankings and Ratings</a></li><li><a href="#IDABBEV">Stats Decay</a></li><li><a href="#IDAXBEV">Leaderboard Resets</a></li></ul>
+<h2><a name="IDAVAEV"></a>Rankings and Ratings</h2>
+<p>
+	            The listing of the players on a leaderboard is ordered. The position of the 
+	            player in the listing is the player's <i>rank</i> on that 
+	            leaderboard. The ranking of players on the leaderboard is maintained by the 
+	            stats service. To determine a player's ranking relative to other players, the 
+	            service uses the player's <i>rating</i> on that leaderboard. The 
+	            rating is a signed 64-bit number that is calculated by the title. The stats 
+	            service ranks players with higher ratings above players with lower ratings; the 
+	            player in the top position on the leaderboard is the player with the highest 
+	            rating, and has a ranking equal to one.
+	        </p><p>
+	            Because the stats service allows titles to have multiple leaderboards, a title 
+	            is able to rank players in multiple ways. For example, a title might have daily, 
+	            weekly, and monthly leaderboards. In this case, a given player might have the 
+	            same rating, but a different rank on each of the leaderboards.
+	        </p><h2><a name="IDABBEV"></a>Stats Decay</h2>
+<p>
+			    The Xbox <i>Live</i> stats service provides a feature called <i>stats 
+			    decay</i>. The stats decay feature removes a player from a given leaderboard if the 
+				player has not played the title within a given period of time. 
+			    The amount of time before the removal occurs is specified in the leaderboard 
+			    configuration information provided by the publisher using 
+				<a href="xbox_tool_xlast_stats_leaderboard_prop.htm">XLAST</a>. 
+			    The stats decay feature creates an incentive for successful players to continue 
+			    to play in order to maintain their rankings.
+			</p><p>
+			    Because of stats decay, it is important that a title write to the leaderboards 
+			    on which a player has posted stats every time the player plays the title. The 
+			    title should write to the leaderboard regardless of whether the player has 
+			    achieved a higher rating than previously posted. The reason is that each 
+			    leaderboard maintains a "last-write" time stamp for each player. When a title 
+			    writes data for a player to a leaderboard, it refreshes the time stamp for that 
+			    player on that leaderboard.
+			</p><p>
+			    Writing any value to the leaderboard will refresh the time stamp. However, if 
+			    the title is using the <a href="xbox_Live_Clips.htm">Game Clips</a> 
+			    feature, the title should not rewrite the player's rating. Updating the rating, 
+			    even if the same value is used, will cause the service to remove the previous 
+			    attachment associated with that rating and return S_CAN_UPLOAD so the title can 
+			    upload a new attachment. To avoid updating the attachment, the title must write 
+			    a statistic other than the rating.
+			</p><h2><a name="IDAXBEV"></a>Leaderboard Resets</h2>
+<p>
+	            Title developers can arrange with the Stats service to have the leaderboards for 
+	            a title reset periodically. When a leaderboard is reset, 
+	            all data on the leaderboard is deleted. Title developers can arrange to have 
+	            different leaderboards reset at different intervals. For example, a title might 
+	            have three leaderboards associated with it, one of which could be reset daily, 
+	            the second weekly, and the third monthly. The following reset intervals are 
+	            supported:</p><ul>
+	                <li>Weekly&#8212;this happens on Sunday of each week and cannot be changed to any other day of the week.</li>
+	                <li>Never</li>
+	                <li>Monthly&#8212;this happens on the first day of every month.</li>
+	                <li>Bimonthly&#8212;that is, every other month, on the first day of the month.</li>
+	                <li>Quarterly&#8212;this happens on 1/1, 4/1, 7/1, and 10/1.</li>
+					<li>Semiannually&#8212;that is, twice a year. Reset dates are 1/1 and 7/1.</li>
+	                <li>Yearly&#8212;this happens on 1/1 every year.</li>
+	            </ul>
+<p>
+	            The title itself is also able to reset the stats for a single player by calling 
+	            the <a href="XOnlineStatReset.htm">XOnlineStatReset</a> function.
+	        </p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

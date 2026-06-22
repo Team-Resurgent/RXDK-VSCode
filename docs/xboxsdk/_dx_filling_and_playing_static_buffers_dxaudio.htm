@@ -1,0 +1,71 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Filling and Playing Static Buffers</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Filling and Playing Static Buffers"/>
+<MSHelp:Keyword Index="F" Term="Filling and Playing Static Buffers"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H4><A NAME="_dx_filling_and_playing_static_buffers_dxaudio"></A>Filling and Playing Static Buffers</H4>
+
+<P>A buffer that contains an entire self-contained sound is called a static buffer. Although it is possible to reuse the same buffer for different sounds, typically data is written to a static buffer only once. </P>
+
+<P><A HREF="xbox_jc_idirectsoundbuffer8_setbufferdata_dxaudio.htm"><B>IDirectSoundBuffer8::SetBufferData</B></A> allows an application to manually manage memory associated with the DirectSound buffer. Although it is possible to stream data into a DirectSound buffer, on Xbox DirectSound streams represent a more efficient method for streaming audio data. It is recommended that if you are streaming data that you use a DirectSound stream, rather than a DirectSound buffer.</P>
+
+<P>Static buffers are created and managed just like streaming buffers. The only difference is in the way they are used: static buffers are filled once and then played, but streaming buffers are constantly refreshed with data as they are playing.</P>
+
+<P>Loading data into a static buffer is a three-step process:
+
+<OL>
+	<LI>Lock the entire buffer by using <A HREF="_dx_idirectsoundbuffer8_lock_dxaudio.htm"><B>IDirectSoundBuffer8::Lock</B></A>. You specify the offset within the buffer where you intend to begin writing (normally 0), and get back the memory address of that point. </LI>
+
+	<LI>Write the audio data to the returned address by using a standard memory-copy routine.</LI>
+
+	<LI>Unlock the buffer using <A HREF="_dx_idirectsoundbuffer8_unlock_dxaudio.htm"><B>IDirectSoundBuffer8::Unlock</B></A>.</LI>
+</OL>
+
+<P>These steps are shown in the following example, where <I>lpdsbStatic</I> is an <A HREF="_dx_idirectsoundbuffer8_dxaudio.htm"><B>IDirectSoundBuffer8</B></A> interface pointer and <I>pbData</I> is the address of the data source:</P>
+
+<PRE>LPVOID lpvWrite;
+DWORD  dwLength;
+
+if (DS_OK == lpdsbStatic-&gt;Lock(
+        0,              // Offset at which to start lock.
+        0,              // Size of lock; ignored because of flag.
+        &amp;lpvWrite,      // Gets address of first part of lock.
+        &amp;dwLength,      // Gets size of first part of lock.
+        NULL,           // Address of wraparound not needed. 
+        NULL,           // Size of wraparound not needed.
+        DSBLOCK_ENTIREBUFFER))  // Flag.
+{
+    memcpy(lpvWrite, pbData, dwLength);
+    lpdsbStatic-&gt;Unlock(
+        lpvWrite,       // Address of lock start.
+        dwLength,       // Size of lock.
+        NULL,           // No wraparound portion.
+        0);             // No wraparound size.
+}
+</PRE>
+
+<P>To play the buffer, call <A HREF="_dx_idirectsoundbuffer8_play_dxaudio.htm"><B>IDirectSoundBuffer8::Play</B></A>, as in the following example:</P>
+
+<PRE>lpdsbStatic-&gt;SetCurrentPosition(0);
+HRESULT hr = lpdsbStatic-&gt;Play(
+        0,    // Unused.
+        0,    // Unused.
+        0);   // Flags.
+</PRE>
+
+<P>Because the DSBPLAY_LOOPING flag is not set in the example, the buffer automatically stops when it reaches the end. You can also stop it prematurely by using <A HREF="_dx_idirectsoundbuffer8_stop_dxaudio.htm"><B>IDirectSoundBuffer8::Stop</B></A>. When you stop a buffer prematurely, the play cursor position remains where it is. Hence the call to <A HREF="_dx_idirectsoundbuffer8_setcurrentposition_dxaudio.htm"><B>IDirectSoundBuffer8::SetCurrentPosition</B></A> in the example, which ensures that the buffer starts from the beginning.</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

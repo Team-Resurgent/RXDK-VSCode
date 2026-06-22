@@ -1,0 +1,63 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>HostMigration Sample</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="HostMigration Sample"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>HostMigration Sample</h1>
+<p>Demonstrates a simple method titles can use to migrate the host of a 
+game session to another console when the original host leaves.</p>
+
+<h2><a name="IDAM4YK"></a>Overview</h2>
+<p>This implementation adds three new messages and two states to a basic networking 
+application.  The functions to look at are:</p><ul>
+	<li><b>FrameMoveFindNewHost</b> &#8211; the "meat" of host migration.</li>
+	<li><b>FrameMoveResumeGame</b> &#8211; resumes the game as the new host (mirrors the StartGame state).</li>
+	<li><b>SendConnectToMigratedHost</b> &#8211; closely mirrors the standard JoinGame message.</li>
+	<li><b>SendMigrateHostApproved</b> &#8211; closely mirrors the standard JoinApproved message.</li>
+	<li><b>SendPlayerRejoin</b> &#8211; closely mirrors the standard PlayerJoined message.</li>
+	<li><b>ProcessConnectToMigratedHost</b></li>
+	<li><b>ProcessMigrateHostApproved</b></li>
+	<li><b>ProcessPlayerRejoin</b></li>
+</ul>
+<p>Because connecting to a new host is closely related to connecting to a new game, the 
+messages and state transitions are similar to those for initial connection. The main 
+difference is that the player game state is maintained rather than initialized.</p><p>In this sample, rather than the new host keeping track of all of the connections it is 
+waiting for, the client resubmits its state information upon connecting to the new host. </p><p>Each Xbox has a matching list of current players.  The player in the first element of the 
+list is the host.</p><p>The algorithm used for host migration is as follows:</p><ol>
+	<li>If the host disconnects, remove the host from the player list, and try to connect to the 
+	new first player.</li>
+	<li>If I'm the first player, start hosting. Skip steps 3&#8211;9.</li>
+	<li>Start a timeout timer  (2 seconds in this example). </li>
+	<li>Start a response delay timer (0.3 seconds in this example).</li>
+	<li>Try to connect to who I think is host.</li>
+	<li>If the response delay timer has triggered, go to step 4.</li>
+	<li>If I receive a reply, go to step 9.</li>
+	<li>If my timeout timer has triggered, remove the player from the player list and go to 
+	step 2.</li>
+	<li>Connection was accepted, start the rejoin handshaking.
+	<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;If for some reason the new host <i>is</i> a host, but is full, this sample sends a JoinDenied 
+	message so that it can notify the player the game is full.</p></li>
+</ol>
+<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Step 1 is in <b>ProcessDropouts</b>. Steps 2&#8211;8 are implemented in <b>FrameMoveFindNewHost</b>. Step 9 
+is in <b>ProcessMigrateHostApproved</b>.</p><h2><a name="IDA11YK"></a>Path</h2>
+<p>Source: (XDK Root)\Samples\Xbox\Networking\HostMigration</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

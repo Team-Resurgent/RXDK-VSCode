@@ -1,0 +1,92 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Loading and Freeing XBE Sections</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Loading and Freeing XBE Sections"/>
+<MSHelp:Keyword Index="F" Term="Loading and Freeing XBE Sections"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Loading and Freeing XBE Sections</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<P><A HREF="x_mt_xloadsectionbyhandle.htm">XLoadSectionByHandle</a> or <A HREF="x_jsk_xloadsection.htm">XLoadSection</a> can be used to load a specified section into memory.  If the section is not already loaded into memory, memory is allocated for the section, the section is loaded at its predetermined address, and the reference count for that section is set to one.  No fixups are necessary when loading a section&mdash;all function references will either be internal to the title (in which case the function addresses will be predetermined) or be calls to the system software and thus redirected through the import address table. After a section is loaded, functions and data in that section can be referenced.  If a title requests that a section be loaded, and that section is already loaded into memory, the reference count for the section is incremented by one and no further action is performed.</P>
+
+<P>Each call to <B>XLoadSection</B> or <B>XLoadSectionByHandle</B> should be paired with a call to <A HREF="x_jsk_xfreesection.htm">XFreeSection</a> or <A HREF="x_mt_xfreesectionbyhandle.htm">XFreeSectionByHandle</a> when the title no longer needs to use the section.  When the title frees a section, the reference count of the section is decremented by one.  If the reference count goes to zero, the section is unloaded and the associated memory is freed.  Functions and data in that section can then no longer be referenced.</P>
+
+<P>The reference count can be used to keep a section loaded as long as it is in use by any portion of the title.  If a portion of code needs to access, for example, save game routines in a title that have been grouped into a section, the code can load the section, use the routines, and then free the section.  If some other portion of code also needs to use the save game section, it can use the same procedure (load, use, then free the section) regardless of whether the save game section has been loaded or not.  In either case, the section will be loaded if not already loaded, and will be freed when all users of the section have called <B>XFreeSection</B> or <B>XFreeSectionByHandle</B> so that the reference count drops to zero.</P>
+
+<P>When a section is loaded, the address that the section is loaded at is returned.  This address will be primarily used for files that were inserted as sections into the XBE image.  For other sections (those created by the compiler or linker), calls to functions within those sections will already point to correct function addresses, so a title can call functions within those sections just as it would call any other function.  No function tables or fixups are required, thus the load address of the section is not required.  For files inserted as sections, however, the only way to reference information in that section is through the address returned when the section is loaded.</P>
+
+<P>If a section is going to be loaded and unloaded multiple times, it is much more efficient to call <A HREF="x_mt_xgetsectionhandle.htm">XGetSectionHandle</a> to get a handle to the section, and then to use that handle in calls to <B>XLoadSectionByHandle</B> and <B>XFreeSectionByHandle</B>.  The by-handle functions load a section directly, whereas the functions that accept a section name must search through the section table and perform string comparisons to find the matching section.</P>
+
+<P>Continuing the previous example, the following code loads the TESTSEG section and then uses the functions and data contained in that section.</P>
+
+<PRE>// Restore code and data sections to normal.
+#pragma code_seg()
+#pragma data_seg()
+#pragma bss_seg()
+#pragma const_seg()
+</PRE>
+
+<P>The section pragmas above restore the placement of code and data into their normal sections.  Then the TESTSEG section is accessed:</P>
+
+<PRE>void main( void )
+{
+    char szOut[50];
+
+    // Load the section
+    if( XLoadSection( "TESTSEG" ) ) {
+
+        // Set value 2
+        SetVal2( 2 );
+
+        // Query the values
+        wsprintf( szOut, "Values: %d, %d, %s.\r\n",
+                  GetVal1(), GetVal2(), GetString() );
+        OutputDebugString( szOut );
+
+        // Free the section
+        XFreeSection( "TESTSEG" );
+
+    } else {
+        wsprintf(szOut, "XLoadSection failed, error: %u.\r\n", GetLastError());
+        OutputDebugString( szOut );
+    }
+
+    // Don't return from main
+    Sleep( INFINITE );
+}
+</PRE>
+
+<!--*******************************************************************************-->
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

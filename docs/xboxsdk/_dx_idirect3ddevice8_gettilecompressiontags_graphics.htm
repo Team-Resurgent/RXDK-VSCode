@@ -1,0 +1,84 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirect3DDevice8::GetTileCompressionTags</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="IDirect3DDevice8::GetTileCompressionTags [C++]">
+<META NAME="MS-HKWD" CONTENT="GetTileCompressionTags (IDirect3DDevice8) [C++]">
+<META NAME="MS-HKWD" CONTENT="GetTileCompressionTags [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="GetTileCompressionTags (IDirect3DDevice8)"/>
+<MSHelp:Keyword Index="K" Term="IDirect3DDevice8::GetTileCompressionTags"/>
+<MSHelp:Keyword Index="F" Term="GetTileCompressionTags"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_idirect3ddevice8_GetTileCompressionTags_graphics"></A>IDirect3DDevice8::GetTileCompressionTags</H1>
+
+<P>Determines the compression status for a given depth buffer, assuming tiling has been enabled. Tiles are GPU views that significantly improve rendering speed for render targets and depth buffers by reorganizing memory to improve bandwidth, and by allowing depth buffers to be compressed.</P>
+
+<PRE class=syntax><b>DWORD WINAPI GetTileCompressionTags(
+  DWORD</b> <i>ZStartTag</i>, 
+  <b>DWORD</b> <i>ZEndTag</i>
+<b>);</b>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>ZStartTag</I></DT>
+
+<DD>[in] Starting tag for a depth buffer. <i>ZStartTag</i> must be less than D3DTILE_MAXTAGS (76800).</DD>
+
+<DT><I>ZEndTag</I></DT>
+
+<DD>[in] Ending tag for a depth buffer. <i>ZEndTag</i> must be less than or equal to D3DTILE_MAXTAGS (76800).
+</DD>
+
+</DL>
+
+<H4>Return Values</H4>
+
+<P>Returns the number of tag bits set for compression.</P>
+
+<h4>Remarks</h4>
+
+<p>This function can be used to determine how much compression is taking place in a given depth buffer for a given scene. Depth buffers are major consumers of memory bandwidth. There is a significant bandwidth benefit from compression, typically resulting in improved performance.</p>
+
+<p>Z-Compressed tiles require that memory be allocated from special tag RAM, for the size of the depth buffer. Every D3DTILE_TAGSIZE (64) bytes of depth buffer require that one tag bit be allocated from the tag RAM. There are D3DTILE_MAXTAGS (76800) total tag RAM bits available, and the tag bits can only be allocated in bundles of 256.</p>
+
+<p><i>ZStartTag</i> and <i>ZEndTag</i> do not have to correspond to the beginning and end of a depth buffer. Instead, these values may be set to determine how only a portion of the depth buffer is compressed.</p>
+
+<p>Assuming you have pDevice, a valid pointer to an <a href="_dx_idirect3ddevice8_graphics.htm"><b>IDirect3DDevice8</b></a> interface, the following code demonstrates how this function may be used:</p>
+
+<pre>D3DTILE PrimaryDepthBufferTile;
+pDevice->GetTile( 1, &amp;PrimaryDepthBufferTile );
+
+DWORD startTag = PrimaryDepthBufferTile.ZStartTag;
+DWORD endTag = D3DTILE_ZENDTAG( &amp;PrimaryDepthBufferTile );
+
+DWORD NumberCompressedTags = pDevice->GetTileCompressionTags( startTag, endTag );
+</pre>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in D3d8.h.<BR>
+<B>&nbsp;&nbsp;Import Library:</B> Use D3d8.lib.</P>
+
+<h4>See Also</h4>
+
+<p><a href="_dx_d3dtile_graphics.htm"><b>D3DTILE</b></a>, <a href="_dx_idirect3ddevice8_gettile_graphics.htm"><b>IDirect3DDevice8::GetTile</b></a>, <a href="_dx_idirect3ddevice8_settile_graphics.htm"><b>IDirect3DDevice8::SetTile</b></a>, <a href="_dx_d3dtile_zendtag_graphics.htm"><b>D3DTILE_ZENDTAG</b></a></p>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

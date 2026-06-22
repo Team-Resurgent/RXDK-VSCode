@@ -1,0 +1,82 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>WSACleanup</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="WSACleanup">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="WSACleanup"/>
+<MSHelp:Keyword Index="F" Term="WSACleanup"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="xbox_wsacleanup_winsock"></A>WSACleanup</H1>
+
+<P>Terminates use of the Xbox Winsock layer.</P>
+
+<PRE class=syntax><B>int  WSACleanup (void);</B></PRE>
+
+<H4>Parameters</H4>
+
+<P>This function has no parameters.</P>
+
+<H4>Return Values</H4>
+
+<P>The return value is zero if the operation was successful. Otherwise, the value SOCKET_ERROR is returned, and a specific error number can be retrieved by calling <B>WSAGetLastError</B>.</P>
+
+<P><B>WSACleanup</B> terminates Winsock operations for all threads.</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=41%>Error code</TH>
+<TH align=left width=59%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>WSANOTINITIALISED</TD>
+<TD width=59%>A successful <A HREF="xbox_wsastartup_winsock.htm">WSAStartup</A> call must occur before using this function.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>WSAESYSNOTREADY</TD>
+<TD width=59%>The network subsystem has failed or has not been initialized.</TD>
+</TR>
+
+</TABLE><BR>
+
+<H4>Remarks</H4>
+
+<P>The title must perform a successful <A HREF="xbox_wsastartup_winsock.htm">WSAStartup</A> call before it can use Winsock services. When it has completed the use of Winsock, the title must call <B>WSACleanup</B> to deregister itself from the Winsock implementation and allow the implementation to free any resources allocated on behalf of the title. Any pending blocking or asynchronous calls issued by any thread in this process are canceled without posting any notification messages or without signaling any event objects.  Any pending overlapped send and receive operations (<A HREF="xbox_wsasend_winsock.htm">WSASend</A>/<A HREF="xbox_wsasendto_winsock.htm">WSASendTo</A>/<A HREF="xbox_wsarecv_winsock.htm">WSARecv</A>/<A HREF="xbox_wsarecvfrom_winsock.htm">WSARecvFrom</A> with an overlapped socket) issued by any thread in this process are also canceled. In this case, the pending overlapped operations fail with the error status WSAECANCELLED.</P>
+
+<P>Sockets that were open when <B>WSACleanup</B> was called are reset and automatically deallocated as if <A HREF="xbox_closesocket_winsock.htm">closesocket</A> were called; sockets that have been closed with <B>closesocket</B> but that still have pending data to be sent can be affected&#8212;the pending data can be lost if Winsock is unloaded from memory. To ensure that all pending data is sent, call <A HREF="xbox_shutdown_winsock.htm">shutdown</A> to close the socket connection, then wait until the close completes before calling <B>closesocket</B> and <B>WSACleanup</B>.</P>
+
+<P>There must be a call to <B>WSACleanup</B> for every successful call to <B>WSAStartup</B>. Only the final <B>WSACleanup</B> does the actual cleanup; the preceding calls simply decrement an internal reference count in Winsock.</P>
+
+<H4>Requirements</H4>
+<p><b>Header: </b>Declared in Winsockx.h, for include use Xtl.h.</p>
+<P><b>Import Library: </b>Use Xnet.lib for titles that only support system link play, XOnline.lib for titles that support online play. Use the secure versions of the library file (Xnets.lib or XOnlines.lib) for final testing.</P>
+</p>
+
+
+<H4>See Also</H4>
+
+<P><a href="xbox_winsock_overview_winsock.htm">Winsock Overview</A>, <a href="xbox_winsock_functions_winsock.htm">Winsock Functions</A>, <A HREF="xbox_closesocket_winsock.htm">closesocket</A>, <A HREF="xbox_shutdown_winsock.htm">shutdown</A>, <A HREF="xbox_wsastartup_winsock.htm">WSAStartup</A>, <A HREF="xbox_xnetcleanup_xsnl.htm">XNetCleanup</A></P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

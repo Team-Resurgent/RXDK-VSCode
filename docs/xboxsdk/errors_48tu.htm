@@ -1,0 +1,75 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>SetLastError</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="SetLastError">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="SetLastError"/>
+<MSHelp:Keyword Index="F" Term="SetLastError"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_setlasterror"></A>SetLastError</H1>
+
+<P>The <B>SetLastError</B> function sets the last-error code for the calling thread. </P>
+
+<PRE class=syntax><B>VOID SetLastError(
+  DWORD</B><I> dwErrCode</I>   // per-thread error code
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>dwErrCode</I></DT>
+
+<DD>[in] Specifies the last-error code for the thread. 
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>This function does not return a value. </P>
+
+<H4>Remarks</H4>
+
+<P>Error codes are 32-bit values (bit 31 is the most significant bit). Bit 29 is reserved for title-defined error codes; no system error code has this bit set. If you are defining an error code for your title, set this bit to indicate that the error code has been defined by your title and to ensure that your error code does not conflict with any system-defined error codes. </P>
+
+<P>This function is intended primarily for library functions. Calling this function after an error occurs lets the library emulate the error condition behavior of the Xbox Title Libraries (XTL).</P>
+
+<P>Most XTL functions call <B>SetLastError</B> when they fail. Function failure is typically indicated by a return value error code such as zero, NULL, or &#8211;1. Some functions call <B>SetLastError</B> under conditions of success; those cases are noted in each function's reference topic.</P>
+
+<P>Titles can retrieve the value saved by this function by using the <A HREF="errors_3uwi.htm">GetLastError</A> function. The use of <B>GetLastError</B> is optional; it can be called by a title to find out the specific reason for a function failure. Note that, unless specifically documented in the <B>Return Values</B> section of a function's reference page, the error codes set by a function are intended to be primarily used as a debugging aid, not as a method for controlling execution flow within a title.</P>
+
+<P>The last-error code is kept in thread local storage so that multiple threads do not overwrite each other's values.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p>
+
+<H4>See Also</H4>
+<p>
+<a href="xbox_mt_xtl_sll_debugging_functions.htm">Debugging Functions</a>, 
+<A HREF="errlist_9usz.htm">Error Codes</A>,
+<a href="xbox_winsock_error_codes_winsock.htm">Winsock Error Codes</a> |
+<A HREF="errors_3uwi.htm">GetLastError</A>
+</p>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

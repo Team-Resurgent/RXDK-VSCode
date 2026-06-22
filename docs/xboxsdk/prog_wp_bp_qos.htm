@@ -1,0 +1,249 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>QoS Best Practices</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="QoS Best Practices"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>QoS Best Practices</h1>
+<p><i>By Pete Isensee, Development Lead, Xbox Advanced Technology Group</i></p><p>The network Quality of Service (QoS) functions for the Xbox&reg; video game system from Microsoft&reg; provide a way to evaluate connections between consoles and Xbox <i>Live</i><sup style="font-size:smaller">TM</sup> datacenters. This white paper describes the QoS algorithms, the reliability of the QoS information, and best practices for integrating QoS into Xbox <i>Live</i> games. See the <a href="prog_wp_bp_matchmaking.htm">Matchmaking Best Practices</a> white paper for additional information on how QoS relates to session searching.</p><ul>
+<li><a href="#IDAABFBB">Overview</a></li><li><a href="#IDA4BFBB">The Algorithms</a></li><li><a href="#bandwidth_caveats">Bandwidth Caveats</a></li><li><a href="#writing_code">Writing QoS Code</a></li><li><a href="#generating_code">Generating QoS Code</a></li><li><a href="#evaluating">Evaluating Connectivity</a></li><li><a href="#advertising">Advertising Game State</a></li><li><a href="#progression">Connection Progression</a></li><li><a href="#complete_me">You Complete Me</a></li><li><a href="#multiple_hosts">Evaluating Multiple Hosts</a></li><li><a href="#leave_me_alone">Just Leave Me Alone</a></li><li><a href="#goodness_packets">Packets of QoS Goodness</a></li><li><a href="#probe">Xbox, Probe Thyself</a></li><li><a href="#xbox_custom">Xbox QoS vs. Custom QoS</a></li><li><a href="#listen">Being a Good Listener</a></li><li><a href="#match">Effective Matchmaking</a></li><li><a href="#life_after">Life After QoS</a></li><li><a href="#recommendations">Recommendations</a></li></ul>
+<h2><a name="IDAABFBB"></a>Overview</h2>
+<p>For the purposes of this document, a network <i>endpoint</i> is either an Xbox console or a Security Gateway (SG) in an Xbox <i>Live</i> datacenter. The QoS <i>initiator</i> is the console performing the QoS probe. The <i>listener</i> is the endpoint receiving and responding to the probe.</p><p>The QoS functions perform four primary tasks:</p><ul>
+	<li>Determine whether two endpoints can communicate at all. In some cases, two consoles will be unable to transmit network traffic despite being each individually able to connect to Xbox <i>Live</i>. This can happen when one or both endpoints is behind a restrictive Network Address Translator (NAT), is no longer connected to Xbox <i>Live</i>, or has shut down.</li>
+	<li>Determine the latency between two endpoints. Latency is always reported as roundtrip latency: the amount of time it takes for a network packet to travel from the initiator to the listener and back again.</li>
+	<li>Determine the upstream and downstream bandwidth between two endpoints. The upstream bandwidth is the maximum number of bits the initiator can send per second. The downstream bandwidth is the maximum number of bits the initiator can receive per second.</li>
+	<li>Allow an Xbox listener to easily relay current state without having to establish a formal connection with an initiator. This information might consist of session status, available slots, and so forth.</li> 
+</ul>
+<h2><a name="IDA4BFBB"></a>The Algorithms</h2>
+<p>Latency and bandwidth are evaluated simultaneously during a QoS probe. Bandwidth is measured by using a technique known as packet separation. The initiator issues two network packets back-to-back to the listener. The listener reports back the difference in the time that it received these two packets. Based on the reported timing gap, the initiator can estimate the bandwidth.</p><p>This algorithm assumes that packets are being sent via a modem-like device (DSL, for example) that is configured to transmit bits at a certain fixed speed. The math is simple algebra:</p><ul>
+<li><i>U</i> = bits per second that the device sends packets. This is the upstream bandwidth the algorithm attempts to compute.</li>
+<li><i>P</i> = size of packet in bits, a known value. See the <a href="prog_wp_bp_qos.htm#goodness_packets">Packets</a> section for QoS packet sizes.</li>
+<li><i>P</i>/<i>U</i> = the amount of time it takes for the initiator's modem to transmit a single packet. The first packet makes its way across the modem in this amount of time, then begins its journey across the Internet as the second packet enters the modem. The second packets starts its Internet journey <i>P</i>/<i>U</i> seconds later.</li>
+<li><i>G</i> = the measured timing gap between the two packets, as calculated by the listener.</li>
+</ul>
+<p>Assuming there is no jitter on the Internet, and that all packets flying between the endpoints do not hit any further modems or constriction points, then <i>G</i> can be fully attributed to the amount of time it takes for the second packet to make its way through the modem. The second packet took <i>P</i>/<i>U</i> seconds to pass through the modem. Therefore,</p><ul>
+<li><i>G</i> = <i>P</i>/<i>U</i>, and</li>
+<li><i>U</i> = <i>P</i>/<i>G</i></li>
+</ul>
+<p>Because <i>P</i> is known and <i>G</i> has been calculated, the upstream bandwidth <i>U</i> can be determined. For instance, if the packet size <i>P</i> is 110 bytes (880 bits) and the measured gap <i>G</i> is 6.875 milliseconds, then <i>U</i> = 128 Kb/s (880 bits / 0.006875 seconds).</p><p>Downstream bandwidth is calculated the same way, but the process is reversed. The listener transmits the packet pairs and the original initiator measures the gap.</p><p>This technique is a very lightweight method for calculating bandwidth. Unfortunately, it makes some important assumptions that are not always true. For more details on what this means for games, see the <a href="prog_wp_bp_qos.htm#bandwidth_caveats">Bandwidth Caveats</a> section.</p><p>Latency is measured by including timestamps in the packets and measuring the time required for the packets to go from the initiator to the listener and back again. Because the Xbox network stack has no internal send buffers and packets are transmitted immediately, this measurement is extremely accurate.</p><p>In order to build a better model of the connection and normalize the results, QoS sends multiple packet pairs. Each pair is called a probe, and the number of probes is configurable at run time. This allows QoS to report both the minimum and median latency. Bandwidth numbers are normalized by throwing away extreme values and using a smoothing algorithm to approximate the actual upstream and downstream bandwidth.</p><h2><a name="bandwidth_caveats"></a>Bandwidth Caveats</h2>
+<p>The bandwidth algorithm makes a few very important assumptions. The first assumption is that packets are being sent via a modem that is configured to transmit bits at a certain fixed speed. This is generally true of DSL modems. However, cable modems do not often behave in this way. They typically buffer packets for short periods of time and send them out in spurts. Unfortunately, this behavior can drastically affect QoS bandwidth results. The second assumption the algorithm makes is that packets flying between consoles don't hit any further constriction points. On the Internet, of course, packets traverse multiple routers, and each router introduces unpredictable delays.</p><p>To put it succinctly, the bandwidth algorithm does not always produce reliable results. Worse, there's no way to know whether the results are good or bad. If QoS indicates a bandwidth of 128 Kb/s, the actual bandwidth could be 128 Kb/s or 96 Kb/s, or 256 Kb/s.</p><p>The best way to accurately determine bandwidth is to flood the pipe for a dozen seconds, but flooding the pipe is exactly the opposite of what a listener wants, particularly for a game in progress or a game that wants to support communication in the lobby. The QoS bandwidth algorithm gives only a rough approximation of true bandwidth. It may grossly underestimate true bandwidth, somewhat overstate bandwidth, or it may be perfectly accurate. There's no way to know for sure which.</p><p>What does this mean for games? First of all, avoid displaying QoS bandwidth. You don't want players thinking their bandwidth is half of what their broadband provider supports. Second, avoid making black and white decisions based on bandwidth. For instance, don't assume that a console with a 128 Kb/s upstream bandwidth can support only four players. That console might really have a 256 Kb/s bandwidth that could support eight players. Let the host decide how many players to support, perhaps using four players as a default.</p><p>Given that QoS bandwidth can be inaccurate, you may wonder why the values are provided at all. The numbers can be useful for doing relative comparisons. For instance, choosing a host console during QuickMatch with a bandwidth twice as large as another console is a reasonable thing to do. Sorting a list based on bandwidth is also reasonable.</p><p>QoS latency is a much more accurate and dependable value. QoS bandwidth numbers should generally be avoided except for relative comparisons.</p><h2><a name="writing_code"></a>Writing QoS Code</h2>
+<p>There are four QoS functions, each beginning with the prefix <b>XNetQos</b>. They are <b>Listen</b>, <b>Lookup</b>, <b>ServiceLookup</b>, and <b>Release</b>.</p><p>Successful QoS requires that the listener be actively listening, since QoS is a two-way conversation. Any endpoint that wants to respond to QoS probes must call <a href="xbox_XNetQosListen_xsnl.htm">XNetQosListen</a> with the ENABLE flag. </p>
+<pre class="clsCode">
+// Enable listening on the given session
+XNetQosListen( &amp;SessionID, NULL, 0, 0, XNET_QOS_LISTEN_ENABLE );
+</pre>
+    <p>SGs are always enabled listeners. Listening is disabled by setting the DISABLE flag. Listening is terminated by setting the RELEASE flag. An initiator that wants to evaluate QoS between itself and n listeners calls the <b>Lookup</b> function:</p>
+<pre class="clsCode">
+XNQOS* pxnQos;       // will be filled in with the results
+XNADDR xnAddrs[ n ]; // endpoints to probe; filled in by game;
+XNKID  xnKids [ n ]; // pair of session IDs/keys to probe
+XNKEY  xnKeys [ n ];
+
+// Probe the listeners
+XNetQosLookup( n, &amp;xnAddrs, &amp;xnKids, &amp;xnKeys, 0, NULL, NULL, 8, 
+               0, 0, NULL, &amp;pxnQos );
+</pre>
+    <p>The <b>Lookup</b> function allocates space for the <a href="xbox_XNQOS_xsnl.htm">XNQOS</a> data, initiates the QoS probe and returns immediately. The <i>pxnQos</i> data structure is filled in at DPC time as the listeners return QoS responses. The caller can specify the number of probes. Four to eight probes provides a good tradeoff between accurate results and time spent probing.</p><p>Although the <b>Lookup</b> function can also technically evaluate QoS between the sending console and an Xbox <i>Live</i> SG (see parameters 5 through 7), that method is deprecated in favor of another function that provides more accurate results, the <b>ServiceLookup</b> function. <b>ServiceLookup</b> automatically sends 24 probes to the Xbox <i>Live</i> presence SG.</p>
+<pre class="clsCode">
+// Probe connectivity to the Xbox Live service
+XNetQosServiceLookup( 0, NULL, &amp;pxnQos );
+</pre>
+    <p>To terminate QoS probes and free the memory allocated by <a href="xbox_XNetQosLookup_xsnl.htm">XNetQosLookup</a>, call the <b>Release</b> function. Release frees the <b>XNQOS</b> data, so once the <b>Release</b> function has been called, the data that <i>pxnQos</i> points to should not be accessed.</p>
+<pre class="clsCode">
+// Done probing
+XNetQosRelease( pxnQos );
+</pre>
+    <p>While QoS is in progress, the <i>pxnQos</i> data is updated automatically at interrupt time until all probes are complete. Probes are guaranteed to complete eventually, even if listeners cannot be contacted. The caller of <b>Lookup</b> may specify an optional event handle that is signaled whenever <i>pxnQos</i> is updated. This allows the caller to know, for instance, as soon as each listener has been contacted. Within the <b>XNQOS</b> data structure is a variable length array of <b>XNQOS</b> structures, one for each listener being probed. Use the <a href="xbox_XNQOSINFO_xsnl.htm">XNQOSINFO</a> data to extract game state data and latency values. This example extracts the median latency to the first listener:</p>
+<pre class="clsCode">
+XNQOSINFO* pQos = pxnQos-&gt;axnqosinfo[ 0 ];
+if( ( pQos-&gt;bFlags &amp; XNET_XNQOSINFO_COMPLETE ) != 0 )
+    WORD wLatency = pQos-&gt;wRttMedInMsecs;
+</pre>
+    <h2><a name="generating_code"></a>Generating QoS Code</h2>
+<p>The Xbox Matchmaking Simulator (MatchSim) tool automatically generates code with both Xbox <i>Live</i> Matchmaking and QoS functionality. Use the generated <b>Listen</b> function to control listening and the <b>Probe</b> function to do lookups. The generated code can easily be customized for additional functionality. The QualityOfService sample also includes source code that shows how to use QoS features.</p><h2><a name="evaluating"></a>Evaluating Connectivity</h2>
+<p>One of the most useful things the QoS functions can do is evaluate initial connectivity between players before a session begins. If you want to guarantee that all the players in a peer-to-peer session can communicate with each other before a match, QoS is the right way to do it. To determine purely whether two consoles can communicate at all, use a probe count of zero. This tells the client to only perform a NAT traversal with the listener(s). If the NAT traversal completes, then the two endpoints can talk to each other and will almost certainly be able to establish socket communication. If NAT traversal fails, then it's likely one or more restrictive NATs is preventing communication between the endpoints and the game should either inform the player that they won't be able to join the session, or reroute traffic between the endpoints (perhaps via the host). Rerouting traffic will increase the latency between the endpoints, but may be an effective solution in games that can tolerate high latency.</p><p>If the game is evaluating connection quality by using multiple probes, but still wants to know the moment a listener is first contacted and connectivity established, the game can use the optional event handle and check for the TARGET_CONTACTED flag.</p><h2><a name="advertising"></a>Advertising Game State</h2>
+<p>Xbox QoS has another useful feature&#8212;the  ability for a listener to advertise current game state information. Without this feature, an Xbox client would have to establish a formal socket connection and undergo key exchange with a potential session host in order to find up-to-the-second information about the current session (laps to go, time when the session was created, time until the end of the current session, names of the other players in the game, and so forth). QoS data allows the host to relay current state to any potential new players before those players connect to the session. Consoles can also use the data to determine why a particular session is no longer available. Although information about the host is often discovered via the Xbox <i>Live</i> Matchmaking service, Matchmaking data can be stale. QoS data comes directly from the host, so it's always current.</p><p>To enable game state data broadcast to initiators, listeners use the SET_DATA flag and a pointer to the data. This function copies the data to an internal buffer, so whenever new data needs be advertised the game must call the function again.</p>
+<pre class="clsCode">
+// Broadcast game state to any initiator
+XNetQosListen( &amp;SessionID, pData, dwBytes, 0, 
+               XNET_QOS_LISTEN_SET_DATA );
+</pre>
+    <p>To disable transmission of game data, use the SET_DATA flag with <i>dwBytes</i> set to zero. By default, the data can be up to 256 bytes. To increase the maximum size, the game can specify a larger amount using the <b>cfgQosDataLimitDiv4</b> member of <a href="xbox_xnetstartupparams_xsnl.htm">XNetStartupParams</a>. Initiators receive the data via the <b>XNQOSINFO</b> structure. Game state data is not sent by the listener until all probes are complete. If no probes are specified, game state data is sent after connectivity is established. Game data is sent even if the listener is disabled, allowing the listener to indicate why the session is not available.</p>
+<pre class="clsCode">
+// Extract game state data if it was sent
+XNQOSINFO* pQos = pxnQos-&gt;axnqosinfo[ n ];
+if( ( pQos-&gt;bFlags &amp; XNET_XNQOSINFO_DATA_RECEIVED ) != 0 )
+    // Data in pQos-&gt;pbData and size in pQos-&gt;cbData
+</pre>
+    <h2><a name="progression"></a>Connection Progression</h2>
+<p>The best way to understand the nuances of QoS is to follow a timeline of QoS exchanges between an initiator and a listener. Assume a new Xbox wants to join a session after locating that session via Matchmaking. Before it joins the session, it wants to know whether it can actually connect to the host, whether there is an available slot in the game, the status of the current match, and the quality of the connection. At any step along the way, the initiator may decide to abandon the session and move on to a more appropriate one. For the purposes of this exercise, assume that the initiator carries QoS through to completion. Because the initiator wants the status of the match prior to evaluating quality, and because game state is sent after probes are complete, the best way to start is by doing a lookup with zero probes.</p>
+<pre class="clsCode">
+XNetQosLookup( 1, &amp;xnAddrs, &amp;xnKids, &amp;xnKeys, 0, NULL, NULL, 0, 
+               0, 0, NULL, &amp;pxnQos );
+</pre>
+    <p>The network stack allocates the <i>pxnQos</i> data and attempts to connect to the host. The connection phase will attempt to negotiate any NATs that lie between the two consoles. If the host is an enabled or disabled listener, and NAT traversal is successful, the network stack will:</p><ul>
+	<li>Set <i>pxnQos</i>-&gt;<b>cxnqosPending</b> to zero (the probes are complete, because there weren't any).</li>
+	<li>Set <i>pxnQos</i>-&gt;<b>anxqosinfo</b>[ 0 ].<b>bFlags</b> to TARGET_CONTACTED.</li>
+	<li>Update <b>bFlags</b> to include DISABLED if the target is disabled.</li>
+	<li>Signal the optional QoS event handle.</li>
+</ul>
+<p>If the joining Xbox had specified one or more probes and the target was enabled, the probes would be sent at this time. The last thing to be sent is the game state data. When the game state arrives, the network stack:</p><ul>
+	<li>Updates <b>bFlags</b> to include DATA_RECEIVED.</li>
+	<li>Sets <b>cbData</b> to the size of the data in bytes.</li>
+	<li>Copies the game state data to <b>pbData</b>.</li>
+	<li>Updates <b>bFlags</b> to include COMPLETE.</li>
+	<li>Signals the optional QoS event handle.</li>
+</ul>
+<p>Whether or not game state was available, <b>bFlags</b> is always set to COMPLETE at this point. The zero-probe QoS is done. Assume the initiator evaluates <b>pbData</b> and determines the session is still interesting. Now it can evaluate the quality of the connection by issuing a series of 8 probes:</p>
+<pre class="clsCode">
+XNetQosLookup( 1, &amp;xnAddrs, &amp;xnKids, &amp;xnKeys, 0, NULL, NULL, 8, 
+               0, 0, NULL, &amp;pxnQos );
+</pre>
+    <p>Here's how the resulting <b>XNQOSINFO</b> data structure is likely to be filled over the next few seconds. The data structure is updated automatically at interrupt time. Any change to the structure signals the optional event handle.</p><table>
+	<tr>
+<th>Time</th>	<th>bFlags</th>	<th>cProbesXmit</th>	<th>cProbesRecv</th>	<th>Notes</th>
+</tr>
+	<tr>
+<td>0</td>	<td>0</td>	<td>1</td>	<td>0</td>	<td>First probe sent</td>
+</tr>
+	<tr>
+<td><i>n</i></td>	<td>TARGET_CONTACTED</td>	<td>1</td>	<td>1</td>	<td>First probe received</td>
+</tr>
+	<tr>
+<td><i>n</i>+<i>m</i></td>	<td>TARGET_CONTACTED</td>	<td>2</td>	<td>1</td>	<td>Second probe sent</td>
+</tr>
+	<tr>
+<td>...</td>	<td>TARGET_CONTACTED</td>	<td>2</td>	<td>2</td>	<td>Second probe received</td>
+</tr>
+	<tr>
+<td>	</td>
+<td>...</td>	<td>...</td>	<td>...</td>	<td>Probes continue</td>
+</tr>
+	<tr>
+<td>	</td>
+<td>TARGET_CONTACTED</td>	<td>8</td>	<td>8</td>	<td>Eighth probe received</td>
+</tr>
+	<tr>
+<td>	</td>
+<td>TARGET_CONTACTED | COMPLETE</td>	<td>9</td>	<td>8</td>	<td>Probing complete</td>
+</tr>
+	<tr>
+<td>	</td>
+<td>TARGET_CONTACTED | DATA_RECEIVED</td>	<td>9</td>	<td>8</td>	<td>Game data received</td>
+</tr>
+	<tr>
+<td>	</td>
+<td>TARGET_CONTACTED | DATA_RECEIVED | COMPLETE</td>	<td>9</td>	<td>8</td>	<td>Complete</td>
+</tr>
+</table>
+<p>There are a number of important points worth noting:</p><ul>
+	<li>The CONTACTED flag is set as soon as the listener first replies. If all the game wants to do is determine whether the initiator and listener can communicate, use the optional event handle and wait for the TARGET_CONTACTED bit to be set. If the COMPLETE flag is set and TARGET_CONTACTED is not set, then QoS has timed out without contacting the listener.</li>
+	<li>Each outstanding probe must be received before the next probe is sent. The network stack will wait up to two seconds for a probe to come back. If the probe is not returned within two seconds, the initiator will resend the probe up to three times before timing out.</li>
+	<li>More probes may be transmitted than received. The <i>cProbes</i> parameter of <b>Lookup</b> specifies the number of probe responses required before QoS is done. Extra probes may be sent if a probe packet is lost (probes are sent via UDP), the listener fails to send a timely reply or additional NAT traversal packets are required. </li>
+	<li>Game data is not transmitted until all probes are complete. Game data is transmitted even if the listener is disabled.</li>
+</ul>
+<p>A game waiting on the optional event handle is unlikely to observe the level of granularity shown above depending on the latency of the connection. For instance, upon first detecting the signaled event, the game might find that the target has been contacted and 3 probes already received.</p><p>In this particular example, game state was used to filter out uninteresting listeners, then a second lookup was issued to determine the connection quality of the remaining listeners. Titles that don't use game data as a filter are better off using a single lookup with 8 probes and using the optional event handle to determine when sessions have been contacted.</p><h2><a name="complete_me"></a>You Complete Me</h2>
+<p>QoS is considered complete when any of the following are true:</p><ul>
+	<li>Connectivity failed due to restrictive NATs, non-listening hosts, or any other reason that causes a time out. The network stack will attempt three times, waiting two seconds between each attempt, before giving up.</li>
+	<li>Probing timed out; packets weren't received back from the listener. The network stack will attempt to resend lost probes up to three times, waiting two seconds between each attempt, before timing out.</li>
+	<li>Data exchange timed out; the data packet wasn't received from the listener. The network stack will attempt to resend lost data packets three times, waiting two seconds between each attempt, before timing out.</li>
+	<li>Connectivity was established, the probe count was zero and the listener wasn't broadcasting state data.</li>
+	<li>Connectivity was established, the probe count was zero, and game state data was received.</li>
+	<li>Connectivity was established, probing completed, and the listener wasn't broadcasting state data.</li>
+	<li>Connectivity was established, probing completed, and game state data was received.</li>
+</ul>
+<p>How long could QoS take? In the absolute worst-case scenario, NAT traversal could take six seconds, probing could take six seconds per probe, and game state transmission could take six seconds. So in theory an 8-probe QoS could take up to a minute to complete. Typically, if QoS is going to fail, it will fail during NAT traversal after no more than six seconds. Successful QoS with 8 probes typically takes two to four seconds. For example, given 375 ms average latency, 8 probes will take three seconds (8 &#0215; 0.375), not including time for NAT traversal or the game state data packet. Because QoS has its own timeout mechanisms built in, there's no reason to provide any additional methods for timing out.</p><p>Once QoS is complete for any of the reasons above, the network stack sets <b>bFlags</b> to include the COMPLETE flag and signals the optional QoS event handle for the final time. Upon completion, the following XNQOSINFO data members are updated.</p><table>
+	<tr>
+<td><b>wRttMinInMsecs</b></td>	<td>Minimum round trip time in milliseconds. 0xFFFF indicates that no probes were returned back from the listener or the listener was disabled. If any probes were received, the maximum value is approximately 2000 milliseconds, since the initiator will time out probes after two seconds.</td>
+</tr>
+	<tr>
+<td><b>wRttMedInMsecs</b></td>	<td>Median round trip time in milliseconds. The median ping is a more useful value than the minimum ping, since it represents the typical case and not the best case.</td>
+</tr>
+	<tr>
+<td><b>dwUpBitsPerSec</b></td>	<td>Average upstream bandwidth from the initiator to the listener in bits per second. Unlike computer storage, which is measured as 1024 bits per kilobit, bandwidth is measured in units of 1000. A bandwidth of 128 kilobits equals 128,000 bits per second which in turn equals 16,000 bytes per second (not 16,384 bytes per second). The maximum value is capped at 10,000,000 bits per second, with the exception of local hosts, which will report 100,000,000 bits/s. A value of zero indicates that no probes were received from the listener or the listener was disabled. See the 
+<a href="prog_wp_bp_qos.htm#bandwidth_caveats">Bandwidth Caveats</a> section for more information on the usefulness of this value.</td>
+</tr>
+	<tr>
+<td><b>dwDnBitsPerSec</b></td>	<td>Average downstream bandwidth from the listener to the initiator in bits per seconds. The maximum value is capped at 10,000,000 bits per second (100,000,000 for local hosts). A value of zero indicates that no probes were received from the listener or the listener was disabled. See the <a href="prog_wp_bp_qos.htm#bandwidth_caveats">Bandwidth Caveats</a> section for more information on the usefulness of this value.</td>
+</tr>
+</table>
+<p>For service lookups (<a href="XNetQosServiceLookup.htm">XNetQosServiceLookup</a>), the network stack sets the values above once 12 probes (half of the 24 total probes) are received. It also sets <b>bFlags</b> to include the PARTIAL_COMPLETE flag. This allows an anxious initiator to determine SG latency a bit faster if it really needs to.</p><h2><a name="multiple_hosts"></a>Evaluating Multiple Hosts</h2>
+<p>Games often use QoS during matchmaking to filter or sort session results. QoS can be used to simultaneously probe multiple hosts. For instance, a matchmaking query might return n potential sessions. For QuickMatch, the game could then probe those n session hosts to determine which host is ideal. For OptiMatch, the game could probe the hosts to determine how to filter and sort the list. Rather than probing each one individually, the QoS functions support probing a set of consoles in parallel.</p><p>Although probes to individual consoles are sent serially, <b>XNetQosLookup</b> uses a round-robin approach to fling probes to multiple listeners every 200 milliseconds. Although QoS packets are individually quite small, they add up quickly. The initiator can throttle outgoing packets by specifying a maximum bandwidth using the <i>dwBitsPerSec</i> parameter of <b>XNetQosLookup</b>. If no maximum is specified, outgoing QoS probes are automatically throttled to 16 Kb/s. Beware of specifying too high a maximum; 64 Kb/s is a good limit. The minimum lookup bandwidth is 4 Kb/s.</p><h2><a name="leave_me_alone"></a>Just Leave Me Alone</h2>
+<p>QoS listeners operate in three modes: listening enabled, disabled, and off. Enabled listeners respond to probes and return game state data (if any) normally. Disabled listeners respond to probes with a single "leave me alone" response. Disabled listeners also return game state data, if any. An initiator that probes a disabled listener will see the DISABLED flag at the same time the CONTACTED flag is set. Disabling QoS is useful way to inform potential players that the session has recently filled up or is otherwise unavailable. It reduces the QoS load on the listener because the listener does not use up bandwidth sending probe responses. If the listener has additional information to share about why it is unavailable, it can do so using the game state data.</p><p>Xbox consoles that have not enabled listening or have specified the RELEASE flag to <b>XNetQosListen</b> do not reply to QoS. The CONTACTED flag will never be set on the initiator; QoS NAT traversal will timeout and set the COMPLETE flag.</p><h2><a name="goodness_packets"></a>Packets of QoS Goodness</h2>
+<p>Each probe consists of a pair of UDP packets. Like all Xbox packets, probes are automatically authenticated with strong crypto. QoS game state data is encrypted. The size of the packets varies according to the table below. The sizes shown below include the total IP length of the packets in bytes.</p><table>
+	<tr>
+<th>Probe type</th>	<th>Initiator packet</th>	<th>Listener packet</th>	<th>Initiator probe</th>	<th>Listener probe</th>
+</tr>
+	<tr>
+<td>Xbox-Xbox</td>	<td>110</td>				<td>71</td>				<td>220</td>				<td>142</td>
+</tr>
+	<tr>
+<td>Xbox-SG</td>		<td>60/1084</td>			<td>68</td>				<td>120/2168</td>			<td>68</td>
+</tr>
+</table>
+<p>Outgoing SG probes via <b>XNetQosServiceLookup</b> alternate in size between 120 and 2168 bytes. In theory, this provides more accurate bandwidth estimates. In practice, bandwidth may still be inaccurate (see <a href="prog_wp_bp_qos.htm#bandwidth_caveats">Bandwidth Caveats</a>).</p><p>To compute the data QoS is sending or receiving, simply multiply these numbers by the total number of probes and hosts. For instance, 8 probes on 4 hosts would result in a total of (220 &#0215; 8 &#0215; 4) = 7040 outgoing bytes and (142 &#0215; 8 &#0215; 4) = 4544 incoming bytes.</p><p>If you have configured NetMon to use the Xbox network packet parser, you will see that Xbox-Xbox outgoing probe packets are denoted QOS Initiators and incoming packets are called QOS Responses. Xbox-SG probes are all considered SG messages and are denoted as SEC (security) packets. Xbox-Xbox response packets additionally contain the unencrypted microsecond latency and gap values for the given packet.</p><h2><a name="probe"></a>Xbox, Probe Thyself</h2>
+<p>Probes work for both Xbox <i>Live</i> and system link connections. It's typical for system link connections to report zero latency and maximum bandwidth (10,000 Kb/s).</p><p>An Xbox console is able to probe itself (local host probe). Naturally, it will discover that it has zero ping time and scads of bandwidth (100,000 Kb/s)</p><h2><a name="xbox_custom"></a>Xbox QoS vs. Custom QoS</h2>
+<p>Although a game could provide its own QoS functionality using standard sockets, Xbox QoS provides a number of advantages:</p><ul>
+	<li>Accounts for NAT traversal, and does not include the NAT traversal delay in its computations.</li>
+	<li>Automatically provides QoS bandwidth throttling for both the initiator and listener.</li>
+	<li>Works asynchronously at interrupt time.</li>
+	<li>Is more lightweight in comparison to standard Xbox game packets. Most data portions of QoS packets are not encrypted (though still authenticated), which reduces CPU load.</li>
+	<li>Doesn't require that the initiator establish a formal connection to a listener. There's no delay for key exchange.</li>
+	<li>Supports additional features like enabled/disabled listeners and game state data.</li>
+</ul>
+<h2><a name="listen"></a>Being a Good Listener</h2>
+<p>Now that the innards of QoS have been laid bare, consider QoS from the standpoint of the host (the listener). A good host wants to effectively advertise its session, inform potential players about the state of the session, let new players communicate in the lobby, and then begin the session-without having the session be adversely affected by players who have not already joined the game.</p><p>When the session is brand new, the first thing the host should do is enable listening so that the session can respond quickly to new potential players. At this stage, the host could even consider maximizing the listen bandwidth. By default, listeners automatically throttle the bandwidth used to return probe responses to 16 Kb/s. A listener can change the outgoing QoS bandwidth by calling <b>XNetQosListen</b> with a different <i>dwBitsPerSec</i> value. Beware of specifying too high a maximum; 64 Kb/s is a good high water mark.</p>
+<pre class="clsCode">
+// Increase listen bandwidth to 32 Kb/s
+XNetQosListen( &amp;SessionID, NULL, 0, 32000, 
+               XNET_QOS_LISTEN_SET_BITSPERSEC );
+</pre>
+    <p>As players join the session and enter the lobby, the host may want to adjust the game state data so that future players can know the current state of the session. As the number of players increases and network communication ramps up in the lobby, the host may also want to decrease maximum listen bandwidth, since a typical listening host may receive dozens of QoS probes from different potential new consoles trying to join the game. The listen bandwidth can be set as small as 4 Kb/s.</p><p>When the session is full or when the game play begins, the host can disable (not release) listening. Any new players trying to contact the host will immediately know that the session is unavailable. If players need additional information, the host can continue to advertise game state data. If players don't need additional information, the host should set the game state data block to zero so additional bandwidth isn't consumed sending data that's not required. If the host allows join-in-progress and still wants to allow new players to evaluate the connection, the host can keep listening enabled and simply limit the listen bandwidth to some minimal value, like 4 Kb/s. If the host has removed the session from matchmaking via <a href="XOnlineMatchSessionDelete.htm">XOnlineMatchSessionDelete</a>, the host can release listening after fifteen seconds or so, since it's unlikely that any new potential players will contact the host after that.</p><p>Once the session is over and the game returns to the lobby, the host can enable listening and set game state again.</p><h2><a name="match"></a>Effective Matchmaking</h2>
+<p>Matchmaking provides a list of potential Xbox <i>Live</i> sessions to interested consoles. Some of those sessions may have already started or ended. Some of those sessions may be unreachable due to NAT issues. QoS is extremely useful as a secondary filter for sessions returned by matchmaking. In order to present players with a high-quality list of sessions, use QoS as follows:</p><ul>
+	<li>Before displaying a list of potential sessions, minimally determine connectivity by either using QoS with zero probes. If using more than zero probes, use the optional event handle to determine which sessions have been contacted. Only display sessions with TARGET_CONTACTED.</li>
+	<li>If the game disables listening to indicate closed sessions, don't display DISABLED sessions. If the game advertises game state data, use the game state data as an additional filter. Relevant data may also be displayed to the player or used for sorting.</li>
+	<li>Now that the sessions have been winnowed down to what is truly available, they can be shown to the player. To display available sessions as quickly as possible, use the optional event handle and check for the DATA_RECEIVED flag (if using state data) or the TARGET_CONTACTED flag (if not using state data).</li>
+	<li>If the game wants to sort by quality or choose the best session (for QuickMatch), the game can probe the sessions for lowest median latency. Sessions with similar latency can be subsorted from highest to lowest upstream bandwidth.</li>
+	<li>Beware of probing too many hosts simultaneously. The more total probes that are sent, the longer it will take for the probes to any one host to complete. For instance, 8 probes to 20 hosts will require sending a total of 281.6 Kb, not including game data or NAT traversal. Because of QoS bandwidth throttling, probes will likely be delayed at the initiator.</li>
+	<li>If the game does not use game state data as a filter, the game can optimize QoS slightly by starting QoS a single time with 8 probes and using the optional event handle. As sessions are marked TARGET_CONTACTED (and not DISABLED), they can be immediately displayed for selection. When probes are COMPLETE, the results can be displayed for the player or used to sort the list.</li>
+</ul>
+<h2><a name="life_after"></a>Life After QoS</h2>
+<p>QoS does not perform key exchange. Once the initiator determines that it wants to establish a formal connection to a listener, the initiator can call send, sendto, or <a href="XNetConnect.htm">XNetConnect</a> to create that connection. These functions will initiate key exchange if it hasn't already been done. Key exchange introduces a small delay as the two endpoints share enough information to create secure mutual keys. Games that want to know if key exchange is complete can use <a href="XNetGetConnectStatus.htm">XNetGetConnectStatus</a>.</p><h2><a name="recommendations"></a>Recommendations</h2>
+<p>Using QoS correctly is a complicated business. The list below includes QoS best practices.</p><ul>
+	<li>Peer-to-peer games should use QoS to check for connectivity between every endpoint. The connectivity check should happen before the session begins. Consoles that can't communicate because of NAT issues should either have their network traffic rerouted or be given the option to join another session.</li>
+	<li>Use 4 to 8 probes for best results. More than 8 incurs a higher bandwidth cost without providing much more accurate results. A series of 8 probes to a listening host will typically complete in 2 to 4 seconds.</li>
+	<li>Don't display a blank screen during QoS. Let the player know that something interesting is going on by displaying "searching for sessions" or something similar. Whether you show sessions as soon as they're contacted or when you know that they have low latency characteristics is up to you.</li>
+	<li>Avoid probing too many listeners simultaneously. The more probes that are sent out, the longer it will take for all probes to complete, since the simultaneous probes will compete for bandwidth. Probing 8&#8211;16 simultaneous hosts is a good starting point.</li>
+	<li>Take advantage of the opportunity to throttle bandwidth for the initiator and particularly for the listener. Lobby and game play experience can be ruined if a listening host is expending too much bandwidth responding to probes.</li>
+	<li>Use the QoS game state block wisely. Do send information that an initiator can use to filter out the session. Don't send any information that the receiving console won't use. Turn off the game state data advertisement as soon as it's no longer needed.</li>
+	<li>Prefer disabling listening rather than turning it off completely (releasing). A disabled listener will immediately respond to the initiator with a disabled notice, but a non-listener will require the initiator to timeout before it knows that the host isn't available. Disable listening for around 15 seconds before releasing.</li>
+	<li>Don't add your own timeout mechanism to QoS. The QoS timeouts have been tuned to account for NAT traversal and Internet delays. QoS will always "complete," even if it can't contact the listener. Because NAT traversal can take several seconds, it's not unusual for QoS to take five or more seconds before reporting a perfectly acceptable connection.</li>
+	<li>Prefer using the median roundtrip time rather than the minimum round trip time. The median value is much more indicative of the performance that you will see in a game.</li>
+	<li>The QoS roundtrip ping times are extremely accurate and very useful when gauging latency between consoles and Xbox <i>Live</i>. Use ping times to sort results and get players into low-latency sessions.</li>
+	<li>If your game is unplayable above certain latencies (e.g. 500+ ms), avoid displaying sessions that exceed the limit and avoid putting players in games they won't enjoy. Of course, if a player has been invited by a friend, the player should always be able to join if he really wants to.</li>
+	<li>Many Xbox <i>Live</i> players do not understand the concept of ping time; most games are better off using ping times to implicitly sort results or display ping time via graphical elements (green=low latency, yellow=medium, red=high).</li>
+	<li>Avoid displaying QoS bandwidth or using the bandwidth to make game-limiting decisions. The bandwidth values are not accurate, and should only be used for relative comparisons, if at all. You don't want players thinking their bandwidth is half of what their broadband provider supports. </li>
+	<li>Use <b>XNetQosServiceLookup</b> to determine latency between the console and Xbox <i>Live</i>. This function provides more accurate results than the standard <b>Lookup</b> function. The bandwidth values are still not extremely accurate, and should be used only for relative comparisons, if at all.</li>
+	<li>QoS does not evaluate packet loss. Don't infer anything from the ratio of <b>cProbesRecv</b> to <b>cProbesXmit</b>, since QoS initiators may send more probes than they receive in cases like NAT traversal. Because packet loss tends to happen in bursts anyway, the small number of probes done by QoS isn't enough to evaluate the lossiness of the connection.</li>
+	<li>Utilize the MatchSim-generated QoS code for listening and probing. Evaluate the QoS sample code in the XDK if you need to do more complex QoS.</li>
+</ul>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineGetServiceInfo</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineGetServiceInfo"/>
+<MSHelp:Keyword Index="F" Term="XOnlineGetServiceInfo"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineGetServiceInfo</h1>
+<p>Indicates whether a specified service has been successfully logged on, and optionally retrieves additional information about the service.</p><pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineGetServiceInfo(</b>
+    <b>DWORD</b> <i>dwServiceID</i><b>,</b>
+    <b>PXONLINE_SERVICE_INFO</b> <i>pServiceInfo</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+			<dt><i>dwServiceID</i></dt>
+				<dd>[in]  Service identifier of the service to query.</dd>
+            
+			
+			<dt><i>pServiceInfo</i></dt>
+				<dd>[out]  Pointer to an <a href="XONLINE_SERVICE_INFO.htm">XONLINE_SERVICE_INFO</a> structure that receives information about the specified service.  This parameter can be NULL if this information is not required.</dd>
+            
+			
+		</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>The return value indicates the connection status of the specified service, and can be one of the following values:</p>
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>S_OK</td>
+<td>A successful connection to the service has been made.</td>
+</tr>
+<tr>
+<td>XONLINE_E_INTERNAL_ERROR</td>
+<td>An unspecified error occurred.  For example, the specified service does not exist in the service database.</td>
+</tr>
+<tr>
+<td>XONLINE_E_LOGON_SERVICE_NOT_REQUESTED</td>
+<td>The service was not requested in the call to <a href="XOnlineLogon.htm">XOnlineLogon</a>.</td>
+</tr>
+<tr>
+<td>XONLINE_E_LOGON_SERVICE_NOT_AUTHORIZED</td>
+<td>The logged on users are not authorized to access the service.</td>
+</tr>
+<tr>
+<td>XONLINE_E_LOGON_SERVICE_TEMPORARILY_UNAVAILABLE</td>
+<td>The service is temporarily unavailable.  The title can proceed with other online functionality that does not use this service.  If the player attempts to perform functions related to this service, the title should inform the player that the service is temporarily unavailable.</td>
+</tr>
+</table>
+<h4><a name="remarks"></a>Remarks</h4>
+<p><b>XOnlineGetServiceInfo</b> is used to determine the status of service logons specified in <b>XOnlineLogon</b>, and to retrieve additional information about logged on services.  <b>XOnlineGetServiceInfo</b> should be called only after the logon task has returned XONLINE_S_LOGON_CONNECTION_ESTABLISHED.</p>
+
+<p>The asynchronous logon task created with <b>XOnlineLogon</b> must remain open (the handle not closed) in order for <b>XOnlineGetServiceInfo</b> to be called.</p>
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p><a href="x_mt_xonline_functions.htm">Xbox Live Functions</a> | <a href="XOnlineLogon.htm">XOnlineLogon</a>,
+<a href="XONLINE_SERVICE_INFO.htm">XONLINE_SERVICE_INFO</a></p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

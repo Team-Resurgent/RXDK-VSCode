@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>HeapValidate</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="HeapValidate">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="HeapValidate"/>
+<MSHelp:Keyword Index="F" Term="HeapValidate"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_heapvalidate"></A>HeapValidate</H1>
+
+<P>The <B>HeapValidate</B> function attempts to validate a specified heap. The function scans all the memory blocks in the heap and verifies that the heap control structures maintained by the heap manager are in a consistent state. You can also use the <B>HeapValidate</B> function to validate a single memory block within a specified heap, without checking the validity of the entire heap.</P>
+
+<P class=note><B><I>Important</I></B>&nbsp;&nbsp;&nbsp;To use this function, you must link with XapilibD.lib, the debug version of Xapilib.  Retail (shipping) title builds should not call this function.</P>
+
+<PRE class=syntax><B>BOOL HeapValidate(
+  HANDLE</B><I> hHeap</I><B>,  </B>// handle to heap
+<B>  DWORD</B><I> dwFlags</I><B>, </B>// heap access options 
+<B>  LPCVOID</B><I> lpMem</I>  // optional pointer to memory block
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>hHeap</I></DT>
+
+<DD>[in] Handle to the heap of interest. The <B>HeapValidate </B>function attempts to validate this heap or a single memory block within this heap.</DD>
+
+<DT><I>dwFlags</I></DT>
+
+<DD>[in] Specifies heap access during function operation. This parameter can be the following value.
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=35%>Value</TH>
+<TH align=left width=65%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>HEAP_NO_SERIALIZE</TD>
+<TD width=65%>Specifies that mutual exclusion is not used while the <B>HeapValidate</B> function accesses the heap. </TD>
+</TR>
+</TABLE><BR>
+
+</DD>
+
+<DT><I>lpMem</I></DT>
+
+<DD>[in] Pointer to a memory block within the specified heap. This parameter may be NULL.
+
+<P>If this parameter is NULL, the function attempts to validate the entire heap specified by <I>hHeap</I>.
+
+
+<P>If this parameter is not NULL, the function attempts to validate the memory block pointed to by <I>lpMem</I>. It does not attempt to validate the rest of the heap. 
+
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the specified heap or memory block is valid, the return value is nonzero.</P>
+
+<P>If the specified heap or memory block is invalid, the return value is zero. On a system set up for debugging, the <B>HeapValidate </B>function then displays debugging messages that describe the part of the heap or memory block that is invalid, and stops at a hard-coded breakpoint so that you can examine the system to determine the source of the invalidity. The <B>HeapValidate </B>function does not set the thread's last error value. There is no extended error information for this function; do not call <B>GetLastError</B>.</P>
+
+<H4>Remarks</H4>
+
+<P>There are heap control structures for each memory block in a heap, and for the heap as a whole. When you use the <B>HeapValidate</B> function to validate a complete heap, it checks all of these control structures for consistency. </P>
+
+<P>When you use <B>HeapValidate</B> to validate a single memory block within a heap, it checks only the control structures pertaining to that element. <B>HeapValidate</B> can only validate allocated memory blocks. Calling <B>HeapValidate</B> on a freed memory block will return FALSE because there are no control structures to validate. </P>
+
+<P>If you want to validate the heap elements enumerated by the <B>HeapWalk</B> function, you should only call <B>HeapValidate</B> on the elements that have PROCESS_HEAP_ENTRY_BUSY in the <B>wFlags</B> member of the <B>PROCESS_HEAP_ENTRY</B> structure. <B>HeapValidate</B> returns FALSE for all heap elements that do not have this bit set. </P>
+
+<P>Serialization ensures mutual exclusion when two or more threads attempt to simultaneously allocate or free blocks from the same heap. There is a small performance cost to serialization, but it must be used whenever multiple threads allocate and free memory from the same heap. Setting the HEAP_NO_SERIALIZE value eliminates mutual exclusion on the heap. Without serialization, two or more threads that use the same heap handle might attempt to allocate or free memory simultaneously, likely causing corruption in the heap. The HEAP_NO_SERIALIZE value can, therefore, be safely used only in the following situations: 
+
+<UL>
+	<LI>The title has only one thread. </LI>
+
+	<LI>The title has multiple threads, but only one thread calls the heap functions for a specific heap. </LI>
+
+	<LI>The title has multiple threads, and the application provides its own mechanism for mutual exclusion to a specific heap. </LI>
+</UL>
+
+<P>Validating a heap may degrade performance. The side effects may last until the console is rebooted.</P>
+
+<P class=note><B><I>Note</I></B>&nbsp;&nbsp;To guard against an access violation, you can use structured exception handling to protect code that writes to or reads from a heap. For more information on structured exception handling with memory accesses, see <a href="unresolved.htm">Reading and Writing</a> and <A HREF="unresolved.htm">Structured Exception Handling</a>.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use XapilibD.lib
+</p>
+
+<H4>See Also</H4>
+<P>
+
+<a href="xbox_mt_xtl_sll_memory_management_functions.htm">Memory Management Functions</a> | 
+<A HREF="memman_5z6t.htm">HeapCreate</a>, <A HREF="memman_1ca3.htm">HeapWalk</a>, <A HREF="memman_8iya.htm">PROCESS_HEAP_ENTRY</a>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

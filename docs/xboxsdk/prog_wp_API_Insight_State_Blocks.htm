@@ -1,0 +1,1428 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>API Insight: The Truth About State Blocks</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="API Insight: The Truth About State Blocks"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+  <MSHelp:Keyword Index="K" Term="state blocks, implementing"/>
+  <MSHelp:Keyword Index="K" Term="implement a state block"/>
+  <MSHelp:Keyword Index="K" Term="create a state block"/>
+  <MSHelp:Keyword Index="K" Term="record a state block"/>
+  <MSHelp:Keyword Index="K" Term="capture a state block"/>
+  <MSHelp:Keyword Index="K" Term="apply a state block"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>API Insight: The Truth About State Blocks</h1>
+<p><i>by Mikey Wetzel, Software Design Engineer, Xbox Advanced Technology Group</i></p>
+
+<p>Welcome to the next installment in the API Insight series
+that aims to expose some inner details of the more interesting Xbox API calls.
+This time around, we will be looking at state blocks and how they are
+implemented.</p>
+
+<p>As the title implies, state blocks do have a dark side. The
+takeaway is that state blocks are implemented entirely in software, meaning
+that your application could do at least as good, if not better. Better because
+your application can make assumptions about your engine design, objects sorted
+by state, and so on, that would allow your state management code to easily
+exceed the performance of D3D state blocks.</p>
+
+<p>The pseudo-code for state blocks is listed in <a href="prog_wp_API_Insight_State_Blocks.htm#appendix_a">Appendix A: Pseudo-code D3D8.H Header File</a> and
+<a href="prog_wp_API_Insight_State_Blocks.htm#appendix_b">Appendix B: Pseudo-code State Blocks</a>. The first listing is the public D3D8.h header file stripped down to
+code that is relevant only to state blocks. The second listing is for
+implementing state blocks, and will be referenced throughout this document.
+Please be well aware that the code provided is not actual source code, but is a
+close enough derivation of it to give you the gist of what's going on.</p>
+
+<h2><a name="IDAPRM2"></a>What Is a State Block?</h2>
+<p>Before we get too deep into the discussion, we need to make
+sure we all know what state blocks are and how they are used. The XDK documentation
+is the proper place for this, but I'm happy to give you the basics here.</p><p>In DirectX 8, state blocks are essentially objects that contain
+a snapshot of a large number of D3D states (render states, current textures, materials,
+lights, shaders, and so on). State blocks are created and destroyed with calls
+to <b>D3DDevice::CreateStateBlock</b> and <b>D3DDevice::DeleteStateBlock</b>.</p><p>When created, a state block allocates memory for space to
+save all the states and then proceeds to "capture" or record the system's
+current state. At any later time, the application can then call <b>D3DDevice::ApplyStateBlock</b>
+and all the previously set state will again be set. The advantage is having one
+API call versus many individual state settings calls. From an engine design
+point-of-view, you may already be thinking in terms of broader effects (like an
+alpha-only pass with alpha-blending on, z-testing on, and z-writes disabled) in
+which case it's more convenient to organize state into larger groupings.</p><p>An existing state block can be updated with a call to <b>D3DDevice::UpdateStateBlock</b>. This will replace the contents of the state block with a
+snapshot of the system state at the time of that call. This would be useful for
+dynamic state blocks where you are trying to do the following:</p><ol>
+<li>Preserve state</li>
+<li>Set new state</li>
+<li>Render object</li>
+<li>Restore previous state</li>
+</ol>
+<p>So far, you may be thinking that state blocks sound like a
+good thing. The problem is the rather brain dead way that state blocks are
+implemented and that they sometimes record the entire state of the device
+(literally hundreds of states) because they don't have the foresight to know
+which states will need to be restored later on.</p><h2><a name="IDAPSM2"></a>Compiled State Blocks</h2>
+<p>Aside from the usual call to <b>CreateStateBlock</b>,
+another API set can be used to create and record into a state block. In order
+to use the other API, you need to add the following code:</p>
+<pre class="clsCode">
+#define D3DCOMPILE_BEGINSTATEBLOCK
+</pre>
+    <p>before you include any Xbox header files. Take a look at the
+listing for the D3D8.h header file, and find any references to this
+preprocessor definition. </p><p>The definition enables a bunch of macros that update an
+internal array called D3D__StateBlockDirty[] whenever a state is changed. For
+performance reasons, the header file hides this work behind a conditional <b>#ifdef</b>
+so that the work can be avoided in the non&#8211;state block case.</p><p>The definition also exposes access to two functions: <b>BeginStateBlock</b>
+and <b>EndStateBlock</b>, which serve as an alternate way to create a state
+block. In between the two calls, your code would set a bunch of render states.
+Internally, this works with the macros mentioned above. The call to <b>BeginStateBlock</b>
+does little more than clear out this array. As your application makes calls to
+set various state, the macros update the D3D__StateBlockDirty[] array to record
+which states have been modified. The call to <b>EndStateBlock</b> then walks
+the list of dirty states and creates an actual state block. Afterwards, your
+application can call <b>ApplyStateBlock</b>, as usual.</p><p>The advantage of working with state blocks in this fashion
+is that just the minimum amount of state that you directly specify is included
+in the state block. The alternative of calling <b>CreateStateBlock</b> is a lot
+less optimal because it records the entire set of all device state...literally
+hundreds of states.</p><h2><a name="IDARTM2"></a>Deconstructing the Pseudo-Code</h2>
+<p>Let's now turn our attention to the pseudo-code. If you're
+reading this on a monitor, it'll really help here to have a separate printout
+for reference. To start, find the code for the <b>D3DDevice_CreateStateBlock</b>
+function.</p><h3><a name="IDAYTM2"></a>Creating and Recording State Blocks</h3>
+<p>Inside <b>CreateStateBlock</b>, there are three code paths,
+depending on whether the caller wants to record vertex shader state, pixel
+shader state, or the entire set of states used by the device. Regardless, all
+code paths boil down to the same logic: for each relevant state, mark the
+state's entry in the D3D__StateBlockDirty[] array as dirty. The DIRTY_RENDERSTATE
+and DIRTY_TEXTURESTATE helper macros simply update this array. Note that lights
+are special cased, since there can be an arbitrary number of them.</p><p>The function ends by passing control to the internal <b>RecordStateBlock</b>
+function. You may want to compare this to the <b>BeginStateBlock</b>/<b>EndStateBlock</b>
+functions, which do mostly the same thing, except they rely on the caller to
+dirty a small number individual states rather than dirtying all the states at
+once.</p><p><b>RecordStateBlock</b> is a lengthy function, but it breaks
+down into three easily digestible pieces:</p><ol>
+	<li>Walk through all dirty state, and calculate how much space is needed to 
+	store all the dirty states.</li>
+	<li>Allocate an object with enough space to hold all the state information</li>
+	<li>Walk through all dirty state again, but this time actually record the state 
+	into the object</li>
+</ol>
+<p>The object mentioned in step 2 is an internal, variable
+length <b>StateBlock</b> structure, defined near the top of the pseudo-source
+code. The header part of this structure is just a count of the states to
+follow. For instance, if the state block recorded seven vertex shader constants,
+then that would be reflected in the <b>dwNumVertexShaderConstants</b> field.
+The latter part of the structure is a variable length <b>Data</b> array, which
+is filled with actual state values during step 3 above. Since this data is
+treated as one big <b>DWORD</b> array, the order that state is read from this
+array must match the order in which the array was written to.</p><p>Even with a small, efficient list of dirty states, it's
+clear that <b>RecordStateBlock</b> makes no assumptions about what to expect,
+and must traverse a large list of values to see what's dirty and what to
+record. Armed with pseudo-code in hand, I'm sure you could do better.
+Fortunately, recording into state blocks is typically a seldom-performed
+operation.</p><h3><a name="IDACVM2"></a>Capturing a State Block</h3>
+<p>Once a state block is created, you will likely need to
+update it at some later time. The <b>UpdateStateBlock</b> function is used for
+this, and it has the nice advantage of only updating states that were initially
+tagged as dirty during creation. Of course, if you called <b>CreateStateBlock</b>
+then this means <i>all</i> states were tagged. However, if you used <b>BeginStateBlock</b>/<b>EndStateBlock</b>,
+then your list of tagged state blocks is probably a bit more manageable.</p><p><b>CaptureStateBlock</b> uses the count and existence
+information in the <b>StateBlock</b> structure's header to only consider the
+relevant states. Look at the pseudo-code for this function and you will see
+that the implementation is straightforward. For a concrete example, imagine
+that only the texture on stage 2 was set. Well, the <b>dwNumTextures</b> in
+this case would be one. The texture loop would then extract the stage and
+texture pointer from the <b>Data</b> field and apply the new texture, complete
+with reference counting. It's that simple, although the large number of
+conditional checks, pointer arithmetic, and reference counting is hardly
+optimal.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;The pseudo-code calls 
+are making use of an internal g_pDevice object your code will not have access to. 
+Don't be concerned by this, as this is just pseudo-code and was never intended to
+compile. The functionality should still be obvious, and that's all we care about.</p><h3><a name="IDA4VM2"></a>Applying a State Block</h3>
+<p>Finally, let's look at the code to apply a state block. The code for <b>ApplyStateBlock</b> actually looks very similar to <b>CaptureStateBlock</b>. The logic flow and loops are exactly the same, the only difference being that <b>CaptureStateBlock</b> updates the state block with current state, while <b>ApplyStateBlock</b> just puts the state into action. Neither function does anything magical; you could easily write similar code.</p><h2><a name="IDANWM2"></a>Reasons to Use State Blocks</h2>
+<p>After all the state block bashing above, allow me to
+contradict myself and point out a few times where using state blocks may be
+justified. First and foremost is convenience. If state blocks help shrink your
+development time, and you really aren't interested in squeezing every bit of
+performance out of the Xbox, then state blocks are probably acceptable as they
+are. Second, if you are maintaining an engine that is cross-platform for both
+Xbox and the PC, then any amount of common code is probably a win. I would
+argue that state blocks are probably no better on the PC then on the Xbox, but
+if some PC hardware out there actually supported state blocks in hardware, then
+my argument would fall apart. Of course, I really don't like any of these
+answers, but at some point I have to acknowledge that game developers have a
+game to ship.</p><h2><a name="IDATWM2"></a>Conclusion</h2>
+<p>State blocks may come in handy and they definitely give the
+illusion of being simple and straightforward. There is no free lunch, though;
+the truth of the matter is that the implementation of state blocks involves a
+large number of conditional checks, pointer arithmetic, and reference counting
+that could easily be avoided by an application that had a better sense of what
+states it was interested in preserving.</p><h2><a name="appendix_a"></a>Appendix A: Pseudo-code D3D8.H Header File</h2>
+<p>This appendix contains a version of the D3D8.h header file
+that has been stripped down to show only pseudo-code that is relevant to state
+blocks.</p><p>Please note that this code will not compile. It's only
+provided for educational purposes, and any other use may cause headaches and
+other maladies.</p>
+<pre class="clsCode">
+//-----------------------------------------------------------------------------
+// File: d3d8.h
+// Desc: Xbox Direct3D include file
+// Copyright (C) Microsoft Corporation.  All Rights Reserved.
+//-----------------------------------------------------------------------------
+
+
+//-----------------------------------------------------------------------------
+// BeginStateBlock/EndStateBlock semantics require that D3D have the ability
+// to record all API state-changing calls in a state block.  Rather than add
+// a time-consuming are-we-recording-a-state-block check to every SetRenderState
+// and SetTextureStageState call that would slow callers even if they never
+// used BeginStateBlock/EndStateBlock, we've placed that logic inline so that
+// it can be eliminated if not needed by the title.
+//
+// To enable BeginStateBlock/EndStateBlock, define the following before
+// including xtl.h.  This needs to be done for all modules that can change
+// state that should be recorded by BeginStateBlock.
+//
+//      #define D3DCOMPILE_BEGINSTATEBLOCK 1
+//-----------------------------------------------------------------------------
+
+enum D3DSTATEBLOCKDIRTYINDEX
+{
+    D3DSBD_TEXTURES              = 0,
+    D3DSBD_PIXELSHADER           = D3DSBD_TEXTURES + D3DTSS_MAXSTAGES,
+    D3DSBD_VERTEXSHADER          = D3DSBD_PIXELSHADER + 1,
+    D3DSBD_INDICES               = D3DSBD_VERTEXSHADER + 1,
+    D3DSBD_STREAMS               = D3DSBD_INDICES + 1,
+    D3DSBD_PIXELSHADERCONSTANTS  = D3DSBD_STREAMS + D3DVS_STREAMS_MAX_V1_0,
+    D3DSBD_VERTEXSHADERCONSTANTS = D3DSBD_PIXELSHADERCONSTANTS + D3DPS_CONSTREG_MAX_DX8,
+    D3DSBD_RENDERSTATES          = D3DSBD_VERTEXSHADERCONSTANTS + D3DVS_CONSTREG_COUNT_XBOX,
+    D3DSBD_TEXTURESTATES         = D3DSBD_RENDERSTATES + D3DRS_MAX,
+    D3DSBD_TRANSFORMS            = D3DSBD_TEXTURESTATES + (D3DTSS_MAXSTAGES * D3DTSS_MAX),
+    D3DSBD_VIEWPORT              = D3DSBD_TRANSFORMS + D3DTS_MAX,
+    D3DSBD_MATERIAL              = D3DSBD_VIEWPORT + 1,
+    D3DSBD_BACKMATERIAL          = D3DSBD_MATERIAL + 1,
+    D3DSBD_MAX                   = D3DSBD_BACKMATERIAL + 1,
+};
+
+
+#ifdef D3DCOMPILE_BEGINSTATEBLOCK
+
+    #define D3DDIRTY_TEXTURE(stage) \
+    { D3D__StateBlockDirty[D3DSBD_TEXTURES + stage] = TRUE; }
+
+    #define D3DDIRTY_PIXELSHADER() \
+    { D3D__StateBlockDirty[D3DSBD_PIXELSHADER] = TRUE; }
+
+    #define D3DDIRTY_VERTEXSHADER() \
+    { D3D__StateBlockDirty[D3DSBD_VERTEXSHADER] = TRUE; }
+
+    #define D3DDIRTY_INDICES() \
+    { D3D__StateBlockDirty[D3DSBD_INDICES] = TRUE; }
+
+    #define D3DDIRTY_STREAM(stream) \
+    { D3D__StateBlockDirty[D3DSBD_STREAMS + stream] = TRUE; }
+
+    #define D3DDIRTY_PIXELSHADERCONSTANT(index, count) \
+    { memset(&amp;D3D__StateBlockDirty[D3DSBD_PIXELSHADERCONSTANTS + index], TRUE, count); }
+
+    #define D3DDIRTY_VERTEXSHADERCONSTANT(index, count) \
+    { memset(&amp;D3D__StateBlockDirty[D3DSBD_VERTEXSHADERCONSTANTS + index + 96], TRUE, count); }
+
+    #define D3DDIRTY_RENDERSTATE(state) \
+    { D3D__StateBlockDirty[D3DSBD_RENDERSTATES+state] = TRUE; }
+
+    #define D3DDIRTY_TEXTURESTATE(stage, state) \
+    { D3D__StateBlockDirty[D3DSBD_TEXTURESTATES + (state*D3DTSS_MAXSTAGES) + stage] = TRUE; }
+
+    #define D3DDIRTY_TRANSFORM(transform) \
+    { D3D__StateBlockDirty[D3DSBD_TRANSFORMS + transform] = TRUE; }
+
+    #define D3DDIRTY_VIEWPORT() \
+    { D3D__StateBlockDirty[D3DSBD_VIEWPORT] = TRUE; }
+
+    #define D3DDIRTY_MATERIAL() \
+    { D3D__StateBlockDirty[D3DSBD_MATERIAL] = TRUE; }
+
+    #define D3DDIRTY_BACKMATERIAL() \
+    { D3D__StateBlockDirty[D3DSBD_BACKMATERIAL] = TRUE; }
+
+#else
+
+    #define D3DDIRTY_TEXTURE(stage)
+    #define D3DDIRTY_PIXELSHADER()
+    #define D3DDIRTY_VERTEXSHADER()
+    #define D3DDIRTY_INDICES()
+    #define D3DDIRTY_STREAM(stream)
+    #define D3DDIRTY_PIXELSHADERCONSTANT(index, count)
+    #define D3DDIRTY_VERTEXSHADERCONSTANT(index, count)
+    #define D3DDIRTY_RENDERSTATE(state)
+    #define D3DDIRTY_TEXTURESTATE(stage, state)
+    #define D3DDIRTY_TRANSFORM(transform)
+    #define D3DDIRTY_VIEWPORT()
+    #define D3DDIRTY_MATERIAL()
+    #define D3DDIRTY_BACKMATERIAL()
+
+#endif
+
+
+
+
+//-----------------------------------------------------------------------------
+// Private D3D globals
+//-----------------------------------------------------------------------------
+
+// This array marks what APIs have been called when recording state blocks:
+D3DEXTERN BYTE D3D__StateBlockDirty[];
+
+// This array shadows the current render states:
+D3DEXTERN DWORD D3D__RenderState[D3DRS_MAX];
+
+// This array shadows the current texture stage states:
+D3DEXTERN DWORD D3D__TextureState[D3DTSS_MAXSTAGES][D3DTSS_MAX];
+
+// This array contains the dirty flags for deferred render and texture states:
+D3DEXTERN DWORD D3D__DirtyFlags;
+
+// This points to the data of the currently selected index buffer.  This is
+// used for converting Draw[Indexed]Primitive calls to Draw[Indexed]Vertices
+// calls inline.
+D3DEXTERN WORD* D3D__IndexData;
+ 
+//-----------------------------------------------------------------------------
+// D3DDevice interface
+//-----------------------------------------------------------------------------
+...
+#if D3DCOMPILE_BEGINSTATEBLOCK
+void    WINAPI D3DDevice_BeginStateBlock();
+HRESULT WINAPI D3DDevice_EndStateBlock( DWORD* pToken );
+#endif
+void    WINAPI D3DDevice_ApplyStateBlock( DWORD Token );
+void    WINAPI D3DDevice_CaptureStateBlock( DWORD Token );
+void    WINAPI D3DDevice_DeleteStateBlock( DWORD Token );
+HRESULT WINAPI D3DDevice_CreateStateBlock( D3DSTATEBLOCKTYPE Type, DWORD* pToken );
+...
+
+
+D3DINLINE HRESULT WINAPI D3DDevice::SetRenderState(D3DRENDERSTATETYPE State, DWORD Value) 
+{ 
+    D3DDIRTY_RENDERSTATE(State); 
+    D3DDevice_SetRenderState(State, Value); 
+    return S_OK; 
+}
+
+D3DINLINE HRESULT WINAPI D3DDevice::SetTexture(DWORD Stage, D3DBaseTexture *pTexture)
+{ 
+    D3DDIRTY_TEXTURE(Stage); 
+    D3DDevice_SetTexture(Stage, pTexture); 
+    return S_OK; 
+}
+
+// And so on...
+
+
+</pre>
+    <h2><a name="appendix_b"></a>Appendix B: Pseudo-code State Blocks</h2>
+<p>This appendix contains pseudo-code for how state blocks are
+implemented on the Xbox.</p><p>Please note that this code will not compile. It's only
+provided for educational purposes, and any other use may cause temporary
+insanity.</p>
+<pre class="clsCode">
+//-----------------------------------------------------------------------------
+// File: Block.cpp
+//
+// Desc: State block implementation.
+//
+//       The whole goal of the Xbox state block implementation is to add as
+//       little overhead to non-state-block functionality as is possible.
+//       Specifically, we have gone out of our way to avoid adding any
+//       run-time checks for 'record' mode to any of our state-setting
+//       routines such as SetRenderState.
+//
+// Copyright (C) Microsoft Corporation.  All Rights Reserved.
+//-----------------------------------------------------------------------------
+
+
+//-----------------------------------------------------------------------------
+// Name: D3D__StateBlockDirty[]
+// Desc: An array of bytes that correspond to changed state between
+//       BeginStateBlock() and EndStateBlock() calls.
+//-----------------------------------------------------------------------------
+BYTE D3D__StateBlockDirty[(D3DSBD_MAX + 3) &amp; ~3];
+
+// Make sure the macros we need are defined.
+#ifndef D3DCOMPILE_BEGINSTATEBLOCK
+
+    #define DIRTY_RENDERSTATE(state) \
+    { D3D__StateBlockDirty[D3DSBD_RENDERSTATES + state] = TRUE; }
+
+    #define DIRTY_TEXTURESTATE(stage, state) \
+    { D3D__StateBlockDirty[D3DSBD_TEXTURESTATES + (state*D3DTSS_MAXSTAGES) + stage] = TRUE; } 
+
+#endif
+
+
+
+//-----------------------------------------------------------------------------
+// Name: struct StateBlock
+// Desc: Structure that we allocate to replay state-blocks when called by
+//       ApplyStateBlock().
+//-----------------------------------------------------------------------------
+struct StateBlock
+{
+    // Note: Each of the following fields represent the count of their
+    //       corresponding entries in the variably formatted 'Data' array.
+    //
+    // Note: The order of the variably formatted 'Data' array also
+    //       matches the order in which these fields are listed.
+    //
+    // Note: Shaders require that the restore order be:
+    //          1. Shader
+    //          2. Shader constants
+    //          3. Shader render states
+
+    DWORD dwNumTextures;             
+    BOOL  bHasPixelShader;
+    BOOL  bHasVertexShader;
+    BOOL  bHasIndexBuffer;
+    DWORD dwNumVertexStreams;
+    DWORD dwNumPixelShaderConstants;
+    DWORD dwNumVertexShaderConstants;
+    DWORD dwNumRenderStates;         
+    DWORD dwNumTextureStates;   
+    DWORD dwNumTransforms;           
+    BOOL  bHasViewport;             
+    BOOL  bHasMaterial;             
+    BOOL  bHasBackMaterial;             
+    DWORD dwNumLights;               
+    DWORD dwNumLightEnables;         
+
+    // Variable length, and variably formatted data, based on the above:
+    DWORD Data[1];
+};
+
+
+
+//-----------------------------------------------------------------------------
+// Name: D3DDevice_CreateStateBlock()
+// Desc: Looks at the current state and captures a bunch of it.
+// Note: This code does not record palette contents.
+//-----------------------------------------------------------------------------
+HRESULT WINAPI D3DDevice_CreateStateBlock( D3DSTATEBLOCKTYPE Type,
+                                           DWORD* pToken ) 
+{ 
+    if( Type == D3DSBT_ALL )
+    {
+        // Dirty ALL the state-block dirty flags, so that everything
+        // is recorded:
+        FillMemory( &amp;D3D__StateBlockDirty[0], sizeof(D3D__StateBlockDirty), 
+                    0xffffffff );
+
+        for( DWORD i = 0; i &lt; g_pDevice-&gt;m_LightCount; i++ )
+        {
+             if( g_pDevice-&gt;m_pLights[i].Flags &amp; LIGHT_SET )
+             {
+                 g_pDevice-&gt;m_pLights[i].Flags |= (LIGHT_STATEBLOCK_SET|
+                                                   LIGHT_STATEBLOCK_ENABLED);
+             }
+        }
+    }
+    else if( Type == D3DSBT_PIXELSTATE )
+    {
+        // First reset all flags, so that no extraneous stuff gets into
+        // our state block:
+        ClearStateBlockFlags();
+
+        // We have to record the current pixel shader program, all
+        // pixel shader constants, and pixel shader related render
+        // states and texture stage states.
+
+        D3D__StateBlockDirty[D3DSBD_PIXELSHADER] = TRUE;
+
+        FillMemory( &amp;D3D__StateBlockDirty[D3DSBD_PIXELSHADERCONSTANTS],
+                    D3DPS_CONSTREG_MAX_DX8, 0xffffffff );
+
+        DIRTY_RENDERSTATE( D3DRS_ZENABLE );
+        DIRTY_RENDERSTATE( D3DRS_FILLMODE );
+        DIRTY_RENDERSTATE( D3DRS_SHADEMODE );
+        DIRTY_RENDERSTATE( D3DRS_ZWRITEENABLE );
+        DIRTY_RENDERSTATE( D3DRS_ALPHATESTENABLE );
+        DIRTY_RENDERSTATE( D3DRS_SRCBLEND );
+        DIRTY_RENDERSTATE( D3DRS_DESTBLEND );
+        DIRTY_RENDERSTATE( D3DRS_ZFUNC );
+        DIRTY_RENDERSTATE( D3DRS_ALPHAREF );
+        DIRTY_RENDERSTATE( D3DRS_ALPHAFUNC );
+        DIRTY_RENDERSTATE( D3DRS_DITHERENABLE );
+        DIRTY_RENDERSTATE( D3DRS_FOGSTART );
+        DIRTY_RENDERSTATE( D3DRS_FOGEND );
+        DIRTY_RENDERSTATE( D3DRS_FOGDENSITY );
+        DIRTY_RENDERSTATE( D3DRS_EDGEANTIALIAS );
+        DIRTY_RENDERSTATE( D3DRS_ALPHABLENDENABLE );
+        DIRTY_RENDERSTATE( D3DRS_ZBIAS );
+        DIRTY_RENDERSTATE( D3DRS_STENCILENABLE );
+        DIRTY_RENDERSTATE( D3DRS_STENCILFAIL );
+        DIRTY_RENDERSTATE( D3DRS_STENCILZFAIL );
+        DIRTY_RENDERSTATE( D3DRS_STENCILPASS );
+        DIRTY_RENDERSTATE( D3DRS_STENCILFUNC );
+        DIRTY_RENDERSTATE( D3DRS_STENCILREF );
+        DIRTY_RENDERSTATE( D3DRS_STENCILMASK );
+        DIRTY_RENDERSTATE( D3DRS_STENCILWRITEMASK );
+        DIRTY_RENDERSTATE( D3DRS_TEXTUREFACTOR );
+        DIRTY_RENDERSTATE( D3DRS_WRAP0 );
+        DIRTY_RENDERSTATE( D3DRS_WRAP1 );
+        DIRTY_RENDERSTATE( D3DRS_WRAP2 );
+        DIRTY_RENDERSTATE( D3DRS_WRAP3 );
+        DIRTY_RENDERSTATE( D3DRS_COLORWRITEENABLE );
+        DIRTY_RENDERSTATE( D3DRS_BLENDOP );
+
+        for( DWORD i = 0; i &lt; D3DTSS_MAXSTAGES; i++ )
+        {
+            DIRTY_TEXTURESTATE( i, D3DTSS_COLOROP );
+            DIRTY_TEXTURESTATE( i, D3DTSS_COLORARG1 );
+            DIRTY_TEXTURESTATE( i, D3DTSS_COLORARG2 );
+            DIRTY_TEXTURESTATE( i, D3DTSS_ALPHAOP );
+            DIRTY_TEXTURESTATE( i, D3DTSS_ALPHAARG1 );
+            DIRTY_TEXTURESTATE( i, D3DTSS_ALPHAARG2 );
+            DIRTY_TEXTURESTATE( i, D3DTSS_BUMPENVMAT00 );
+            DIRTY_TEXTURESTATE( i, D3DTSS_BUMPENVMAT01 );
+            DIRTY_TEXTURESTATE( i, D3DTSS_BUMPENVMAT10 );
+            DIRTY_TEXTURESTATE( i, D3DTSS_BUMPENVMAT11 );
+            DIRTY_TEXTURESTATE( i, D3DTSS_TEXCOORDINDEX );
+            DIRTY_TEXTURESTATE( i, D3DTSS_ADDRESSU );
+            DIRTY_TEXTURESTATE( i, D3DTSS_ADDRESSV );
+            DIRTY_TEXTURESTATE( i, D3DTSS_BORDERCOLOR );
+            DIRTY_TEXTURESTATE( i, D3DTSS_MAGFILTER );
+            DIRTY_TEXTURESTATE( i, D3DTSS_MINFILTER );
+            DIRTY_TEXTURESTATE( i, D3DTSS_MIPFILTER );
+            DIRTY_TEXTURESTATE( i, D3DTSS_MIPMAPLODBIAS );
+            DIRTY_TEXTURESTATE( i, D3DTSS_MAXMIPLEVEL );
+            DIRTY_TEXTURESTATE( i, D3DTSS_MAXANISOTROPY );
+            DIRTY_TEXTURESTATE( i, D3DTSS_BUMPENVLSCALE );
+            DIRTY_TEXTURESTATE( i, D3DTSS_BUMPENVLOFFSET );
+            DIRTY_TEXTURESTATE( i, D3DTSS_TEXTURETRANSFORMFLAGS );
+            DIRTY_TEXTURESTATE( i, D3DTSS_ADDRESSW );
+            DIRTY_TEXTURESTATE( i, D3DTSS_COLORARG0 );
+            DIRTY_TEXTURESTATE( i, D3DTSS_ALPHAARG0 );
+            DIRTY_TEXTURESTATE( i, D3DTSS_RESULTARG );
+        }
+    }
+    else if( Type == D3DSBT_VERTEXSTATE )
+    {
+        // First reset all flags, so that no extraneous stuff gets into
+        // our state block:
+        ClearStateBlockFlags();
+
+        // We have to record the current vertex shader program, all
+        // vertex shader constants, vertex shader related render
+        // states and texture stage states, and lights:
+
+        D3D__StateBlockDirty[D3DSBD_VERTEXSHADER] = TRUE;
+
+        FillMemory( &amp;D3D__StateBlockDirty[D3DSBD_VERTEXSHADERCONSTANTS],
+                    D3DVS_CONSTREG_COUNT_XBOX, 0xffffffff );
+
+        DIRTY_RENDERSTATE( D3DRS_SHADEMODE );
+        DIRTY_RENDERSTATE( D3DRS_SPECULARENABLE );
+        DIRTY_RENDERSTATE( D3DRS_CULLMODE );
+        DIRTY_RENDERSTATE( D3DRS_FOGENABLE );
+        DIRTY_RENDERSTATE( D3DRS_FOGCOLOR );
+        DIRTY_RENDERSTATE( D3DRS_FOGTABLEMODE );
+        DIRTY_RENDERSTATE( D3DRS_FOGSTART );
+        DIRTY_RENDERSTATE( D3DRS_FOGEND );
+        DIRTY_RENDERSTATE( D3DRS_FOGDENSITY );
+        DIRTY_RENDERSTATE( D3DRS_RANGEFOGENABLE );
+        DIRTY_RENDERSTATE( D3DRS_AMBIENT );
+        DIRTY_RENDERSTATE( D3DRS_COLORVERTEX );
+        DIRTY_RENDERSTATE( D3DRS_LIGHTING );
+        DIRTY_RENDERSTATE( D3DRS_NORMALIZENORMALS );
+        DIRTY_RENDERSTATE( D3DRS_LOCALVIEWER );
+        DIRTY_RENDERSTATE( D3DRS_EMISSIVEMATERIALSOURCE );
+        DIRTY_RENDERSTATE( D3DRS_AMBIENTMATERIALSOURCE );
+        DIRTY_RENDERSTATE( D3DRS_DIFFUSEMATERIALSOURCE );
+        DIRTY_RENDERSTATE( D3DRS_SPECULARMATERIALSOURCE );
+        DIRTY_RENDERSTATE( D3DRS_VERTEXBLEND );
+        DIRTY_RENDERSTATE( D3DRS_POINTSIZE );
+        DIRTY_RENDERSTATE( D3DRS_POINTSIZE_MIN );
+        DIRTY_RENDERSTATE( D3DRS_POINTSPRITEENABLE );
+        DIRTY_RENDERSTATE( D3DRS_POINTSCALEENABLE );
+        DIRTY_RENDERSTATE( D3DRS_POINTSCALE_A );
+        DIRTY_RENDERSTATE( D3DRS_POINTSCALE_B );
+        DIRTY_RENDERSTATE( D3DRS_POINTSCALE_C );
+        DIRTY_RENDERSTATE( D3DRS_MULTISAMPLEANTIALIAS );
+        DIRTY_RENDERSTATE( D3DRS_MULTISAMPLEMASK );
+        DIRTY_RENDERSTATE( D3DRS_PATCHEDGESTYLE );
+        DIRTY_RENDERSTATE( D3DRS_PATCHSEGMENTS );
+        DIRTY_RENDERSTATE( D3DRS_POINTSIZE_MAX );
+        DIRTY_RENDERSTATE( D3DRS_DEPTHCLIPCONTROL );
+
+        for( DWORD i = 0; i &lt; D3DTSS_MAXSTAGES; i++ )
+        {
+            DIRTY_TEXTURESTATE( i, D3DTSS_TEXCOORDINDEX );
+            DIRTY_TEXTURESTATE( i, D3DTSS_TEXTURETRANSFORMFLAGS );
+        }
+
+        for( DWORD i = 0; i &lt; g_pDevice-&gt;m_LightCount; i++ )
+        {
+            if( g_pDevice-&gt;m_pLights[i].Flags &amp; LIGHT_SET )
+            {
+                g_pDevice-&gt;m_pLights[i].Flags |= (LIGHT_STATEBLOCK_SET|
+                                                  LIGHT_STATEBLOCK_ENABLED);
+            }
+        }
+    }
+    else
+        return E_INVALIDARG;
+
+    // Finally, have RecordStateBlock do all the hard work of actually 
+    // recording the state:
+    return RecordStateBlock( pToken );
+}
+
+
+
+//-----------------------------------------------------------------------------
+// Name: D3DDevice_DeleteStateBlock()
+// Desc: 
+//-----------------------------------------------------------------------------
+VOID WINAPI D3DDevice_DeleteStateBlock( DWORD Token ) 
+{ 
+    StateBlock* pBlock = (StateBlock*) Token;
+    DWORD*      pData  = &amp;pBlock-&gt;Data[0];
+
+    // Release any referenced objects:
+    for( DWORD i = 0; i &lt; pBlock-&gt;dwNumTextures; i++ )
+    {
+        DWORD           stage    = pData[0];
+        D3DBaseTexture* pTexture = (D3DBaseTexture*)pData[1];
+        pData += 2;
+
+        if( pTexture )
+            pTexture-&gt;Release();
+    }
+
+
+    if( pBlock-&gt;bHasPixelShader )
+    {
+        DWORD handle = pData[0];
+        pData++;
+
+        if( handle )
+            // Note this is a reference-counted delete:
+            g_pDevice-&gt;DeletePixelShader(handle);
+    }
+
+    if( pBlock-&gt;bHasVertexShader )
+    {
+        DWORD handle = pData[0];
+        pData++;
+
+        if( IsVertexProgram(handle) )
+            // Note this is a reference-counted delete:
+            g_pDevice-&gt;DeleteVertexShader(handle);
+    }
+
+    if( pBlock-&gt;bHasIndexBuffer )
+    {
+        D3DIndexBuffer* pIndexBuffer = (D3DIndexBuffer*)pData[1];
+        pData += 2;
+
+        if( pIndexBuffer )
+            pIndexBuffer-&gt;Release();
+    }
+
+    for( i = 0; i &lt; pBlock-&gt;dwNumVertexStreams; i++ )
+    {
+        D3DVertexBuffer* pVertexBuffer = (D3DVertexBuffer*)pData[2];
+        pData += 3;
+
+        if( pVertexBuffer )
+            pVertexBuffer-&gt;Release();
+    }
+
+    // Free our state block memory:
+    MemFree( pBlock );
+}
+
+
+
+//-----------------------------------------------------------------------------
+// Name: D3DDevice_BeginStateBlock()
+// Desc: Gets ready to start recording a state block.
+//-----------------------------------------------------------------------------
+VOID WINAPI D3DDevice_BeginStateBlock() 
+{ 
+    g_pDevice-&gt;m_StateFlags |= STATE_RECORDBLOCK;
+
+    ClearStateBlockFlags();
+}
+
+
+
+//-----------------------------------------------------------------------------
+// Name: D3DDevice_EndStateBlock()
+// Desc: Here we run through our 'dirty' list and record any changed states into
+//       a variable-length, variably formatted allocation.
+//-----------------------------------------------------------------------------
+HRESULT WINAPI D3DDevice_EndStateBlock( DWORD* pToken ) 
+{
+    g_pDevice-&gt;m_StateFlags &amp;= ~STATE_RECORDBLOCK;
+
+    return RecordStateBlock( pToken );
+}
+
+
+
+//-----------------------------------------------------------------------------
+// Name: D3DDevice_CaptureStateBlock()
+// Desc: Update the values in the block (weird lights being the exception)
+//-----------------------------------------------------------------------------
+VOID WINAPI D3DDevice_CaptureStateBlock( DWORD Token ) 
+{ 
+    StateBlock* pBlock = (StateBlock*)Token;
+    DWORD*      pData  = &amp;pBlock-&gt;Data[0];
+
+    for( DWORD i = 0; i &lt; pBlock-&gt;dwNumTextures; i++ )
+    {
+        DWORD           stage    = pData[0];
+        D3DBaseTexture* pTexture = (D3DBaseTexture*)pData[1];
+
+        if( pTexture )
+            pTexture-&gt;Release();
+
+        pTexture = g_pDevice-&gt;m_Textures[stage];
+        if( pTexture )
+            pTexture-&gt;AddRef();
+
+        pData[1] = (DWORD)pTexture;
+        pData += 2;
+    }
+
+    if( pBlock-&gt;bHasPixelShader )
+    {
+        DWORD handle = pData[0];
+
+        if( handle )
+            g_pDevice-&gt;DeletePixelShader(handle);
+
+        handle = (DWORD)g_pDevice-&gt;m_pPixelShader;
+        if( handle )
+            g_pDevice-&gt;m_pPixelShader-&gt;AddRef();
+
+        pData[0] = handle;
+        pData++;
+    }
+
+    if( pBlock-&gt;bHasVertexShader )
+    {
+        DWORD handle = pData[0];
+
+        if( IsVertexProgram(handle) )
+            g_pDevice-&gt;DeleteVertexShader(handle);
+
+        handle = g_pDevice-&gt;m_VertexShaderHandle;
+        if( IsVertexProgram(handle) )
+            g_pDevice-&gt;m_pVertexShader-&gt;AddRef();
+
+        pData[0] = handle;
+        pData++;
+    }
+    
+    if( pBlock-&gt;bHasIndexBuffer )
+    {
+        D3DIndexBuffer* pIndexBuffer = (D3DIndexBuffer*)pData[1];
+
+        if( pIndexBuffer )
+            pIndexBuffer-&gt;Release();
+
+        pIndexBuffer = g_pDevice-&gt;m_pIndexBuffer;
+        if( pIndexBuffer )
+            pIndexBuffer-&gt;AddRef();
+
+        pData[0] = g_pDevice-&gt;m_IndexBase;
+        pData[1] = (DWORD) pIndexBuffer;
+        pData += 2;
+    }
+
+    for( DWORD i = 0; i &lt; pBlock-&gt;dwNumVertexStreams; i++ )
+    {
+        DWORD            index         = pData[0];
+        D3DVertexBuffer* pVertexBuffer = (D3DVertexBuffer*)pData[2];
+
+        if( pVertexBuffer )
+            pVertexBuffer-&gt;Release();
+
+        pVertexBuffer = g_Stream[index].pVertexBuffer;
+        if( pVertexBuffer )
+            pVertexBuffer-&gt;AddRef();
+
+        pData[1] = g_Stream[index].Stride;
+        pData[2] = (DWORD) pVertexBuffer;
+        pData += 3;
+    }
+
+    for( DWORD i = 0; i &lt; pBlock-&gt;dwNumPixelShaderConstants; i++ )
+    {
+        memcpy( &amp;pData[1], &amp;g_pDevice-&gt;m_PixelShaderConstants[pData[0]][0],
+                4*sizeof(FLOAT) );
+        pData += 5;
+    }
+    
+    for( DWORD i = 0; i &lt; pBlock-&gt;dwNumVertexShaderConstants; i++ )
+    {
+        memcpy( &amp;pData[1], &amp;g_VertexShaderConstants[pData[0]][0], 4*sizeof(FLOAT) );
+        pData += 5;
+    }
+
+    for( DWORD i = 0; i &lt; pBlock-&gt;dwNumRenderStates; i++ )
+    {
+        pData[1] = D3D__RenderState[pData[0]];
+        pData += 2;
+    }
+
+    for( DWORD i = 0; i &lt; pBlock-&gt;dwNumTextureStates; i++ )
+    {
+        pData[2] = D3D__TextureState[pData[0]][pData[1]];
+        pData += 3;
+    }
+
+    for( DWORD i = 0; i &lt; pBlock-&gt;dwNumTransforms; i++ )
+    {
+        *((D3DMATRIX*) &amp;pData[1]) = g_pDevice-&gt;m_Transform[pData[0]];
+        pData += 1 + sizeof(D3DMATRIX) / 4;
+    }
+
+    if( pBlock-&gt;bHasViewport )
+    {
+        *((D3DVIEWPORT8*)&amp;pData[0]) = g_pDevice-&gt;m_Viewport;
+        pData += sizeof(D3DVIEWPORT8) / 4;
+    }
+
+    if( pBlock-&gt;bHasMaterial )
+    {
+        *((D3DMATERIAL8*)&amp;pData[0]) = g_pDevice-&gt;m_Material;
+        pData += sizeof(D3DMATERIAL8) / 4;
+    }
+    
+    if( pBlock-&gt;bHasBackMaterial )
+    {
+        *((D3DMATERIAL8*)&amp;pData[0]) = g_pDevice-&gt;m_BackMaterial;
+        pData += sizeof(D3DMATERIAL8) / 4;
+    }
+    
+    for( DWORD i = 0; i &lt; pBlock-&gt;dwNumLights; i++ )
+    {
+        *((D3DLIGHT8*)&amp;pData[1]) = g_pDevice-&gt;m_pLights[pData[0]].Light8;
+        pData += 1 + sizeof(D3DLIGHT8) / 4;
+    }
+    for( DWORD i = 0; i &lt; pBlock-&gt;dwNumLightEnables; i++ )
+    {
+        g_pDevice-&gt;GetLightEnable( pData[0], (BOOL*)&amp;pData[1] );
+        pData += 2;
+    }
+
+    ASSERT(pData == pBlock-&gt;pDataEnd);
+}
+
+
+
+//-----------------------------------------------------------------------------
+// Name: D3DDevice_ApplyStateBlock()
+// Desc: Plays back a state block.
+//-----------------------------------------------------------------------------
+VOID WINAPI D3DDevice_ApplyStateBlock( DWORD Token )
+{ 
+    StateBlock* pBlock = (StateBlock*) Token;
+    DWORD*      pData  = &amp;pBlock-&gt;Data[0];
+
+    // Handle textures
+    for( DWORD i = 0; i &lt; pBlock-&gt;dwNumTextures; i++ )
+    {
+        DWORD           dwStage  = *pData++;
+        D3DBaseTexture* pTexture = (D3DBaseTexture*)*pData++;
+        g_pDevice-&gt;SetTexture( dwStage, pTexture );
+    }
+
+    // Handle pixel shader
+    if( pBlock-&gt;bHasPixelShader )
+    {
+        DWORD handle = *pData++;
+        g_pDevice-&gt;SetPixelShader( handle );
+    }
+
+    // Handle vertex shader
+    if( pBlock-&gt;bHasVertexShader )
+    {
+        DWORD handle = *pData++;
+        g_pDevice-&gt;SetVertexShader( handle );
+    }
+
+    // Handle indices
+    if( pBlock-&gt;bHasIndexBuffer )
+    {
+        DWORD           dwIndexBase  = *pData++;
+        D3DIndexBuffer* pIndexBuffer = (D3DIndexBuffer*)*pData++;
+
+        g_pDevice-&gt;SetIndices( pIndexBuffer, dwIndexBase );
+    }
+
+    // Handle vertex streams
+    for( DWORD i = 0; i &lt; pBlock-&gt;dwNumVertexStreams; i++ )
+    {
+        DWORD            index         = *pData++;
+        DWORD            stride        = *pData++;
+        D3DVertexBuffer* pVertexBuffer = (D3DVertexBuffer*)*pData++;
+
+        g_pDevice-&gt;SetStreamSource( index, pVertexBuffer, stride );
+    }
+
+    // Handle pixel shader constants
+    for( DWORD i = 0; i &lt; pBlock-&gt;dwNumPixelShaderConstants; i++ )
+    {
+        DWORD index         = *pData++;
+        VOID* pConstantData = pData;
+        pData += 4;
+
+        g_pDevice-&gt;SetPixelShaderConstant( index, pConstantData, 1 );
+    }
+
+    // Handle vertex shader constants
+    for( DWORD i = 0; i &lt; pBlock-&gt;dwNumVertexShaderConstants; i++ )
+    {
+        DWORD index         = *pData++;
+        VOID* pConstantData = pData;
+        pData += 4;
+
+        // In our state block code here, we refer to them as constants 0 to 191,
+        // but SetVertexShaderConstant knows of them as -96 to 95:
+        g_pDevice-&gt;SetVertexShaderConstant( index - 96, pConstantData, 1 );
+    }
+
+    // Handle render states
+    for( DWORD i = 0; i &lt; pBlock-&gt;dwNumRenderStates; i++ )
+    {
+        DWORD state = *pData++;
+        DWORD value = *pData++;
+
+        // On free builds, we do a small optimization where we don't bother
+        // to call SetRenderState if the state is already set to the proper
+        // value.  We don't do this on checked builds as a small little
+        // sanity check to ensure that all of our default values would 
+        // actually get through the SetRenderState parameter checking.
+
+        if (D3D__RenderState[state] != value)
+        {
+            g_pDevice-&gt;SetRenderStateNotInline((D3DRENDERSTATETYPE) state, value);
+        }
+    }
+
+    // Handle texture stage states
+    for( DWORD i = 0; i &lt; pBlock-&gt;dwNumTextureStates; i++ )
+    {
+        DWORD stage = *pData++;
+        DWORD state = *pData++;
+        DWORD value = *pData++;
+
+        if( D3D__TextureState[stage][state] != value )
+        {
+            g_pDevice-&gt;SetTextureStageStateNotInline( stage,
+                                         (D3DTEXTURESTAGESTATETYPE)state, value );
+        }
+    }
+
+    // Handle transforms
+    for( DWORD i = 0; i &lt; pBlock-&gt;dwNumTransforms; i++ )
+    {
+        DWORD      state   = *pData;
+        D3DMATRIX* pMatrix = (D3DMATRIX*)pData;
+        pData += sizeof(D3DMATRIX) / 4;
+
+        g_pDevice-&gt;SetTransform( (D3DTRANSFORMSTATETYPE)state, pMatrix );
+    }
+
+    // Handle viewport
+    if( pBlock-&gt;bHasViewport )
+    {
+        D3DVIEWPORT8* pViewport = (D3DVIEWPORT8*)pData;
+        pData += sizeof(D3DVIEWPORT8) / 4;
+
+        g_pDevice-&gt;SetViewport( pViewport );
+    }
+
+    // Handle material
+    if( pBlock-&gt;bHasMaterial )
+    {
+        D3DMATERIAL8* pMaterial = (D3DMATERIAL8*)pData;
+        pData += sizeof(D3DMATERIAL8) / 4;
+
+        g_pDevice-&gt;SetMaterial( pMaterial );
+    }
+    // Handle back material
+    if( pBlock-&gt;bHasBackMaterial )
+    {
+        D3DMATERIAL8* pMaterial = (D3DMATERIAL8*)pData;
+        pData += sizeof(D3DMATERIAL8) / 4;
+
+        g_pDevice-&gt;SetBackMaterial( pMaterial );
+    }
+
+    // Handle lights
+    for( DWORD i = 0; i &lt; pBlock-&gt;dwNumLights; i++ )
+    {
+        DWORD      index  = *pData++;
+        D3DLIGHT8* pLight = (D3DLIGHT8*)pData;
+        pData += sizeof(D3DLIGHT8) / 4;
+
+        g_pDevice-&gt;SetLight( index, pLight );
+    }
+
+    // Handle light enables
+    for( DWORD i = 0; i &lt; pBlock-&gt;dwNumLightEnables; i++ )
+    {
+        DWORD index  = *pData++;
+        BOOL  enable = *pData++;
+
+        g_pDevice-&gt;LightEnable( index, enable );
+    }
+
+    ASSERT(pData == pBlock-&gt;pDataEnd);
+}
+
+
+
+//-----------------------------------------------------------------------------
+// Name: ClearStateBlockFlags()
+// Desc: Clears all the 'dirty' flags we use to tell when a particular state
+//       gets modified.
+//-----------------------------------------------------------------------------
+VOID ClearStateBlockFlags()
+{
+    ZeroMemory( &amp;D3D__StateBlockDirty[0], sizeof(D3D__StateBlockDirty) );
+
+    // Lights are special because there can be an arbitrary number of them,
+    // so their 'modified' status is internally kept directly in their
+    // structures:
+    for( DWORD i = 0; i &lt; g_pDevice-&gt;m_LightCount; i++ )
+    {
+        g_pDevice-&gt;m_pLights[i]-&gt;Flags &amp; = ~( LIGHT_STATEBLOCK_SET | 
+                                             LIGHT_STATEBLOCK_ENABLED );
+    }
+}
+
+
+
+//-----------------------------------------------------------------------------
+// Name: RecordStateBlock()
+// Desc: Here we run through our 'dirty' list and record any changed states
+//       into a variable-length, variably formatted allocation.
+//-----------------------------------------------------------------------------
+HRESULT RecordStateBlock( DWORD* pToken ) 
+{ 
+    (*pToken) = NULL;
+
+    // We always do two passes.  The first pass determines the size of
+    // the state block allocation we'll need, and the second pass fills
+    // in the state block:
+
+
+
+
+
+    //-------------------------------------------------------------------------
+    // For the first pass, determine the size (in DWORDs) of the state block
+    //-------------------------------------------------------------------------
+
+    BYTE* pDirty = &amp;D3D__StateBlockDirty[0];
+    DWORD dwSize = 0;
+
+    // Handle textures
+    ASSERT(pDirty == &amp;D3D__StateBlockDirty[D3DSBD_TEXTURES]);
+    for( DWORD i = 0; i &lt; D3DTSS_MAXSTAGES; i++ )
+    {
+        if( *pDirty++ )
+            dwSize += 2;
+    }
+
+    // Handle pixel shader states
+    ASSERT(pDirty == &amp;D3D__StateBlockDirty[D3DSBD_PIXELSHADER]);
+    if( *pDirty++ )
+        dwSize += 1;
+
+    // Handle vertex shader states
+    ASSERT(pDirty == &amp;D3D__StateBlockDirty[D3DSBD_VERTEXSHADER]);
+    if( *pDirty++ )
+        dwSize += 1;
+
+    // Handle indices
+    ASSERT(pDirty == &amp;D3D__StateBlockDirty[D3DSBD_INDICES]);
+    if( *pDirty++ )
+        dwSize += 2;
+
+    // Handle vertex streams
+    ASSERT(pDirty == &amp;D3D__StateBlockDirty[D3DSBD_STREAMS]);
+    for( DWORD i = 0; i &lt; D3DVS_STREAMS_MAX_V1_0; i++ )
+    {
+        if( *pDirty++ )
+            dwSize += 3;
+    }
+
+    // Handle the pixel shader constants
+    ASSERT(pDirty == &amp;D3D__StateBlockDirty[D3DSBD_PIXELSHADERCONSTANTS]);
+    for( DWORD i = 0; i &lt; D3DPS_CONSTREG_MAX_DX8; i++ )
+    {
+        if( *pDirty++ )
+        {
+            // There's no point in saving the pixel shader constants if no
+            // pixel shader is active:
+            if( g_pDevice-&gt;m_pPixelShader )
+                dwSize += 5;
+        }
+    }
+
+    // Handle vertex shader constants
+    ASSERT(pDirty == &amp;D3D__StateBlockDirty[D3DSBD_VERTEXSHADERCONSTANTS]);
+    for( DWORD i = 0; i &lt; D3DVS_CONSTREG_COUNT_XBOX; i++ )
+    {
+        if( *pDirty++ )
+        {
+            // We never save the vertex shader constants that map from -96
+            // to -1, although we leave space for them in the 'dirty' array
+            // for future expansion:
+            if( i &gt;= 96 )
+                dwSize += 5;
+        }
+    }
+ 
+    // Handle render states
+    ASSERT(pDirty == &amp;D3D__StateBlockDirty[D3DSBD_RENDERSTATES]);
+    for( DWORD i = 0; i &lt; D3DRS_MAX; i++ )
+    {
+        if( *pDirty++ )
+        {
+            // If the fixed function pipeline is active, the shadowed
+            // render states for the pixel shader registers are garbage,
+            // so don't save those:
+            if( (g_pDevice-&gt;m_pPixelShader != NULL) ||
+                (i &lt; D3DRS_PSALPHAINPUTS0) ||
+                ( (i &gt; D3DRS_PSINPUTTEXTURE) &amp;&amp; (i != D3DRS_PSTEXTUREMODES) ) )
+            {
+                dwSize += 2;
+            }
+        }
+    }
+
+    // Handle texture stage states
+    ASSERT(pDirty == &amp;D3D__StateBlockDirty[D3DSBD_TEXTURESTATES]);
+    for( DWORD j = 0; j &lt; D3DTSS_MAX; j++ ) // j = 0 .. 29
+    {
+        for( DWORD i = 0; i &lt; D3DTSS_MAXSTAGES; i++ ) // i = 0 .. 3
+        {
+            // Note that in the 'dirty' buffer, we always have all the
+            // stages for a particular state be consecutive
+
+            if( *pDirty++ )
+                dwSize += 3;
+        }
+    }
+
+    // Handle transforms
+    ASSERT(pDirty == &amp;D3D__StateBlockDirty[D3DSBD_TRANSFORMS]);
+    for( DWORD i = 0; i &lt; D3DTS_MAX; i++ )
+    {
+        if( *pDirty++ )
+            dwSize += 1 + sizeof(D3DMATRIX) / 4;
+    }
+
+    // Handle viewport
+    ASSERT(pDirty == &amp;D3D__StateBlockDirty[D3DSBD_VIEWPORT]);
+    if( *pDirty++ )
+        dwSize += sizeof(D3DVIEWPORT8) / 4;
+
+    // Handle material
+    ASSERT(pDirty == &amp;D3D__StateBlockDirty[D3DSBD_MATERIAL]);
+    if( *pDirty++ )
+        dwSize += sizeof(D3DMATERIAL8) / 4;
+
+    // Handle back material
+    ASSERT(pDirty == &amp;D3D__StateBlockDirty[D3DSBD_BACKMATERIAL]);
+    if( *pDirty++ )
+        dwSize += sizeof(D3DMATERIAL8) / 4;
+
+    // Handle lights
+    ASSERT(pDirty == &amp;D3D__StateBlockDirty[D3DSBD_MAX]);
+    for( DWORD i = 0; i &lt; g_pDevice-&gt;m_LightCount; i++ )
+    {
+        if( g_pDevice-&gt;m_pLights[i].Flags &amp; LIGHT_STATEBLOCK_SET )
+            dwSize += 1 + sizeof(D3DLIGHT8) / 4;
+    }
+
+    // Handle light enable states
+    for( DWORD i = 0; i &lt; g_pDevice-&gt;m_LightCount; i++ )
+    {
+        if( g_pDevice-&gt;m_pLights[i].Flags &amp; LIGHT_STATEBLOCK_ENABLED )
+            dwSize += 2;
+    }
+ 
+    //-------------------------------------------------------------------------
+    // Allocate space for the state block
+    //-------------------------------------------------------------------------
+
+    StateBlock* pBlock = (StateBlock*)MemAllocNoZero( sizeof(DWORD) * dwSize );
+    if( NULL == pBlock )
+        return E_OUTOFMEMORY;
+
+    // Zero just the header part of the block (all but the Data part)
+    ZeroMemory( pBlock, sizeof(StateBlock)-sizeof(DWORD) );
+
+
+    //-------------------------------------------------------------------------
+    // Now do a second pass where we fill in the state block
+    //-------------------------------------------------------------------------
+
+    BYTE*  pDirty = &amp;D3D__StateBlockDirty[0];
+    DWORD* pData  = &amp;pBlock-&gt;Data[0];
+
+    // Handle textures
+    ASSERT(pDirty == &amp;D3D__StateBlockDirty[D3DSBD_TEXTURES]);
+    for( DWORD i = 0; i &lt; D3DTSS_MAXSTAGES; i++ )
+    {
+        if( *pDirty++ )
+        {
+            D3DBaseTexture* pTexture = g_pDevice-&gt;m_Textures[i];
+
+            pBlock-&gt;dwNumTextures++;
+            *pData++ = i;
+            *pData++ = (DWORD)pTexture;
+
+            if( pTexture )
+                pTexture-&gt;AddRef();
+        }
+    }
+
+    // Handle pixel shader states
+    ASSERT(pDirty == &amp;D3D__StateBlockDirty[D3DSBD_PIXELSHADER]);
+    if( *pDirty++ )
+    {
+        PixelShader* pPixelShader = g_pDevice-&gt;m_pPixelShader;
+
+        pBlock-&gt;bHasPixelShader = TRUE;
+        *pData++ = (DWORD)pPixelShader;
+        
+        if( pPixelShader )
+            pPixelShader-&gt;AddRef();
+    }
+
+    // Handle vertex shader states
+    ASSERT(pDirty == &amp;D3D__StateBlockDirty[D3DSBD_VERTEXSHADER]);
+    if( *pDirty++ )
+    {
+        DWORD handle = g_pDevice-&gt;m_VertexShaderHandle;
+
+        pBlock-&gt;bHasVertexShader = TRUE;
+        *pData++ = handle;
+        
+        if( IsVertexProgram(handle) )
+            g_pDevice-&gt;m_pVertexShader-&gt;AddRef();
+    }
+ 
+    // Handle indices
+    ASSERT(pDirty == &amp;D3D__StateBlockDirty[D3DSBD_INDICES]);
+    if( *pDirty++ )
+    {
+        D3DIndexBuffer* pIndexBuffer = g_pDevice-&gt;m_pIndexBuffer;
+
+        pBlock-&gt;bHasIndexBuffer = TRUE;
+        *pData++ = g_pDevice-&gt;m_IndexBase;
+        *pData++ = (DWORD)pIndexBuffer;
+
+        if( pIndexBuffer )
+            pIndexBuffer-&gt;AddRef();
+    }
+
+    // Handle vertex streams
+    ASSERT(pDirty == &amp;D3D__StateBlockDirty[D3DSBD_STREAMS]);
+    for( DWORD i = 0; i &lt; D3DVS_STREAMS_MAX_V1_0; i++ )
+    {
+        if( *pDirty++ )
+        {
+            D3DVertexBuffer* pVertexBuffer = g_Stream[i].pVertexBuffer;
+
+            pBlock-&gt;dwNumVertexStreams++;
+            *pData++ = i;
+            *pData++ = g_Stream[i].Stride;
+            *pData++ = (DWORD) pVertexBuffer;
+            
+            if( pVertexBuffer )
+                pVertexBuffer-&gt;AddRef();
+        }
+    }
+
+    // Handle the pixel shader constants
+    ASSERT(pDirty == &amp;D3D__StateBlockDirty[D3DSBD_PIXELSHADERCONSTANTS]);
+    for( DWORD i = 0; i &lt; D3DPS_CONSTREG_MAX_DX8; i++ )
+    {
+        if( *pDirty++ )
+        {
+            // There's no point in saving the pixel shader constants if no
+            // pixel shader is active:
+            if( g_pDevice-&gt;m_pPixelShader )
+            {
+                pBlock-&gt;dwNumPixelShaderConstants++;
+                *pData++ = i;
+                memcpy( pData + 1, &amp;g_pDevice-&gt;m_PixelShaderConstants[i][0],
+                        4*sizeof(FLOAT) );
+            }
+        }
+    }
+
+    // Handle vertex shader constants
+    ASSERT(pDirty == &amp;D3D__StateBlockDirty[D3DSBD_VERTEXSHADERCONSTANTS]);
+    for( DWORD i = 0; i &lt; D3DVS_CONSTREG_COUNT_XBOX; i++ )
+    {
+        if( *pDirty++ )
+        {
+            // We never save the vertex shader constants that map from -96
+            // to -1, although we leave space for them in the 'dirty' array
+            // for future expansion:
+            if( i &gt;= 96 )
+            {
+                pBlock-&gt;dwNumVertexShaderConstants++;
+                *pData++ = i;
+                memcpy( pData, &amp;g_VertexShaderConstants[i][0],
+                        4*sizeof(FLOAT));
+                pData += 4;
+            }
+        }
+    }
+
+
+    // Handle render states
+    ASSERT(pDirty == &amp;D3D__StateBlockDirty[D3DSBD_RENDERSTATES]);
+    for( DWORD i = 0; i &lt; D3DRS_MAX; i++ )
+    {
+        if( *pDirty++ )
+        {
+            // If the fixed function pipeline is active, the shadowed
+            // render states for the pixel shader registers are garbage,
+            // so don't save those:
+            if( (g_pDevice-&gt;m_pPixelShader != NULL) ||
+                (i &lt; D3DRS_PSALPHAINPUTS0) ||
+                ( (i &gt; D3DRS_PSINPUTTEXTURE) &amp;&amp; (i != D3DRS_PSTEXTUREMODES) ) )
+            {
+                pBlock-&gt;dwNumRenderStates++;
+                *pData++ = i;
+                *pData++ = D3D__RenderState[i];
+            }
+        }
+    }
+
+    // Handle texture stage states
+    ASSERT(pDirty == &amp;D3D__StateBlockDirty[D3DSBD_TEXTURESTATES]);
+    for( DWORD j = 0; j &lt; D3DTSS_MAX; j++ ) // j = 0 .. 29
+    {
+        for( DWORD i = 0; i &lt; D3DTSS_MAXSTAGES; i++ ) // i = 0 .. 3
+        {
+            // Note that in the 'dirty' buffer, we always have all the
+            // stages for a particular state be consecutive
+            if( *pDirty++ )
+            {
+                pBlock-&gt;dwNumTextureStates++;
+                *pData++ = i;   // Stage
+                *pData++ = j;   // State
+                *pData++ = D3D__TextureState[i][j];
+            }
+        }
+    }
+
+    // Handle transforms
+    ASSERT(pDirty == &amp;D3D__StateBlockDirty[D3DSBD_TRANSFORMS]);
+    for( DWORD i = 0; i &lt; D3DTS_MAX; i++ )
+    {
+        if( *pDirty++ )
+        {
+            pBlock-&gt;dwNumTransforms++;
+            *pData++ = i;
+            *((D3DMATRIX*)pData) = g_pDevice-&gt;m_Transform[i];
+            pData += sizeof(D3DMATRIX) / 4;
+        }
+    }
+
+    // Handle viewport
+    ASSERT(pDirty == &amp;D3D__StateBlockDirty[D3DSBD_VIEWPORT]);
+    if( *pDirty++ )
+    {
+        pBlock-&gt;bHasViewport = TRUE;
+        *((D3DVIEWPORT8*)pData) = g_pDevice-&gt;m_Viewport;
+        pData += sizeof(D3DVIEWPORT8) / 4;
+    }
+
+    // Handle material
+    ASSERT(pDirty == &amp;D3D__StateBlockDirty[D3DSBD_MATERIAL]);
+    if( *pDirty++ )
+    {
+        pBlock-&gt;bHasMaterial = TRUE;
+        *((D3DMATERIAL8*)pData) = g_pDevice-&gt;m_Material;
+        pData += sizeof(D3DMATERIAL8) / 4;
+    }
+
+
+
+    // Handle back material
+    ASSERT(pDirty == &amp;D3D__StateBlockDirty[D3DSBD_BACKMATERIAL]);
+    if( *pDirty++ )
+    {
+        pBlock-&gt;bHasBackMaterial = TRUE;
+        *((D3DMATERIAL8*)pData) = g_pDevice-&gt;m_BackMaterial;
+        pData += sizeof(D3DMATERIAL8) / 4;
+    }
+
+    // Handle lights
+    ASSERT(pDirty == &amp;D3D__StateBlockDirty[D3DSBD_MAX]);
+    for( DWORD i = 0; i &lt; g_pDevice-&gt;m_LightCount; i++ )
+    {
+        if( g_pDevice-&gt;m_pLights[i].Flags &amp; LIGHT_STATEBLOCK_SET )
+        {
+            pBlock-&gt;dwNumLights++;
+            *pData++ = i;
+            *((D3DLIGHT8*)pData) = g_pDevice-&gt;m_pLights[i]-&gt;Light8;
+            pData += sizeof(D3DLIGHT8) / 4;
+        }
+    }
+
+    // Handle light enable states
+    for( DWORD i = 0; i &lt; g_pDevice-&gt;m_LightCount; i++ )
+    {
+        if( g_pDevice-&gt;m_pLights[i].Flags &amp; LIGHT_STATEBLOCK_ENABLED )
+        {
+            pBlock-&gt;dwNumLightEnables++;
+            *pData++ = i;
+            g_pDevice-&gt;GetLightEnable(i, (BOOL*)pData );
+            pData++;
+        }
+    }
+
+    // We're done!
+    ASSERT(pData == pBlock-&gt;pDataEnd);
+
+    (*pToken) = (DWORD)pBlock;
+    return S_OK;
+}
+
+
+</pre>
+    <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

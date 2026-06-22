@@ -1,0 +1,63 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>PSC0Mapping and PSC1Mapping</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="PSC0Mapping and PSC1Mapping"/>
+<MSHelp:Keyword Index="F" Term="PSC0Mapping and PSC1Mapping"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1><A NAME=""></A>PSC0Mapping and PSC1Mapping</H1>
+<!--***********************************************************-->
+
+<p>The <b>PSC0Mapping</b> and <b>PSC1Mapping</b> fields contain eight 4-bit integers that indicate which Direct3D constant is mapped to a constant in a particular combiner stage. The <b>PS_CONSTANTMAPPING(</b><i>s0</i>,<i>s1</i>,<i>s2</i>,<i>s3</i>,<i>s4</i>,<i>s5</i>,<i>s6</i>,<i>s7</i><b>)</b> macro is used to easily set the mapping. The macro is defined as below:</p>
+
+<a name="ps_constantmapping"></a><pre class=syntax>#define PS_CONSTANTMAPPING(s0,s1,s2,s3,s4,s5,s6,s7) \
+  (((DWORD)(s0)&amp;0xf)&lt;&lt; 0) | (((DWORD)(s1)&amp;0xf)&lt;&lt; 4) | \
+  (((DWORD)(s2)&amp;0xf)&lt;&lt; 8) | (((DWORD)(s3)&amp;0xf)&lt;&lt;12) | \
+  (((DWORD)(s4)&amp;0xf)&lt;&lt;16) | (((DWORD)(s5)&amp;0xf)&lt;&lt;20) | \
+  (((DWORD)(s6)&amp;0xf)&lt;&lt;24) | (((DWORD)(s7)&amp;0xf)&lt;&lt;28) </pre>
+
+<p>For example, if c0 in stage 0 is mapped to the constant 1 and c0 in stage 5 is mapped to the constant 5, the following code would properly set the mappings:</p>
+
+<pre>D3DPIXELSHADERDEF psd;
+psd.PSC0Mapping = PS_CONSTANTMAPPING(1, 0xff, 0xff, 0xff, 0xff, 5, 0xff, 0xff);</pre>
+
+<p>These mappings are only used in <a href="_dx_idirect3ddevice8_setpixelshaderconstant_graphics.htm"><b>IDirect3DDevice8::SetPixelShaderConstants</b></a>, so if your application does not use this method, these fields do not need to be set. </p>
+
+<p>For directly defined pixel shaders, it is often more convenient to set the constants using their associated render states rather than using the <b>IDirect3DDevice8::SetPixelShaderConstants</b> method. For example, the following code sets the c0 constant in stage 1 to a value of 5:</p>
+
+<pre>// Assume pDevice is a valid pointer to an IDirect3DDevice8 interface.
+pDevice-&gt;SetRenderState( D3DRS_PSCONSTANT0_1, 5 );</pre>
+
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

@@ -1,0 +1,138 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>WSAStartup</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="WSAStartup">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="WSAStartup"/>
+<MSHelp:Keyword Index="F" Term="WSAStartup"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="xbox_wsastartup_winsock"></A>WSAStartup</H1>
+
+<P>Initializes the Xbox Winsock layer for use by the title.</P>
+
+<PRE class=syntax><B>int WSAStartup(
+  WORD </B><I>wVersionRequested</I>,<B>  </B>
+<B>  LPWSADATA </B><I>lpWSAData  </I>
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>wVersionRequested</I></DT>
+
+<DD>[in] Highest version of Winsock support that the caller can use. The high-order byte specifies the minor version (revision) number; the low-order byte specifies the major version number.</DD>
+
+<DT><I>lpWSAData</I></DT>
+
+<DD>[out] Pointer to the <A HREF="xbox_wsadata_winsock.htm">WSADATA</A> data structure that is to receive details of the Winsock implementation.
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>The <B>WSAStartup</B> function returns zero if successful. Otherwise, it returns one of the error codes listed in the following table.  <B>WSAStartup</B> does not call <A HREF="xbox_wsagetlasterror_winsock.htm">WSASetLastError</A> to set the last error code.</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=43%>Error code</TH>
+<TH align=left width=57%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=43%>WSASYSNOTREADY</TD>
+<TD width=57%>Indicates that the underlying network subsystem is not ready for network communication.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=43%>WSAVERNOTSUPPORTED</TD>
+<TD width=57%>The version of Winsock support requested is not provided by this particular Winsock implementation.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=43%>WSAENOBUFS</TD>
+<TD width=57%>There was not enough memory available to initialize Winsock.</TD>
+</TR>
+
+</TABLE><BR>
+
+<H4>Remarks</H4>
+
+<P>Other than <A HREF="xbox_xnetstartup_xsnl.htm">XNetStartup</A>, the <B>WSAStartup</B> function <I>must</I> be the first Winsock function called by the title. It allows the title to specify the version of Winsock required and retrieve details of the specific Winsock implementation. The title can only issue further Winsock functions after successfully calling <B>WSAStartup</B>.</P>
+
+<P>The Xbox Winsock Libraries will indicate support for versions up to version 2.2 of Winsock, including versions 1.0, 1.1, 2.0, 2.1, and 2.2.  Note, however, that for all versions, the Xbox Winsock Libraries will function as detailed in this documentation, and not necessarily in accordance with other functional specifications for the specific Winsock version negotiated.</P>
+
+<P>Upon return, details of the Winsock implementation will be in the <A HREF="xbox_wsadata_winsock.htm">WSADATA</A> structure pointed to by <I>lpWSAData</I>.</P>
+
+<P>Once a successful call to <B>WSAStartup</B> is made, other Winsock calls can be used as needed. When the title has finished using Winsock, it must call <A HREF="xbox_wsacleanup_winsock.htm">WSACleanup</A> once for every successful call the title made to <B>WSAStartup</B>.  The final call to <B>WSACleanup</B> will unload Winsock and deallocate resources that were in use by Winsock.</P>
+
+<P>A title can call <B>WSAStartup</B> more than once if it needs to obtain the <B>WSADATA</B> structure information more than once.</P>
+
+<H4>Example</H4>
+
+<P>The following code fragment demonstrates how a title that supports only version 2.2 of Winsock would make a <B>WSAStartup</B> call:</P>
+
+<PRE>WORD wVersionRequested;
+WSADATA wsaData;
+int err;
+ 
+wVersionRequested = MAKEWORD( 2, 2 );
+ 
+err = WSAStartup( wVersionRequested, &amp;wsaData );
+if ( err != 0 )
+{
+    // initialization failed
+    return;
+}
+ 
+// Confirm that version 2.2 is supported.
+// Note that if the implementation supported versions
+// greater than 2.2, it would still return 2.2 in
+// wVersion since that is the version we requested.
+if ( LOBYTE( wsaData.wVersion ) != 2 ||
+     HIBYTE( wsaData.wVersion ) != 2 )
+{
+    // We only want 2.2 and this implementation doesn't
+    // support it.  This will not happen in Xbox Winsock.
+    WSACleanup( );
+    return; 
+}
+
+// successfully negotiated the version, proceed.</PRE>
+
+
+<H4>Requirements</H4>
+<p>
+<b>Header: </b>Declared in winsockx.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xnet.lib for titles that only support system link play, XOnline.lib for titles that support online play. Use the secure versions of the library file (Xnets.lib or XOnlines.lib) for final testing.
+</p>
+
+
+<H4>See Also</H4>
+
+<P>
+<a href="xbox_winsock_overview_winsock.htm">Winsock Overview</A>,
+<a href="xbox_winsock_functions_winsock.htm">Winsock Functions</A> |
+<a HREF="xbox_wsacleanup_winsock.htm">WSACleanup</A>,
+<A HREF="xbox_xnetstartup_xsnl.htm">XNetStartup</A>
+</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

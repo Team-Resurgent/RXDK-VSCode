@@ -1,0 +1,168 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>DmRegisterCommandProcessor</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="CreateFile">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="DmRegisterCommandProcessor"/>
+<MSHelp:Keyword Index="F" Term="DmRegisterCommandProcessor"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_createfile"></A>DmRegisterCommandProcessor</H1>
+
+<P class="content">Registers a command handler.</P>
+
+<PRE class=syntax><b>DMHRAPI DmRegisterCommandProcessor(</b>
+  <B>LPCSTR</B>      <I>szProcessor</I><B>,</B> 
+  <B>PDM_CMDPROC</B> <I>pfn</I>
+  <b>);</b></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+
+<DT><I>szProcessor</I></DT>
+<DD><b>LPCSTR</b> that represents the command processor.</DD>
+
+<DT><I>pfn</I></DT>
+<DD>Pointer to a command processor. Command processors must take the following form:
+<PRE>   HRESULT __stdcall my_handler(LPCSTR szCommand, LPSTR szResponse, DWORD cchResponse, PDM_CMDCONT pdmcc);
+</PRE>
+</DD>
+
+</DL>
+
+<H4>Return Values</H4>
+
+<P class="content">Returns XBDM_NOERR if successful, an error value otherwise.</P>
+
+
+<H4>Remarks</H4>
+
+<P class="content">Whenever the command dispatcher receives a command in the form "handler!data data data", it will pass the entire command string (including the "handler!") to the command processor registered with a matching handler name.  The command handler receives a buffer (<i>szResponse</i>) into which to place an optional response string.  The value of <i>cchResponse</i> is the maximum size of the response.  The return value of the command handler should be one of the XBDM_* error codes.  Any other success codes will be translated into XBDM_NOERR and any other error codes will be translated into XBDM_UNDEFINED.  If no response string is specified, the command dispatcher will construct a string based on the return code.  If the return code is one of XBDM_MULTIRESPONSE, XBDM_BINRESPONSE, or XBDM_READYFORBIN, then the <b>DM_CMDCONT</b> structure is used (see below).</P>
+
+
+<P class="content">Generally, command handlers receive one string as input (<i>szCommand</i>, the complete command string) and are able to send one result code and response string (<i>szResponse</i>) as output.  This is not sufficient for three types of command conversations: multiline textual response, receipt of binary data, or transmission of binary data.  For each of these types of command conversations, a "command continuation" structure is used.  Use of the various fields of the <b>DM_CMDCONT</b> structure vary slightly between conversation types; each type is outlined below, along with the uses of the <b>DM_CMDCONT</b> fields.</P>
+
+<P class="note"><B><I>Note</I></B>&nbsp;&nbsp;&nbsp;&nbsp;There are many Xbox
+Title Libraries (XTL) functions that cannot be called safely from within a
+debug channel command handler. Any XTL function that is called that affects the
+value of <b>GetLastError</b> may cause the console to stop responding. Also,
+any return value from <b>GetLastError</b> may be incorrect. When developing a
+debug channel command handler, call as few XTL functions as possible.</P>
+
+
+<H4>Continued Transactions</H4>
+
+<P class="content">There are three types of continued transactions supported.  Each type requires use of a <b>DM_CMDCONT</b> structure, which is preallocated by the command dispatcher and which is passed into the command handler for initialization. Each type also requires that a specific result code be returned by the command handler to indicate that continued processing is necessary.  The three conversation type return codes are XBDM_MULTIRESPONSE, indicating multiple lines of text response; XBDM_BINRESPONSE, indicating a binary response; and XBDM_READYFORBIN, indicating receipt of incoming binary data.  Each of these three cases is described below.</P>
+
+<H4>XBDM_READYFORBIN</H4>
+
+<P class="content">On exit from the command handler, the fields of the <b>DM_CMDCONT</b> should be set as follows:</p>
+<UL>
+  <LI><B>HandlingFunction</B>&mdash;the continuation function that is to be called when binary data is received.</LI>
+  <LI><B>DataSize</B>&mdash;undefined.</LI>
+  <LI><B>Buffer</B>&mdash;a buffer to hold incoming binary data. If this is NULL, the command dispatcher will provide a small (256-byte) buffer.</LI>
+  <LI><B>BufferSize</B>&mdash;the size of the buffer indicated by <b>Buffer</b>.</LI>
+  <LI><B>CustomData</B>&mdash;any value; this value will remain constant throughout the conversation unless changed by the continuation function.</LI>
+  <LI><B>BytesRemaining</B>&mdash;the number of bytes of incoming data. This number may be zero.</LI>
+</UL>
+
+<P class="content">On entry to the continuation function, the fields of the <b>DM_CMDCONT</b> will contain the following:</p>
+<UL>
+  <LI><B>HandlingFunction</B>&mdash;the continuation function that has been called.</LI>
+  <LI><B>DataSize</B>&mdash;the number of bytes received.  If this number is zero, then either the connection has been unexpectedly closed, or the initial value of <b>BytesRemaining</b> was zero, indicating that no data was expected.  In either case that this number is zero, the continuation function should not expect to be called again.</LI>
+  <LI><B>Buffer</B>&mdash;a pointer to the received data; unchanged unless it was previously NULL.</LI>
+  <LI><B>BufferSize</B>&mdash;the size of the buffer, unchanged unless <b>Buffer</b> was previously NULL.</LI>
+  <LI><B>CustomData</B>&mdash;unchanged.</LI>
+  <LI><B>BytesRemaining</B>&mdash;the number of bytes of incoming data, including the bytes indicated by <b>DataSize</b>.</LI>
+</UL>
+
+
+<p>On exit from the continuation function, the fields of the <b>DM_CMDCONT</b> should be set as follows:</p>
+<UL>
+  <LI><B>HandlingFunction</B>&mdash;the continuation function that is to be called when binary data is received.</LI>
+  <LI><B>DataSize</B>&mdash;undefined.</LI>
+  <LI><B>Buffer</B>&mdash;a buffer to hold incoming binary data.  If this is NULL, the command dispatcher will provide a small (256-byte) buffer.</LI>
+  <LI><B>BufferSize</B>&mdash;the size of the buffer indicated by <b>Buffer</b>.</LI>
+  <LI><B>CustomData</B>&mdash;as desired.</LI>
+  <LI><B>BytesRemaining</B>&mdash;the number of remaining bytes of incoming data.  If this number is zero, the command dispatcher will assume there is no more data to receive, and the continuation function will not be called again.  If this number is zero, the return value of the function will be sent over the connection as the result of the transaction; if this number is nonzero, the return value of the function is ignored.</LI>
+</UL>
+
+<P class="note"><B>Note</B>&nbsp;&nbsp;&nbsp;If <b>DataSize</b> is zero on entry, <b>BytesRemaining</b> must be zero on exit to indicate that the binary transaction is complete.  Failure to set <b>BytesRemaining</b> to zero in this case may result in loss of synchronization between the Xbox and the client.</P>
+
+<P class="note"><B>Note</B>&nbsp;&nbsp;&nbsp;There is no provision in the protocol for early termination of the binary transfer due to errors, other than for loss of the connection.  If an error is detected during receipt of the data, the handling function must continue to accept data.  Failure to do so may result in loss of synchronization between the Xbox and the client.</P>
+
+
+<H4>XBDM_BINRESPONSE / XBDM_MULTIRESPONSE</H4>
+
+<P class="content">Both binary response and multiline textual response are handled identically, except that at the end of multiline text data, the command dispatcher will send a dot on a line by itself to signify the end of data.  When a binary response is sent, the command handler and the client must negotiate the size of the transfer.</P>
+
+<P class="content">On exit from the command handler, the fields of the DM_CMDCONT should be set as follows:</p>
+<UL>
+  <LI><B>HandlingFunction</B>&mdash;the continuation function that is to be called to prepare data for sending.</LI>
+  <LI><B>DataSize</B>&mdash;undefined.</LI>
+  <LI><B>Buffer</B>&mdash;optionally, a buffer to hold outgoing data.  If this is NULL, the command dispatcher will provide a small (256-byte) buffer.  No data will be sent prior to the first call to the continuation function, so no data should be entered into the buffer.</LI>
+  <LI><B>BufferSize</B>&mdash;the size of the buffer indicated by <b>Buffer</b>.</LI>
+  <LI><B>CustomData</B>&mdash;any value; this value will remain constant throughout the conversation unless changed by the continuation function.</LI>
+  <LI><B>BytesRemaining</B>&mdash;any nonzero value.</LI>
+</UL>
+
+<P class="content">On entry to the continuation function, the fields of the <b>DM_CMDCONT</b> will contain the following:</p>
+<UL>
+  <LI><B>HandlingFunction</B>&mdash;the continuation function which has been called.</LI>
+  <LI><B>DataSize</B>&mdash;undefined.</LI>
+  <LI><B>Buffer</B>&mdash;the buffer to hold outgoing data, unchanged unless it was previously NULL.</LI>
+  <LI><B>BufferSize</B>&mdash;the size of the buffer, unchanged unless <b>Buffer</b> was previously NULL.</LI>
+  <LI><B>CustomData</B>&mdash;unchanged.</LI>
+  <LI><B>BytesRemaining</B>&mdash;unchanged, unless the connection was unexpectedly terminated.  In that case, the continuation function will not be called again.</LI>
+</UL>
+
+<P class="content">On exit from the continuation function, if there is data to be sent, the fields of the <b>DM_CMDCONT</b> should be set as follows:</p>
+<UL>
+  <LI><B>HandlingFunction</B>&mdash;the continuation function that is to be called to prepare data for sending.</LI>
+  <LI><B>DataSize</B>&mdash;the number of bytes to be sent.  If this is set to &ndash;1, then the data in Buffer will be sent as a NULL-terminated string, with a newline appended to the transmission.</LI>
+  <LI><B>Buffer</B>&mdash;the data to be sent.</LI>
+  <LI><B>BufferSize</B>&mdash;as desired.</LI>
+  <LI><B>CustomData</B>&mdash;as desired.</LI>
+  <LI><B>BytesRemaining</B>&mdash;any nonzero value.</LI>
+</UL>
+
+<P class="content">If there is data to be sent, the function should return any success code.  If the function returns XBDM_ENDOFLIST, the transfer will be assumed to be complete, and if the continuation was invoked with XBDM_MULTILINE, the command dispatcher will send a dot on a line by itself.  If the function returns any error code other than XBDM_ENDOFLIST, the command dispatcher will forcibly terminate the connection without calling the continuation function again.</P>
+
+
+
+<h4>Requirements</h4>
+
+<p class="content">
+<b>Header:</b> Declared in XbDm.h
+<br><b>Import Library:</b> Use XbDm.lib
+</p>
+
+<H4>See Also</H4>
+<P class="content">
+<a href="xbox_lrf_debugapi_function_dmregistercommandprocessorex.htm">DmRegisterCommandProcessorEx</a>,
+<a href="xbox_lrf_debugapi_function_dmregisterthreadedcommandprocessor.htm">DmRegisterThreadedCommandProcessor</a>
+</P>
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

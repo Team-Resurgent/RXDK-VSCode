@@ -1,0 +1,350 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Downloader Enum BLOB Tool (DlEnum)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Downloader Enum BLOB Tool (DlEnum)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+<MSHelp:Keyword Index="K" Term="enumeration data for content packages"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Downloader Enum BLOB Tool (DlEnum)</h1>
+            <p>The Downloader Enum BLOB Tool (DlEnum) builds enumeration data that describes content packages for use with the <a href="xbox_Live_Downloading_Manager.htm">Content Download Manager</a>.
+            </p>
+        <h2><a name="IDAYAEV"></a>
+                Usage
+            </h2>
+<pre class="clsCode">
+USAGE: dlenum input_desc_file
+</pre>
+    <p>
+                The 'dlenum' tool takes the specified input file, and produces a number of 
+                different output files:
+            </p><dl>
+                <dt>BuildOffer Meta-Data File</dt> <dd>content.xbx</dd>
+
+                <dt>Details Files</dt> <dd>details.0.bin details.2.bin, etc</dd>
+
+
+                <dt>Enum BLOBs</dt> <dd>enum.0.bin enum.2.bin etc</dd>
+
+                <dt>Run_buildoffer.cmd</dt> <dd>A command file to run the BuildOffer tool for 
+                this content package. You can run this file directly or cut and paste parts of 
+                this file into your own scripts</dd>
+            </dl>
+<p>
+                (In the preceding descriptions, 0 specifies the default language, other numbers 
+                indicate Dash language codes.)
+            </p><p>
+                Use the BuildOffer tool to turn these files into a content package.
+            </p><h2><a name="IDAWBEV"></a>
+                Example Input File
+            </h2>
+<pre class="clsCode">
+
+[package]
+OutputFile="\x2\test.xcp"
+ContentFolder="C:\xbox\private\sdktools\content\dlenum"
+
+[MetaData]
+Premium="No"
+TitleID="0xFFFFFFFF"
+OfferingID="0xFFFFFFFF00000000"
+BitFlags="0xffffffff"
+
+
+; North America
+OfferRegions.0="103,0,0,TaxNotIncluded" ; US
+OfferRegions.1="16,0,0,TaxNotIncluded"  ; Canada
+
+; Japan
+OfferRegions.2="53,0,0,TaxNotIncluded"	; Japan
+
+; Europe
+OfferRegions.3="35,0,0,TaxNotIncluded"	; England
+OfferRegions.4="24,0,0,TaxNotIncluded"	; France
+OfferRegions.5="34,0,0,TaxNotIncluded"	; Germany
+OfferRegions.6="90,0,0,TaxNotIncluded"	; Sweden
+OfferRegions.7="50,0,0,TaxNotIncluded"	; Italy
+OfferRegions.8="8,0,0,TaxNotIncluded"		; Belgium
+OfferRegions.9="74,0,0,TaxNotIncluded"	; Netherlands
+OfferRegions.10="31,0,0,TaxNotIncluded"	; Spain
+OfferRegions.11="25,0,0,TaxNotIncluded"	; Denmark
+OfferRegions.12="32,0,0,TaxNotIncluded"	; Finland
+OfferRegions.13="5,0,0,TaxNotIncluded"	; Austria
+OfferRegions.14="44,0,0,TaxNotIncluded"	; Ireland
+
+ActivationDate="3/1/2002"
+
+AdminFriendlyName="Sample Content Package Friendly Name"
+
+
+[Display]
+;
+; Default language
+; 
+DisplayName="Default Name"
+DashDisplayName="Dash Name"
+Description="Description"
+Image="input\abutton.bmp"
+;ImageAlpha=""
+
+[Display.fr]
+DisplayName="French Name"
+DashDisplayName="French Dash Name"
+Description="French Description"
+Image="input\bbutton.bmp"
+
+[Display.ja]
+DisplayName="Japanese Name"
+DashDisplayName="Japanese Dash Name"
+Description="Description"
+Image="input\bbutton.bmp"
+</pre>
+    <h2><a name="IDA2BEV"></a>
+                Input File Description
+            </h2>
+<p>
+                The section describes the format and contents of the dlenum.exe input file.
+            </p><p>
+                The input file is a Unicode text file. The file format uses square brackets to 
+                specify sections, and lines of the form
+            </p><p>
+                Field="Value"
+            </p><p>
+                to specify values. Quotes are required around values.
+            </p><p>
+                Lines that begin with ';' or a '#' are treated as comments and ignored.
+            </p><p>
+                Following are descriptions of the sections and values in the input file.
+            </p><dl>
+
+                <dt>OutputFile</dt> <dd>[Required] Specifies the output xcp file.</dd>
+
+                <dt>ContentFolder</dt> <dd>[Required] Specifies the path to the directory that 
+                contains the content for the package</dd>
+
+                <dt>Premium</dt> <dd>[Required] Specifies whether the offering is for premium 
+                content. A value of "Yes" means the content is premium. A value of "No" means 
+                the content is free.</dd>
+
+                <dt>TitleID</dt> <dd>[Required] Specifies the 32-bit Hexadecimal Title ID for 
+                the title with which this content should be used.</dd>
+
+                <dt>OfferingID</dt> <dd>[Required] Specifies the 64-bit Hexadecimal Offering ID 
+                for this content package.  The upper 32 bits should be the same as the TitleID.</dd>
+
+                <dt>BitFlags</dt> <dd>
+                    <p>
+                        [Required] Specifies a bitflag value that identifies the version of the title 
+                        with which this content should be used. The bitflag allows you to filter content 
+                        based on region or title version.
+                    </p>
+
+                    <p>
+                        For example, if the content should be downloaded only by the Japanese version of 
+                        the game, then create a Japanese bitflag value such as 0x01000000.  Then, when 
+                        launching downloader.xbe from the Japanese version of the game, pass in this 
+                        value in the <b>dwBitFilter</b> member of the <a href="LD_DOWNLOADER.htm">LD_DOWNLOADER</a> 
+                        structure.
+                    </p>
+
+                    <p>
+                        You can specify additional bitflag values for other versions of the title.
+                    </p>
+
+                    <p>
+                        If this content should be available to all versions of the title, specify: 
+                        0xffffffff.
+                    </p>
+                </dd>
+
+
+                <dt>OfferRegions.N</dt> <dd>
+                    <p>
+                        [Required] Specifies price information for regions in which the content is 
+                        offered. Content is also filtered based on the user's billing region.  A user (playing 
+                        any version of the game) can download content only if they in the correct 
+                        billing region for the content. For example, a US gamer playing an imported 
+                        Japanese game on an imported Japanese Xbox console could download content only 
+                        if the content is available in the US billing region.
+                    </p>
+
+                    <p>
+                        Most content packages should be available in all billing regions.  Filtering 
+                        should be done using the BitFlags value described previously.  To create a 
+                        content package for each continent, you need to use the -S option on buildoffer.
+                    </p>
+
+                    <p>
+                        The format of the region information for each region is as follows: &lt;Country 
+                        ID&gt;,&lt;price whole&gt;,&lt;price fractional&gt;,&lt;tax type&gt;
+                    </p>
+
+                    For free content, the whole and fractional price must also be zero. Leading and 
+                    trailing whitespaces are not allowed before and after arguments. Tax type must 
+                    be set to 'NotApplicable'.
+
+                    If the content is premium, then the whole and fractional prices must be set to 
+                    the appropriate values. The correct tax type must also be specified. Valid 
+                    values are: TaxNotIncluded | TaxIncluded | GSTIncluded | VATIncluded | 
+                    TaxNotApplicable
+
+                    Contact your account manager if you need more information about setting up 
+                    offering regions.</dd>
+
+
+                <dt>ActivationDate</dt> <dd>[Required] Specifies the data this offer becomes 
+                valid. This value determines the order in which content is listed - more recent 
+                activation dates are listed first. This value should almost always be a date in 
+                the past.</dd>
+
+                <dt>AdminFriendlyName</dt> <dd>[Required] Specifies the name used by the Xbox 
+                Live operations staff to refer to this content package. This name should be in 
+                English.</dd>
+
+                <dt>OfferLocations="1.2.3.4:3074/content/content.xcp"</dt> <dd>[Optional] 
+                Specifies a download URL for the content package. This URL should be in the form:
+                    <p>
+                        "&lt;IP Address&gt;[:&lt;Port&gt;]/&lt;URI of package&gt;"
+                    </p>
+
+                    <p>
+                        The extension of the package should be .xcp
+                    </p>
+
+                    <p>
+                        This value is for publishers who want to host their own download servers. If 
+                        this value is not specified, the package defaults to an Xbox-owned content-download 
+                        server on PartnerNet. Note that all content hosted on PartnerNet may be 
+                        downloaded and viewed by other partners. You should consider hosting anything 
+                        confidential on your own servers.
+                    </p>
+                </dd>
+
+                <dt>DisplayName, Description</dt>
+
+                <dd>
+
+                    <p>
+                        [Required] The DisplayName is one line of text that appears in Downloader's list of content 
+                        available for download. The Description appears beneath the image that 
+                        represents this particular piece of content. The Description supports a small 
+                        set of HTML formatting, as follows:
+                    </p>
+
+                    <ul>
+                        <li>&lt;b&gt; <i>bold text</i>&lt;/b&gt; produces bold text.</li>
+                        <li>&lt;br&gt; produces a line break.</li>
+                    </ul>
+
+                    <p>
+                        Example:
+                    </p>
+
+                    
+<pre class="clsCode">
+DisplayName="My Online Content"
+Description="This description&lt;br&gt;"
+"has &lt;b&gt;bold&lt;/b&gt; text and&lt;br&gt;"
+"line breaks.&lt;br&gt;"
+</pre>
+    
+
+
+                    <p>
+                        In addition, you may specify alternate display names and descriptions for 
+                        different languages. If the console that is running Downloader is set to use a 
+                        language that you have not provided, Downloader displays the default name and 
+                        description, as described in the preceding example. The following table outlines 
+                        the keywords you should use for each of the different languages:
+                    </p>
+
+                    <table>
+                        <tr>
+                            <th>Language</th>
+<th>Display Name</th>
+<th>Description</th>
+                        </tr>
+                        <tr>
+                            <td>English</td>
+                            <td>DisplayName_EN</td>
+                            <td>Description_EN</td>
+                        </tr>
+                        <tr>
+                            <td>Japanese</td>
+                            <td>DisplayName_JA</td>
+                            <td>Description_JA</td>
+                        </tr>
+                        <tr>
+                            <td>German</td>
+                            <td>DisplayName_DE</td>
+                            <td>Description_DE</td>
+                        </tr>
+                        <tr>
+                            <td>French</td>
+                            <td>DisplayName_FR</td>
+                            <td>Description_FR</td>
+                        </tr>
+                        <tr>
+                            <td>Spanish</td>
+                            <td>DisplayName_ES</td>
+                            <td>Description_ES</td>
+                        </tr>
+                        <tr>
+                            <td>Italian</td>
+                            <td>DisplayName_IT</td>
+                            <td>Description_IT</td>
+                        </tr>
+                        <tr>
+                            <td>Korean</td>
+                            <td>DisplayName_KO</td>
+                            <td>Description_KO</td>
+                        </tr>
+                        <tr>
+                            <td>Chinese</td>
+                            <td>DisplayName_ZH</td>
+                            <td>Description_ZH</td>
+                        </tr>
+                        <tr>
+                            <td>Portuguese</td>
+                            <td>DisplayName_PT</td>
+                            <td>Description_PT</td>
+                        </tr>
+                    </table>
+
+                    <p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Keep the following in mind when using DlEnum:
+                        <ul>
+                            <li>Downloader does not perform any word-wrapping on the description text, so 
+                            you need to manually insert line breaks with the &lt;br&gt; tag.</li>
+                            <li>The input file must contain Unicode-formatted text. The DlEnum tool does not 
+                            understand ANSI text files.</li>
+                            <li>Because Downloader displays the Description in a proportional font, there is 
+                            no way to determine ahead of time if Description text will fit in the allotted 
+                            space. You should preview the text in the <b>Content Download Manager</b> 
+                            to make sure it fits.</li>
+                        </ul>
+                    </p></dd>
+
+            </dl>
+<h4><a name="seealso"></a>See Also</h4>
+            <p>
+                <a href="xbox_Live_Downloading_Finding.htm">Finding New Content</a>, <a href="xbox_Live_Downloading_Manager.htm">Content Download Manager</a>
+            </p>
+        <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

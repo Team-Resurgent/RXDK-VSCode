@@ -1,0 +1,82 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>VirtualQuery</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="VirtualQuery">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="VirtualQuery"/>
+<MSHelp:Keyword Index="F" Term="VirtualQuery"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_virtualquery"></A>VirtualQuery</H1>
+
+<P>The <B>VirtualQuery</B> function provides information about a range of pages in the virtual address space of the title. </P>
+
+<PRE class=syntax><B>DWORD VirtualQuery(
+  LPCVOID</B><I> lpAddress</I><B>,                   </B>// address of region
+<B>  PMEMORY_BASIC_INFORMATION</B><I> lpBuffer</I><B>,  </B>// information buffer
+<B>  DWORD</B><I> dwLength</I>                       // size of buffer
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>lpAddress</I></DT>
+
+<DD>[in] Pointer to the base address of the region of pages to be queried. This value is rounded down to the next page boundary. Xbox system software uses a page size of 4 KB.</DD>
+
+<DT><I>lpBuffer</I></DT>
+
+<DD>[out] Pointer to a <A HREF="memman_0yr6.htm">MEMORY_BASIC_INFORMATION</a> structure in which information about the specified page range is returned. </DD>
+
+<DT><I>dwLength</I></DT>
+
+<DD>[in] Specifies the size, in bytes, of the buffer pointed to by the <I>lpBuffer</I> parameter. 
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>The return value is the actual number of bytes returned in the information buffer. </P>
+
+<H4>Remarks</H4>
+
+<P><B>VirtualQuery</B> provides information about a region of consecutive pages beginning at a specified address that share the following attributes: 
+
+<UL>
+	<LI>The state of all pages is the same with MEM_COMMIT, MEM_RESERVE, MEM_FREE, or MEM_PRIVATE.</LI>
+
+	<LI>If the initial page is not free, all pages in the region are part of the same initial allocation of pages reserved by a call to the <B>VirtualAlloc</B> function.</LI>
+
+	<LI>The access of all pages is the same with PAGE_READONLY, PAGE_READWRITE, PAGE_NOACCESS, PAGE_EXECUTE, PAGE_EXECUTE_READ, PAGE_EXECUTE_READWRITE, PAGE_GUARD, PAGE_NOCACHE, or PAGE_WRITECOMBINE.</LI>
+</UL>
+
+<P>The function determines the attributes of the first page in the region and then scans subsequent pages until it has scaned the entire range of pages or encounters a page with a nonmatching set of attributes. The function returns the attributes and the size, in bytes, of the region of pages with matching attributes. For example, if there is a 40-MB region of free memory, and <B>VirtualQuery</B> is called on a page that is 10 MB into the region, the function will obtain a state of MEM_FREE and a size of 30 MB. </P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p><H4>See Also</H4>
+<P> 
+
+<a href="xbox_mt_xtl_sll_memory_management_functions.htm">Memory Management Functions</a> | 
+<A HREF="memman_0yr6.htm">MEMORY_BASIC_INFORMATION</a>,  <A HREF="memman_6im0.htm">VirtualQueryEx</a></P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>XTL String Data Types</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XTL String Data Types"/>
+<MSHelp:Keyword Index="F" Term="XTL String Data Types"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR></TR>
+</TABLE>
+<!--**********************************-->
+
+<H2 class="heading"><A NAME=""></A>XTL String Data Types</H2>
+
+<P>The LPTSTR and TCHAR data types represent a string and a character, respectively, that can be compiled for either ANSI or Unicode.  These types are used in the documentation for functions that implement both ANSI and Unicode versions.</P>
+
+<P>Most string operations for Unicode can be written by using the same logic used for handling the ANSI character set, except that the basic unit of operation is a 16-bit character instead of an 8-bit (1-byte) character. The XTL header files provide several type definitions to make it possible to create sources that can be compiled for Unicode or the ANSI character set.</P>
+
+<P>The following example shows the method used in the header files to define three sets of data types: a set of generic type definitions that can compile for either ANSI or Unicode, and two sets of specific type definitions. The first set of specific type definitions is for use with the ANSI character set, and the other is for use with Unicode (or wide) characters.</P>
+
+<PRE>// Generic types 
+ 
+#ifdef UNICODE 
+    typedef wchar_t TCHAR; 
+#else 
+    typedef char TCHAR; 
+#endif 
+ 
+typedef TCHAR * LPTSTR, *LPTCH; 
+ 
+// 8-bit character-specific 
+ 
+typedef char CHAR; 
+typedef CHAR *LPSTR, *LPCH; 
+ 
+// Unicode-specific (wide characters) 
+ 
+typedef wchar_t WCHAR; 
+typedef WCHAR *LPWSTR, *LPWCH; </PRE>
+
+<P>The letter <I>T</I> in a type definition designates a generic type that can be compiled for either ANSI or Unicode. The letter <I>W</I> in a type definition designates a wide-character (Unicode) type. For the actual implementation of this method, see the tchar.h header file. </P>
+
+<P>The generic data types can be compiled for Unicode by defining UNICODE before the include statements for the header files, or during compilation. To compile the code for ANSI, omit the UNICODE definition.</P>
+
+<P>You can use the specific data types WCHAR and CHAR to refer to wide and ANSI characters, respectively, whether UNICODE is defined or not.  These specific types are especially important because of the mixed string type model that the XTL uses.<P>
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

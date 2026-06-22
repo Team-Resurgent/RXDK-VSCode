@@ -1,0 +1,39 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>What is Matchmaking?</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="What is Matchmaking?"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>What is Matchmaking?</h1>
+<p>The Xbox <i>Live</i> matchmaking service enables game titles to exchange information about currently running, network-enabled game sessions. When an Xbox hosts an online game session through Xbox <i>Live</i>, it uses the matchmaking functions to provide the Xbox <i>Live</i> with information about its session. Other Xbox consoles running the same title can also use matchmaking funcitons to query the service for appropriate online game sessions for the player to join.</p><h2><a name="IDAVIIV"></a>Determine the Attributes of Your Game</h2>
+<p>Game session information the Xbox <i>Live</i> service resides in databases containing attributes that describe each session. The first step in implementing matchmaking is to determine the attributes that are necessary to describe your title. When an Xbox hosts a game session on Xbox <i>Live</i>, the attributes you select differentiate that game session from all other game sessions on the service. These attributes are also used by your title when a player is looking for an existing game to join.</p><p>When you design the set of attributes your title uses, keep in mind that the attributes must enable querying instances of your title to distinguish between different types and levels of online game sessions. For example, it is wise to enable beginners to avoid having to play with those who are extremely skilled with your game, if they so desire. The attributes you select must also enable players to differentiate between various types of play. For instance, some players may want to play cooperatively (if your game allows it), while others prefer to play competitively. Further, some players may like capture-the-flag style gameplay while others prefer deathmatch. The attributes your title uses helps players discover the supported types of gameplay sessions. The following are examples of attributes your games can use.</p><ul>
+				<li>Game type (for example, deathmatch vs. capture the flag)</li>
+				<li>Required skill level to be in this game</li>
+				<li>Average skill of players in this session</li>
+				<li>Map or level</li>
+				<li>Voice peripheral required</li>
+				<li>Voice peripheral turned off</li>
+				<li>Language spoken</li>
+			</ul>
+<p>Attributes pertain to the game session as a whole. They do not contain player-specific information. If you want matchmaking queries to contain data specific to the current players in the game session, aggregate the player data into a single attribute. For example, instead of storing the current world ranking of each player in a game session, store the highest or average world rank of all players as a single session attribute. If non-combinable player attributes are truly needed, titles can obtain them from the individual game host consoles after they've received the matchmaking query results.</p><p>Attributes are represented by the <a href="XONLINE_ATTRIBUTE.htm">XONLINE_ATTRIBUTE</a> structure. Each attribute is identified by a unique <b>DWORD</b> value. In addition to uniquely identifying the attribute, this value also specifies the type of attribute. The attribute value is stored in the <b>dwAttributeID</b> member of the <b>XONLINE_ATTRIBUTE</b> structure.</p><p>An attribute has one of three possible data types: integer, string, or binary object (BLOB). An integer, or <b>ULONGLONG</b>, occupies eight bytes. A string is Unicode encoded, is NULL terminated, and has a maximum size (including the NULL character) of 400 wide characters (800 bytes). A binary object is not NULL terminated; the <b>dwLength</b> member of the <b>XONLINE_ATTRIBUTE</b> structure contains the length of the binary object. A binary object has a maximum size of 800 bytes.</p><h2><a name="IDAFKIV"></a>Public and Private Slots</h2>
+<p>In addition to attribute values, the number of players an online game session can accommodate also affects the matchmaking process. Your game specifies the maximum number of players by setting the number of available slots. Player slots can be public or private. The title that is hosting the session determines how many of each type of slot is available. Title can let the player choose to have only public slots, only private slots, or a combination of both. Game titles must regularly update the matchmaking service with the number of occupied public and private slots for the session. They must do the same for the number of available public and private slots. Use the <a href="XOnlineMatchSessionCreate.htm">XOnlineMatchSessionCreate</a> and <a href="XOnlineMatchSessionUpdate.htm">XOnlineMatchSessionUpdate</a> functions to provide the service with this information.</p><p>A player who finds and joins a session through a matchmaking query occupies a public slot. A matchmaking query returns only those online game sessions where the number of public slots is greater than or equal to the number of authenticated users and guests on the querying Xbox console.</p><p>A player who joins a session at the invitation of a player already in the session, or who joins from a friends list, occupies a private slot. For private online game sessions (sessions that have only private slots), it is still necessary to call the <b>XOnlineMatchSessionCreate</b> function to obtain a session ID with which to invite other players. For more information on invitations, see <a href="xbox_Live_Friends_Inviting.htm">Inviting Friends to Play a Game</a>.</p><h2><a name="IDAZKIV"></a>Asynchronous Xbox Live Task Architecture</h2>
+<p>The Xbox <i>Live</i> matchmaking functions, like other Xbox <i>Live</i> services, use an asynchronous online task architecture. In this architecture, an online task is not complete when the function returns. Instead, the function returns immediately with a task handle. Work is performed on the online task whenever the <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> function is called with this task handle. This is called "pumping the task handle." The return value of <b>XOnlineTaskContinue</b> indicates whether the task is complete. For more information about the asynchronous Xbox <i>Live</i> task architecture, see <b>XOnlineTaskContinue</b>.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

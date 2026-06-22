@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>MoveFileWithProgress</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="MoveFileWithProgress">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="MoveFileWithProgress"/>
+<MSHelp:Keyword Index="F" Term="MoveFileWithProgress"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_movefilewithprogress"></A>MoveFileWithProgress</H1>
+
+<P>The <B>MoveFileWithProgress</B> function moves a file or directory. <B>MoveFileWithProgress</B> is equivalent to the <A HREF="filesio_9oe0.htm">MoveFileEx</A> function, except that <B>MoveFileWithProgress</B> allows you to provide a callback function that receives progress notifications. </P>
+
+<PRE class=syntax><B>BOOL MoveFileWithProgress(
+</B>  <B>LPCSTR</B><I> lpExistingFileName</I>,             // file name
+  <B>LPCSTR</B><I> lpNewFileName</I>,                  // new file name
+  <B>LPPROGRESS_ROUTINE</B><I> lpProgressRoutine</I>,  // callback function
+  <B>LPVOID</B><I> lpData</I>,                         // parameter for callback
+  <B>DWORD</B><I> dwFlags</I>                          // move options
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>lpExistingFileName</I></DT>
+
+<DD>[in] Pointer to a null-terminated string that names an existing file or directory on the local machine. 
+</DD>
+
+<DT><I>lpNewFileName</I></DT>
+
+<DD>[in] Pointer to a null-terminated string containing the new name of the file or directory.
+
+<P>When moving a file, <I>lpNewFileName</I> can be on a different file system or drive. If <I>lpNewFileName</I> is on another drive, you must set the MOVEFILE_COPY_ALLOWED flag in <I>dwFlags</I>.
+
+
+<P>When moving a directory, <I>lpExistingFileName</I> and <I>lpNewFileName</I> must be on the same drive.
+</DD>
+
+<DT><I>lpProgressRoutine</I></DT>
+
+<DD>[in] Pointer to a <A HREF="filesio_3fj9.htm">CopyProgressRoutine</A> callback function that is called each time another portion of the file has been moved. The callback function can be useful if you provide a user interface that displays the progress of the operation. This parameter can be NULL. </DD>
+
+<DT><I>lpData</I></DT>
+
+<DD>[in] Specifies an argument that <B>MoveFileWithProgress</B> passes to the <B>CopyProgressRoutine</B> callback function. This parameter can be NULL. </DD>
+
+<DT><I>dwFlags</I></DT>
+
+<DD>[in] Specifies how to move the file. This parameter can be one or more of the following values.
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=36%>Value</TH>
+<TH align=left width=64%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=36%>MOVEFILE_COPY_ALLOWED</TD>
+<TD width=64%>If the file is to be moved to a different volume, the function simulates the move by using the <A HREF="filesio_0x9h.htm">CopyFile</A> and <A HREF="filesio_5n8l.htm">DeleteFile</A> functions. 
+</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=36%>MOVEFILE_REPLACE_EXISTING</TD>
+<TD width=64%>If a file named <I>lpNewFileName</I> exists, the function replaces its contents with the contents of the <I>lpExistingFileName</I> file.
+<P>This value cannot be used if <I>lpNewFileName</I> or <I>lpExistingFileName</I> names a directory. </P>
+</TD>
+</TR>
+</TABLE><BR>
+
+</DD>
+</DL>
+
+<H4>Return Value</H4>
+
+<P>If the function succeeds, the return value is nonzero. </P>
+
+<P>If the function fails, the return value is zero. To get extended error information, call <A HREF="errors_3uwi.htm">GetLastError</A>. </P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p>
+
+<H4>See Also</H4>
+<P>
+
+<A HREF="xbox_mt_xtl_sll_file_io_functions.htm">File I/O Functions</A> | 
+<A HREF="filesio_4qt4.htm">CopyFileEx</A>,
+<A HREF="filesio_9oe0.htm">MoveFileEx</A>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

@@ -1,0 +1,137 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>WriteFileGather</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="WriteFileGather">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="WriteFileGather"/>
+<MSHelp:Keyword Index="F" Term="WriteFileGather"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_writefilegather"></A>WriteFileGather</H1>
+
+<P>The <B>WriteFileGather</B> function gathers data from a set of buffers and writes the data to a file, and is designed for both overlapped and non-overlapped operation.</P>
+
+<P>After the write operation has been completed, the file pointer is adjusted by the number of bytes actually written, except when the file is opened with FILE_FLAG_OVERLAPPED. If the file handle was created for overlapped input and output (I/O), the application must adjust the position of the file pointer after the write operation is finished.</P>
+
+<PRE class=syntax><B>BOOL WriteFileGather(
+  HANDLE</B><I> hFile</I><B>,                          </B>// handle to file
+<B>  FILE_SEGMENT_ELEMENT </B><I>aSegmentArray</I><B>[ ], </B>// array of buffer pointers
+<B>  DWORD</B><I> nNumberOfBytesToWrite</I><B>,           </B>// number of bytes to write
+<B>  LPDWORD</B><I> lpNumberOfBytesWritten</I><B>,        </B>// number of bytes written
+<B>  LPOVERLAPPED</B><I> lpOverlapped              </I>// overlapped buffer
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>hFile</I></DT>
+
+<DD>[in] Handle to the file to write to.  This file handle must have been created using GENERIC_WRITE to specify write access to the file, and FILE_FLAG_NO_BUFFERING to specify non-cached I/O.</P>
+
+<P>For overlapped write operations, <I>hFile</I> can be a handle opened with the FILE_FLAG_OVERLAPPED flag.  For the write to be performed asynchronously, the size of the file cannot grow during the operation.  See the <B>Remarks</B> section below for more details.</P>
+
+
+</DD>
+
+<DT><I>aSegmentArray</I></DT>
+
+<DD>[out] Pointer to an array of <B>FILE_SEGMENT_ELEMENT </B>pointers to buffers. The function gathers the data it writes to the file from this set of buffers. 
+
+<P>Each buffer must be at least the size of a system memory page and must be aligned on a system memory page size boundary. The system will write one system memory page of data from each buffer that a <B>FILE_SEGMENT_ELEMENT</B> pointer points to.
+
+
+<P>The function gathers the data from the buffers in a sequential manner: it writes data to the file from the first buffer, and then from the second buffer, and then from the next, until there is no more data to write.
+
+
+<P>The final element of the array must be a 64-bit NULL pointer.
+
+
+
+<P class=note><B><I>Note</I></B>&nbsp;&nbsp;The array must contain one member for each system memory page&#8211;sized chunk of the total number of bytes to write to the file, plus one member for the final NULL pointer. For example, if the number of bytes to read is 40 KB and the system page size is 4 KB, this array must have 10 members for data plus one member for the final NULL member for a total of 11 members.
+
+</DD>
+
+<DT><I>nNumberOfBytesToWrite</I></DT>
+
+<DD>[in] Specifies the total number of bytes to write; each element of <I>aSegmentArray</I> contains a one-page chunk of this total. Because the file must be opened with FILE_FLAG_NO_BUFFERING, the number of bytes to write must be a multiple of the sector size of the file system on which the file resides.
+
+<P>If <I>nNumberOfBytesToWrite</I> is zero, <B>WriteFileGather</B> does not truncate or extend the file. To truncate or extend a file, use the <A HREF="filesio_18bp.htm">SetEndOfFile</A> function. However, if <I>nNumberOfBytesToWrite</I> is not zero and the offset and length of the write place data beyond the current end of the file, <B>WriteFileGather</B> will extend the file.
+</DD>
+
+<DT><I>lpNumberOfBytesWritten</I></DT>
+
+<DD>[out] Pointer to the variable that receives the number of bytes written. <B>WriteFile</B> sets this value to zero before doing any work or error checking. 
+
+<P>If <I>lpOverlapped</I> is NULL, <I>lpNumberOfBytesWritten</I> cannot be NULL. If <I>lpOverlapped</I> is not NULL, <I>lpNumberOfBytesWritten</I> can be NULL. If this is an overlapped write operation, you can get the number of bytes written by calling <A HREF="synchro_75v8.htm">GetOverlappedResult</A>. If <I>hFile</I> is associated with an I/O completion port, you can get the number of bytes written by calling <A HREF="filesio_071v.htm">GetQueuedCompletionStatus</A>.
+</DD>
+
+<DT><I>lpOverlapped</I></DT>
+
+<DD>[in] Pointer to an <A HREF="synchro_8tf6.htm">OVERLAPPED</A> data structure.  This structure is required if <I>hFile</I> was opened with FILE_FLAG_OVERLAPPED.
+
+<P>If <I>hFile</I> was opened with FILE_FLAG_OVERLAPPED, the <I>lpOverlapped</I> parameter must not be NULL. It must point to a valid <B>OVERLAPPED</B> structure. If <I>hFile</I> was opened with FILE_FLAG_OVERLAPPED and <I>lpOverlapped</I> is NULL, the function can incorrectly report that the write operation is complete.
+
+<P>If <I>lpOverlapped</I> is not NULL, the write operation starts at the offset specified in the <B>OVERLAPPED</B> structure.</P> 
+
+<P>If <I>lpOverlapped</I> is NULL, the write operation starts at the current file position.</P> 
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is nonzero.</P>
+
+<P>If the function fails, the return value is zero. To get extended error information, call the <A HREF="errors_3uwi.htm">GetLastError</A> function.</P>
+
+<P>If the function returns before the write operation has completed, the function returns zero, and <B>GetLastError</B> returns ERROR_IO_PENDING.</P>
+
+<H4>Remarks</H4>
+
+<P>For the write operation to be performed asynchronously, the size of the file specified by <I>hFile</I> cannot grow during the <B>WriteFileGather</B> operation.  If the file is not already large enough to hold the data being written, the file will grow but the entire write operation will be performed synchronously.  If asynchronous operation is desired, then, before calling <B>WriteFileGather</B>, set the size of the target file to be large enough to contain all data that will be written to the file during the operation.  The <A HREF="filesio_8iwi.htm">SetFilePointer</A> and <A HREF="filesio_18bp.htm">SetEndOfFile</A> functions can be used for this purpose, as shown in the following example (where <I>dwSize</I> is the desired size):</P>
+
+<PRE>#define ONE_KILOBYTE	1024
+SetFilePointer( hFile, dwSize + ONE_KILOBYTE, NULL, FILE_BEGIN );
+SetEndOfFile( hFile );</PRE>
+
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p>
+
+<H4>See Also</H4>
+<P>
+
+<A HREF="xbox_mt_xtl_sll_file_io_functions.htm">File I/O Functions</A> | 
+<A HREF="filesio_7wmd.htm">CreateFile</A>,
+<A HREF="filesio_8iwi.htm">SetFilePointer</A>,
+<A HREF="filesio_18bp.htm">SetEndOfFile</A>,
+<A HREF="synchro_75v8.htm">GetOverlappedResult</A>,
+<A HREF="filesio_071v.htm">GetQueuedCompletionStatus</A>,
+<A HREF="synchro_738k.htm">HasOverlappedIoCompleted</A>,
+<A HREF="synchro_8tf6.htm">OVERLAPPED</A>,
+<A HREF="filesio_39id.htm">ReadFile</A>,
+<A HREF="filesio_0660.htm">ReadFileEx</A>,
+<A HREF="filesio_2c36.htm">ReadFileScatter</A>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

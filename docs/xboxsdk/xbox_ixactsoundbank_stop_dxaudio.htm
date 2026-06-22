@@ -1,0 +1,85 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>IXACTSoundBank::Stop</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="F" Term="Stop"/>
+<MSHelp:Keyword Index="K" Term="Stop (IXACTSoundBank)"/>
+<MSHelp:Keyword Index="K" Term="IXACTSoundBank::Stop"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>IXACTSoundBank::Stop</h1>
+<p>Stops a sound cue.  For manual release cues, frees associated resources.</p>
+<pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>Stop(</b>
+    <b>DWORD</b> <i>dwSoundCueIndex</i><b>,</b>
+    <b>DWORD</b> <i>dwFlags</i><b>,</b>
+    <b>PXACTSOUNDCUE</b> <i>pSoundCue</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+			<dt><i>dwSoundCueIndex</i></dt>
+				<dd>[in]  Sound cue index to stop.  Specify XACT_SOUNDCUE_INDEX_ALL to stop all sound cues.  Use XACT_SOUNDCUE_INDEX_UNUSED to indicate that the cue is specified in <i>pSoundCue</i> rather than by index; otherwise, <i>pSoundCue</i> must be NULL.</dd>
+			
+			<dt><i>dwFlags</i></dt>
+				<dd>[in]  Flags affecting playback.  Can be zero or the following:</dd>
+				<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+					
+					<tr>
+<td>XACT_FLAG_SOUNDCUE_FLUSH</td>
+<td>Specifies that all queued cues on the same layer as the specified cue should be flushed. If a stop notification has been registered, all flushed cues will signal that they have stopped.</td>
+</tr>
+					<tr>
+<td>XACT_FLAG_SOUNDCUE_IMMEDIATE</td>
+<td>Specifies that the sound should terminate immediately, ignoring any envelope data.  With the addition of envelopes, the default behavior is to have the sound play out through the end of the release envelope or waveform.</td>
+</tr>
+				</table>
+			
+			<dt><i>pSoundCue</i></dt>
+				<dd>[in]  A pointer to an IXACTSoundCue to stop. If this parameter is specified, the <i>dwSoundCueIndex</i> parameter must be XACT_SOUNDCUE_INDEX_UNUSED.</dd>
+				<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Once <b>Stop</b> has been called, this pointer is invalid and should not be used. Calling <a href="xbox_ixactsoundbank_play_dxaudio.htm">IXACTSoundBank::Play</a> will provide a new pointer.</p>
+			
+		</dl>
+<h4><a name="return"></a>Return Values</h4>
+            <p>Returns DS_OK if successful; returns an error code otherwise.</p>
+        <h4><a name="remarks"></a>Remarks</h4>
+			<p>When calling <b>Stop</b>, the default behavior is to play the audio to completion as specified by the sound designer. To stop the sound immediately, use the XACT_FLAG_SOUNDCUE_IMMEDIATE flag.</p>
+			<p>For <b>Stop</b> to work properly, cues need not be created as manual release cues. However, because cues are terminated or released during the <a href="xbox_xactenginedowork_dxaudio.htm">XACTEngineDoWork</a> call, the title should process stop notifications <i>before</i> calling <b>XACTEngineDoWork</b>. This will help ensure that <b>Stop</b> is called only on cues that are valid and have not yet been released.</p>
+			<p>Titles must call <b>Stop</b> to release sound cue pointers returned by <a href="xbox_ixactsoundbank_playex_dxaudio.htm">PlayEx</a>, <b>Play</b>, <a href="xbox_ixactsoundbank_prepareex_dxaudio.htm">PrepareEx</a>, or <a href="xbox_ixactsoundbank_prepare_dxaudio.htm">Prepare</a>.  For sound cues that play to completion, call <b>Stop</b> when the cue's stop notification arrives.  Sound cue pointers are not returned (and need not be released) if XACT_FLAG_SOUNDCUE_AUTORELEASE was specified when the cue was prepared or played.</p>
+			<p>For non-zero latency streaming sounds, you must wait for the notification eXACTNotification_StreamDataAvailable on a playing sound cue before calling <b>Stop</b> to stop that sound cue.</p>
+			<p>Note that when a Stop notification arrives, the XACT_FLAG_NOTIFICATION_SOUNDCUE_DESTROYED flag in the <a href="xbox_xactnotificationdescription_dxaudio.htm">XACT_NOTIFICATION_DESCRIPTION</a>, if set, indicates that the cue has already been freed by XACT, and no calls can be made using the <b>pSoundCue</b> pointer returned in that structure.</p>
+		<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in XACT.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use XACTEng.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+			<a href="xbox_ixactsoundbank_play_dxaudio.htm">IXACTSoundBank::Play</a>,
+			<a href="xbox_xactnotificationdescription_dxaudio.htm">XACT_NOTIFICATION_DESCRIPTION</a>
+		</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

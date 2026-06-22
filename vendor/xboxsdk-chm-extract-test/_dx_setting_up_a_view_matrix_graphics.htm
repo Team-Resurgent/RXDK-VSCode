@@ -1,0 +1,82 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Setting Up a View Matrix</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Setting Up a View Matrix"/>
+<MSHelp:Keyword Index="F" Term="Setting Up a View Matrix"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_setting_up_a_view_matrix_graphics"></A>Setting Up a View Matrix</H1>
+
+<P>The <A HREF="_dx_d3dxmatrixlookatlh_graphicsd3dx.htm">D3DXMatrixLookAtLH</A> and <A HREF="_dx_d3dxmatrixlookatrh_graphicsd3dx.htm">D3DXMatrixLookAtRH</A> helper functions create a view matrix based on the camera location and a look-at point. They use the <A HREF="_dx_d3dxvec3cross_graphicsd3dx.htm">D3DXVec3Cross</A>, <A HREF="_dx_d3dxvec3dot_graphicsd3dx.htm">D3DXVec3Dot</A>, <A HREF="_dx_d3dxvec3normalize_graphicsd3dx.htm">D3DXVec3Normalize</A>, and <A HREF="_dx_d3dxvec3subtract_graphicsd3dx.htm">D3DXVec3Subtract</A> helper functions.</P>
+
+<P>The following code example, illustrates the <B>D3DXMatrixLookAtLH</B> function.</P>
+
+<PRE>D3DXMATRIX* WINAPI D3DXMatrixLookAtLH
+    ( D3DXMATRIX *pOut, const D3DXVECTOR3 *pEye, const D3DXVECTOR3 *pAt,
+      const D3DXVECTOR3 *pUp )
+{
+#if DBG
+    if(!pOut || !pEye || !pAt || !pUp)
+        return NULL;
+#endif
+
+    D3DXVECTOR3 XAxis, YAxis, ZAxis;
+
+    // Get the z basis vector, which points straight ahead; the
+    // difference from the eye point to the look-at point. This is the 
+    // direction of the gaze (+z).
+    D3DXVec3Subtract(&amp;ZAxis, pAt, pEye);
+
+    // Normalize the z basis vector.
+    D3DXVec3Normalize(&amp;ZAxis, &amp;ZAxis);
+
+    // Compute the orthogonal axes from the cross product of the gaze 
+    // and the pUp vector.
+    D3DXVec3Cross(&amp;XAxis, pUp, &amp;ZAxis);
+    D3DXVec3Normalize(&amp;XAxis, &amp;XAxis);
+    D3DXVec3Cross(&amp;YAxis, &amp;ZAxis, &amp;XAxis);
+
+    // Start building the matrix. The first three rows contain the 
+    // basis vectors used to rotate the view to point at the look-at 
+    // point. The fourth row contains the translation values. 
+    // Rotations are still about the eyepoint.
+    pOut-&gt;_11 = XAxis.x;
+    pOut-&gt;_21 = XAxis.y;
+    pOut-&gt;_31 = XAxis.z;
+    pOut-&gt;_41 = -D3DXVec3Dot(&amp;XAxis, pEye);
+
+    pOut-&gt;_12 = YAxis.x;
+    pOut-&gt;_22 = YAxis.y;
+    pOut-&gt;_32 = YAxis.z;
+    pOut-&gt;_42 = -D3DXVec3Dot(&amp;YAxis, pEye);
+
+    pOut-&gt;_13 = ZAxis.x;
+    pOut-&gt;_23 = ZAxis.y;
+    pOut-&gt;_33 = ZAxis.z;
+    pOut-&gt;_43 = -D3DXVec3Dot(&amp;ZAxis, pEye);
+
+    pOut-&gt;_14 = 0.0f;
+    pOut-&gt;_24 = 0.0f;
+    pOut-&gt;_34 = 0.0f;
+    pOut-&gt;_44 = 1.0f;
+
+    return pOut;
+}
+</PRE>
+
+<P>As with the world transformation, you call the <A HREF="_dx_idirect3ddevice8_settransform_graphics.htm">IDirect3DDevice8::SetTransform</A> method to set the view transformation, specifying the D3DTS_VIEW flag in the first parameter.</P>
+
+<P class=note><B><i>Performance Optimization Note</i></B>&nbsp;&nbsp; Microsoft&#174; Direct3D&#174; uses the world and view matrices that you set to configure several internal data structures. Each time you set a new world or view matrix, the system recalculates the associated internal structures. Setting these matrices frequently&mdash;for example, 20,000 times per frame&mdash;is computationally expensive. You can minimize the number of required calculations by concatenating your world and view matrices into a world-view matrix that you set as the world matrix, and then setting the view matrix to the identity. Keep cached copies of individual world and view matrices so that you can modify, concatenate, and reset the world matrix as needed. For clarity, Direct3D samples rarely employ this optimization.</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

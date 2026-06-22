@@ -1,0 +1,91 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Building an Autoupdate Package</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Building an Autoupdate Package"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Building an Autoupdate Package</h1>
+<p>To build an autoupdate package for submission, select 
+<b>Build</b> from the <b>Action</b> menu. Before you 
+build, it is a good idea to check the following.</p><ul>
+	<li><b>The file default.xbe exists.</b> Every autoupdate 
+	package requires the file default.xbe. It does not matter whether this 
+	file has changed.</li>
+	<li><b>Every XBE file is linked with XOnlines.lib.</b> All 
+	XBE files in the autoupdate must be linked to this library, not just 
+	default.xbe.</li>
+	<li><b>No XBE is linked to a debug XTL.</b> Debug versions 
+	of the XTL cannot be used in the final build of an autoupdate package.</li>
+	<li><b>No XBE is linked to a debug version of XOnlines.lib.</b> </li>
+	<li><b>Major XTL version number match.</b> The XTLs used by 
+	both the original game and the autoupdate must have the same major 
+	version numbers. The minor version numbers do not have to be the same.</li>
+	<li><b>The XTLs include all mandatory QFEs.</b> The XTLs you 
+	use for your autoupdate must have all of the mandatory QFEs for that major 
+	version number.</li>
+</ul>
+<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Certificate information is not required for the updated executable 
+files in your autoupdate package. It is added after you submit the 
+autoupdate.</p><p>If you build your autoupdate more than a few months after the original 
+game release, you will probably get a warning indicating that some of the 
+XTLs you're using are not approved. This occurs because the XTLs used by 
+both the original game and the autoupdate must have the same major version 
+numbers, and the major version numbers expire after a few months. Getting 
+this warning does not prevent you from building your autoupdate. However, 
+it is strongly recommended that you use the 
+<a href="xbox_tool_ImageCert.htm">ImageCert tool</a> to verify that this 
+is the reason that you are getting the warning. If ImageCert 
+indicates that the XTLs your autoupdate uses are expired, it can still pass 
+certification. If ImageCert gives any other reason that your XTLs are 
+not approved, the autoupdate won't pass certification. It's best to address 
+this problem before submission.</p><p>It is possible to use the XLAST autoupdate feature to add data files that 
+were not originally distributed on the DVD. To accomplish this:</p><ol>
+	<li>Create a zero-byte file with the desired name in the original game 
+	directory.</li>
+	<li>Put the new file in the updated game directory.</li>
+	<li>Manually add the updated file to the XLAST autoupdate project.</li>
+</ol>
+<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;An autoupdate cannot add new XBEs. It can only add new data files.</p><p>In addition, you can use the XLAST autoupdate feature to update non-XBE files
+that were originally distributed on the DVD. To accomplish this:</p><ol>
+	<li>Manually add the updated file to the XLAST autoupdate project.</li>
+	<li>Change all code that opens the file to reference T:\U$\file instead of 
+	D:\file.</li>
+	<li>Use the content signature API functions to ensure T:\U$\file is not 
+	corrupt.</li>
+</ol>
+<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;It is not recommended that you update large data files because a copy of 
+the entire updated data file is placed on the Xbox hard disk.</p><p>There is a known issue in the XLAST autoupdate feature that improperly allows 
+you to add files that are outside the original game build directory. In this 
+situation, XLAST generates the following errors when building the project.</p>
+<pre class="clsCode">
+Building autoupdate
+Error generating file-list.
+Build Failed
+</pre>
+    <p>This same issue causes XLAST to generate the following error messages when 
+testing the project locally.</p>
+<pre class="clsCode">
+Installing files on Xbox
+Install Failed. Please ensure you have configured a default Xbox and it is turned on.
+Install Succeeded
+</pre>
+    <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

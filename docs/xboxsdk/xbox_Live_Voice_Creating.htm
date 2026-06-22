@@ -1,0 +1,75 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Creating and Using Voice Media Objects</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Creating and Using Voice Media Objects"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Creating and Using Voice Media Objects</h1>
+<p>After a game has determined that a headset is attached to the player's Xbox, it must create the appropriate Xbox Media Objects (XMOs) to enable voice chats. To create voice device XMOs, call <a href="XVoiceCreateMediaObject.htm">XVoiceCreateMediaObject</a> or <a href="XVoiceCreateMediaObjectEx.htm">XVoiceCreateMediaObjectEx</a>. The primary difference between these functions is that <b>XVoiceCreateMediaObjectEx</b> enables you to specify a callback function that is invoked as a <a href="x_mt_softarch_kernel_dpc.htm">kernel deferred procedure call (DPC)</a>.</p><p>Games obtain input from the microphone and send output to the earphones by calling the <a href="xbox_jc_xmediaobject_process_xmo.htm">XMediaObject::Process</a> function. Your game must supply input and output buffers for this function. The buffers consist of arrays of <a href="xbox_jc_xmediapacket_xmo.htm">XMEDIAPACKET</a> structures.</p><ul>
+<li><a href="#IDABBEV">Sending Voice Packets to Xbox Live</a></li><li><a href="#IDATCEV">Recieving Voice Packets from Xbox Live</a></li></ul>
+<h2><a name="IDABBEV"></a>Sending Voice Packets to Xbox Live</h2>
+<p>Before sending voice packets across the Internet to another player on Xbox <i>Live</i>, titles first must encode the packets. This requires the creation of a voice encoder XMO. Voice encoder XMOs compress voice data for transmission. Create a voice encoder XMO with one of the following functions.</p><table>
+				<tr>
+					<th>Function</th>
+					<th>Description</th>
+				</tr>
+				<tr>
+					<td><a href="XVoiceCreateOneToOneEncoder.htm">XVoiceCreateOneToOneEncoder</a></td>
+					<td>Creates a one-to-one encoder that takes one input channel, compressess the data, and sends the compressed results to the output channel.</td>
+				</tr>
+				<tr>
+					<td><a href="XVoiceCreateTwoToTwoEncoder.htm">XVoiceCreateTwoToTwoEncoder</a></td>
+					<td>Creates a two-to-two encoder that takes two input channels, compressess the data from each of these input channels, and sends the compressed results to the corresponding output channels.</td>
+				</tr>
+				<tr>
+					<td><a href="XVoiceCreateFourToFourFullEncoder.htm">XVoiceCreateFourToFourFullEncoder</a></td>
+					<td>Creates a four-to-four encoder that takes four input channels, compressess the data from each, and sends the compressed results to the corresponding output channels.</td>
+				</tr>
+				<tr>
+					<td><a href="XVoiceCreateFourToFourRoundRobinEncoder.htm">XVoiceCreateFourToFourRoundRobinEncoder</a></td>
+					<td>Creates a four-to-four encoder that takes four input channels, selects two of these input channels to compress, and sends the compressed results to the corresponding output channels. On the following frame, the two input channels that were not compressed previously are given priority over the two that were compressed.</td>
+				</tr>
+			</table>
+<p>These functions provide a pointer to an <a href="xbox_IXVoiceEncoder_xmo.htm">IXVoiceEncoder</a> interface. Call the <a href="xbox_IXVoiceEncoder_ProcessMultiple_xmo.htm">IXVoiceEncoder::ProcessMultiple</a> function to compress the data packets and send them across the network.</p><h2><a name="IDATCEV"></a>Recieving Voice Packets from Xbox Live</h2>
+<p>To receive voice packets from another player on Xbox <i>Live</i>, titles must create at least one voice decoder XMO to decompress the voice data and store it in an output array. Call one of the following functions to create the voice decoder XMO.</p><table>
+				<tr>
+					<th>Function</th>
+					<th>Description</th>
+				</tr>
+				<tr>
+					<td><a href="XVoiceCreateOneToOneDecoder.htm">XVoiceCreateOneToOneDecoder</a></td>
+					<td>Creates a one-to-one decoder that decompresses a single input channel and outputs the result to a single channel.</td>
+				</tr>
+				<tr>
+					<td><a href="XVoiceCreateTwoToOneMixingDecoder.htm">XVoiceCreateTwoToOneMixingDecoder</a></td>
+					<td>Creates a two-to-one decoder that decompresseses two input channels and outputs the result to a single channel. </td>
+				</tr>
+				<tr>
+					<td><a href="XVoiceCreateFourToOneMixingDecoder.htm">XVoiceCreateFourToOneMixingDecoder</a></td>
+					<td>Creates a four-to-one decoder that decompresseses four input channels and outputs the result to a single channel.</td>
+				</tr>
+				<tr>
+					<td><a href="XVoiceCreateFourToFourFullDecoder.htm">XVoiceCreateFourToFourFullDecoder</a></td>
+					<td>Creates a four-to-four decoder that decompresses a four input channels and outputs the result to the corresponding channels.</td>
+				</tr>
+			</table>
+<p>These functions provide a pointer to an <a href="xbox_IXVoiceDecoder_xmo.htm">IXVoiceDecoder</a> interface. Call the <b>IXVoiceEncoder::ProcessMultiple</b> function to decompress the data packets and send them to the appropriate channels.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

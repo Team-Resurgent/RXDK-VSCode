@@ -1,0 +1,66 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Setting and Retrieving Global Parameters</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Setting and Retrieving Global Parameters"/>
+<MSHelp:Keyword Index="F" Term="Setting and Retrieving Global Parameters"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H3><A NAME="_dx_setting_and_retrieving_global_parameters_dxaudio"></A>Setting and Retrieving Global Parameters</H3>
+
+<P>By using the <A HREF="_dx_idirectmusicperformance8_setglobalparam_dxaudio.htm"><B>IDirectMusicPerformance8::SetGlobalParam</B></A> and <A HREF="_dx_idirectmusicperformance8_getglobalparam_dxaudio.htm"><B>IDirectMusicPerformance8::GetGlobalParam</B></A> methods, you can set and retrieve parameters that affect the entire performance rather than a single track.</P>
+
+<P>The parameter to be set or retrieved is identified by a GUID in the <I>rguidType</I> parameter of the method. Each parameter is associated with a particular data type, whose size is given in the <I>dwSize</I> parameter. The predefined GUIDs and their data types are shown in the following table.</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width="45%">Parameter type GUID (<I>rguidType</I>)<BR>
+and Data (*<I>pParam</I>)</TH>
+<TH align=left width="55%">Description</TH>
+</TR>
+
+
+<TR VALIGN="top">
+<TD width="45%">GUID_PerfMasterGrooveLevel<BR>
+<B>char</B></TD>
+<TD width="55%">The master <A HREF="g.htm#_dx_groove_level_glos" CLASS="POPUP"><B>groove level</B></A> is a value that is always added to the groove level established by the command track. The resulting value is adjusted, if necessary, to fall within the range from 1 through 100.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width="45%">GUID_PerfMasterTempo<BR>
+<B>float</B></TD>
+<TD width="55%">The master tempo is a scaling factor applied to the tempo by the final output tool. By default, it is 1. A value of 0.5 would halve the tempo, and a value of 2.0 would double it. This value can be set in the range from DMUS_MASTERTEMPO_MIN through DMUS_MASTERTEMPO_MAX.
+<P CLASS="note"><B><I>Note</I></B>&nbsp;&nbsp;&nbsp;&nbsp;Global tempo changes do not take effect immediately. Instead, they wait until transport time, which is approximately 500 ms.</P>
+</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width="45%">GUID_PerfMasterVolume<BR>
+<B>long</B></TD>
+<TD width="55%">
+<p style="margin-top:0mm">The master volume is an amplification or attenuation factor, in hundredths of a decibel, applied to the default volume of the entire performance and any other performances. For the Xbox synthesizer, the allowed range is +20 dB to &#8211;200 dB, but the useful range is +10 dB to &#8211;100 dB.</p>
+
+<p>The master volume can be greater than zero, because all of the different volume modifiers are added up (including the MIDI volume, velocity, expression, pan, various articulations, and the volume set in the DLS instrument). Since these are all zero or less, if they add up to less than zero, a positive master volume will still boost. However, it is not a good idea to go too much above zero, since the total volume can not go over zero, so it will clamp.</p>
+</TD>
+
+</TR>
+</TABLE>
+
+<P>Applications can also use custom types of global parameters. To create a new type, establish a GUID and a data type for it. </P>
+
+<P>When a parameter is set, the performance allocates memory for the data in a linked list of items identified by GUID. The data can be retrieved by a call to <B>IDirectMusicPerformance8::GetGlobalParam</B>. </P>
+
+<P class=note><B>Note</B>&nbsp;&nbsp;Even predefined parameters have to be set before they can be retrieved. <B>GetGlobalParam</B> fails if <B>SetGlobalParam</B> has never been called on the parameter.</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

@@ -1,0 +1,104 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Creating Authenticated Connections to Xbox Live</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Creating Authenticated Connections to Xbox Live"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Creating Authenticated Connections to Xbox Live</h1>
+<p>Before Xbox <i>Live</i> functionality can be carried out, a user account (an Xbox <i>Live</i> identity) must be created. User accounts are created and maintained using the Xbox Dashboard. As a result, no functions are exposed, and the title developer is not burdened with such tasks.  Title developers should assume, for the purpose of this document, that at least one user account has been created and resides on one of the following: 1) the XBox console, or 2) an Xbox Memory Unit (MU) inserted into a controller that is connected to the XBox console.</p><p>The Xbox <i>Live</i> authentication functions enable a title to enumerate the Xbox <i>Live</i> users who have their information stored either on the local Xbox hard disk or on the Xbox MUs. The title can then prompt the users to find out which one of the stored users they are represented by, and optionally ask for the pass code if one is required. The title can then proceed to log on to the Xbox <i>Live</i> authentication system using the user identities just obtained. Titles must prevent multiple players on the same Xbox from using the same account; each player must have a valid user account or log in as a guest of another player. After logging on, the title can then use the other functions to communicate with various Xbox <i>Live</i> services.</p><p>The underlying implementation of these authentication functions uses the Kerberos protocol to establish mutual trust between each authenticated Xbox game session and various Xbox <i>Live</i> services. Kerberos is a standard protocol widely deployed and used for authentication purposes. For more information on Kerberos and other standards, please visit 
+<a href="http://www.ietf.org" target="_blank">http://www.ietf.org</a>.</p><ul>
+<li><a href="#IDAIBEV">Authentication Functions</a></li><li><a href="#IDAAEEV">Constants</a></li><li><a href="#IDA3EEV">Enumerating Local Xbox Live Users</a></li><li><a href="#IDAJFEV">Collecting User Input for the Pass Code</a></li><li><a href="#IDAZFEV">Log On to Xbox Live</a></li><li><a href="#IDARGEV">Getting the List of Users Currently Logged On</a></li><li><a href="#IDA3HEV">Updating a Game Title</a></li><li><a href="#IDAYAFV">Obtaining Service Info and Ticket</a></li><li><a href="#IDAEBFV">Connecting on a Friend's Console</a></li><li><a href="#IDAMBFV">Sharing an Account</a></li></ul>
+<h2><a name="IDAIBEV"></a>Authentication Functions</h2>
+<p>The following list contains the functions currently planned or implemented for Xbox <i>Live</i> authentication:</p><ul>
+</ul>
+<table>
+            	<tr>
+            		<th>Function</th>
+                    <th>Description</th>
+                    <th>Memory Usage</th>
+            	</tr>
+                <tr>
+            		<td><a href="XOnlineGetUsers.htm">XOnlineGetUsers</a></td>
+                    <td>Retrieves Xbox <i>Live</i> users stored on the local hard disk and Xbox MU.</td>
+                    <td>No</td>
+            	</tr>
+                <tr>
+            		<td><a href="XOnlineLogon.htm">XOnlineLogon</a></td>
+                    <td>Logs on to the Xbox <i>Live</i> system on behalf of the specified users and obtains tickets for the specified services.</td>
+                    <td>Yes &#8211; Allocates enough memory to hold information for all logged on services.</td>
+            	</tr>
+              <tr>
+              <td><a href="XOnlineChangeLogonUsers.htm">XOnlineChangeLogonUsers</a></td>
+              <td>Changes the set of local users logged onto the Xbox <i>Live</i> service.</td>
+                    <td>Yes &#8211; Allocates enough memory to hold information for all logged on services.</td>
+                    </tr>
+              
+                <tr>
+            		<td><a href="XOnlineTitleUpdate.htm">XOnlineTitleUpdate</a></td>
+                    <td>Downloads an updated version of this game title and reboots.</td>
+                    <td>Yes &#8211; but is freed after the asynchronous task is completed.</td>
+            	</tr>
+                <tr>
+            		<td><a href="XOnlineGetLogonUsers.htm">XOnlineGetLogonUsers</a></td>
+                    <td>Retrieves a pointer to an array of users currently logged on.</td>
+                    <td>No</td>
+            	</tr>
+                <tr>
+            		<td><a href="XOnlineGetServiceInfo.htm">XOnlineGetServiceInfo</a></td>
+                    <td>Retrieves IP, and port of a logged-on Xbox <i>Live</i> service.</td>
+                    <td>No</td>
+            	</tr>
+            </table>
+<h2><a name="IDAAEEV"></a>Constants</h2>
+<ul>
+</ul>
+<p>The following is a list of constants that are used throughout the Xbox <i>Live</i> authentication system.</p><table>
+<tr>
+<th>Value</th>
+</tr>
+                <tr>
+<td>XONLINE_NAME_SIZE</td>
+</tr>
+                <tr>
+<td>XONLINE_MAX_NAME_LENGTH</td>
+</tr>
+
+                <tr>
+<td>XONLINE_PASSCODE_LENGTH</td>
+</tr>
+                <tr>
+<td>XONLINE_MAX_LOGON_USERS</td>
+</tr>
+                <tr>
+<td>XONLINE_MAX_STORED_ONLINE_USERS</td>
+</tr>
+            </table>
+<p>The purpose of these constants is to simplify the implementation and to use a determined amount of memory.</p><h2><a name="IDA3EEV"></a>Enumerating Local Xbox Live Users</h2>
+<p>A fixed set of Xbox <i>Live</i> users (XONLINE_MAX_STORED_ONLINE_USERS to be exact) can have their information stored on the local Xbox hard disk and all mounted Xbox MUs. The <b>XOnlineGetUsers</b> function is used to retrieve all Xbox <i>Live</i> users with information stored on the local Xbox hard disk and all mounted MUs.</p><h2><a name="IDAJFEV"></a>Collecting User Input for the Pass Code</h2>
+<p>Users may enable a pass code on their Xbox <i>Live</i> account to prevent the account from being used by others. If a user enables the pass code, the title needs to collect this pass code from the player using the Xbox Controller. Each control on the controller corresponds to a byte value as specified by the <b>XONLINE_PASSCODE_TYPE</b> enumeration type. The length of the pass code is specified by the XONLINE_PASSCODE_LENGTH constant as defined in XOnline.h. The pass code must be exactly this length. The title collects the pass code from the user and compares it with the value in the <b>passcode</b> member of the <a href="XONLINE_USER.htm">XONLINE_USER</a> structure for the user. The user should be allowed to log on only if there is a match between the pass code and this value. The comparison should be made only after all the bytes of the pass code have been collected from the user. 
+            </p><h2><a name="IDAZFEV"></a>Log On to Xbox Live</h2>
+<p>The <b>XOnlineLogon</b> function is used to start an asynchronous logon process. This logon process involves communicating with the authentication server and using Kerberos to authenticate users and obtain tickets used for future communication with various requested Xbox <i>Live</i> services. The service identifiers returned by this routine can be used in various Xbox <i>Live</i> functions. <b>XOnlineLogon</b> can be called again, but all service handles from the previous logon call will be lost. Therefore, we recommend that Xbox <i>Live</i>titles first collect all user information and service names ahead of time, and then only make one logon call. If the title supports adding or removing users midway through the game, then the title will need to call <b>XOnlineChangeLogonUsers</b> again with the new set of users. Titles should prompt new users for their optional pass code but not bother users who have already logged on.</p><p><b>XOnlineLogon</b> and <b>XOnlineChangeLogonUsers</b>are NOT thread safe. Titles should avoid making a second call to either of these functions before the task for the first call has completed; otherwise, the function fails with an error of XONLINE_E_TASK_BUSY.</p><h2><a name="IDARGEV"></a>Getting the List of Users Currently Logged On</h2>
+<p>After calling <b>XOnlineLogon</b>, a title may wish to retrieve the list of logged-on players for their own use. Instead of having to store this data, titles can call <b>XOnlineGetLogonUsers</b> to achieve this.</p><p>There are no parameters to this call. The result of this call is a pointer to an array of <b>XONLINE_USER</b> structures that hold information about the players who are currently logged on. This array will always contain XONLINE_MAX_LOGON_USERS. The title must go through the individual data structures to determine whether there is a user logged on to a specific controller port. The array returned has the user's index in controller port order.  That is, the index of the array, 0&#8211;3, corresponds to the controller port, 1&#8211;4, respectively. To identify whether a user is logged in, titles need to <i>qwUserID</i>. If this is zero, no user is logged on at this controller port.  The function will return NULL when a logon has not been completed. After a logon is completed, it will always return an array, even if no users are logged on.</p><p>Test the <b>hr</b> member of the <a href="XONLINE_USER.htm">XONLINE_USER</a> structure for each user to determine if there was a logon failure specific to that user. See the reference page for <a href="XONLINE_USER.htm">XONLINE_USER</a> for a list of possible errors.</p><p>Test the <b>dwUserFlags</b> member of the <a href="xuid.htm">XUID</a> member of the <a href="XONLINE_USER.htm">XONLINE_USER</a> structure to determine any limitations that have been placed on the user's account&#8212;for example, whether the user is not allowed to use voice chat or not allowed to choose custom nicknames.</p><h2><a name="IDA3HEV"></a>Updating a Game Title</h2>
+<p>If the result code of the logon task (obtained with <a href="XOnlineLogonTaskGetResults.htm">XOnlineLogonTaskGetResults</a>) is XONLINE_E_LOGON_UPDATE_REQUIRED, the game title will need to perform an update before any Xbox <i>Live</i> gameplay can occur for this title. This update is performed by calling <b>XOnlineTitleUpdate</b>. <b>XOnlineTitleUpdate</b> will reboot the console, download the updated binaries for this game title onto the hard disk, and reboot back to the game title. Upon reboot, the title will be able to successfully logon from that point on (at least until the next update is released). Before calling <b>XOnlineTitleUpdate</b>, the game title should inform the player that an update is about to happen, and that the Xbox will reboot for the update. The player should have the option to NOT update at this time and possibly proceed with playing the game without any Xbox <i>Live</i> functionality.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;<b>XOnlineTitleUpdate</b> must occur only after a XONLINE_E_LOGON_UPDATE_REQUIRED. Titles should not directly call it without first calling <b>XOnlineLogon</b>, and then pumping the returned task until completion. Nor should titles call it if the logon task returns anything other than XONLINE_E_LOGON_UPDATE_REQUIRED.</p><h2><a name="IDAYAFV"></a>Obtaining Service Info and Ticket</h2>
+<p>After a successful logon, the title can communicate with the various logged on services to perform the desired Xbox <i>Live</i> functionality. Titles may also directly access the IP address and port of the service.</p><p>To find out information about a service to which the title is logged on, use the <b>XOnlineGetServiceInfo</b> function.</p><h2><a name="IDAEBFV"></a>Connecting on a Friend's Console</h2>
+<p>Xbox Live user accounts are stored in a special area of the Xbox hard disk. The user data package contains the secret password for the user that authenticates them against the service. This password is sent transparently to the service during sign in; users do not need to enter any passwords to sign in to Xbox Live.</p><p>A player can use the Xbox Dashboard to copy a single user account to a memory unit (MU) for use on other Xbox consoles. Because a single Xbox may support up to 16 user accounts (eight local, one per MU, two MUs on each of four controllers), and one of those 16 users may be your mischievous kid brother, users will have the option of protecting their account with a simple pass code entered using the basic controller buttons and thumbsticks.</p><h2><a name="IDAMBFV"></a>Sharing an Account</h2>
+<p>Only one player may be logged into an Xbox Live account at a time. After one user signs into an account from one machine, if another user signs in with the same account, the logon task for the first machine will return the error XONLINE_E_LOGON_KICKED_BY_DUPLICATE_LOGON. The title must then remove that user from gameplay and re-logon on any other players on the local machine using <b>XOnlineChangeLogonUsers</b>. This effectively signs the first user out of Xbox Live.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

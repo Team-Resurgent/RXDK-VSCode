@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Setting the Loader's Search Directory</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Setting the Loader's Search Directory"/>
+<MSHelp:Keyword Index="F" Term="Setting the Loader's Search Directory"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H3><A NAME="_dx_setting_the_loader_s_search_directory_dxaudio"></A>Setting the Loader's Search Directory</H3>
+
+<P>By default, the loader looks for objects in the current directory unless a full path is specified in the <B>wszFileName</B> member of the <A HREF="_dx_dmus_objectdesc_dxaudio.htm"><B>DMUS_OBJECTDESC</B></A> structure describing the object being sought. By using the <A HREF="_dx_idirectmusicloader8_setsearchdirectory_dxaudio.htm"><B>IDirectMusicLoader8::SetSearchDirectory</B></A> method, you can set a different default path for the <A HREF="_dx_idirectmusicloader8_getobject_dxaudio.htm"><B>IDirectMusicLoader8::GetObject</B></A>, and <A HREF="_dx_idirectmusicloader8_loadobjectfromfile_dxaudio.htm"><B>IDirectMusicLoader8::LoadObjectFromFile</B></A> methods. This default path can apply to all objects, or only to objects of a certain class.</P>
+
+<p>The following code example sets the search path for all DirectMusic file types.</p>
+
+<pre>
+IDirectMusicLoader8 *pLoader;
+DirectMusicCreateInstance( CLSID_DirectMusicLoader, NULL, 
+                           IID_IDirectMusicLoader8, (VOID**)&amp;pLoader );
+
+HRESULT hr;
+
+// Set the search directory for DirectMusic styles
+hr = pLoader-&gt;SetSearchDirectory(
+    GUID_DirectMusicAllTypes,
+    "d:\\allmyaudio\\",
+    FALSE):
+
+// insert handling code for the HRESULT                                   
+
+</pre>
+
+<p>After calling the code above, the title can load all of their DirectMusic content by file name, without including the full path.</p>
+
+<P>The following code example sets different search paths for segment and style files.</P>
+
+<pre>
+IDirectMusicLoader8 *pLoader;
+DirectMusicCreateInstance( CLSID_DirectMusicLoader, NULL, 
+                           IID_IDirectMusicLoader8, (VOID**)&amp;pLoader );
+
+HRESULT hr;
+
+// Set the search directory for DirectMusic styles
+hr = pLoader-&gt;SetSearchDirectory(
+    CLSID_DirectMusicStyle,
+    "d:\\myaudio\\styles\\",
+    FALSE):
+
+// insert handling code for the HRESULT                                   
+
+// Set the search directory for DirectMusic segments
+hr = pLoader-&gt;SetSearchDirectory(
+    CLSID_DirectMusicSegment,
+    "d:\\myaudio\\segments\\",
+    FALSE):
+    
+// insert handling code for the HRESULT                                   
+</pre>
+
+
+<P>After calling this function, the title can load a style or segment by file name, without including the full path. Also, the segments and styles are now organized in their own directories, which could make it easier to manage your audio content.</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

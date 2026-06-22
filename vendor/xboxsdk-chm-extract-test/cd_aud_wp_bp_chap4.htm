@@ -1,0 +1,156 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Introductory Guide to DirectMusic Producer for Xbox (DMPX)</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Introductory Guide to DirectMusic Producer for Xbox (DMPX)"/>
+<MSHelp:Keyword Index="F" Term="Introductory Guide to DirectMusic Producer for Xbox (DMPX)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1 class="heading"><A NAME=""></A>Introductory Guide to DirectMusic Producer for Xbox (DMPX)</H1>
+<p><i>By Scott Selfon, Audio Content Consultant, Content and Design Team, Xbox Advanced Technology Group</i></P>
+
+
+<p><b><i>Note</i></b>&nbsp;&nbsp; <i>Both the Microsoft&#174; DirectMusic&#174; library and its authoring tool, Microsoft&#174; DirectMusic&#174; Producer for Xbox&#174;, are "locked down" and in maintenance mode. We are not adding any features and will usually try to find workarounds for known issues rather than risk destabilizing the library. We are using our experience with DirectMusic to build the Xbox Audio Creation Tool (XACT), which is an easy to use and extremely efficient content-driven engine that will eventually be able to do most of the commonly used capabilities of DirectMusic. While DirectMusic provides unique features in the area of MIDI and DLS collection playback, including understanding of chord progressions, intensity level-based playback, content-driven variability, and scripting, its support for wave-based playback is not optimized for the Xbox. The library's origins as a PC engine often lead to difficult Xbox implementations, with somewhat indeterminate memory, disk I/O, and CPU usage. While some titles have successfully used the library, we recommend that those without successful previous experience implementing audio using DirectMusic instead consider using XACT. Though XACT will not in the near term provide support for sequenced music or awareness of advanced music concepts, it provides a much stronger solution for streaming music and ambience, as well as memory and CPU optimization for the Xbox platform. XACT has no current plans for more advanced music-based features like chords, intensity levels, or styles, though its eventual support of scripting would allow you to implement some of these yourself if you wish.</i></p>
+<h2>Introduction</h2>
+<p>This chapter gives an overview of Microsoft DirectMusic Producer for Xbox, a content authoring, auditioning, and management tool for audio on the Xbox video game system. A few brief items to keep in mind before we get started:</p>
+<ul>
+<li>Don't be misled by the word "Music" in DirectMusic. DirectMusic is a set of audio APIs that know audio signals, musical information, and advanced synthesis. The DirectMusic libraries can provide compelling solutions for ambience and one-shot sound effects as well as music.<BR><BR></li>
+<li>DirectMusic Producer is not just for authoring DirectMusic content. You can use it to help compress your ADPCM wave files, as well as author DLS collections and Microsoft&#174; DirectX&#174; Audio scripts (which run on top of DirectMusic, but can be used with linear wave files as well as more interactive or variable DirectMusic components) as well as DirectMusic content.</li>
+</ul>
+<p>For more specific information on various topics discussed here, please see the white papers and FAQs referenced in the footnotes.</p>
+<h2>Adding DirectMusic Producer to your Audio Palette</h2>
+<p>To start, we should note that you are not required to use DirectMusic Producer for strictly linear content, such as wave and Microsoft&#174; Windows Media&#174; Audio (WMA) files. Furthermore, DirectMusic Producer is intended to work with, not replace, other tools in the sound designer/composer's palette that are specialized for MIDI sequencing, wave editing, render-time effects, and so on. DirectMusic Producer understands MIDI and wave clipboard formats for transferring data to and from other applications, and has straightforward methods for importing files of these formats.<sup>1</sup> </p>
+<p>DirectMusic Producer also provides the framework for authoring content specific to Xbox, particularly DirectMusic and DirectX Audio scripting formats. Specifically, these modules of DirectMusic Producer provide the primary creation and editing environment for various types of content, including (but not limited to):</p>
+<ul>
+<li><em>Script Designer.</em> For authoring DirectX Audio scripts<sup>2</sup> </li>
+<li><em>Audiopath Designer.</em> For authoring audiopath configuration files that can create submixes for 3D positioning and effects<sup>3</sup></li>
+<li><em>DLS Designer.</em> For authoring DLS collections (Downloadable Sounds, a standard format for wavetable synthesis)</li>
+<li><em>Segment Designer.</em> For authoring DirectMusic segments (basic unit of DirectMusic content playback)</li>
+</ul>
+<h2>DirectMusic Producer for Xbox</h2>
+<p>The Xbox Development Kit (XDK) includes DirectMusic Producer for Xbox, which contains tools that allow a content creator to audition their content on Xbox hardware. These features are supported only on machines running Microsoft&#174; Windows&#174; 2000 or XP.<sup>4</sup> The Windows 2000/XP machine should be connected to an Xbox Development Kit or Xbox debug kit via a network connection or via an Xbox System Link Cable. The Xbox runs the Audio Console App, detailed below.</p>
+<h3>Audio Console Application (AudConsole.xbe)</h3>
+<p>XDK recovery disks come with an executable called Audio Console App. When launched, it displays a message explaining its function. As we'll see below, this text disappears and is replaced with pertinent information depending on which kind of connection is made from DirectMusic Producer for Xbox.</p>
+<h3>Xbox Synthesizer </h3>
+<p>Using the Xbox Synthesizer allows your Windows 2000/XP machine to communicate with the Xbox as if it were a MIDI device supporting DLS-2 wavetable instruments. Generally this will be the method used for playing back linear content from MIDI sequencers<sup>5</sup> (including DirectMusic Producer) or for quick auditioning of DLS content as you create it within DirectMusic Producer. As discussed below, its functionality is limited to DLS playback.</p>
+<p>The Xbox Synthesizer can be selected from the <b>MIDI/Performance Options</b> menu (click the MIDI port-shaped icon in the <b>Transport Options</b> toolbar).</p>
+<IMG src="images/bp4_fig2.gif" WIDTH="490" HEIGHT="392" ALT="" BORDER="0">
+<p><i><b>Illustration</b>&nbsp;&nbsp; Setting the Xbox Synthesizer to be the default synthesizer.</i></p>
+<p>The other options within the <b>PC Audio Initialization Settings</b> menu apply solely to your Windows 2000 machine; you cannot change the sampling rate of the Xbox audio hardware, which is fixed to 48 kHz, and the number of voices is related solely to the PC synthesizer.</p>
+<p>Note that if you are using DirectMusic content, the DirectMusic libraries and performance are still running on your Windows machine; only note and DLS data is actually transmitted to the Xbox Development Kit. This means in particular that only MIDI and DLS information can be heard on the XDK using the Xbox Synthesizer&#8212;if you play waves within wave tracks in segments, they will play silently. To hear waves played back within segments, choose the Xbox Experimenter. You also cannot use this method to audition DirectX Audio scripts on the Xbox hardware; the scripts themselves will be running only on the PC.</p>
+<h3>Xbox Synthesizer: PC vs. Xbox Hardware</h3>
+<p>If you were previously authoring on a Windows 2000/XP PC without an Xbox Development Kit or debug kit, we provide an option that will allow you to compare the characteristics of your sounds on the PC versus the Xbox. You can choose to listen to a software synthesizer on the PC equivalent to the Microsoft Software Synthesizer, or listen to the hardware synthesizer on the Xbox, or both simultaneously. Note that in no way is the software synthesizer intended as an emulation of the Xbox Synthesizer, it is just provided as a reference for quickly comparing how your content sounded when authored on the PC versus how it is played by the Xbox.<sup>6</sup></p>
+<p>Click <b>Configure Xbox Synthesizer</b> on the <b>Add-Ins</b> menu,</p>
+<IMG src="images/bp4_fig3.gif" WIDTH="193" HEIGHT="86" ALT="" BORDER="0"><BR><BR>
+<IMG src="images/bp4_fig4.gif" WIDTH="307" HEIGHT="103" ALT="" BORDER="0">
+<p>and then select <b>Enable Xbox Synthesizer</b> to hear content played via the Xbox hardware synthesizer, and/or <b>Enable PC Software Synthesizer</b> to hear data from your PC. </p>
+<p>You'll notice that when the Xbox Synthesizer is enabled, the Audio Console Application will show some additional information, and as audio is played, the meters will display the output levels. The connection is removed when the Xbox Synthesizer is no longer the default synthesizer.</p>
+<h3>Xbox Experimenter</h3>
+<p>The Xbox Experimenter module provides a more complete solution for auditioning DirectMusic content directly on the Xbox audio hardware. The Xbox Experimenter window is opened from the <b>Add-Ins</b> menu.</p>
+<IMG src="images/bp4_fig5.gif" WIDTH="195" HEIGHT="86" ALT="" BORDER="0"><BR><BR>
+<IMG src="images/bp4_fig6.gif" WIDTH="203" HEIGHT="402" ALT="" BORDER="0">
+
+<p><i><b>Illustration</b>&nbsp;&nbsp; The initial (unconnected) state of the Xbox Experimenter window.</i></p> 
+<p>The first thing you'll probably want to do is make sure you're going to be connecting to the correct Xbox Development Kit or debug kit. Notice the name assigned to your XDK (presented in the lower center of the XDK Launcher and changeable through the <b>Settings</b> menu). Now moving back to the PC, from the <b>Xbox</b> menu of Xbox Experimenter, click <b>Set Xbox Name</b>. In the dialog that appears, type the name of the target machine.</p>
+<IMG src="images/bp4_fig7.gif" WIDTH="348" HEIGHT="154" ALT="" BORDER="0">
+<p>From here, you can connect your Windows 2000/XP machine to the Xbox by clicking <b>Connect</b> on the <b>Xbox</b> menu. You'll notice at this point that your XDK says "Xbox Experimenter connected." You can start dragging open segments from your project tree into the <b>Primary Segments</b> or <b>Secondary Segments</b> windows. Once dragged, the segment and all files that it references are automatically runtime saved and copied to the title space of the Xbox hard disk, xt:\temp. You can change the default directory if you wish by clicking <b>Set Target Directory</b> on the <b>Xbox</b> menu in the Xbox Experimenter window.</p>
+<IMG src="images/bp4_fig8.gif" WIDTH="240" HEIGHT="80" ALT="" BORDER="0"></p>
+<p><i><b>Illustration</b>&nbsp;&nbsp; Dragging a segment from the project tree into the <b>Primary Segments</b> area of Xbox Experimenter...</i></p>
+<IMG src="images/bp4_fig9.gif" WIDTH="217" HEIGHT="402" ALT="" BORDER="0">
+<p><i><b>Illustration</b>&nbsp;&nbsp; ...copies a runtime saved version of the segment to the Xbox, along with any files it references (in this case, a wave file).</i></p>
+
+<p>Any files that are in the Runtime Embed folder of a segment are embedded as they would be in a regular runtime save, so they will not appear in the <b>Referenced Files</b> area. You can now play the segment by clicking on the small green play button to the left of the segment.</p>
+<p>You can also create standard audiopaths to play content on by right-clicking within the <b>Audiopaths</b> window. Of the most interest for now will probably be a <b>Standard Shared Stereo and Reverb</b>, so you can hear what the default reverb settings sound like. Your developer can change these settings for you at run time, though for the time being, parameters are not exposed within DirectMusic Producer.</p>
+<p>Right-clicking on the green play button for a segment will allow you to specify which audiopath to play on (for instance, playing ambience through a dry path while the music plays through a reverb path) as well as set the playback boundary for secondary segments (next measure, next marker, and so on).</p>
+<p>Remember that while you are editing a segment (or any of the content that it references) within DirectMusic Producer, playback is performed on the PC itself (unless you've set the default synthesizer to be the Xbox Synthesizer). You should always choose <b>All Files</b> on the Xbox Experimenter <b>Synchronize</b> menu option after editing to ensure the updated content is copied to the Xbox.</p>
+<p>Note that all of these Xbox Experimenter features are provided for audition purposes only; settings are not currently saved with segments for the audiopath to play them on. Similarly, content placed on the Xbox hard disk is by no means permanent; it is placed in the title section, so it is removed when the Xbox is turned off.</p>
+<h3>Xbox Synthesizer vs. Xbox Experimenter</h3>
+<p>Just to emphasize the differences between the Xbox Experimenter and the Xbox Synthesizer, any segments dragged into Xbox Experimenter are physically copied to the Xbox. Hitting play transmits a message to the Xbox, which in turn runs its own DirectMusic performance and plays segments. So Xbox Experimenter has full support for DirectMusic content, such as waves in wave tracks, variations, scripts, and so on.</p>
+<p>By comparison, the Xbox Synthesizer provides a limited way to play content onto the Xbox hardware from other DirectMusic modules (without having to drag items into Xbox Experimenter). From Segment Designer windows, DLS instruments can be triggered on the Xbox (though the DirectMusic performance is still running on the Windows 2000 machine). From DLS Designer and Wave Editor windows, waves and articulations can be edited and instantly auditioned on Xbox. But again, waves placed in wave tracks will not be heard in this mode</p>
+<p>Of course, the composer can choose to use either or both options as the content authoring situation dictates. Generally, wave-based content and DirectMusic-centric content will be best suited to Xbox Experimenter. If you are building up DLS collections and altering their articulation information, or making use of an external synthesizer to trigger DLS instruments, you will probably want to use the Xbox Synthesizer.</p>
+<h3>Other DirectMusic Producer for Xbox Features</h3>
+<p>Several other features differentiate DirectMusic Producer for Xbox from previous versions of DirectMusic Producer:</p>
+<ul>
+<li><em>Improved low-latency (&#60;10 msec) MIDI input.</em> Can be used with any WDM sound card driver. In the MIDI/Performance Options window, select <b>Super Low Latency</b>.</li>
+<li>Improved wave file import (create a segment from a wave).</li>
+<li><em>Removal of Windows-specific features.</em> General MIDI and GS instruments are now hidden (as no General MIDI collection is delivered on the Xbox). In addition, software effects (DirectX Media Objects) and unsupported audiopath settings have been removed. Arbitrary audio compression schemes supported in Windows have been removed (as DirectMusic on Xbox supports Xbox ADPCM and WMA only). For more details, see dmusprod.txt in the directory where DirectMusic Producer is installed. </li>
+</ul>
+<h3>DirectMusic Producer for Xbox and DirectMusic Engine Limitations</h3>
+<p>As discussed above, no new features are currently planned for DirectMusic Producer for Xbox or the DirectMusic library.</p> <ul>
+<li>Multichannel wave formats (linear PCM 5.1 and 4.0 wave files) are supported in the engine, but cannot be edited in DirectMusic Producer for Xbox.</li>
+<li>Authoring and real-time manipulation of Global Processor DSP effect programs and parameters can be accomplished using the DSP Builder tool.</li>
+<li>WMA encoded audio is not supported by DirectMusic.</li>
+</ul>
+<h2>Xbox Content Authoring Using Previous Versions of DirectMusic Producer</h2>
+<p>DirectMusic Producer for Xbox diverges somewhat from DirectMusic Producer 8.0 for the Windows platform. While many aspects of authoring continue to be shared by both platforms, and file formats are generally compatible, DirectMusic Producer for Xbox provides functionality specific to the Xbox, while hiding or disabling features that do not apply to Xbox. If you wish to author content using DirectMusic Producer 8.0, be aware of the differences between authoring for Xbox and for Windows, and avoid features and content that do not apply to Xbox.<sup>7</sup> Several highlights:</p>
+<ul>
+<li><em>Compression.</em> Microsoft&#174; DirectSound&#174; and DirectMusic on Xbox support adaptive differential pulse code modulation (ADPCM; specific codec TBA) and WMA. All other compressed formats will require that you use DirectSound only, and that your title deliver a third-party Xbox Media Object (software audio transform); there is no concept of codec installation.</li>
+<li><em>GM.dls.</em> Remember that Xbox does not come with a built-in General MIDI collection as Windows platforms do. All MIDI-style content should be authored using custom DLS collections.</li>
+<li><em>File formats.</em> Remember that MIDI files (.mid), bands (.bnd), and toolgraph files (.tgr) are not supported on Xbox.</li>
+<li>All audio content is upsampled in hardware to 48 kHz/24 bit for mixing, filtering, effects, 3D positioning, and playback. Beyond the size of the DirectMusic libraries and the content itself, there is no memory hit for this. And CPU usage is generally limited to 3-D positioning calculations (though actual audio signal processing is performed in hardware). </li>
+<li>There is an 8-MB limit for the total of in memory wave data (DLS collections and waves in wave tracks that are non-streaming). </li>
+</ul>
+<h2>Setting Up Previous Versions of DirectMusic Producer for Xbox Content Authoring</h2>
+<p>For authoring content using previous versions of DirectMusic Producer, the following steps should ensure that your Windows 2000 development machine<sup>8</sup> is running as closely as it can to the Xbox audio hardware. Keep in mind that CPU and memory overhead on a Windows PC will not accurately reflect the performance of the Xbox Media Communications Processor.</p>
+<ol>
+<li>Install DirectMusic Producer, available online at <a href="http://msdn.microsoft.com/" target="blank">http://msdn.microsoft.com</a>. You might also want to install the DirectMusic demo content.</li>
+<li>Launch DirectMusic Producer.</li>
+<li>Open the <b>MIDI/Performance Options</b> menu (click the <IMG src="images/gettingstarted_figure10.gif" WIDTH="27" HEIGHT="25" BORDER="0" ALT=""> icon to bring up this dialog):<BR><BR>
+
+<IMG src="images/bp4_fig1.gif" WIDTH="439" HEIGHT="350" ALT="" BORDER="0"></li>
+</ol>
+<p>Several settings are not defaults on DirectMusic Producer installation:</p>
+<ul>
+<li>In the <b>Download Status</b> options, set <b>GM Set</b> to <b>Unload</b>. Remember that GM.dls is not present on Xbox, so you should not use instruments from that collection. </li>
+<li>You can set <b>Number of Voices</b> to up to 256, though 64 is usually sufficient. </li>
+<li>Set <b>Sample Rate</b> to 48 kHz.</li>
+<li>If you want to use DirectMusic Producer to enable DLS triggering from other sequencers, set up one or more virtual MIDI drivers as detailed in the <a href="https://xds.xbox.com/BPProgInfo.asp?Page=content/cd_aud_wp_MIDItriggering.htm" target="blank">Using DirectMusic Producer to Trigger DLS Instruments from Non-DLS-Enabled Sequencers</a> white paper, and assign the driver(s) to the Echo MIDI Input Device.</li>
+</ul>
+<h2>DirectMusic Producer Reference Materials</h2>
+<p>You should now be ready to start authoring DirectMusic content for Xbox. A number of the papers on this Web site can help you get started with DirectMusic Producer.</p>
+<p><A HREF= "https://xds.xbox.com/BPProgInfo.asp?Page=content/cd_aud_wp_gettingstarted.htm" target="blank"><B>Getting Started with DirectMusic Producer: MIDI and DLS Collections</B></A>&#8212;an introduction to DirectMusic Producer that provides step-by-step information for importing MIDI files and building DLS collections.</p>
+<p><A HREF= "https://xds.xbox.com/BPProgInfo.asp?Page=content/cd_aud_dmpcomp.htm" target="blank"><B>DirectMusic Producer Components</B></A>&#8212;an overview of the various file types and segment track types that can be used to author DirectMusic content.</p>
+<p><A HREF= "https://xds.xbox.com/BPProgInfo.asp?Page=content/cd_aud_dmptut.htm" target="blank"><B>DirectMusic Producer 7.0 Tutorial</B></A>&#8212;a step-by-step tutorial to help you get started with DirectMusic Producer. (This is based on DirectX 7, so it does not discuss wave tracks. However, it's a good introduction for MIDI+DLS content creation.)</p>
+<p><A HREF= "https://xds.xbox.com/BPProgInfo.asp?Page=content/cd_aud_faq_dm.htm" target="blank"><B>DirectMusic FAQ</B></A>&#8212;questions commonly asked about DirectMusic.</p>
+<h2>Troubleshooting Content Problems</h2>
+<p>Once you've authored some content and runtime saved it,<sup>9</sup> ask your developer to try it out on the Xbox. If you're running into problems playing content that sounded fine on the PC, check for the following common issues:</p>
+<ul>
+<li>Remember to avoid using (or even having bands refer to) GM.dls instruments. If such a reference is detected on Xbox, the content will fail to load.<BR><BR></li>
+<li>That said, for a segment that uses DLS instruments, make sure your segment file does have a band track with a band, which points at the proper instruments in your DLS collection(s).</li>
+<li>Make sure all necessary files are either embedded in the segment or present on the Xbox in the same directory as the segment, for instance, wave files and DLS collections it uses, and style files (.sty). </li>
+<li>Avoid using file formats that are unsupported, such as MIDI files (.mid), separate band files (.bnd), and toolgraph files (.tgr). </li>
+<li>Avoid using wave files that are compressed using unsupported formats. Xbox does not have a codec manager, so compression schemes must be delivered with your title via a third party Xbox Media Object. DirectMusic supports linear PCM waves, a proprietary ADPCM format, and WMA. </li>
+<li>Make sure your developer is aware of the differences between DirectMusic coding on the PC and Xbox. Most significantly, threading has been removed to improve efficiency, so the developer should call <b>DirectMusicDoWork</b> every frame (&#60;50 msec). </li>
+</ul>
+
+
+<HR ALIGN="left" WIDTH="300">
+<div class="footnote"> 
+<P><SUP>1</SUP>&nbsp;For an introduction to MIDI import and DLS collection authoring using DirectMusic Producer, see the white paper <A HREF= "https://xds.xbox.com/BPProgInfo.asp?Page=content/cd_aud_wp_gettingstarted.htm" target="blank"><B>Getting Started with DirectMusic Producer: MIDI and DLS Collections</B></A>.</p>
+<P><SUP>2</SUP>&nbsp;For an introduction to DirectX Audio scripting, see the white paper <A HREF= "https://xds.xbox.com/BPProgInfo.asp?Page=content/cd_aud_wp_bridging.htm" target="blank"><B>Bridging the Content-Coding Gap: An Introduction to DirectX Audio Scripting</B></A>.</p>
+<P><SUP>3</SUP>&nbsp;Note that effects support within audiopath configuration files is not supported in Xbox System Software v1.0. Effects can still be instantiated by the developer (authored using the DSPBuilder or xgpimage tools), and audiopath outputs routed to these effects. </p>
+<P><SUP>4</SUP>&nbsp;If you need Windows 95 or Windows 98 for other software that you run, DirectMusic Producer 8.0 does run on these operating systems, but Windows 2000 is strongly recommended for Xbox content development. Xbox-specific functionality (such as Xbox Experimenter and the Xbox Synthesizer) as well as WDM sound card drivers (required for low latency MIDI recording) are not supported on Windows 9x. You might consider making your machine dual boot; for an overview of this, see <A HREF= "https://xds.xbox.com/BPProgInfo.asp?Page=content/cd_aud_wp_dualboot.htm" target="blank"><B>Dual Booting a PC (Windows 9x and Windows 2000)</B></A>.</p>
+<P><SUP>5</SUP>&nbsp;Other sequencers can use the Xbox hardware (within the confines of MIDI triggered sounds) using the process detailed in <A HREF= "https://xds.xbox.com/BPProgInfo.asp?Page=content/cd_aud_wp_MIDItriggering.htm" target="blank"><B>Using DirectMusic Producer to Trigger DLS Instruments from Non-DLS-Enabled Sequencers</B></A>.</p>
+<P><SUP>6</SUP>&nbsp;The software synthesizer is roughly equivalent to the DirectX 7 Microsoft Software Synthesizer with the addition of DLS-2 capability. As with the Microsoft Software Synthesizer provided with DirectX 8, it uses linear interpolation, which will often add aliasing to waves that are not at the performance's sample rate. You should notice no such artifacts with the Xbox hardware synthesizer, which uses multipoint polynomial interpolation. </p>
+<P><SUP>7</SUP>&nbsp;These differences are outlined in <A HREF= "cd_aud_wp_bp_chap2.htm"><B>Chapter 2&#8212;Xbox Audio Content</B></A>, from the Audio Best Practices document.</p>
+<P><SUP>8</SUP>&nbsp;See footnote 4.</p>
+<P><SUP>9</SUP>&nbsp;For details about runtime saving, file embedding, and other content integration issues, see <A HREF= "https://xds.xbox.com/BPProgInfo.asp?Page=content/cd_aud_wp_contentdelivery.htm" target="blank"><B>Delivering the Goods: File Management Tricks and Tips</B></A>.</p>
+</div>
+<SMALL>Updated Wednesday, August 28, 2002</SMALL>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

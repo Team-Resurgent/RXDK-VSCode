@@ -1,0 +1,200 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>DMUS_CURVE_PMSG</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="DMUS_CURVE_PMSG  [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="DMUS_CURVE_PMSG"/>
+<MSHelp:Keyword Index="F" Term="DMUS_CURVE_PMSG"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_dmus_curve_pmsg_dxaudio"></A>DMUS_CURVE_PMSG</H1>
+
+<P>Contains message data for a <A HREF="c.htm#_dx_curve_glos"><B>curve</B></A>.</P>
+
+<PRE class="syntax">typedef struct DMUS_CURVE_PMSG {
+    DMUS_PMSG_PART
+    MUSIC_TIME mtDuration;
+    MUSIC_TIME mtOriginalStart;
+    MUSIC_TIME mtResetDuration;
+    short      nStartValue;
+    short      nEndValue;
+    short      nResetValue;
+    WORD       wMeasure;
+    short      nOffset;
+    BYTE       bBeat;
+    BYTE       bGrid;
+    BYTE       bType;
+    BYTE       bCurveShape;
+    BYTE       bCCData;
+    BYTE       bFlags;
+    WORD       wParamType;
+    WORD       wMergeIndex; 
+} DMUS_CURVE_PMSG;
+</PRE>
+
+<DL>
+<DT><B>DMUS_PMSG_PART</B></DT>
+
+<DD>Macro for common message members. See <A HREF="_dx_dmus_pmsg_dxaudio.htm"><B>DMUS_PMSG</B></A>.</DD>
+
+<DT><B>mtDuration</B></DT>
+
+<DD>Duration of the curve. This value is in music time unless DMUS_PMSGF_LOCKTOREFTIME is present in the <B>dwFlags</B> member of <B>DMUS_PMSG_PART</B>, in which case it is in milliseconds and is unaffected by a change in tempo.</DD>
+
+<DT><B>mtOriginalStart</B></DT>
+
+<DD>Original start time. Must be set to either 0 when this message is created, or to the original start time of the curve.</DD>
+
+<DT><B>mtResetDuration</B></DT>
+
+<DD>Length of time after the end of the curve during which a reset can take place in response to an invalidation. Ignored if DMUS_CURVE_RESET is not in <B>bFlags</B>. This value is in music time unless DMUS_PMSGF_LOCKTOREFTIME is present in the <B>dwFlags</B> member of <B>DMUS_PMSG_PART</B>, in which case it is in milliseconds and is unaffected by a change in tempo.</DD>
+
+<DT><B>nStartValue</B></DT>
+
+<DD>Start value of the curve.</DD>
+
+<DT><B>nEndValue</B></DT>
+
+<DD>End value of the curve.</DD>
+
+<DT><B>nResetValue</B></DT>
+
+<DD>Value to set upon a flush or invalidation. Ignored if DMUS_CURVE_RESET is not in <B>bFlags</B>.</DD>
+
+<DT><B>wMeasure</B></DT>
+
+<DD>Measure in which this curve occurs.</DD>
+
+<DT><B>nOffset</B></DT>
+
+<DD>Offset from the <A HREF="g.htm#_dx_grid_glos" CLASS="POPUP"><B>grid</B></A> at which this curve occurs, in music time.</DD>
+
+<DT><B>bBeat</B></DT>
+
+<DD>Beat count (within a measure) at which this curve occurs.</DD>
+
+<DT><B>bGrid</B></DT>
+
+<DD><A HREF="g.htm#_dx_grid_glos" CLASS="POPUP"><B>Grid</B></A> offset from the beat at which this curve occurs.</DD>
+
+<DT><B>bType</B></DT>
+
+<DD>Type of curve. This can be one of the following values:
+
+<DL>
+<DT>DMUS_CURVET_CCCURVE</DT>
+
+<DD>Continuous controller curve (MIDI Control Change channel voice message; status byte &amp;HB<I>n</I>.).</DD>
+
+<DT>DMUS_CURVET_MATCURVE</DT>
+
+<DD>Monophonic aftertouch curve (MIDI Channel Pressure channel voice message; status byte &amp;HD<I>n</I>).</DD>
+
+<DT>DMUS_CURVET_PATCURVE</DT>
+
+<DD>Polyphonic aftertouch curve (MIDI Poly Key Pressure channel voice message, status byte &amp;HD<I>n</I>).</DD>
+
+<DT>DMUS_CURVET_PBCURVE</DT>
+
+<DD>Pitch-bend curve (MIDI Pitch Bend channel voice message; status byte &amp;HE<I>n</I>).</DD>
+
+<DT>DMUS_CURVET_RPNCURVE</DT>
+
+<DD><A HREF="r.htm#_dx_rpn_glos"><B>RPN</B></A> curve of type defined in <B>wParamType</B>.</DD>
+
+<DT>DMUS_CURVET_NRPNCURVE</DT>
+
+<DD><A HREF="n.htm#_dx_nrpn_glos"><B>NRPN</B></A> curve of type defined in <B>wParamType</B>.</DD>
+
+<DT></DT>
+</DL>
+</DD>
+
+<DT><B>bCurveShape</B></DT>
+
+<DD>Shape of curve. This can be one of the following values:
+
+<DL>
+<DT>DMUS_CURVES_EXP</DT>
+
+<DD>Exponential curve shape.</DD>
+
+<DT>DMUS_CURVES_INSTANT</DT>
+
+<DD>Instant curve shape (beginning and end of curve happen at essentially the same time).</DD>
+
+<DT>DMUS_CURVES_LINEAR</DT>
+
+<DD>Linear curve shape.</DD>
+
+<DT>DMUS_CURVES_LOG </DT>
+
+<DD>Logarithmic curve shape.</DD>
+
+<DT>DMUS_CURVES_SINE </DT>
+
+<DD>Sine curve shape.</DD>
+</DL>
+</DD>
+
+<DT><B>bCCData</B></DT>
+
+<DD>Controller number, if <B>bType</B> is DMUS_CURVET_CCCURVE.</DD>
+
+<DT><B>bFlags</B></DT>
+
+<DD>Can be zero, or one or more of the following values.
+
+<DL>
+<DT>DMUS_CURVE_RESET</DT>
+
+<DD>The value of <B>nResetValue</B> must be set when the time is reached or an invalidation occurs because of a transition. If this flag is not set, the curve stays permanently at the new value.</DD>
+
+<DT>DMUS_CURVE_START_FROM_CURRENT</DT>
+
+<DD>Ignore <B>nStartValue</B> and start the curve at the current value. Implemented for volume, expression, pitch bend, filter cuttoff, pan, and mod wheel. See Remarks.</DD>
+</DL>
+</DD>
+
+<DT><B>wParamType</B></DT>
+
+<DD>MIDI parameter number. This value is significant only if DMUS_PMSGF_DX8 is present in the <B>dwFlags</B> member of the <B>DMUS_PMSG</B> part of this structure. See Remarks.</DD>
+
+<DT><B>wMergeIndex</B></DT>
+
+<DD>Merge index. Supported for pitch bend, volume, and expression controllers. This value is significant only if DMUS_PMSGF_DX8 is present in the <B>dwFlags</B> member of the <B>DMUS_PMSG</B> part of this structure. See Remarks.</DD>
+</DL>
+
+<H4>Remarks</H4>
+
+<P>An RPN or NRPN curve type in <B>wParamType</B> is stored as two bytes with seven significant bits. For example, if the MSB is 0x23 and the LSB is 0x74, the value in <B>wParamType</B> is 0x2374. </P>
+
+<P>Data in <B>nStartValue</B>, <B>nEndValue</B>, and <B>nResetValue</B> is limited to 14 bits. For MIDI data consisting of two seven-bit bytes, the value is stored as a word with the upper two bits empty.</P>
+
+<P>All curves with <B>wMergeIndex</B> of 0 override each other. If <B>wMergeIndex</B> is another value, the values generated by the curve are added to the values for merge index 0. For example, if an application uses curves with 0 and 3, the 0 curves always replace each other but add to the 3 curves, and the 3 curves also always replace each other and add to the 0 curves. </P>
+
+<P>The DMUS_CURVE_START_FROM_CURRENT flag does not cause the current controller value to be saved in the message. Therefore tools do not have access to this data unless they store the last known value.</P>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in dmusici.h.</P>
+
+<H4>See Also</H4>
+
+<P><A HREF="_dx_idirectmusicperformance8_sendpmsg_dxaudio.htm"><B>IDirectMusicPerformance8::SendPMsg</B></A>, <A HREF="_dx_curves_dxaudio.htm"><B>Curves</B></A> </P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

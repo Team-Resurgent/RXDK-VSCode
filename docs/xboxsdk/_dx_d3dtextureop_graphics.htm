@@ -1,0 +1,257 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>D3DTEXTUREOP</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="D3DTEXTUREOP">
+<META NAME="MS-HKWD" CONTENT="D3DTOP_FORCE_DWORD">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="D3DTEXTUREOP"/>
+<MSHelp:Keyword Index="F" Term="D3DTEXTUREOP"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_d3dtextureop_graphics"></A>D3DTEXTUREOP</H1>
+
+<P>Defines per-stage texture-blending operations. </P>
+
+<PRE class=syntax>typedef enum _D3DTEXTUREOP
+{
+    D3DTOP_DISABLE              = 1,      
+    D3DTOP_SELECTARG1           = 2,      
+    D3DTOP_SELECTARG2           = 3,
+
+    D3DTOP_MODULATE             = 4,      
+    D3DTOP_MODULATE2X           = 5,      
+    D3DTOP_MODULATE4X           = 6,      
+    
+    D3DTOP_ADD                  =  7,   
+    D3DTOP_ADDSIGNED            =  8,   
+    D3DTOP_ADDSIGNED2X          =  9,   
+    D3DTOP_SUBTRACT             = 10,   
+    D3DTOP_ADDSMOOTH            = 11,   
+    
+    D3DTOP_BLENDDIFFUSEALPHA    = 12, 
+    D3DTOP_BLENDTEXTUREALPHA    = 14, 
+    D3DTOP_BLENDFACTORALPHA     = 15, 
+    D3DTOP_BLENDTEXTUREALPHAPM  = 16, 
+    D3DTOP_BLENDCURRENTALPHA    = 13, 
+	
+    D3DTOP_PREMODULATE            = 17,     
+    D3DTOP_MODULATEALPHA_ADDCOLOR = 18,     
+    D3DTOP_MODULATECOLOR_ADDALPHA = 19,     
+    D3DTOP_MODULATEINVALPHA_ADDCOLOR = 20,  
+    D3DTOP_MODULATEINVCOLOR_ADDALPHA = 21,  
+	
+    D3DTOP_DOTPRODUCT3          = 22,
+	
+    D3DTOP_MULTIPLYADD          = 23, 
+    D3DTOP_LERP                 = 24,
+	 
+    D3DTOP_BUMPENVMAP           = 25, 
+    D3DTOP_BUMPENVMAPLUMINANCE  = 26, 
+
+    D3DTOP_MAX                  = 27,
+	
+    D3DTOP_FORCE_DWORD = 0x7fffffff,
+} D3DTEXTUREOP;
+</PRE>
+
+<H4>Constants</H4>
+
+<DL>
+<DT><B>Control members</B></DT>
+
+<DT>D3DTOP_DISABLE</DT>
+
+<DD>Disables output from this texture stage and all stages with a higher index. To disable texture mapping, set this as the color operation for the first texture stage (stage 0). Alpha operations cannot be disabled when color operations are enabled. Setting the alpha operation to D3DTOP_DISABLE when color blending is enabled causes undefined behavior.</DD>
+
+<DT>D3DTOP_SELECTARG1</DT>
+
+<DD>Use this texture stage's first color or alpha argument, unmodified, as the output. This operation affects the color argument when used with the D3DTSS_COLOROP texture-stage state, and the alpha argument when used with D3DTSS_ALPHAOP.
+
+<P><IMG SRC="images/topfrm1.gif" ALT="" BORDER=0>
+</DD>
+
+<DT>D3DTOP_SELECTARG2</DT>
+
+<DD>Use this texture stage's second color or alpha argument, unmodified, as the output. This operation affects the color argument when used with the D3DTSS_COLOROP texture stage state, and the alpha argument when used with D3DTSS_ALPHAOP.
+
+<P><IMG SRC="images/topfrm2.gif" ALT="" BORDER=0>
+</DD>
+
+<DT><B>Modulation members</B></DT>
+
+<DT>D3DTOP_MODULATE</DT>
+
+<DD>Multiply the components of the arguments.
+
+<P><IMG SRC="images/topfrm3.gif" ALT="" BORDER=0>
+</DD>
+
+<DT>D3DTOP_MODULATE2X</DT>
+
+<DD>Multiply the components of the arguments, and shift the products to the left 1 bit (effectively multiplying them by 2) for brightening.
+
+<P><IMG SRC="images/topfrm4.gif" ALT="" BORDER=0>
+</DD>
+
+<DT>D3DTOP_MODULATE4X</DT>
+
+<DD>Multiply the components of the arguments, and shift the products to the left 2 bits (effectively multiplying them by 4) for brightening.
+
+<P><IMG SRC="images/topfrm5.gif" ALT="" BORDER=0>
+</DD>
+
+
+<DT><B>Addition and subtraction members</B></DT>
+
+<DT>D3DTOP_ADD</DT>
+
+<DD>Add the components of the arguments.
+
+<P><IMG SRC="images/topfrm6.gif" ALT="" BORDER=0>
+</DD>
+
+<DT>D3DTOP_ADDSIGNED</DT>
+
+<DD>Add the components of the arguments with a &#8211;0.5 bias, making the effective range of values from &#8211;0.5 through 0.5.
+
+<P><IMG SRC="images/topfrm7.gif" ALT="" BORDER=0>
+</DD>
+
+<DT>D3DTOP_ADDSIGNED2X</DT>
+
+<DD>Add the components of the arguments with a &#8211;0.5 bias, and shift the products to the left 1 bit.
+
+<P><IMG SRC="images/topfrm8.gif" ALT="" BORDER=0>
+</DD>
+
+<DT>D3DTOP_SUBTRACT</DT>
+
+<DD>Subtract the components of the second argument from those of the first argument.
+
+<P><IMG SRC="images/topfrm9.gif" ALT="" BORDER=0>
+</DD>
+
+<DT>D3DTOP_ADDSMOOTH</DT>
+
+<DD>Add the first and second arguments; then subtract their product from the sum.
+
+<P><IMG SRC="images/topfrm10.gif" ALT="" BORDER=0>
+</DD>
+
+<DT><B>Linear alpha blending members</B></DT>
+
+<DT>D3DTOP_BLENDDIFFUSEALPHA,D3DTOP_BLENDTEXTUREALPHA, D3DTOP_BLENDFACTORALPHA, and D3DTOP_BLENDCURRENTALPHA </DT>
+
+<DD>Linearly blend this texture stage, using the interpolated alpha from each vertex (D3DTOP_BLENDDIFFUSEALPHA), alpha from this stage's texture (D3DTOP_BLENDTEXTUREALPHA), a scalar alpha (D3DTOP_BLENDFACTORALPHA) set with the <A HREF="_dx_d3drenderstatetype_graphics.htm#_dx_d3drs_texturefactor_graphics"><B>D3DRS_TEXTUREFACTOR</B></A> render state, or the alpha taken from the previous texture stage (D3DTOP_BLENDCURRENTALPHA). 
+
+<P><IMG SRC="images/topfrm11.gif" ALT="" BORDER=0>
+</DD>
+
+<DT>D3DTOP_BLENDTEXTUREALPHAPM</DT>
+
+<DD>Linearly blend a texture stage that uses a premultiplied alpha.
+
+<P><IMG SRC="images/topfrm12.gif" ALT="" BORDER=0>
+</DD>
+
+<DT><B>Specular mapping members</B></DT>
+
+<DT>D3DTOP_PREMODULATE</DT>
+
+<DD>Modulate this texture stage with the next texture stage.</DD>
+
+<DT>D3DTOP_MODULATEALPHA_ADDCOLOR</DT>
+
+<DD>Modulate the color of the second argument, using the alpha of the first argument; then add the result to argument one. This operation is supported only for color operations (D3DTSS_COLOROP).
+
+<P><IMG SRC="images/topfrm13.gif" ALT="" BORDER=0>
+</DD>
+
+<DT>D3DTOP_MODULATECOLOR_ADDALPHA</DT>
+
+<DD>Modulate the arguments; then add the alpha of the first argument. This operation is supported only for color operations (D3DTSS_COLOROP).
+
+<P><IMG SRC="images/topfrm14.gif" ALT="" BORDER=0>
+</DD>
+
+<DT>D3DTOP_MODULATEINVALPHA_ADDCOLOR</DT>
+
+<DD>Similar to D3DTOP_MODULATEALPHA_ADDCOLOR, but use the inverse of the alpha of the first argument. This operation is supported only for color operations (D3DTSS_COLOROP).
+
+<P><IMG SRC="images/topfrm15.gif" ALT="" BORDER=0>
+</DD>
+
+<DT>D3DTOP_MODULATEINVCOLOR_ADDALPHA</DT>
+
+<DD>Similar to D3DTOP_MODULATECOLOR_ADDALPHA, but use the inverse of the color of the first argument. This operation is supported only for color operations (D3DTSS_COLOROP).
+
+<P><IMG SRC="images/topfrm16.gif" ALT="" BORDER=0>
+</DD>
+
+<DT><B>Bump-mapping members</B></DT>
+
+<DT>D3DTOP_BUMPENVMAP</DT>
+
+<DD>Perform per-pixel bump mapping, using the environment map in the next texture stage, without luminance. This operation is supported only for color operations (D3DTSS_COLOROP).</DD>
+
+<DT>D3DTOP_BUMPENVMAPLUMINANCE</DT>
+
+<DD>Perform per-pixel bump mapping, using the environment map in the next texture stage, with luminance. This operation is supported only for color operations (D3DTSS_COLOROP).</DD>
+
+<DT>D3DTOP_DOTPRODUCT3</DT>
+
+<DD>Performs the function S<sub>RGBA</sub> = <i>Arg1</i><sub>R</sub>&times;<i>Arg2</i><sub>R</sub> + <i>Arg1</i><sub>G</sub>&times;<i>Arg2</i><sub>G</sub> + <i>Arg1</i><sub>B</sub>&times;<i>Arg2</i><sub>B</sub> where each component has been scaled and offset to make it signed. The result is replicated into all four (including alpha) channels. This operation is supported only for color operations (D3DTSS_COLOROP).
+</DD>
+
+<DT><B>Triadic texture blending members</B></DT>
+
+<DT>D3DTOP_MULTIPLYADD</DT>
+
+<DD>S<sub>RGBA</sub> = <i>Arg0</i> + <i>Arg1</i>&times;<i>Arg2</i>
+</DD>
+
+<DT>D3DTOP_LERP</DT>
+
+<DD>S<sub>RGBA</sub> = <i>Arg0</i>&times;<i>Arg1</i> + (1-<i>Arg0</i>)&times;<i>Arg2</i>
+</DD>
+
+<DT><B>Miscellaneous member</B></DT>
+
+<DT>D3DTOP_MAX</DT>
+<DD>This constant is not supported in this release.</DD>
+
+<DT><A NAME="_dx_d3dtop_force_dword_d3d"></A>D3DTOP_FORCE_DWORD</DT>
+
+<DD>Forces this enumeration to compile to 32 bits in size. This value is not used.
+</DD>
+</DL>
+
+<H4>Remarks</H4>
+
+<P>The members of this type are used when setting color or alpha operations by using the D3DTSS_COLOROP or D3DTSS_ALPHAOP values with the <A HREF="_dx_idirect3ddevice8_settexturestagestate_graphics.htm"><B>IDirect3DDevice8::SetTextureStageState</B></A> method.</P>
+
+<P>In the above formulas, S<SUB>RGBA</SUB> is the RGBA color produced by a texture operation, and <I>Arg1</I>, <I>Arg2</I>, and <I>Arg3</I> represent the complete RGBA color of the texture arguments. Individual components of an argument are shown with subscripts. For example, the alpha component for argument 1 would be shown as <I>Arg1</I><SUB>A</SUB>.</P>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in d3d8types.h.</P>
+
+<H4>See Also</H4>
+
+<P><A HREF="_dx_d3dtexturestagestatetype_graphics.htm"><B>D3DTEXTURESTAGESTATETYPE</B></A></P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

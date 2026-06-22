@@ -1,0 +1,92 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>DmLoadExtension</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="CreateFile">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="DmLoadExtension"/>
+<MSHelp:Keyword Index="F" Term="DmLoadExtension"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_createfile"></A>DmLoadExtension</H1>
+
+<P class="content">Loads debugger extensions.</P>
+
+<PRE class=syntax><b>DMHRAPI DmLoadExtension(</b>
+  <b>LPCSTR</b>  <i>szName</i><b>,</b> 
+  <b>PHANDLE</b> <i>phModule</i><b>,</b> 
+  <b>PVOID</b>   <i>*pvBase</i>
+  <b>);</b></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+
+<DT><I>szName</I></DT>
+<DD>File name of the extension to load.</DD>
+
+<DT><I>phModule</I></DT>
+<DD>Pointer to memory to receive the loaded module's handle. This parameter can be NULL.</DD>
+
+<DT><I>pvBase</I></DT>
+<DD>Pointer to the loaded module. This parameter can be NULL.</DD>
+
+</DL>
+
+<H4>Return Values</H4>
+
+<P class="content">Returns XBDM_NOERR if successful, an error value otherwise.</P>
+
+<H4>Loading Debugger Extensions</H4>
+
+<P class="content">When a debugger extension is loaded, all debugger extensions that the loaded extension depends on (those that were linked with the loaded extension) are loaded as well. After a debugger extension is successfully loaded, its entry point is called. The entry point for a debugger extension takes the following form:</P>
+
+<PRE>typedef ULONG (__stdcall *PDM_ENTRYPROC)(ULONG, ULONG, ULONG);</PRE>
+
+<P class="content">The three parameters are ignored, they exist solely for Win32 compatibility.</P>
+
+<H4>E:\DXT\*.DXT</H4>
+
+<P class="content">Debugger extensions can be loaded manually using the <B>DmLoadExtension</B> function, or they can be loaded automatically by the Xbox System Software. When the target system boots, the system software searches the E:\DXT directory for debugger extension files (*.DXT). It attempts to load them as described above (see <B>Loading Debugger Extensions</B>).</P>
+
+<H4>Building a Debugger Extension</H4>
+
+<UL>
+<LI>Compile your debugger extension as a Win32 driver (link using the "/DRIVER" switch).</LI>
+<LI>Rename your binary to *.dxt.</LI>
+<LI>Do not use the multithreaded C run-time library.</LI>
+<LI>Do not link to xapi.lib.</LI>
+</UL>
+
+<h4>Requirements</h4>
+<p class="content">
+<b>Header:</b> Declared in xbdm.h
+<br><b>Import Library:</b> Use xbdm.lib
+</p>
+
+<!--
+<H4>See Also</H4>
+<P class="content"></P>
+-->
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

@@ -1,0 +1,60 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineSaveLogonState</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineSaveLogonState"/>
+<MSHelp:Keyword Index="F" Term="XOnlineSaveLogonState"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineSaveLogonState</h1>
+            <p>Retrieves the current state of an Xbox Live logon, including the logged on players and services.  The returned data can be saved, then later used in a call to <a href="XOnlineRetrieveLogonState.htm">XOnlineRetrieveLogonState</a> to retrieve information about the logon state.</p>
+        <pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineSaveLogonState(</b>
+    <b>PXONLINE_LOGON_STATE</b> <i>pLogonState</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+            <dt><i>pLogonState</i></dt>
+<dd>[out]  Pointer to an <a href="XONLINE_LOGON_STATE.htm">XONLINE_LOGON_STATE</a> structure that receives the current logon state.</dd>
+            
+        </dl>
+<h4><a name="return"></a>Return Values</h4>
+            <p>If the function is successful, the return value is S_OK.</p>
+            <p>If the title is not currently logged onto Xbox Live, the return value is XONLINE_E_NO_SESSION.</p>
+        <h4><a name="remarks"></a>Remarks</h4>
+<p>The data returned by <b>XOnlineSaveLogonState</b> is designed to be saved or passed as opaque data, then later extracted with the <a href="XOnlineRetrieveLogonState.htm">XOnlineRetrieveLogonState</a> function. For example, to persist logon information through a reboot, the game title calls <b>XOnlineSaveLogonState</b> before the reboot and places the returned <b>XONLINE_LOGON_STATE</b> somewhere in the <a href="x_mt_launchdata.htm">LAUNCH_DATA</a> before calling <a href="x_jsk_xlaunchnewtitle.htm">XLaunchNewImage</a>. After the reboot, the game title extracts the <b>XONLINE_LOGON_STATE</b> from the launch data and calls <b>XOnlineRetrieveLogonState</b> to extract all the parameters needed to call <a href="XOnlineLogon.htm">XOnlineLogon</a> again.</p>
+
+<p>The title must have a valid, currently active Xbox Live logon session in order for <b>XOnlineSaveLogonState</b> to succeed.  Do not close the logon task handle (returned by <b>XOnlineLogon</b>) before calling <b>XOnlineSaveLogonState</b>.</p>
+
+
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="x_mt_xonline_functions.htm">Xbox Live Functions</a> | <a href="XOnlineRetrieveLogonState.htm">XOnlineRetrieveLogonState</a>, <a href="XONLINE_LOGON_STATE.htm">XONLINE_LOGON_STATE</a>
+</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

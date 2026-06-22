@@ -1,0 +1,140 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>XGetLaunchInfo</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="XGetLaunchInfo">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XGetLaunchInfo"/>
+<MSHelp:Keyword Index="F" Term="XGetLaunchInfo"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="x_jc_xgetlaunchinfo"></A>XGetLaunchInfo</H1>
+
+<P>The <B>XGetLaunchInfo</B> function retrieves the title's launch information.</P>
+
+<PRE class=syntax><B>DWORD XGetLaunchInfo(
+  PDWORD</B>  <I>pdwLaunchDataType</I>,
+<B>  PLAUNCH_DATA</B>  <I>pLaunchData</I>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+
+<DT><I>pdwLaunchDataType</I></DT>
+<DD>[out] Pointer to a <B>DWORD</B> variable that receives a value indicating the type of launch data contained in <I>pLaunchData</I>. The possible values are:
+
+<TABLE>
+
+<TR>
+<TH align=left>Value</TH>
+<TH align=left>Meaning</TH>
+</TR>
+
+<TR>
+<TD>LDT_FROM_DASHBOARD</TD>
+<TD>The title was launched by the Xbox Dashboard; an <A HREF="x_mt_ld_fromdashboard.htm">LD_FROM_DASHBOARD</a> structure is copied to <I>pLaunchData</I>.</TD>
+</TR>
+
+<TR>
+<TD>LDT_FROM_DEBUGGER_CMDLINE</TD>
+<TD>The title was launched by the remote debugger; an <A HREF="x_mt_ld_fromdebugger.htm">LD_FROM_DEBUGGER_CMDLINE</a> structure is copied to <I>pLaunchData</I>.</TD>
+</TR>
+
+<TR>
+<TD>LDT_FROM_UPDATE</TD>
+<TD>The title was launched by the Xbox <em>Live</em> updater after an update of the title; an <a href="LD_FROM_UPDATE.htm">LD_FROM_UPDATE</a> structure is copied to <I>pLaunchData</I>. In this case, any data that existed on the utility drive (Drive Z:) before the update is deleted during the update process. (The utility drive is also known as the title cache.)
+</TD>
+</TR>
+
+<TR>
+<TD>LDT_TITLE</TD>
+<TD>The title was launched using the <A HREF="x_jsk_xlaunchnewtitle.htm">XLaunchNewImage</a> function; a <A HREF="x_mt_launchdata.htm">LAUNCH_DATA</a> structure is copied to <I>pLaunchData</I>.</TD>
+</TR>
+
+</TABLE>
+</DD>
+
+<DT><I>pLaunchData</I></DT>
+<DD>[out] Pointer to a <B>LAUNCH_DATA</B> structure that receives information concerning the title's launch. The contents returned in the structure depend on the value returned in the <I>pdwLaunchDataType</I> parameter. <I>pLaunchData</I> should be cast to the appropriate structure type (<B>PLD_FROM_DASHBOARD</B>, <B>PLD_FROM_DEBUGGER_CMDLINE</B>, or <B>PLAUNCH_DATA</B>) to access the launch information.</DD>
+
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is ERROR_SUCCESS.</P>
+
+<P>If the function fails, the return value is an error code defined in winerror.h. The function does not use <B>SetLastError</B> to set the calling thread's last-error code.</P>
+
+<P>If no launch data was passed to the title, the function fails and returns ERROR_NOT_FOUND, without setting <i>pdwLaunchDataType</i> or filling in any launch data. Examples of this scenario are:
+</P>
+<ul>
+<li>The title was launched by the debugger but no command-line arguments were specified.</li>
+ 
+<li>The title was launched by turning on the Xbox console with the title disc already in the DVD drive.</li>
+</ul>
+
+<h4>Remarks</h4>
+
+<P>Use <B>XGetLaunchInfo</B> to determine the method used to launch the title and retrieve the associated launch information. The function fills in the <B>LAUNCH_DATA</B> structure pointed to by <I>pLaunchData</I> with information concerning the title's launch.<P>
+
+<P>The value returned in the <I>pdwLaunchDataType</I> parameter indicates the method that was used to launch the title and also the type of data returned in <I>pLaunchData</I>.</P>
+
+<P>If the launch type is LDT_FROM_DASHBOARD, the title was launched by the Xbox Dashboard; <I>pLaunchData</I> is filled in with an <B>LD_FROM_DASHBOARD</B> structure containing the <I>dwContext</I> value that was passed to the Dashboard when the title launched the Dashboard to perform some service.  See <B>XLaunchNewImage</B> for more information.</P>
+
+<P>If the launch type is LDT_FROM_DEBUGGER_CMDLINE, the title was launched by the remote debugger; <I>pLaunchData</I> is filled in with an <B>LD_FROM_DEBUGGER_CMDLINE</B> structure containing the command line passed to the title by the debugger.</P>
+
+<P>If the launch type is LDT_FROM_UPDATE, the title was launched by the Xbox <em>Live</em> updater; <I>pLaunchData</I> is filled in with an <B>LD_FROM_UPDATE</B> structure.</P>
+
+<P>If the launch type is LDT_TITLE, the title was launched by a call to <B>XLaunchNewImage</B>; <I>pLaunchData</I> is filled in with a <B>LAUNCH_DATA</B> structure containing the launch information specified in the call to <B>XLaunchNewImage</B>.  A title can pass data only to itself, not another title.  The title identifier of the title that called <B>XLaunchNewImage</B> must match the title identifier of the title calling <B>XGetLaunchInfo</B>.</P>
+
+<P>Call <B>XGetLaunchInfo</B> only once per boot.</P>
+
+<p>Command-line parameters can ba passed to an XBE from the <a href = "xbox_jbh_tool_remote_xbreboot.htm">XbReboot</a> 
+tool. The code example below demonstrates how to retrieve command-line parameters upon reboot.</p>
+<pre>DWORD dwLaunchDataType = 0;
+LAUNCH_DATA LaunchData;
+
+if( (ERROR_SUCCESS == XGetLaunchInfo(&dwLaunchDataType, &LaunchData) ) 
+	&& (LDT_FROM_DEBUGGER_CMDLINE == dwLaunchDataType))
+{
+	char *szCmdLine = ((PLD_FROM_DEBUGGER_CMDLINE) (&LaunchData))->szCmdLine;
+	//NOTE: szCmdLine is one string that contains the entire command line. 
+	//you need to parse szCmdLine for each parameter
+}
+else
+{
+	//no command-line available 
+}
+</pre>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in xbox.h, for include use xtl.h.<br><b>Import Library: </b>Use xapilib.lib
+
+<H4>See Also</H4>
+<A HREF="x_jsk_executable_file_functions.htm">Executable File Functions</a> |
+<A HREF="x_jsk_xlaunchnewtitle.htm">XLaunchNewImage</a>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

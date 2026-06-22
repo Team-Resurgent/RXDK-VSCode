@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Xbox Software Architecture Overview</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Xbox Software Architecture Overview"/>
+<MSHelp:Keyword Index="F" Term="Xbox Software Architecture Overview"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Xbox Software Architecture Overview</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<P>The Xbox was designed by people who know and love games. In fact, much of the design of the Xbox is based on suggestions and feedback from developers in the game industry.
+
+<P>Xbox is all about the games, and the Xbox system software is designed with one goal in mind: helping developers create awesome games. That goal is the driving factor and focal point of the Xbox software architecture. The system software is not Windows, it is not designed to be a platform, or to be restrictive or limiting. We want games to be as close as possible to the Xbox hardware in order to realize maximum performance potential.</P>
+
+<P>The design goals that spring out of that one primary goal are that the system software be small, fast, close to the hardware, and predictable. In examining the software architecture, you'll see time and again examples of the decisions we've made to put control of the console directly into the hands of game developers.</P>
+
+<H2>The Big Picture</h2>
+
+<P>Four main software components work together to provide the complete Xbox software architecture: the kernel, the Xbox Title Libraries (XTL), game titles, and the Xbox Dashboard. The following diagram illustrates how these components fit together:</P>
+
+<br /><img src="images/archt.gif"><br /><br /><br />
+
+
+<P>The Xbox kernel is part of the Xbox console, residing in ROM on every console shipped. The XTL and game title software are linked together and distributed on game discs. You'll notice that the Xbox Dashboard is not shown in the diagram, because the Dashboard can be thought of as just another game title, with the special purpose of allowing interaction with the Xbox when no game disc is inserted into the console.</P>
+
+<H2>Xbox Kernel</H2>
+
+<P>The kernel essentially contains the minimum code necessary to load game titles (or the Xbox Dashboard) and begin executing them. This includes:
+<UL>
+<LI>Initializing the Xbox console hardware including the DVD drive, hard disk drive, CPU, and other internal systems.</LI>
+<LI>Setting up virtual memory and the Xbox memory manager.</LI>
+<LI>Validating the security of game titles.</LI>
+<LI>Providing the file systems used to read files from the hard disk and DVD drive.</LI>
+<LI>Controlling process and thread execution and synchronization.</LI>
+</UL>
+
+<P>The kernel is the component closest to the Xbox hardware, although the other software components, especially the XTL, can (and do) write directly to the hardware when it is beneficial to do so. For a more detailed look at the kernel, see <a href="x_mt_softarch_kernel.htm">Xbox Kernel Overview</a>. </P>
+
+
+<H2>Xbox Title Libraries</H2>
+
+<P>The XTL is a collection of static libraries containing functions that game titles link to and call. These libraries contain the bulk of the code that titles use to interface with the Xbox console. The XTL offers the following advantages:</P>
+
+<UL>
+<LI>Mind-blowing graphics&mdash;A highly optimized version of DirectX written specifically for the Xbox, along with many new Xbox routines and an optimized math library, provide an incredible graphics library that fully leverages the power of the Xbox console.</LI>
+
+<LI>Amazing audio&mdash;Music and sound libraries give developers access to the most advanced audio capabilities ever found on a gaming console.</LI>
+
+<LI>Safe, fast system&mdash;XTL functions provide access to the services implemented by the kernel, including memory management, scheduling, and the file systems. New Xbox functions plus a subset of functions based on the Win32&reg; API provide a rich, robust set of system-level routines.</LI>
+
+<LI>Networking&mdash;Network-access routines provide support for system link play and the huge and exciting world of Xbox online gaming.</LI>
+
+<LI>Dependable drivers&mdash;Finally, most of the hardware driver code on the Xbox resides in the XTL rather than the kernel. The graphics, audio, network, and peripherals drivers are all part of the XTL, accessed through XTL routines linked to by the title.</LI>
+</UL>
+
+<P>The XTL contains routines to perform a wide variety of tasks on the Xbox. These functions are not system calls, traps, or imports into dynamic libraries; they are functions that are statically linked into the game when the title is compiled and that ship with the title on the game disc. Developers need not worry about their game's compatibility with specific XTL versions or about functions changing underneath them, because the game ships with the exact version of the XTL it requires and always uses that version when executing.</P>
+
+<P>The title can choose which XTL functions to use, link with them, and then not pay any memory, size, or performance hit for XTL functions it chooses not to call. In fact, except for a few cases outlined by the certification requirements, a title could bypass the XTL and write directly to the hardware if it really needed to. For this reason, the XTL provides functions that are as fast, clean, and reliable as possible, giving developers an excellent base upon which to build their games. The XTL functions are also tested against all versions of the hardware components used on the Xbox (including those that might vary slightly depending on manufacturer or across hardware revisions)&mdash; another good reason to rely on the XTL for hardware access.</P>
+
+<P>For a more detailed look at the XTL, see <a href="x_mt_softarch_xtl.htm">XTL Overview</a>.</P>
+
+<H2>Game Titles</H2>
+
+<P>Game titles provide the most important software of all: the game!  Although games do make calls into the XTL libraries, the bulk of the software in a game title is the game code itself.  The XTL provides no UI (User Interface) elements or routines such as icons, windows, scrollbars, cursors, or message boxes. The look, feel, and design elements of the game are completely in the hands of the game designers and programmers. The game title uses XTL libraries and routines to communicate with the Xbox hardware, including the graphics, peripherals (such as the controllers and memory units), sound, file systems, and system software of the Xbox.</P>
+
+
+<H2>Xbox Dashboard</H2>
+
+<P>The Xbox Dashboard is similar to other game titles in architecture, using XTL functions to communicate with the Xbox hardware and to simplify programming tasks. The Dashboard enables interaction with the Xbox when not playing a game. Unlike an ordinary game title, the Dashboard is stored on the Xbox hard disk rather than on a game disc. This means it is always available, even when no disc is inserted in the Xbox.</P>
+
+<P>The Dashboard provides a DVD movie player with standard movie viewing features and controls.  This player is activated whenever a DVD movie is inserted into the Xbox disc tray (provided the console has an attached DVD infrared receiver). The Dashboard also has a music CD player that is launched whenever a music CD is inserted into the tray. From the Dashboard, users can also copy songs from their favorite CDs onto the Xbox hard disk for later listening during gameplay. The Dashboard's main user interface is launched whenever the Xbox is turned on without any disc (game, DVD, or CD) in the tray. This portion of the Dashboard enables users to configure settings and preferences, such as sound and video settings, parental control, and language.</P>
+
+<P>From the Dashboard, users can manage the storage space allocated to game titles on the hard disk and the memory units. The dash displays the amount of storage being used by game titles and gives the user the option of reclaiming that storage.</P>
+
+<!--*******************************************************************************-->
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

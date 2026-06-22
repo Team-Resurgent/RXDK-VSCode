@@ -1,0 +1,35 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XBR::GetAnimationData (XbView)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XBR::GetAnimationData (XbView)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XBR::GetAnimationData (XbView)</h1>
+<pre class="clsCode">
+HRESULT GetAnimationData( const CHAR *strFrameId,
+                          FLOAT fTimeStamp, 
+                          BOOL bInterpolate,
+                          XGMATRIX &amp;mTranslation,
+                          XGMATRIX &amp;mRotation,
+                          XGMATRIX &amp;mScale );
+</pre>
+    <p>This function gets the animation data requested for the node ID at the time passed in and interpolates it if the flag passed in is TRUE. It also takes references to the rotation, scale, and translation matrices that are set with the animation data. </p><p>The function first scans through the resources in the <a href="xbview_xbr.htm">XBR</a> class until it (a) finds animation data with the node ID requested, or (b) completes its scan through the list of resources. If it doesn't find the node ID requested, it returns E_FAIL to let the caller know that there is no animation data for this node. If it finds the node with animation data, it calculates the offset based on the timestamp passed in and indexes into the animation translation, rotation, and scale data at that offset and pulls out the relevant animation data. It returns the frame of data that is at or just before the timestamp passed in. If the <i>bInterpolate</i> flag is set to TRUE, the code does a linear interpolation between this frame's translation and scale data and the next frame's data. It also does a spherical linear interpolation between this frame's rotation data and the next frame's rotation data. After the translation and scale vectors are created, the scale and translation matrices are created using the <a href="xgraphics_xgmatrixtranslation.htm">XGMatrixTranslation</a> and <a href="xgraphics_xgmatrixscaling.htm">XGMatrixScaling</a> functions. The rotation matrix is built from the rotation quaternion using the <a href="xgraphics_xgmatrixrotationquaternion.htm">XGMatrixRotationQuaternion</a> function. The function then returns S_OK to let the caller know that the matrices passed in contain valid animation data. </p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

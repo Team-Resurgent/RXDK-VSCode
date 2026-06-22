@@ -1,0 +1,79 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Xbox Storage Devices</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Xbox Storage Devices"/>
+<MSHelp:Keyword Index="K" Term="storage devices used by Xbox"/>
+<MSHelp:Keyword Index="K" Term="storage space and performance"/>
+<MSHelp:Keyword Index="F" Term="Xbox Storage Devices"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Xbox Storage Devices</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+The Xbox uses three main data storage devices: the DVD player, the Xbox hard disk, and the memory units. In combination, they provide a rich set of data storage options that increase title flexibility and optimization potential.
+
+<H3>DVD Player</H3>
+
+<P>The DVD player is the main read-only store on the Xbox. Titles are loaded from DVD, movies are played on DVD, and music is read from DVD.  Because it is read-only, dealing with the DVD player is relatively simple. The XTL file input, output, and management functions provide the necessary interface to the drive.</P>
+
+<P>The Xbox DVD drive is a constant angular velocity (CAV) drive.  Because of this, DVD layout is an extremely important factor in determining the streaming rate of the drive. The streaming speed of the fastest parts of the disk is more than twice that of the slowest parts.</P>
+ 
+<P>With this in mind, title developers can lay out code and content on the DVD to maximize performance. Additionally, the DVD emulation software properly simulates the timing aspects of a CAV drive, so layout can be tested and optimized even in the absence of the actual console DVD player.</P>
+
+<P>Due to the large capacity of the DVD media, titles might also choose to save multiple copies of files on the disc to increase performance through data locality and to improve robustness through redundancy.</P>
+
+<P>The total space available to game titles on a DVD-X2 disc (after accounting for overhead requirements) is 3,493,134,336 bytes per layer for a total of 6,986,268,672 bytes available to the actual game title. The DVD layout tool will enforce this limitation.  Half of the overhead is in the standard DVD session portion of the disc, the slowest part of the disc when read at constant angular velocity.  Thirty-five percent of the overhead is in the fastest portion of the disc (the outer radius, past the 56mm restriction), where, to ensure the highest possible reliability, data is not being stored (the outer edge is most susceptible to any warping, scratching, smudging, or corrosion that might occur).</P>  
+
+<H3>Xbox Hard Disk</H3>
+
+<P>The preeminent and most heavily used store on the Xbox is the built-in hard disk. This store is used extensively to enhance gameplay. It is fast, large, and always available. Because every Xbox has a hard disk, title developers can rely on its presence and take full advantage of the possibilities it presents.</P> 
+
+<P>Great care is taken by the system software to ensure the integrity of the hard disk. An integral part of the boot up sequence is the spin up and verification of hard disk functionality. If the hard disk is found to be functioning incorrectly, the console will shut down until corrective measures can be taken. Note that it is not possible to have a perfect verification scheme; undetected corruption may still occur, and titles should write code that can gracefully handle media errors.</P>
+
+<H3>Memory Units</H3>
+
+<P>The memory units complete the local game storage picture. Memory units are connected to the Xbox console through the memory unit slots in the controllers. The main controller has ports for two memory units. A total of four controllers can be attached to the console at one time, giving a potential total of eight memory units simultaneously available on the system.</P>
+
+<P>Titles are provided with XTL functions that will enumerate the memory units available during gameplay and provide for the detection of media changes. No device will be released that contains more than two memory unit slots, although devices that have fewer expansion slots may be available.</P> 
+
+<H3>Performance and Space Issues</H3>
+
+
+<P>In a perfect world, games would have all of the storage space they need. In reality, under practical playing conditions, a title may encounter situations in which storage space is insufficient for its needs. Titles should be aware of how much storage space particular pieces of the game will need and should budget accordingly. At title initialization, games should check the relevant regions for the necessary available storage. If space is insufficient, especially for critical needs, the game should warn the user that specific features would be unavailable unless the user frees sufficient space. If the user wishes to free space, the game can reboot into the Xbox Dashboard to allow the user to globally manage storage space. If at all possible, of course, games should not get into a situation in which a user is presented with an out of storage space condition at a critical juncture in the game.</P>
+
+<P>Some systems use expansive caching strategies to improve the performance of the writes to the file system. Writing data to a file would not result in that data being immediately committed to disk. Instead, a writer thread opportunistically would write data asynchronously to the disk.
+On the Xbox, this sort of caching is not optimal and is not used.  Write caching can result in large windows where the data on the disk is not current, thus increasing the chance of corruption as a result of immediate power off. Additionally, the amount of system RAM needed to maintain a good cache is very large. Xbox storage is therefore primarily write-through in nature&#8212;file writes are immediately committed to storage. This factor should be kept in mind when determining the title's write caching and write locality design (for example, multiple small writes could be done more efficiently using one larger write).</P>
+
+<!--*******************************************************************************-->
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

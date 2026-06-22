@@ -1,0 +1,381 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>DirectMusic Content Analyzer (AudAnalyze)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="DirectMusic Content Analyzer (AudAnalyze)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+      <MSHelp:Keyword Index="K" Term="analyze DirectMusic content in a title"/>
+      <MSHelp:Keyword Index="K" Term="DirectMusic objects, excluding from a title"/>
+	  <MSHelp:Keyword Index="K" Term="content analyzer for DirectMusic (AudAnalyze)"/>
+    </xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>DirectMusic Content Analyzer (AudAnalyze)</h1>
+            <p>The Microsoft® DirectMusic® content analyzer tool (AudAnalyze) examines your title's DirectMusic content and writes a factory function containing a list of DirectMusic objects needed to run your content. When objects are omitted from this list, their code is also omitted from your application by the linker, decreasing your title's size. If you use the DirectMusic default factory function, it must include code for all possible DirectMusic objects since it doesn't have any information about the content your title plans to use.</p>
+ 
+            <p>Based on a content list that you provide, AudAnalyze creates a file containing a function named <b>MyFactory</b> that replaces the <b>DirectMusicDefaultFactory</b> function.  The <b>MyFactory</b> function contains a list of the DirectMusic objects needed to play your content.  If your code passes <b>MyFactory</b> instead of <b>DirectMusicDefaultFactory</b> to <a href="xbox_directmusicinitializeex_dxaudio.htm">DirectMusicInitializeEx</a>, the linker will exclude unneeded DirectMusic objects from your title, decreasing its overall size. (<b>DirectMusicDefaultFactory</b> includes all the DirectMusic objects, whether they are required or not.)</p>
+
+<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;The AudAnalyze tool cannot be entirely accurate for all content. Some required objects may be omitted from <b>MyFactory</b>.  If this is the case, when DirectMusic tries to create an object of that type, <b>MyFactory</b> will print an error message stating the CLSID of the unknown object, and the function will then call <a href="debug_9x9n.htm">DebugBreak</a>.</p>
+
+        <ul>
+<li><a href="#IDAWBYK">Usage</a></li><li><a href="#IDAYDYK">Requirements</a></li><li><a href="#IDAAEYK">Examples</a></li><li><a href="#IDA0EYK">Object Types</a></li><li><a href="#IDAAKZK">Converting Existing DirectMusic Applications</a></li></ul>
+<h2><a name="IDAWBYK"></a>Usage</h2>
+<pre class="clsCode">
+audanalyze [SEGMENT | LIST]... [[+|-]ObjectType][...] [/All] [/Q] OutputFile
+</pre>
+    <table>
+	<tr>
+		<th>Option</th>
+        <th>Description</th>        
+	</tr>
+    <tr>
+		<td>SEGMENT</td>
+        <td>The name of a DirectMusic segment file, or a wildcard specifying a set of files.</td>
+	</tr>
+    <tr>
+		<td>LIST</td>
+        <td>A file ending in .txt that contains a list of segments, one per line.  May not contain wildcards.  Relative path names in list files are relative to the current directory, which is not necessarily the list file's directory.</td>
+	</tr>
+    <tr>
+		<td>ObjectType</td>
+        <td>A DirectMusic object (see list below).</td>
+	</tr>
+    <tr>
+		<td>OutputFile</td>
+        <td>Output file containing <b>MyFactory</b>.</td>
+	</tr>
+    <tr>
+		<td>+</td>
+        <td>Forces inclusion of an object type.</td>
+	</tr>
+    <tr>
+		<td>-</td>
+        <td>Forces exclusion of an object type.</td>
+	</tr>
+    <tr>
+		<td>/all</td>
+        <td>Forces inclusion of all object types.</td>
+	</tr>
+    <tr>
+		<td>/Q</td>
+        <td>Quiet mode.  Does not ask before overwriting destination file.</td>
+	</tr>
+</table>
+<ul>
+</ul>
+<h2><a name="IDAYDYK"></a>Requirements</h2>
+<p>AudAnalyze requires that Microsoft® DirectX® 8.0 or higher be installed on the system.</p><ul>
+</ul>
+<h2><a name="IDAAEYK"></a>Examples</h2>
+<p>This section contains examples demonstrating how to use the AudAnalyze tool.</p><p>Simply analyze one segment:</p>
+<pre class="clsCode">
+audanalyze MySegment.sgt Factory.cpp
+</pre>
+    <p>Analyze two segments:</p>
+<pre class="clsCode">
+audanalyze MySegment.sgt AnotherSegment.sgt Factory.cpp
+</pre>
+    <p>Analyze all segments in these subdirectories:</p>
+<pre class="clsCode">
+audanalyze Disco\*.sgt HipHop\*.sgt Factory.cpp
+</pre>
+    <p>Analyze all segments in this list:</p>
+<pre class="clsCode">
+audanalyze MyPlayList.txt Factory.cpp
+</pre>
+    <p>Include everything:</p>
+<pre class="clsCode">
+audanalyze /all Factory.cpp
+</pre>
+    <h2><a name="IDA0EYK"></a>Object Types</h2>
+<p>The following table contains the list of object types with their corresponding parameter name and GUID.</p><table>
+    <tr>
+		<th>Object Type (CLSID)</th>
+        <th>Corresponding Parameter Name</th>
+        <th>GUID</th>
+	</tr>
+    <tr>		
+        <td>CLSID_DirectMusicCollection</td>
+        <td>DMCollection</td>
+        <td>480ff4b0-28b2-11d1-bef700c04fbf8fef</td>
+	</tr>
+
+    <tr>
+		<td>CLSID_DirectMusicSynth</td>
+        <td>DMSynth</td>
+        <td>58c2b4d0-46e7-11d1-89ac00a0c9054129</td>
+	</tr>    
+    <tr>		
+        <td>CLSID_DirectMusicFileStream</td>
+        <td>DMFileStream</td>      
+        <td>f12f2c7d-3651-486f-b9fa16e11d1524fd</td>
+	</tr>
+    <tr>
+		<td>CLSID_DirectMusicStreamStream</td>
+        <td>DMStreamStream</td>
+        <td>f34feac1-e3af-49ad-83970bed323ef96b</td>
+	</tr>
+    <tr>
+		<td>CLSID_DirectMusicMemStream</td>
+        <td>DMMemStream</td>
+        <td>75ccb447-8d3f-4154-abad5960aed4ba63</td>
+	</tr>
+    <tr>
+		<td>CLSID_DirectMusicSegment</td>
+        <td>DMSegment</td>
+        <td>d2ac2882-b39b-11d1-870400600893b1bd</td>
+	</tr>
+    <tr>
+		<td>CLSID_DirectMusicLoader</td>
+        <td>DMLoader</td>
+        <td>d2ac2892-b39b-11d1-870400600893b1bd</td>
+	</tr>
+    <tr>
+		<td>CLSID_DirectMusicTempoTrack</td>
+        <td>DMTempoTrack</td>
+        <td>d2ac2885-b39b-11d1-870400600893b1bd</td>
+	</tr>
+    <tr>
+		<td>CLSID_DirectMusicTimeSigTrack</td>
+        <td>DMTimeSigTrack</td>
+        <td>d2ac2888-b39b-11d1-870400600893b1bd</td>
+	</tr>
+    <tr>
+		<td>CLSID_DirectMusicBandTrack</td>
+        <td>DMBandTrack</td>
+        <td>d2ac2894-b39b-11d1-870400600893b1bd</td>
+	</tr>
+    <tr>
+		<td>CLSID_DirectMusicPerformance</td>
+        <td>DMPerformance</td>
+        <td>d2ac2881-b39b-11d1-870400600893b1bd</td>
+	</tr>
+    <tr>
+		<td>CLSID_DirectMusicBand</td>
+        <td>DMBand</td>
+        <td>79ba9e00-b6ee-11d1-86be00c04fbf8fef</td>
+	</tr>
+    <tr>
+		<td>CLSID_DirectMusicSeqTrack</td>
+        <td>DMSeqTrack</td>    
+        <td>d2ac2886-b39b-11d1-870400600893b1bd</td>
+	</tr>
+    <tr>
+		<td>CLSID_DirectSoundWave</td>
+        <td>DSWave</td>
+        <td>8a667154-f9cb-11d2-ad8a0060b0575abc</td>
+	</tr>
+    <tr>
+		<td>CLSID_DirectMusicWaveTrack</td>
+        <td>DMWaveTrack</td>
+        <td>eed36461-9ea5-11d3-9bd10080c7150a74</td>
+	</tr>
+    <tr>
+		<td>CLSID_DirectMusicChordTrack</td>
+        <td>DMChordTrack</td>
+        <td>d2ac288b-b39b-11d1-870400600893b1bd</td>
+	</tr>
+    <tr>
+		<td>CLSID_DirectMusicCommandTrack</td>
+        <td>DMCommandTrack</td>
+        <td>d2ac288c-b39b-11d1-870400600893b1bd</td>
+	</tr>
+    <tr>
+		<td>CLSID_DirectMusicStyleTrack</td>
+        <td>DMStyleTrack</td>               
+        <td>d2ac288d-b39b-11d1-870400600893b1bd</td>
+	</tr>
+    <tr>
+		<td>CLSID_DirectMusicPatternTrack</td>
+        <td>DMPatternTrack</td>
+        <td>d2ac2897-b39b-11d1-870400600893b1bd</td>
+	</tr>
+    <tr>
+		<td>CLSID_DirectMusicMotifTrack</td>
+        <td>DMMotifTrack</td>
+        <td>d2ac288e-b39b-11d1-870400600893b1bd</td>
+	</tr>
+    <tr>
+		<td>CLSID_DirectMusicStyle</td>
+        <td>DMStyle</td>
+        <td>d2ac288a-b39b-11d1-870400600893b1bd</td>
+	</tr>
+    <tr>
+		<td>CLSID_DirectMusicMelodyFormulationTrack</td>
+        <td>DMMelodyFormulationTrack</td>  
+        <td>b0684266-b57f-11d2-97f900c04fa36e58</td>
+	</tr>
+    <tr>
+		<td>CLSID_DirectMusicComposer</td>
+        <td>DMComposer</td>
+        <td>d2ac2890-b39b-11d1-870400600893b1bd</td>
+	</tr>
+    <tr>
+		<td>CLSID_DirectMusicChordMap</td>
+        <td>DMChordMap</td>    
+        <td>d2ac288f-b39b-11d1-870400600893b1bd</td>
+	</tr>
+    <tr>
+		<td>CLSID_DirectMusicChordMapTrack</td>
+        <td>DMChordMapTrack</td>  
+        <td>d2ac2896-b39b-11d1-870400600893b1bd</td>
+	</tr>
+    <tr>
+		<td>CLSID_DirectMusicSignPostTrack</td>
+        <td>DMSignPostTrack</td>    
+        <td>f17e8672-c3b4-11d1-870b00600893b1bd</td>
+	</tr>
+    <tr>
+		<td>CLSID_AutDirectMusicAudioPath</td>
+        <td>ADMAudioPath</td>                  
+        <td>2c5f9b72-7148-4d97-bfc968a0e076bebd</td>
+	</tr>
+    <tr>
+		<td>CLSID_AutDirectMusicAudioPathConfig</td>
+        <td>ADMAudioPathConfig</td>            
+        <td>1cebde3e-6b91-484a-af485e4f4ed6b1e1</td>
+	</tr>
+    <tr>
+		<td>CLSID_AutDirectMusicSong</td>
+        <td>ADMSong</td>
+        <td>a16f1761-b6d8-42eb-8d574a44fedd3bd2</td>
+	</tr>
+    <tr>
+		<td>CLSID_AutDirectMusicPerformance</td>
+        <td>ADMPerformance</td>
+        <td>a861c6e2-fcfc-11d2-8bc900600893b1b6</td>
+	</tr>
+    <tr>
+		<td>CLSID_AutDirectMusicSegment</td>
+        <td>ADMSegment</td>
+        <td>4062c116-0270-11d3-8bcb00600893b1b6</td>
+	</tr>
+    <tr>
+		<td>CLSID_DirectMusicScript</td>
+        <td>DMScript</td>
+        <td>810b5013-e88d-11d2-8bc100600893b1b6</td>
+	</tr>
+    <tr>
+		<td>CLSID_DirectMusicScriptTrack</td>
+        <td>DMScriptTrack</td>
+        <td>4108fa85-3586-11d3-8bd700600893b1b6</td>
+	</tr>
+    <tr>
+		<td>CLSID_DirectMusicContainer</td>
+        <td>DMContainer</td>
+        <td>9301e380-1f22-11d3-8226d2fa76255d47</td>
+	</tr>
+    <tr>
+		<td>CLSID_AutDirectMusicSegmentState</td>
+        <td>ADMSegmentState</td>    
+        <td>ebf2320a-2502-11d3-8bd100600893b1b6</td>
+	</tr>
+    <tr>
+		<td>CLSID_DirectMusicMuteTrack</td>
+        <td>DMMuteTrack</td>
+        <td>d2ac2898-b39b-11d1-870400600893b1bd</td>
+	</tr>
+    <tr>
+		<td>CLSID_DirectMusicMarkerTrack</td>
+        <td>DMMarkerTrack</td>
+        <td>55a8fd00-4288-11d3-9bd18a0d61c88835</td>
+	</tr>
+    <tr>
+		<td>CLSID_DirectMusicSong</td>
+        <td>DMSong</td>
+        <td>aed5f0a5-d972-483d-a384649dfeb9c181</td>
+	</tr>
+    <tr>
+		<td>CLSID_DirectMusicAudioPathConfig</td>
+        <td>DMAudioPathConfig</td>
+        <td>ee0b9ca0-a81e-11d3-9bd10080c7150a74</td>
+	</tr>
+    <tr>
+		<td>CLSID_DirectMusicGraph</td>
+        <td>DMGraph</td>
+        <td>d2ac2884-b39b-11d1-870400600893b1bd</td>
+	</tr>
+    <tr>
+		<td>CLSID_DirectMusicSysExTrack</td>
+        <td>DMSysExTrack</td>
+        <td>d2ac2887-b39b-11d1-870400600893b1bd</td>
+	</tr>
+    <tr>
+		<td>CLSID_DirectMusicSegmentTriggerTrack</td>
+        <td>DMSegmentTriggerTrack</td>
+        <td>bae4d665-4ea1-11d3-8bda00600893b1b6</td>
+	</tr>
+    <tr>
+		<td>CLSID_DirectMusicLyricsTrack</td>
+        <td>DMLyricsTrack</td>
+        <td>995c1cf5-54ff-11d3-8bda00600893b1b6</td>
+	</tr>
+    <tr>
+		<td>CLSID_DirectMusicParamControlTrack</td>
+        <td>DMParamControlTrack</td>
+        <td>4be0537b-5c19-11d3-8bdc00600893b1b6</td>
+	</tr>
+</table>
+<p>Unless you override them, the following objects are included by default, regardless of content:</p><ul>
+<li>CLSID_DirectMusicFileStream</li>
+<li>CLSID_DirectMusicStreamStream</li>
+<li>CLSID_DirectMusicMemStream</li>
+<li>CLSID_DirectMusicComposer</li>
+<li>CLSID_DirectMusicChordTrack</li>
+<li>CLSID_DirectMusicChordMapTrack</li>
+<li>CLSID_DirectMusicCommandTrack</li>
+</ul>
+<p>If you are using scripts, the following object types are added automatically. If your scripts don't use the related object, you may be able to omit it. For example if your scripts don't use segments, try omitting CLSID_AutDirectMusicSegment.</p><ul>
+<li>CLSID_AutDirectMusicAudioPath</li>
+<li>CLSID_AutDirectMusicPerformance</li>
+<li>CLSID_AutDirectMusicSegmentState</li>
+<li>CLSID_AutDirectMusicSong</li>
+<li>CLSID_AutDirectMusicSegment</li>
+<li>CLSID_AutDirectMusicAudioPathConfig</li>
+</ul>
+<p>Transitions (via scripts or <a href="_dx_idirectmusicperformance8_playsegmentex_dxaudio.htm">IDirectMusicPerformance8::PlaySegmentEx</a>) require the following objects. (If you are not using transitions and are not explicitly using these objects in
+your content, you may be able to omit them.</p><ul>
+<li>CLSID_DirectMusicComposer</li>
+<li>CLSID_DirectMusicChordTrack</li>
+<li>CLSID_DirectMusicChordMapTrack</li>
+<li>CLSID_DirectMusicCommandTrack</li>
+</ul>
+<h2><a name="IDAAKZK"></a>Converting Existing DirectMusic Applications</h2>
+<p>To convert existing DirectMusic applications to take advantage of the DirectMusic content analyzer, complete the following steps:</p><ol>
+	<li>Use AudAnalyze to analyze all of your content by either putting all your content in one directory, or by creating a file list and then running the tool.</li>
+    <li>Include the file generated by AudAnalyze in one of your existing source files.  Make sure that the source file also includes DMusicI.h.</li>
+<li>
+<pre class="clsCode">
+#include "factory.cpp"
+</pre>
+    </li>
+    <li>Replace your call to <a href="xbox_directmusicinitialize_dxaudio.htm">DirectMusicInitialize</a> with <b>DirectMusicInitializeEx</b> or <a href="xbox_directmusicinitializefixedsizeheaps_dxaudio.htm">DirectMusicInitializeFixedSizeHeaps</a> (passing it the <b>MyFactory</b> function).
+    <p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Currently, there is no convenient way to keep your heap behavior while using this feature.</p></li>
+    <li>Compile and run your application.  If it runs correctly, go directly to step 9.</li>
+    <li>If your application asserted, note the GUID it was looking for.</li>
+    <li>Use the table above to find the corresponding parameter.</li>
+
+    <li>Run AudAnalyze again on your content, adding the parameter preceded by a "+" (for example, for CLSID_DirectMusicLoader, add +DMLoader).</li>
+    <li>Go back to step 4.</li>
+    <li>Your application should be running at this point. However, you may have extra objects in your <b>MyFactory</b> function that aren't needed.  If you see an object like CLSID_DirectMusicChordMapTrack used in <b>MyFactory</b>, but your content contains no chordmap tracks, it's a good candidate for removal.  Try commenting it out, or rerun AudAnalyze with the -DMChordMapTrack parameter.  If you get no asserts, you've just decreased your code size!!</li>
+</ol>
+<ul>
+</ul>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

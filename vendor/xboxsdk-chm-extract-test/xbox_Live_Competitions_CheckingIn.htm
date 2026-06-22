@@ -1,0 +1,50 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Checking In</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Checking In"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+		<MSHelp:Keyword Index="K" Term="competitions, checking in"/>
+	</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Checking In</h1>
+<p>Just before a match occurs, the participants must go online and your title must check the player in. It 		accomplishes this by calling the <a href="XOnlineCompetitionCheckin.htm">XOnlineCompetitionCheckin</a> function. A player may check in for an event any 		time after the competition begins (the value of XONLINE_COMP_ATTR_STATUS attribute in the competitions table is 		set to XONLINE_COMP_STATUS_ACTIVE) and the event's scheduled time arrives. </p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;If the competition requires teams, the player must be a member of the one of the participating teams to check in.</p><ul>
+<li><a href="#IDAZAEV">Essential Guidelines for Checking In</a></li><li><a href="#IDANBEV">Handling Check-ins and No-Shows</a></li></ul>
+<h2><a name="IDAZAEV"></a>Essential Guidelines for Checking In</h2>
+<p>The purpose of check-in is to correctly and fairly resolve cases when a score is not submitted for an event by round end, due to no-shows, peer-to-peer connectivity problems, and so forth. If a round ends before a score has been submitted for a match, the following rules apply.</p><ol>
+				<li>If no players checked in to the match before the end of the round, both players are eliminated from the match, and their opponent in the following round receives a bye.</li>
+				<li>If only one player checked in to the match before the end of the round, that player is granted an automatic win.</li>
+				<li>If both players checked in, but neither player checked in five minutes before or after the start time, both players are eliminated and the opponent in the subsequent round receives a bye. This window is intended to account for potential time drift of up to five minutes between the player's Xbox consoles and the Xbox <i>Live</i> service.</li>
+				<li>If both players checked in, but only one of those players checked in five minutes before or after the 
+				start time, that player wins.  </li>
+				<li>If both players checked in five minutes before or after the start time and the players then disagree about the outcome of the round, arbitration selects the winner based on each player's past record.</li>
+			</ol>
+<h2><a name="IDANBEV"></a>Handling Check-ins and No-Shows</h2>
+<p>Titles use the following rules for handling check-ins and no-shows.</p><ol>
+				<li>The actual match can take place and finish any time before the end of the scheduled competition round. There is no way to preemptively end the round before its time is up.</li>
+				<li>Games must provide messaging functionality that helps two players get a match together at a particular time that may or may not be the official start time of the competition round.</li>
+				<li>Titles should give special treatment to the player or team that checks in for a competition event within 5 minutes of the established round start time. If a player shows up before this time and checks in early, your game should make a second check-in call as close to the established round start time as possible to set that person or team as being on time.</li>
+				<li>In the event that one player or team is within the 5 minute window and the opponent is not, either checking in later or not at all, that player or team wins the competition event and the opponent is eliminated.</li>
+				<li>If both participants check in outside that 5 minute window but then neither side starts or finishes the game to submit results, the side with better player reliability rating (PRR) wins. </li>
+				<li>If only one participant checks in for the competition, that participant wins. In this case, the title should not call <a href="XOnlineCompetitionSessionRegister.htm">XOnlineCompetitionSessionRegister</a>, <a href="XOnlineCompetitionSubmitResults.htm">XOnlineCompetitionSubmitResults</a>, or any arbitration functions for that match. These functions should be called only if both sides are present and ready to play the match. When only one participant checks in, the competition system picks the winner on the basis of the check-in and not the basis of the results submitted.</li>
+				<li>If neither side checks in, they are both eliminated.</li>
+			</ol>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

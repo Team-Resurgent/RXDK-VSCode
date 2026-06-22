@@ -1,0 +1,105 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XNetDnsRelease</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XNetDnsRelease"/>
+<MSHelp:Keyword Index="F" Term="XNetDnsRelease"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XNetDnsRelease</h1>
+<p>Releases the resources used for a DNS lookup.</p>
+<pre class="syntax" xml:space="preserve"><b>INT</b> <b>XNetDnsRelease(</b>
+    <b>XNDNS</b> *<i>pxndns</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+            <dt><i>pxndns</i></dt>
+                <dd>Address of the <a href="xbox_xndns_xsnl.htm">XNDNS</a> structure returned by <a href="xbox_xnetdnslookup_xsnl.htm">XNetDnsLookup</a>.</dd>
+            
+        </dl>
+<h4><a name="return"></a>Return Values</h4>
+            <p>Returns zero if successful, an error code otherwise.</p>
+        <h4><a name="remarks"></a>Remarks</h4>
+            <p>Pending DNS lookups can be cancelled by calling <b>XNetDnsRelease</b> before the lookup is completed.</p>
+
+            <p>The following example shows how to handle a DNS lookup when the title provides an event handle.</p>
+
+
+<pre class="clsCode">
+
+WSAEVENT hEvent = WSACreateEvent();
+XNDNS * pxndns = NULL;
+INT err = XNetDnsLookup("sample.microsoft.com", hEvent, &amp;pxndns);
+WaitForSingleObject(hEvent, INFINITE);
+if (pxndns-&gt;iStatus == 0)
+{
+	// Look at pxndns-&gt;cina for the number of addresses returned
+	// Look at pxndns-&gt;aina for the vector of addresses returned
+}
+else
+{
+	// An error occurred.  One of the following:
+	// 	pxndns-&gt;iStatus == WSAHOST_NOT_FOUND - No such host
+	//    pxndns-&gt;iStatus == WSAETIMEDOUT - No response from DNS server(s)
+}
+XNetDnsRelease(pxndns);
+// Don't dereference pxndns after this point
+
+</pre>
+    
+
+<p>If the title does not provide an event, the title must poll <b>iStatus</b> of the <b>XNDNS</b> structure as follows.</p>
+
+
+<pre class="clsCode">
+
+XNDNS * pxndns = NULL;
+INT err = XNetDnsLookup("sample.redmond.corp.microsoft.com", NULL, &amp;pxndns);
+while (pxndns-&gt;iStatus == WSAEINPROGRESS)
+{
+	// Do something else while lookup is in progress
+}
+if (pxndns-&gt;iStatus == 0)
+{
+	// Look at pxndns-&gt;cina for the number of addresses returned
+	// Look at pxndns-&gt;aina for the vector of addresses returned
+}
+else
+{
+	// An error occurred.  One of the following:
+	// 	pxndns-&gt;iStatus == WSAHOST_NOT_FOUND - No such host
+	//    pxndns-&gt;iStatus == WSAETIMEDOUT - No response from DNS server(s)
+}
+XNetDnsRelease(pxndns);
+// Don't dereference pxndns after this point
+
+</pre>
+    
+        <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Winsockx.h. for include use Xtl.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xnet.lib for titles that only support system link play, XOnline.lib for titles that support online play. For online titles, use the secure version of the library file (XOnlines.lib) for final testing (not available for system link play).</p>
+    <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

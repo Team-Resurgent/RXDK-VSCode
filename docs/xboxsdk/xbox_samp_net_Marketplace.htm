@@ -1,0 +1,238 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Marketplace Sample</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Marketplace Sample"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Marketplace Sample</h1>
+	<p>Demonstrates proximity-based conversations for large numbers of users over 
+	speaker and headset. It also shows a method for dynamically allocating bandwidth using simple peer prediction 
+	for a scalable mix of peer-to-peer and player-server voice traffic.</p>
+<h2><a name="IDAQAYK"></a>Overview</h2>
+<p>This sample illustrates the concepts in the voice partitioning white paper. The technical areas it covers are:</p><ul>
+        <li>Speaker and headset output through XHV.</li>
+        <li>Coalescing voice packets to save bandwidth.</li>
+        <li>Proximity-based voice partitioning with low server overhead.</li>
+    </ul>
+<p>This sample does not comply with logon and other Xbox <i>Live</i> TCRs, because it demonstrates a 
+	way to do voice partitioning, not a full Xbox <i>Live</i> game.</p><h3><a name="IDADBYK"></a>Basic Problem</h3>
+<p>Partitioning voice is hard; not only do you have to limit how many other players you are sending to, but how 
+		many other players are sending to them. For instance, lets say you partitioned based solely on the <i>n</i> closest 
+		other players.  If you have a player standing in the middle of a circle of people, and several other players 
+		in the circle are talking, the person in the center will have his bandwidth saturated with voice packets; because 
+		he is close to them all, he'll be on all of their receiving lists. </p>
+<pre class="clsCode">
+         P   P!
+      P!        P
+          
+     P     o     P!
+     
+      P!        P
+         P   P!	    
+</pre>
+    <p>You could have the server calculate all of the player-to-player routes, but this is costly 
+		in bandwidth and CPU cycles and, when players start talking, will result in a significant delay  
+		while the routes are recalculated.  If they are precalculated, the middle player will be unable 
+		to hear someone who isn't in the closest four people, even if none of the closest four are talking.</p><h3><a name="IDAPBYK"></a>Presented Solution</h3>
+<p>The solution demonstrated in the Marketplace sample involves a single bit per player being sent on the update 
+		packet from the server. This bit specifies whether a given player is talking or not. The player-to-player voice 
+		routes are completely calculated on each player based on the talking bits, so oversaturating a player
+	    can be avoided. Even if the update comes a little late, oversaturating a player will not last more than a 
+		single network update (50 ms by default), which gives adequate time to recover.</p><p>A priority is determined for each proximal player-to-player pair, and then bandwidth is allocated 
+		round-robin, with a player being removed from the send or receive set as soon as her bandwidth quota is used up. 
+		This quota could be scaled easily, based on players' QoS bandwidth numbers, so that some players would automatically 
+		receive or send more data than others based on what their connection would allow.</p><p>Priority is given to players near other players, players who aren't moving (and thus are likely to be in an 
+		established conversation), and players facing other players. Additional priority modifiers could be implemented, 
+		including higher priority for friends, etc.</p><h2><a name="IDA0BYK"></a>Path</h2>
+<p>Source: (XDK Root)\Samples\Xbox\Networking\Marketplace</p><h2><a name="IDAACYK"></a>Remarks</h2>
+<p>Because of the flexibility in network architecture required (support for both peer-to-peer and full 
+	server-forward for demonstration purposes), not much code here that can be reused in your games. Also, 
+	because of the added complexity in making a visual demonstration (bots, sorted sprites, soundbit editor 
+	for the bots), a lot of code here is not directly applicable to voice partitioning. The full voice 
+	path code is spread throughout the sample. Most of the partitioning code is in VoiceMgr.cpp, but some other 
+	important concepts, such as 3D sound buffer caching are implemented in Audio.cpp.</p><p>Doing a full build in Visual Studio will copy the media files to your Xbox.</p><h3><a name="IDAHCYK"></a>Using the Sample</h3>
+<p>This sample requires a controller with a communicator plugged into port 0.</p><p>After you log on, you will be presented with four options.</p><ol>
+	        <li>Host a game with bots, which simulate other players.</li>
+	        <li>Host a game without bots, enabling you to play with your friends.</li>
+	        <li>Join an existing game. The sample finds the best game based on QoS- no selection.</li>
+	        <li>Edit bot voices by recording some voice clips for the bots to use.</li>
+		</ol>
+<p>The sample's user interface supports the following input.</p><dl>
+			<dt>Left analog stick</dt>
+			<dd>Move around.</dd>
+			
+			<dt>X</dt>
+			<dd>Join private channel (through headset).</dd>
+			
+			<dt>A</dt>
+			<dd>Talk on private channel (hold to talk).</dd>
+			
+			<dt>Y</dt>
+			<dd>
+				<p>Host menu (if you are the host). The host menu lets you set:</p>
+				<ul>
+					<li>Server-forward or peer-to-peer voice mode.</li>
+					<li>Network send rate.</li>
+					<li>Voice send rate.</li>
+					<li>Speech timeout.</li>
+					<li>Max. number of people you can listen to (downstream # of peers).</li>
+					<li>Max. number of people you can send to (upstream # of peers).</li>
+				</ul>
+			</dd>
+			
+			<dt>Select</dt>
+			<dd>Help menu.</dd>
+			
+			<dt>Black button</dt>
+			<dd>Show names.</dd>
+			
+			<dt>White button</dt>
+			<dd>Show network stats.</dd>
+			
+		</dl>
+<p>In the upper right corner of the Marketplace is a podium. If you stand behind it, voice will go through 
+		the server out to everyone in the Marketplace.</p><p>The symbols displayed by the sample are as follows.</p><p>Overhead icons:</p><table>
+			<tr>
+				<td>V:</td>
+				<td>Players</td>
+			</tr>
+			<tr>
+				<td>.)):</td>
+				<td>Talking player</td>
+			</tr>
+			<tr>
+				<td>((.)):</td>
+				<td>Player talking at the podium (voice routed through server)</td>
+			</tr>
+			<tr>
+				<td>P))):</td>
+				<td>Player talking on the private channel</td>
+			</tr>
+		</table>
+<p>Side icons:</p><table>
+			<tr>
+				<td>P:</td>
+				<td>Player is on the private channel</td>
+			</tr>
+			<tr>
+				<td>computer:</td>
+				<td>Player is a bot</td>
+			</tr>
+		</table>
+<p>Icon colors:</p><table>
+			<tr>
+				<td>Yellow</td>
+				<td>Local player</td>
+			</tr>
+			<tr>
+				<td>Dark blue</td>
+				<td>Remote player</td>
+			</tr>
+			<tr>
+				<td>Light blue</td>
+				<td>Remote player I can currently hear (getting network packets from)</td>
+			</tr>
+		</table>
+<p>Player colors:</p><table>
+			<tr>
+				<td>Light</td>
+				<td>Players who would hear me if I talked</td>
+			</tr>
+			<tr>
+				<td>Dark</td>
+				<td>Players who wouldn't hear me if I talked</td>
+			</tr>
+		</table>
+<h3><a name="IDA5GYK"></a>Bot Voice Editor</h3>
+<p>Commands:</p><table>
+    	<tr>
+			<td>A</td>
+			<td>Play an existing sound bite</td>
+		</tr>
+		<tr>
+			<td>X</td>
+			<td>Hold to record a sound bite</td>
+		</tr>
+		<tr>
+			<td>Y</td>
+			<td>Save database</td>
+		</tr>
+		<tr>
+			<td>B</td>
+			<td>Cancel out</td>
+		</tr>
+    </table>
+<p>The letters (A,B,C,...,H) represent the different bot voices. You can have 9 samples per voice.</p><h3><a name="IDAEAZK"></a>Sound Around the Marketplace</h3>
+<ul>
+			<li>There is a localized 3D source at the fountain.</li>
+    		<li>There is an ambient crowd sound that is scaled based on the total number of people talking.</li>
+			<li>If someone is talking but you can't hear them (because of network allocation), you will hear a 
+			walla-walla-walla sound emanating from their position.</li>
+			<li>If someone is talking and is sending traffic to you, you will hear his voice.</li>
+			<li>When a new person enters the Marketplace, you will hear a chime.</li>
+		</ul>
+<h2><a name="IDAVAZK"></a>Programming Notes</h2>
+<p>The network stats (accessed by pressing the White button) shows only the traffic
+    used for voice.  If voice is piggybacked on a data packet, the 44 bytes for the
+    packet header are not counted.  If the voice is sent by itself (as in peer-to-peer),
+    the 44 bytes are counted.</p><p>In peer-to-peer mode, the host bandwidth shows only the stats for voice going 
+    through the server;  there would be no players locally in a massively-multiplayer
+    game, and the stats are intended to show the impact on server bandwidth for using this method 
+    of voice.</p><p>Summary of files:</p><table>
+		<tr>
+			<th>File Name</th>
+			<th>Description</th>
+		</tr>
+		<tr>
+			<td>Audio.cpp</td>
+			<td>Sound buffer cache management code, and XACT and XHV interfaces.</td>
+		</tr>
+		<tr>
+			<td>Draw2D.cpp</td>
+			<td>Simple sprite drawing class.</td>
+		</tr>
+		<tr>
+			<td>Marketplace.cpp</td>
+			<td>Core application class with network message pump and state machine.</td>
+		</tr>
+		<tr>
+			<td>Match.cpp</td>
+			<td>Autogenerated matchmaking query class (from MatchSim)</td>
+		</tr>
+		<tr>
+			<td>Object.cpp</td>
+			<td>Manages a single sprite with sound sources, collision, and so on</td>
+		</tr>
+		<tr>
+			<td>Player.cpp</td>
+			<td>Player and playerbot classes</td>
+		</tr>
+		<tr>
+			<td>SoundbitDB.cpp</td>
+			<td>Holds forged voice packets for bots</td>
+		</tr>
+		<tr>
+			<td>VoiceMgr.cpp</td>
+			<td>Voice packet routing and priority calculation</td>
+		</tr>
+	</table>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

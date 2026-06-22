@@ -1,0 +1,226 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineCompetitionCreate</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineCompetitionCreate"/>
+<MSHelp:Keyword Index="F" Term="XOnlineCompetitionCreate"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineCompetitionCreate</h1>
+            <p>Creates a competition or tournament.</p>
+        <pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineCompetitionCreate(</b>
+    <b>DWORD</b> <i>dwUserIndex</i><b>,</b>
+    <b>DWORD</b> <i>dwTemplate</i><b>,</b>
+    <b>ULONGLONG</b> <i>qwTeamID</i><b>,</b>
+    <b>DWORD</b> <i>dwNumCompetitionAttributes</i><b>,</b>
+    <b>const XONLINE_ATTRIBUTE</b> *<i>pCompetitionAttributes</i><b>,</b>
+    <b>HANDLE</b> <i>hWorkEvent</i><b>,</b>
+    <b>PXONLINETASK_HANDLE</b> <i>phTask</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+            <dt><i>dwUserIndex</i></dt>
+				<dd>[in]  Controller index (zero-based) of the player. The player must have been 
+				successfully logged on with a previous call to <a href="XOnlineLogon.htm">XOnlineLogon</a>.</dd>
+            
+			
+            <dt><i>dwTemplate</i></dt>
+				<dd>[in]  ID of a template describing the competition. This ID is provided by 
+				<a href="xbox_tool_xlast.htm">XLAST</a> when you create your competition template.</dd>
+            
+			
+            <dt><i>qwTeamID</i></dt>
+				<dd>[in]  Team ID. This ID is provided only when the competition being created is for teams.</dd>
+            
+			
+            <dt><i>dwNumCompetitionAttributes</i></dt>
+				<dd>[in]  Number of competition attributes in the array specified by the 
+				<i>pCompetitionAttributes</i> parameter.</dd>
+            
+			
+            <dt><i>pCompetitionAttributes</i></dt>
+				<p><dd>[in]  Array of <a href="XONLINE_ATTRIBUTE.htm">XONLINE_ATTRIBUTE</a> structures that contain the competition attributes. The <b>dwAttributeID</b> member of each structure must be set to one from the specified table, or an attribute ID defined for the competition dataset in <a href="xbox_tool_xlast_intro.htm">XLAST</a>. All of the following attributes must be listed, in the order they appear.</dd>
+					<table>
+						<tr>
+							<th>Attribute</th> <th>Value</th> <th>Description</th>
+						</tr>
+						<tr>
+							<td>XONLINE_COMP_ATTR_REG_OPEN</td>
+							<td>0x80010001</td>
+							<td>Date and time that players may begin registering for the 
+							competition, in <a href="time_0fzm.htm">FILETIME</a> format. </td>
+						</tr>
+						<tr>
+							<td>XONLINE_COMP_ATTR_REG_CLOSE</td>
+							<td>0x80010002</td>
+							<td>Date that registration for the competition is scheduled 
+							to end, in <b>FILETIME</b> format. This date must be greater than or equal to the date 
+							specified in the XONLINE_COMP_ATTR_REG_OPEN attribute.</td>
+						</tr>
+						<tr>
+							<td>XONLINE_COMP_ATTR_COMP_START</td>
+							<td>0x80010003</td>
+							<td>Date that the competition is scheduled to begin, in 
+							<b>FILETIME</b> format. This date must be greater than or equal to the date specified 
+							in the XONLINE_COMP_ATTR_REG_CLOSE attribute.</td>
+						</tr>
+						<tr>
+							<td>XONLINE_COMP_ATTR_COMP_CLEANUP</td>
+							<td>0x80010004</td>
+							<td>Number of days after the last round that the competition should be deleted from the system.</td>
+						</tr>
+						<tr>
+							<td>XONLINE_COMP_ATTR_ROUND_FREQUENCY</td>
+							<td>0x80010005</td>
+							<td>Used in combination with XONLINE_COMP_ATTR_ROUND_INTERVAL and XONLINE_COMP_ATTR_ROUND_DAY_MASK 
+							to specify how often the competition's rounds are held. For example, you can hold 
+							rounds twice a week, once a month, three times a month, and so forth.</td>
+						</tr>
+						<tr>
+							<td>XONLINE_COMP_ATTR_ROUND_INTERVAL</td>
+							<td>0x80010006</td>
+							<td>Time interval between rounds. The unit of time used for the interval is 
+							specified by <a href="XONLINE_COMP_INTERVAL_UNIT.htm">XONLINE_COMP_INTERVAL_UNIT</a>.</td>
+						</tr>
+						<tr>
+							<td>XONLINE_COMP_ATTR_ROUND_DAY_MASK</td>
+							<td>0x80010007</td>
+							<td>Selects the day or days on which the rounds are held. Used only when 
+							XONLINE_COMP_ATTR_ROUND_INTERVAL is set to XONLINE_COMP_INTERVAL_DAILY.</td>
+						</tr>
+						<tr>
+							<td>XONLINE_COMP_ATTR_ROUND_ONE_START</td>
+							<td>0x8001000C</td>
+							<td>Date and time that round one is scheduled to start, in 
+							<b>FILETIME</b> format. The date must be greater than, or equal to 
+							the date specified in the XONLINE_COMP_ATTR_COMP_START attribute plus any value that is currently 
+							specified for the XONLINE_COMP_ATTR_REMINDER_MIN attribute.</td>
+						</tr>
+						<tr>
+							<td>XONLINE_COMP_ATTR_ROUND_ONE_END</td>
+							<td>0x8001000D</td>
+							<td>Date and time that round one is scheduled to end, in 
+							<b>FILETIME</b> format.</td>
+						</tr>
+						<tr>
+							<td>XONLINE_COMP_ATTR_IS_TEAM_COMP</td>
+							<td>0x80010010</td>
+							<td>Indicates whether the competition is played by teams rather than just two individuals.</td>
+						</tr>
+						<tr>
+							<td>XONLINE_COMP_ATTR_TEAM_SIZE</td>
+							<td>0x80010011</td>
+							<td>
+								<p>Number of players on each team in a team competition.</p> 
+								<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;It is left to the title to enforce this value.</p>
+							</td>
+						</tr>
+						<tr>
+							<td>XONLINE_COMP_ATTR_MAX_PUBLIC_SLOTS</td>
+							<td>0x80010012</td>
+							<td>Maximum number of publicly available slots in the competition.</td>
+						</tr>
+						<tr>
+							<td>XONLINE_COMP_ATTR_MAX_PRIVATE_SLOTS</td>
+							<td>0x80010013</td>
+							<td>Maximum number of privately available slots in the competition.</td>
+						</tr>
+						<tr>
+							<td>XONLINE_COMP_ATTR_MIN_SLOTS</td>
+							<td>0x80010014</td>
+							<td>Minimum number of slots required for this competition. If the number 
+							of private and public entrants that join is less than this value as of the date 
+							specified by the XONLINE_COMP_ATTR_REG_CLOSE attribute, the competition is canceled. 
+							The value of this attribute must be at least 2. </td>
+						</tr>
+						<tr>
+							<td>XONLINE_COMP_ATTR_BYES_GRANTED</td>
+							<td>0x80010017</td>
+							<td>Specifies whether one or more byes are granted.</td>
+						</tr>
+						<tr>
+							<td>XONLINE_COMP_ATTR_REMINDER_MIN</td>
+							<td>0x8001001A</td>
+							<td>Number of minutes before the beginning of a round that a reminder 
+							should be sent to the round participants.</td>
+						</tr>
+					</table>
+				</p>
+			
+            <dt><i>hWorkEvent</i></dt>
+				<dd>[in, optional]  Handle of an event you want to associate with this task. If you do not 
+				want to assign an event, set this parameter to NULL.</dd>
+            
+			
+            <dt><i>phTask</i></dt>
+				<dd>[out]  Pointer to an <b>XONLINETASK_HANDLE</b> type. The handle is associated 
+				with the task started by <b>XOnlineCompetitionCreate</b>. The handle can then be used in calls 
+				to <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> to perform work associated with this task. When the task is 
+				complete, call <a href="XOnlineCompetitionCreateGetResults.htm">XOnlineCompetitionCreateGetResults</a> to get the ID of the newly created 
+				competition. Call <a href="XOnlineTaskClose.htm">XOnlineTaskClose</a> to close the task.</dd>
+            
+			
+        </dl>
+<h4><a name="return"></a>Return Values</h4>
+            
+                <p>Returns S_OK if successful, or an error code otherwise. These error codes can include the 
+				following. </p>
+				<table>
+					<tr>
+						<th>Error Code</th> <th>Description</th>
+					</tr>
+					<tr>
+						<td>E_INVALIDARG</td>
+						<td>A required attribute is missing, or one or more of the parameters or attributes 
+						specified is invalid.</td>
+					</tr>
+				</table>
+            
+        <h4><a name="remarks"></a>Remarks</h4>
+			<p>For most single-elimination competitions, <a href="XOnlineCompetitionCreateSingleElimination.htm">XOnlineCompetitionCreateSingleElimination</a> should be 
+			invoked instead of this function. <b>XOnlineCompetitionCreate</b> should be used only when the parameters 
+			provided by <b>XOnlineCompetitionCreateSingleElimination</b> are insufficient to configure the competition.</p>
+
+			<p>After <b>XOnlineTaskContinue</b> completes, call <b>XOnlineCompetitionCreateGetResults</b> to obtain the 
+			competition ID for the newly created competition. </p>
+
+			<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;The user specified in <i>dwUserIndex</i> (or the team specified in <i>qwTeamId</i>) 
+			is not automatically enrolled in the competition. After the call to <b>XOnlineCompetitionCreate</b> completes 
+			successfully, the application should call <a href="XOnlineCompetitionManageEntrant.htm">XOnlineCompetitionManageEntrant</a> to enroll the player or team.</p>
+			
+			<p>The Competition Name attribute must always be set as an additional attribute (it is not a member of the XLAST <b>DefaultAttribute</b> structure). It is used by the Alerts system to deliver the competition reminders. The template for Competition Reminder alert text requires that the competition name be specified. For example, where <i>TitleName</i> is the title name and <i>CompetitionName</i> is the competition name, your title might display this alert: "Your match in the <i>TitleName</i> competition, <i>CompetitionName</i>, starts soon."</p>
+			<p>The Competition Name attribute ID is 0x8011000E, which corresponds to the XLAST attribute att_competition_name. The corresponding variable name for this attribute in the competition code generated by XLAST is <i>pwszDisplayName</i>.</p>			
+		<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+			
+				<a href="xbox_tool_xlast.htm">Xbox Live Authoring and Submission Tool</a>
+			
+		</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Creating an XACT Sound Bank</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Creating an XACT Sound Bank"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+  <MSHelp:Keyword Index="K" Term="sound banks, creating"/>
+  <MSHelp:Keyword Index="K" Term="XACT sound banks, creating"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Creating an XACT Sound Bank</h1>
+<p>After the XACT engine has been created, the next step is to create an XACT sound bank. This requires three things:</p>
+<ol>
+			<li>Create an XACT sound bank (.XSB) file using the graphical user interface component of XACT. For an overview of how to use the tool to generate sound banks, see the <a href="xbox_xact_authoring_dxaudio.htm">XACT Authoring Guide</a>. This example requires a sound bank file with a single cue. However, XACT does not allow sound banks consisting only of empty cues (that is, cues that do not bind to audio files). Empty cues can reside among other functioning cues, but not alone. So, we'll need to have a single small wave associated with the cue. Throughout the examples that follow, the wave bank containing the wave will never actually be loaded and/or played. It merely serves as a placeholder.
+
+<p>Once the .XSB file has been created, simply copy it into your resource folder on the Xbox console. The example below uses a folder named "media", which is a subfolder of the application directory.</p></li>
+			<li>Load the sound bank data file using our utility function, XACTLoadFile (listed later in the <a href="xbox_dev_soundtrack_input_and_support_routines_dxaudio.htm">Input and Support Routines</a> section).</li>
+			<li>Create the XACT sound bank from our loaded data using <a href="xbox_ixactengine_createsoundbank_dxaudio.htm">IXACTEngine::CreateSoundBank</a>.</li>
+		</ol>
+<pre class="clsCode">
+void CreateSoundBank()
+{
+    // Load the data image of the sound bank
+    DWORD dwFileSize;
+    XACTLoadFile( "d:\\media\\sample.xsb", (VOID**)&amp;g_pbSoundBankData, &amp;dwFileSize );
+
+    // Register our (almost) empty sound bank with XACT
+    HRESULT hr = g_pXACT-&gt;CreateSoundBank( g_pbSoundBankData, dwFileSize, &amp;g_pSoundBank ); 
+    assert( SUCCEEDED(hr) );
+}
+</pre>
+    <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>DmSendCommand</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="CreateFile">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="DmSendCommand"/>
+<MSHelp:Keyword Index="F" Term="DmSendCommand"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+
+
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_createfile"></A>DmSendCommand</H1>
+
+<P class="content">Sends a command over an existing connection to the debugging subsystem.</P>
+
+<PRE class=syntax><b>DMHRAPI DmSendCommand(</b>
+  <B>PDM_CONNECTION</B> <I>pConnection</I><B>,</B> 
+  <B>LPCSTR</B>         <I>szCommand</I><B>,</B> 
+  <B>LPSTR</B>          <I>szResponse</I><B>,</B> 
+  <B>LPDWORD</B>        <I>lpdwResponseSize</I>
+  <b>);</b></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+
+<DT><I>pConnection</I></DT>
+<DD>Pointer to a <b>DM_CONNECTION</b> structure that contains information about the connection. If <i>pConnection</i> is NULL, a connection is opened to issue the command and immediately closed when the transaction is complete (regardless of connection sharing settings).</DD>
+
+<DT><I>szCommand</I></DT>
+<DD>The command in the form "handler!data data data", where "handler" is the name under which the command processor was registered (using <A HREF="xbox_jbh_debugapi_function_dmregistercommandprocessor.htm">DmRegisterCommandProcessor</A>).</DD>
+
+<DT><I>szResponse</I></DT>
+<DD>Buffer that receives response data from the handler.  An error code is embedded in the first three characters of the response data, followed by the remainder of the data.  <I>szResponse</i> can be NULL, in which case no response data will be returned. If NULL, <I>lpdwResponseSize</I> should also be NULL.</DD>
+
+<DT><I>lpdwResponseSize</I></DT>
+<DD>Pointer to a <b>DWORD</b> that, on entry, contains the size of the response buffer specified in <I>szResponse</i>. On return, the <b>DWORD</b> contains the number of bytes written to the response buffer.  This parameter can be NULL if and only if <I>szResponse</i> is NULL.</DD>
+
+</DL>
+
+<H4>Return Values</H4>
+
+<P class="content">If the function succeeds, it returns XBDM_NOERR.  Otherwise, an error code defined in XboxDbg.h is returned.  See <a href="xbox_jbh_debugapi_errorcodes.htm">Debugger API Error Codes</a>.</P>
+
+
+<!-- <H4>Remarks</H4>
+<P class="content"></P>
+ -->
+
+<h4>Requirements</h4>
+<p class="content">
+<b>Header:</b> Declared in XboxDbg.h
+<br><b>Import Library:</b> Use XboxDbg.lib
+</p>
+
+<!--
+<H4>See Also</H4>
+<P class="content"></P>
+-->
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

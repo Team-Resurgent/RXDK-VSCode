@@ -1,0 +1,78 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirect3DPushBuffer8::Jump</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="IDirect3DPushBuffer8::Jump [C++]">
+<META NAME="MS-HKWD" CONTENT="Jump (IDirect3DPushBuffer8) [C++]">
+<META NAME="MS-HKWD" CONTENT="Jump [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Jump (IDirect3DPushBuffer8)"/>
+<MSHelp:Keyword Index="K" Term="IDirect3DPushBuffer8::Jump"/>
+<MSHelp:Keyword Index="F" Term="Jump"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_idirect3dpushbuffer8_jump_graphics"></A>IDirect3DPushBuffer8::Jump</H1>
+
+<P>Used only within a <a href="_dx_idirect3dpushbuffer8_beginfixup_graphics.htm">IDirect3DPushBuffer8::BeginFixup</a>/<a href="_dx_idirect3dpushbuffer8_endfixup_graphics.htm">IDirect3DPushBuffer8::EndFixup</a> bracket to modify the corresponding call to <a href="_dx_idirect3ddevice8_nop_graphics.htm">IDirect3DDevice8::Nop</a> as it was recorded in the push-buffer. This method jumps from one offset to another, skipping the commands recorded in the push-buffer that are between those offsets.</P>
+
+<PRE class=syntax><B>HRESULT Jump(
+  DWORD</b> <i>Offset</i>, 
+  <b>UINT</b> <i>DestinationOffset</i>
+<b>);</b>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<dt><i>Offset</i></dt>
+<dd>[in] The offset determined during the recording in the push-buffer as returned from <a href="_dx_idirect3ddevice8_getpushbufferoffset_graphics.htm"><b>IDirect3DDevice8::GetPushBufferOffset</b></a> just before <b>IDirect3DDevice8::Nop</b> was recorded.</dd>
+
+<DT><I>DestinationOffset</I></DT>
+
+<DD>[in] The offset to jump to as determined during the recording in the push-buffer by <b>IDirect3DDevice8::GetPushBufferOffset</b>. If <i>DestinationOffset</i> is the same as <i>Offset</i>, then a NOP instruction will be inserted.
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the method succeeds, the return value is S_OK</B></A>.</P>
+
+<H4>Known Issues</H4>
+
+<P>The following is a known issue with <B>IDirect3DPushBuffer8::Jump</B>:</P>
+<ul>
+<li>After <b>Jump</b> is used in a push-buffer fixup, calling <a href="_dx_idirect3dpushbuffer8_verify_graphics.htm">Verify</a> on that push-buffer will result in the assertion failure "ERR[D3D]: Assertion failure: instruction != 1".</li>
+</ul>
+
+<H4>Remarks</H4>
+
+<p>This method is callable only for non-D3DPUSHBUFFER_RUN_USING_CPU_COPY push-buffers. If the push-buffer was created with the <i>RunUsingCpuCopy</i> parameter of <a href="_dx_idirect3ddevice8_createpushbuffer_graphics.htm">IDirect3DDevice8::CreatePushBuffer</a> being TRUE, the title cannot call <b>IDirect3DPushBuffer8::Jump</b>.</p>
+
+<p><b>IDirect3DPushBuffer8::Jump</b> can be used to replace a Nop instruction with a GPU Jump instruction.</p>
+
+<p>If calling <b>IDirect3DPushBuffer8::Jump</b> to modify a push-buffer on-the-fly from an <a href="_dx_idirect3ddevice8_insertcallback_graphics.htm"><b>IDirect3DDevice8::InsertCallback</b></a> callback (for example, to implement a conditional jump in the push-buffer), the caller is responsible for flushing the CPU's write-combine cache using the x86 "sfence" instruction.</p>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in D3d8.h.<BR>
+<B>&nbsp;&nbsp;Import Library:</B> Use D3d8.lib.</P>
+
+<H4>See Also</H4>
+
+<p><a href="_dx_pushbuffer_overview_graphics.htm"><b>Push-Buffer Overview</b></a></p>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

@@ -1,0 +1,87 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>CancelIo</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="CancelIo">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="CancelIo"/>
+<MSHelp:Keyword Index="F" Term="CancelIo"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_cancelio"></A>CancelIo</H1>
+
+<P>The <B>CancelIo</B> function cancels all pending input and output (I/O) operations that were issued by the calling thread for the specified file handle. The function does not cancel I/O operations issued for the file handle by other threads. </P>
+
+<PRE class=syntax><B>BOOL CancelIo(
+  HANDLE</B><I> hFile  </I>// handle to file
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>hFile</I></DT>
+
+<DD>[in] Handle to a file. The function cancels all pending I/O operations for this file handle.
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is nonzero. All pending I/O operations issued by the calling thread for the file handle were successfully canceled.</P>
+
+<P>If the function fails, the return value is zero. To get extended error information, call <A HREF="errors_3uwi.htm">GetLastError</A>. </P>
+
+<H4>Remarks</H4>
+
+<p>The Xbox implementation of the <b>CancelIo</b> function only deals with
+asynchronous I/O targeted at the hard disk or DVD drive; canceling I/O targeted
+at an Xbox Memory Unit is not supported. Also, the Xbox implementation cannot be used
+to cancel an I/O operation that is already in progress, only one that is
+scheduled but not currently started. To safely determine whether an
+asynchronous I/O operation was successfully completed or canceled, either call
+the <a href="synchro_75v8.htm">GetOverlappedResult</A> function or
+specify I/O completion callback functions when using <a
+href="filesio_0660.htm">ReadFileEx</A> or <a
+href="filesio_8r08.htm">WriteFileEx</A>.</p>
+
+<P>Note that the I/O operations must have been issued as overlapped I/O. If they were not, the I/O operations would not have returned to allow the thread to call the <B>CancelIo</B> function. Calling the <B>CancelIo</B> function with a file handle that was not opened with FILE_FLAG_OVERLAPPED does nothing.</P>
+
+<P>All I/O operations that are canceled will complete with the error
+ERROR_OPERATION_ABORTED. All completion notifications for the
+I/O operations will occur normally.  </P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p>
+
+<H4>See Also</H4>
+<P>
+
+<A HREF="xbox_mt_xtl_sll_file_io_functions.htm">File I/O Functions</A> | 
+<A HREF="filesio_7wmd.htm">CreateFile</A>,
+<a href="synchro_75v8.htm">GetOverlappedResult</A>,
+<A HREF="filesio_39id.htm">ReadFile</A>,
+<A HREF="filesio_0660.htm">ReadFileEx</A>,
+<a href="filesio_8r08.htm">WriteFileEx</A>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

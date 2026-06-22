@@ -1,0 +1,205 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineStatRead</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineStatRead"/>
+<MSHelp:Keyword Index="F" Term="XOnlineStatRead"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineStatRead</h1>
+            <p>Initiates a task to retrieve statistics for the specified players or Xbox <i>Live</i> teams.</p>
+        <pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineStatRead(</b>
+    <b>DWORD</b> <i>dwNumStatSpecs</i><b>,</b>
+    <b>const XONLINE_STAT_SPEC</b> *<i>pStatSpecs</i><b>,</b>
+    <b>HANDLE</b> <i>hWorkEvent</i><b>,</b>
+    <b>PXONLINETASK_HANDLE</b> <i>phTask</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+
+            <dt><i>dwNumStatSpecs</i></dt>
+                <p>
+<dd>[in]  Number of <a href="XONLINE_STAT_SPEC.htm">XONLINE_STAT_SPEC</a> structures in the array pointed
+to by the <i>pStatSpecs</i> parameter.</dd>
+                </p>
+            
+            <dt><i>pStatSpecs</i></dt>
+                <p>
+<dd>[in]  Pointer to an array of <a href="XONLINE_STAT_SPEC.htm">XONLINE_STAT_SPEC</a> structures. Each
+structure specifies a player or Xbox <i>Live</i> team and the statistics to retrieve for that player or team. The user or team is specified by the <b>xuidUser</b> member of the structure. For more information, see the <a href="XOnlineStatRead.htm#remarks">Remarks</a> section.</dd>
+                </p>
+            
+            <dt><i>hWorkEvent</i></dt>
+                <p>
+<dd>[in, optional]  Optional handle to a caller-created event object. This object is signaled
+when there is work to do by calling the <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> function. The
+caller can pass in NULL instead, indicating that the caller is to poll <b>XOnlineTaskContinue</b> itself.</dd>
+                </p>
+            
+            <dt><i>phTask</i></dt>
+                <p><dd>[out]  Address of an <b>XONLINETASK_HANDLE</b> that receives the statistics retrieval task. This task sends the statistics request to the statistics service and receives the response. This handle must be pumped to completion by <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a>. The task is complete when <b>XOnlineTaskContinue</b>
+returns the value XONLINETASK_S_SUCCESS. After the task completes, call the <a href="XOnlineStatReadGetResult.htm">XOnlineStatReadGetResult</a> function to retrieve the statistics. After retrieving the statistics, call the <a href="XOnlineTaskClose.htm">XOnlineTaskClose</a> function to close the task.</dd>
+<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;To throttle requests sent to the statistics service, <b>XOnlineTaskContinue</b>  returns the value XONLINE_E_TASK_ABORTED_BY_DUPLICATE if the task is still being pumped when a second operation is started.</p>
+                </p>
+            
+        </dl>
+<h4><a name="return"></a>Return Values</h4>
+            
+                <p>The <b>XOnlineStatRead</b> function always returns S_OK.</p>
+
+                <p>The following table lists the possible values  <b>XOnlineTaskContinue</b> can return when called with the handle for the task created by <b>XOnlineStatRead</b>.</p>
+
+                <table>
+
+                    <tr>
+                        <th>Value</th>
+<th>Description</th>
+                    </tr>
+
+                    <tr>
+                        <td>XONLINE_E_STAT_TOO_MANY_SPECS</td>
+                        <td>You are trying to get too many specs in a single call. Send fewer specs per call.</td>
+                    </tr>
+                    <tr>
+                        <td>XONLINE_E_STAT_TOO_MANY_STATS</td>
+                        <td>You are trying to read too many stats for a given player or team. Send fewer stats per player or team.</td>
+                    </tr>
+                    <tr>
+                        <td>XONLINE_E_STAT_BAD_REQUEST</td>
+                        <td>The message might be empty, the attribute count might be zero, or there might be another problem. Check the values you are passing in. If the values are all correct, this error might indicate a problem on the server.</td>
+                    </tr>
+
+                </table>
+
+
+            
+        <h4><a name="remarks"></a>Remarks</h4>
+
+            <p><b>XOnlineStatRead</b> requests statistics from the statistics service.</p>
+
+            <p>Each <a href="XONLINE_STAT_SPEC.htm">XONLINE_STAT_SPEC</a> structure in the array pointed to by the <i>pStatSpecs</i> parameter specifies the statistics to retrieve for a single player or Xbox <i>Live</i> team. The player or team is specified by the <b>xuidUser</b> member of the structure. The <b>dwLeaderBoardID</b> member specifies the leaderboard with which the statistics are associated. The <b>dwNumStats</b> member specifies the number of statistics to retrieve. Each statistic is represented by an <a href="XONLINE_STAT.htm">XONLINE_STAT</a> structure in the array pointed to by the <b>pStat</b> member. Therefore, <b>dwNumStats</b> also specifies the number of structures in this array. For each <b>XONLINE_STAT</b> structure, the title should provide a value for the <b>wID</b> member that corresponds to the statistic to retrieve. A statistic is defined either by the title or by the statistics service. The following table lists the <b>wID</b> values for service-defined statistics.</p>
+            <table>
+                <tr>
+                    <th>Identifier</th>
+<th>Description</th>
+<th>Type</th>
+                </tr>
+                <tr>
+                    <td>XONLINE_STAT_RANK</td>
+                    <td>Rank statistic.</td>
+                    <td>Ranks have a type of <a href="XONLINE_STAT_TYPE.htm">XONLINE_STAT_LONG</a> (32 bits).</td>
+                </tr>
+                <tr>
+                    <td>XONLINE_STAT_RATING</td>
+                    <td>Rating statistic.</td>
+                    <td>Ratings have a type of <a href="XONLINE_STAT_TYPE.htm">XONLINE_STAT_LONGLONG</a> (64 bits).</td>
+                </tr>
+                <tr>
+                    <td>XONLINE_STAT_NICKNAME</td>
+                    <td>User nickname.</td>
+                    <td>Nicknames have a type of <a href="XONLINE_STAT_TYPE.htm">XONLINE_STAT_LPCWSTR</a> (variable-length string).</td>
+                </tr>
+                <tr>
+                    <td>XONLINE_STAT_LEADERBOARD_SIZE</td>
+                    <td>Number of entries on the leaderboard.</td>
+                    <td>The leaderboard size has a type of <a href="XONLINE_STAT_TYPE.htm">XONLINE_STAT_LONG</a> (32 bits).</td>
+                </tr>
+                <tr>
+                    <td>XONLINE_STAT_ATTACHMENT_PATH</td>
+                    <td>Path to a statistics attachment.</td>
+                    <td>Attachment paths have a type of <a href="XONLINE_STAT_TYPE.htm">XONLINE_STAT_LPCWSTR</a> (variable-length string).</td>
+                </tr>
+                <tr>
+                    <td>XONLINE_STAT_ATTACHMENT_SIZE</td>
+                    <td>Size of a statistics attachment.</td>
+                    <td>Attachment sizes have a type of <a href="XONLINE_STAT_TYPE.htm">XONLINE_STAT_LONG</a> (32 bits).</td>
+                </tr>
+				<tr>
+					<td>XONLINE_STAT_UNIT_ACTIVITY_COUNTER</td>
+					<td>Not supported.</td>
+					<td>Not supported.</td>
+				</tr>
+				<tr>
+					<td>XONLINE_STAT_UNIT_LAST_ACTIVITY_DATE</td>
+					<td>Not supported.</td>
+					<td>Not supported.</td>
+				</tr>
+            </table>
+			<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Leaderboards are also referred to as scoreboards.</p>
+
+
+            <p>
+                If the statistic specified by the <b>wID</b> member is not found, the 
+                statistics service sets the <b>type</b> member to XONLINE_STAT_NONE.
+            </p>
+
+            <p>
+                The rank statistic is computed by the statistics service. Although the rank 
+                statistic can be retrieved by <b>XOnlineStatRead</b>, it cannot be 
+                set by the <a href="XOnlineStatWrite.htm">XOnlineStatWrite</a> function.
+            </p>
+
+            <p>
+                <b>XOnlineStatRead</b> can retrieve statistics for players or teams other than 
+                those that are logged in.
+            </p>
+            <p>
+                If the statistics for a player or team include a statistic of type 
+                XONLINE_STAT_ATTACHMENT_PATH, the title may download an "attachment" that 
+                contains title-specific content related to the player's or team's statistics. 
+				Use the <a href="XOnlineStorageDownload.htm">XOnlineStorageDownload</a> function to download the attachment.
+            </p>
+	        
+            <p>
+                For maximum performance, the title should combine read operations for 
+				multiple players or teams into a single function call. The recommended way 
+				to retrieve friends stats is to define the relevant stat specs and bundle 
+				them into one <b>XOnlineStatRead</b> call. <b>XOnlineStatRead</b> allows 
+				you to retrieve stats for up to 101 players (that is, the active player 
+				and up to 100 friends). To preserve server performance, titles are expected 
+				to read from no more than five leaderboards per user or team in a single call. 
+				If this is not sufficient for your game needs, please contact your technical 
+				game manager (TGM). To prevent the statistics service from overloading, stat 
+				read operations are automatically throttled by the XOnline library to a maximum 
+				of one request every 1000 milliseconds, no matter how many times or how often 
+				<b>XOnlineStatRead</b> is called.
+            </p>
+			
+			<p>This function must not be called more often than once a second between game sessions. During a game session, this function can be called only once at the beginning, once at the end, and every five minutes if the game session lasts longer than five minutes. Note that this function asserts if you violate the usage constraints. Contact your technical game manager (TGM) or consult the Technical Certification Requirements for details.</p>
+
+			<p>This function can be called only with direct user input related to statistics.</p>
+			
+			<p>Nicknames are a deprecated feature now that Xbox <i>Live</i> supports teams. Titles should not use nicknames.</p>
+
+        <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+        	<a href="x_mt_xonline_functions.htm">Xbox Live Functions</a> | <a href="XOnlineStatReadGetResult.htm">XOnlineStatReadGetResult</a>, <a href="XOnlineStatWrite.htm">XOnlineStatWrite</a>
+        </p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>select</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="select">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="select"/>
+<MSHelp:Keyword Index="F" Term="select"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="xbox_select_winsock"></A>select</H1>
+
+<P>Determines the status of one or more sockets, waiting if necessary, to perform synchronous I/O.</P>
+
+<PRE class=syntax><B>int select(
+  int </B><I>nfds</I>,<B>                           </B>
+<B>  fd_set FAR </B><I>*readfds</I>,<B>               </B>
+<B>  fd_set FAR </B><I>*writefds</I>,<B>              </B>
+<B>  fd_set FAR </B><I>*exceptfds</I>,<B>             </B>
+<B>  const struct timeval FAR </B><I>*timeout  </I>
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>nfds</I></DT>
+
+<DD>[in] Ignored. The <I>nfds</I> parameter is included only for compatibility with Berkeley sockets.</DD>
+
+<DT><I>readfds</I></DT>
+
+<DD>[in/out] Optional pointer to a set of sockets to be checked for readability.</DD>
+
+<DT><I>writefds</I></DT>
+
+<DD>[in/out] Optional pointer to a set of sockets to be checked for writability</DD>
+
+<DT><I>exceptfds</I></DT>
+
+<DD>[in/out] Optional pointer to a set of sockets to be checked for errors.</DD>
+
+<DT><I>timeout</I></DT>
+
+<DD>[in] Maximum time for <B>select</B> to wait, provided in the form of a <A HREF="xbox_timeval_winsock.htm">TIMEVAL</A> structure. Set the <I>timeout</I> parameter to NULL for blocking operation.
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>The <B>select</B> function returns the total number of socket handles that are ready and contained in the <A HREF="xbox_fd_set_winsock.htm">fd_set</A> structures, zero if the time limit expired, or SOCKET_ERROR if an error occurred. If the return value is SOCKET_ERROR, <A HREF="xbox_wsagetlasterror_winsock.htm">WSAGetLastError</A> can be used to retrieve a specific error code.</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=34%>Error code</TH>
+<TH align=left width=66%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=34%>WSANOTINITIALISED</TD>
+<TD width=66%>A successful <A HREF="xbox_wsastartup_winsock.htm">WSAStartup</A> call must occur before using this function.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=34%>WSAEINVAL</TD>
+<TD width=66%>The <I>time-out</I> value is not valid, or all three descriptor parameters were NULL.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=34%>WSAEINPROGRESS</TD>
+<TD width=66%>A blocking call is in progress.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=34%>WSAENOTSOCK</TD>
+<TD width=66%>One of the descriptor sets contains an entry that is not a socket.</TD>
+</TR>
+</TABLE><BR>
+
+<H4>Remarks</H4>
+
+<P>The <B>select</B> function is used to determine the status of one or more sockets. For each socket, the caller can request information on read, write, or error status. The set of sockets for which a given status is requested is indicated by an <A HREF="xbox_fd_set_winsock.htm">fd_set</A> structure. Upon return, the structures are updated to reflect the subset of these sockets that meet the specified condition. The <B>select</B> function returns the number of sockets meeting the conditions. A set of macros is provided for manipulating an <B>fd_set </B>structure. These macros are compatible with those used in the Berkeley software, but the underlying representation is completely different.</P>
+
+<P>The parameter <I>readfds</I> identifies the sockets that are to be checked for readability. If the socket is currently in the <A HREF="xbox_listen_winsock.htm">listen</A> state, it will be marked as readable if an incoming connection request has been received such that an <A HREF="xbox_accept_winsock.htm">accept</A> is guaranteed to complete without blocking. For other sockets, readability means that queued data is available for reading such that a call to <A HREF="xbox_recv_winsock.htm">recv</A>, <A HREF="xbox_wsarecv_winsock.htm">WSARecv</A>, <A HREF="xbox_wsarecvfrom_winsock.htm">WSARecvFrom</A>, or <A HREF="xbox_recvfrom_winsock.htm">recvfrom</A> is guaranteed not to block.</P>
+
+<P>For connection-oriented sockets, readability can also indicate that a request to close the socket has been received from the peer. If the virtual circuit was closed gracefully, and all data was received, then a <A HREF="xbox_recv_winsock.htm">recv</A> will return immediately with zero bytes read. If the virtual circuit was reset, then a <B>recv</B> will complete immediately with an error code such as <A HREF="xbox_winsock_error_codes_winsock.htm#_win32_wsaeconnreset_2">WSAECONNRESET</A>.</P>
+
+<P>The parameter <I>writefds</I> identifies the sockets that are to be checked for writability. If a socket is processing a <A HREF="xbox_connect_winsock.htm">connect</A> call (nonblocking), a socket is writeable if the connection establishment successfully completes. If the socket is not processing a <A HREF="xbox_connect_winsock.htm">connect</A> call, writability means a <A HREF="xbox_send_winsock.htm">send</A>, <A HREF="xbox_sendto_winsock.htm">sendto</A>, or <A HREF="xbox_wsasendto_winsock.htm">WSASendto</A> are guaranteed to succeed. However, they can block on a blocking socket if the <I>len</I> parameter exceeds the amount of outgoing system buffer space available. It is not specified how long these guarantees can be assumed to be valid, particularly in a multithreaded environment.</P>
+
+<P>The parameter <I>exceptfds</I> identifies the sockets that are to be checked for exceptional error conditions.</P>
+
+<P>Any two of the parameters, <I>readfds</I>, <I>writefds</I>, or <I>exceptfds</I>, can be given as NULL. At least one must be non-NULL, and any non-NULL descriptor set must contain at least one handle to a socket.</P>
+
+<P>Summary: A socket will be identified in a particular set when <B>select</B> returns if:</P>
+
+<P><I>readfds</I>:
+
+<UL>
+	<LI>If <B>listen</B> has been called and a connection is pending, <B>accept</B> will succeed.</LI>
+
+	<LI>Data is available for reading.</LI>
+
+	<LI>Connection has been closed/reset/terminated.</LI>
+</UL>
+
+<P><I>writefds</I>:
+
+<UL>
+	<LI>If processing a <B>connect</B> call (nonblocking), connection has succeeded.</LI>
+
+	<LI>Data can be sent.</LI>
+</UL>
+
+<P><I>exceptfds</I>:
+
+<UL>
+	<LI>If processing a <B>connect</B> call (nonblocking), connection attempt failed.</LI>
+</UL>
+
+<P class=note><B><i>Note</i></B>&nbsp;&nbsp;&nbsp;When <b>select</b> is used to check the status of a non-blocking connection request, if the remote host refuses the connection, the socket will be identified in both <i>writefds</i> and <i>exceptfds</i>. The caller should check <i>exceptfds</i> first. If the socket is identified in <i>exceptfds</i>, then the connection has failed. Otherwise, if the socket is identified in <i>writefds</i>, the connection has succeeded.</P>
+
+
+<P>Four macros are defined in the header file winsockx.h for manipulating and checking the descriptor sets. The variable <I>FD_SETSIZE</I> determines the maximum number of descriptors in a set. (The default value of <I>FD_SETSIZE</I> is 64, which can be modified by defining FD_SETSIZE to another value before including winsockx.h.) Internally, socket handles in an <B>fd_set</B> structure are not represented as bit flags as in Berkeley Unix. Their data representation is opaque. Use of these macros will maintain software portability between different socket environments. The macros to manipulate and check <B>fd_set</B> contents are:
+
+<DL>
+<DT><B>FD_CLR(</B><I>s</I><B>, *</B><I>set</I><B>)</B></DT>
+
+<DD>Removes the descriptor <I>s</I> from <I>set</I>.</DD>
+
+<DT><B>FD_ISSET(</B><I>s</I><B>, *</B><I>set</I><B>)</B></DT>
+
+<DD>Nonzero if <I>s</I> is a member of the <I>set</I>. Otherwise, zero.</DD>
+
+<DT><B>FD_SET(</B><I>s</I><B>, *</B><I>set</I><B>)</B></DT>
+
+<DD>Adds descriptor <I>s</I> to <I>set</I>.</DD>
+
+<DT><B>FD_ZERO(*</B><I>set</I><B>)</B></DT>
+
+<DD>Initializes the <I>set</I> to the NULL set.
+</DD>
+</DL>
+
+<P>The parameter <I>time-out</I> controls how long the <B>select</B> can take to complete. If <I>time-out</I> is a NULL pointer, <B>select</B> will block indefinitely until at least one descriptor meets the specified criteria. Otherwise, <I>time-out</I> points to a <A HREF="xbox_timeval_winsock.htm">TIMEVAL</A> structure that specifies the maximum time that <B>select</B> should wait before returning. When <B>select</B> returns, the contents of the <B>TIMEVAL</B> structure are not altered. If <B>TIMEVAL</B> is initialized to {0, 0}, <B>select</B> will return immediately; this is used to poll the state of the selected sockets. If <B>select</B> returns immediately, then the <B>select</B> call is considered nonblocking and the standard assumptions for nonblocking calls apply.</P>
+
+<H4>Requirements</H4>
+<p>
+<b>Header: </b>Declared in winsockx.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xnet.lib for titles that only support system link play, XOnline.lib for titles that support online play. Use the secure versions of the library file (Xnets.lib or XOnlines.lib) for final testing.
+</p>
+
+
+<H4>See Also</H4>
+
+<P>
+<a href="xbox_winsock_overview_winsock.htm">Winsock Overview</A>,
+<a href="xbox_winsock_functions_winsock.htm">Winsock Functions</A> |
+  <A HREF="xbox_accept_winsock.htm">accept</A>, <A HREF="xbox_connect_winsock.htm">connect</A>, <A HREF="xbox_recv_winsock.htm">recv</A>, <A HREF="xbox_recvfrom_winsock.htm">recvfrom</A>, <A HREF="xbox_send_winsock.htm">send</A>, <A HREF="xbox_timeval_winsock.htm">TIMEVAL</A></P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

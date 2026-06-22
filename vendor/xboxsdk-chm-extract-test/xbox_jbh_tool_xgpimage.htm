@@ -1,0 +1,222 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>GP DSP Image Builder (XGPImage)</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="GP DSP Image Builder (XGPImage)"/>
+<MSHelp:Keyword Index="K" Term="XGPImage tool"/>
+<MSHelp:Keyword Index="F" Term="GP DSP Image Builder (XGPImage)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME="xbox_jbh_tool_xgpimage"></A>GP DSP Image Builder (XGPImage)</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<P class="content">The XGPImage tool takes as input an .ini file that describes the layout of the GP DSP program. It outputs a binary image of the DSP program image that can be read by Microsoft&reg; DirectSound&reg;.</P>
+
+<PRE>USAGE: xgpimage ini binfile header</PRE>
+
+<TABLE class="tblcontrols">
+<!--**Stock Text. Do not change.****-->
+<TR VALIGN="top"><TH align=left width=25%>Option</TH><TH align=left width=75%>Description</TH></TR>
+<!--**Use this set of tags for a row. Copy and paste for additional rows.**-->
+<TR><td><em>ini</em></td> <td>The .ini description file</td></TR>
+<TR><td><em>binfile</em></td> <td>The binary image to generate</td></TR>
+<TR><td><em>header</em></td><td>File name of the header file to generate</td></TR>
+<TR><td><b>-?</b></td><td>Display usage</td></TR>
+</TABLE>
+ 
+<H3 class="overview">Overview</H3>
+
+<P class="content">The Xbox Media Communications Processor (Xbox MCP) contains a programmable DSP as one of its three digital signal processors called the Global Processor (GP) DSP. Xbox system software provides several commonly used audio effects for use with Xbox games. These effects need to be configured and set up to interact properly with the rest of DirectSound. In addition, custom DSP programs may be written and run on the GP DSP. These programs typically are used for audio effects processing (such as reverb and chorus) as well as for creating the final multichannel output stream.</P>
+
+<P class="content">The GP DSP has its own memory spaces (one program and two data memory spaces). To run code on the GP DSP, an image must be made of the program memory image. The image contains each of the individual DSP effect programs the game developer wishes to use. This image is then downloaded to the GP DSP's program memory ("P" memory) by DirectSound. For most DSP algorithms, parameters must be updated (for example, reverberation settings). This requires a map of where each effects parameter is in DSP data memories (X memory and Y memory). Finally, the DSP programs may use areas of system memory for various reasons, typically when on-chip memory is insufficient (for example, for reverb delay lines). This memory must be managed by DirectSound as well.</P>
+
+<P class="content">XGPImage addresses each of these issues. XGPImage takes as input an .ini file which describes the layout of the GP DSP program. It outputs a binary image of the DSP program image that can be read by DirectSound. It also outputs a .h file that is used let DirectSound know how to update DSP program parameters. The .ini file specifies each effect, where the effect inputs come from, and where the effect outputs go. It also provides for easy effects chaining.</P>
+
+<P class="content">Effects themselves are specified by a pair of files. The first is a scrambled binary image of the DSP program code for the effect. The second is called the "Effects State" file and is an .ini file. This file, created by the provider of the DSP program, specifies memory and processor usage as well as some other information. By convention, these files are named effect.scr and effect.ini.</P>
+
+<P class="content">The following figure shows the input and output files used and created by XGPImage.</P>
+
+<P Class="image"><IMG SRC="images/xbox_jbh_tool_aud_xgpimage1.gif" WIDTH="576" HEIGHT="304" ALT="" BORDER="0"></P>
+
+
+
+<H3 class="overview">Basic Effects Processing Architecture</H3>
+
+<P class="content">Audio data is generated by hardware voices (oscillators) in the voice processor (VP). Each oscillator can route and mix its output to up to 8 of the 32 VP mixbins within the VP. The GP then reads data from the 32 mixbins, performs whatever processing is necessary, and places the final 5.1 pulse code modulator (PCM) output into six GP mixbins. The six GP mixbins represent the final data to be sent to the Dolby&reg; Encoders and therefore represent what users ultimately hear from their speakers. The GP also uses a certain amount of main system memory (called "scratch space") for some of its processing.</P>
+
+<P class="content">Eleven of the 32 VP mixbins are reserved by DirectSound (VPMixbins 0&#8211;10).VP mixbins 0&#8211;5 represent [left, right, center, LFE, left surround, right surround] speakers, VP mixbins 6&#8211;9 are used for 3D crosstalk cancellation, and VP mixbin 10 is used for Interactive 3D Level 2 (I3DL2) processing. Note that by default, VP mixbins 0&#8211;6 are sent to GP mixbins 0&#8211;6. A diagram of the basic VP/GP flow is shown in the figure below.</P>
+
+<P Class="image"><IMG SRC="images/xbox_jbh_tool_aud_xgpimage2.gif" WIDTH="991" HEIGHT="536" ALT="" BORDER="0"></P>
+
+<H3 class="overview">Setting the Environment Variables</H3>
+
+<p>The XGPImage tool depends on two environment variables (_XGPIMAGE_DSP_CODE_PATH and _XGPIMAGE_INI_PATH) being set in order to locate the scrambled DSP effect images and their state .ini files.</p>
+
+<p>The following example shows the usual settings for these environment variables.</p>
+
+<pre>
+_XGPIMAGE_DSP_CODE_PATH=C:\Program Files\Microsoft Xbox SDK\source\DSound\dsp\bin
+_XGPIMAGE_INI_PATH=C:\Program Files\Microsoft Xbox SDK\source\DSound\dsp\ini
+</pre>
+
+<P CLASS="note"><B><I>Note</I></B>&nbsp;&nbsp;&nbsp;&nbsp;Setting these environment variables is unnecessary if you use fully qualified paths to your scrambled DSP effect images and their state .ini files.</P>
+
+
+<H3 class="overview">Structure of the .ini File</H3>
+
+<P class="content">The .ini file provides the architecture of the GP image created. An .ini file looks something like the following:</P>
+
+<PRE> [Main]	
+ FriendlyName
+ List of Effect Chain Graphs
+ TempBin Count 
+ 
+ [EffectsChain1]
+ Effects List
+ 
+ [Effects Chain Effect1 Description]
+ Effects files, definitions, input/output routing
+ 
+ [Effects Chain Effect2 Description]
+ ...
+ 
+ [Effects Chain 2]
+ ...
+</PRE>
+
+
+
+<H3 class="overview">[Main]</H3>
+
+<P class="content">Every XGPImage .ini file must have a [Main] section. This section defines the friendly name for the DSP image and sets how many effects chain graphs are defined by the configuration file. The friendly name is set with the IMAGE_FRENDLY_NAME keyword. Each graph must be specified with the GRAPH keyword.</P>
+
+<UL>
+
+ <LI>IMAGE_FRIENDLY_NAME = <em>FriendlyName</em>
+<P>Friendly name for effects description. This will be used to create the output .h file for referencing effects using DirectSound. For example:</p>
+<PRE>IMAGE_FRIENDLY_NAME = MyFxGraphs</PRE></li>
+ <LI>FX_NUMTEMPBINS = <em>numbins</em>
+<P>Number of temporary mixing locations to allocate for the entire set of effects chains. For example:</p>
+<PRE>FX_NUMTEMPBINS = 2</PRE>
+<P></P></li>
+ <LI>GRAPH<em>n</em> = <em>Graphname</em>
+<P>Defines a DSP program chain graph, where <em>n</em> specifies the graph number. Each graph in the graph chain must be defined by the GRAPH<em>n</em> directive. For example:</p>
+<PRE>GRAPH0 = MyMixbin15Graph
+GRAPH1 = MyMixbin17Echo
+...</PRE></li>
+</UL>
+
+<P class="content">All other sections are based off of those defined in [Main] and are used to define the effects chain graphs.</P>
+
+
+<H3 class="overview">[Graphname]</H3>
+
+<P class="content">For each graph defined with the GRAPH<em>n</em> directive, a list of effects, in order, must be specified for the graph. Effects (or any DSP program) are specified by setting the keyword FX<em>n</em> (where <em>n</em> is the effect number) to the name of the effect.</P>
+
+
+<P class="content">For example, the following declares and names two effects, chorus and flange, in the effects chain MyMixbin15Graph.</P>
+
+<PRE>[MyMixbin15Graph] // define an effects graph
+FX0 = Chorus// with chorus
+FX1 = Flange// and flange</PRE>
+
+
+<H3 class="overview">[EffectDefinition]</H3>
+
+<P class="content">The effects are specified within a section whose name is created from the graphname, FX definition, and FX name. The format of the section name is "Graphname_FXn_Effectname".</P>
+
+<P class="content">To create the effect definition in our example, we would add a section like this:</P>
+
+<PRE>[MyMixbin15Graph_FX0_Chorus]	// Effect definition for chorus</PRE>
+
+<P class="content">The definition for the effect specifies the binary DSP program image, a "state" definition file, the number of inputs, the number of outputs, and where the effect should receive and send its data. The DSP program image and scratch space definition file are generally supplied for you (unless you are writing your own DSP program, in which case you create these files yourself).</P>
+
+
+<P class="content">Several keywords are used to specify this information.</P>
+
+
+<UL>
+ <LI>FX_MIXOUTPUT = 0,1&nbsp;&nbsp;&nbsp;Specifies whether or not the output of the effect should be mixed into its output buffer or overwrite the output buffer with new data. Must be set to zero if it's the first effect in an effects chain.</li>
+ <LI>FX_DSPCODE = <em>CodeFilename</em>&nbsp;&nbsp;&nbsp;Specifies the path to the binary DSP program code.</li>
+ <LI>FX_DSPSTATE = <em>StateFilename</em>&nbsp;&nbsp;&nbsp;Specifies the path to the DSP program state file.</li>
+ <LI>FX_NUMINPUTS = <em>NumInputs</em>&nbsp;&nbsp;&nbsp;Specifies number of inputs for this effect.</li>
+ <LI>FX_NUMOUTPUTS = <em>NumOutputs</em>&nbsp;&nbsp;&nbsp;Specifies the number of outputs for this effect.</li>
+ <LI>FX_INPUT<em>n</em> = <em>input source</em>&nbsp;&nbsp;&nbsp;Specifies each of the <em>n</em> inputs for this effect. Note that there will be <em>NumInputs</em> FX_INPUT<em>n</em> entries.</li>
+ <LI>FX_OUTPUT<em>m</em> = <em>output destination</em>&nbsp;&nbsp;&nbsp;Specifies each of the <em>m</em> outputs for this effect. Note that there will be <em>NumOutputs</em> FX_OUTPUT<em>m</em> entries.</li>
+</UL>
+
+<H3 class="overview">Defining Effect Sources and Destinations</H3>
+
+
+<P class="content">Each effect must specify its source (where it reads its data) and destination (where it writes its data). Sources and destinations are specified with any of the following keywords:</P>
+
+
+<UL>
+ <LI>VPMIXBIN_FRONTLEFT&nbsp;&nbsp;&nbsp;Data from the VP designated to go to the front-left speaker.</li>
+ <LI>VPMIXBIN_FRONTRIGHT&nbsp;&nbsp;&nbsp;Data from the VP designated to go to the front-right speaker.</li>
+ <LI>VPMIXBIN_CENTER&nbsp;&nbsp;&nbsp;Data from the VP designated to go to the center.</li>
+ <LI>VPMIXBIN_LFE&nbsp;&nbsp;&nbsp;Data from the VP designated to go to the subwoofer.</li>
+ <LI>VPMIXBIN_BACKLEFT&nbsp;&nbsp;&nbsp;Data from the VP designated to go to the rear-left speaker.</li>
+ <LI>VPMIXBIN_BACKRIGHT&nbsp;&nbsp;&nbsp;Data from the VP designated to go to the rear-right speaker.</li>
+ <LI>VPMIXBIN_I3DL2SEND&nbsp;&nbsp;&nbsp;Data from the I3DL2 reverb (listener). To use I3DL2 environments, this must be the source of the I3DL2 reverb in the GP.</li>
+ <LI>VPMIXBIN_XTLK_FL, VPMIXBIN_XTLK_FR, VPMIXBIN_XTLK_BL, VPMIXBIN_XTLK_BR&nbsp;&nbsp;&nbsp;Submixes for Head Relative Transfer Function (HRTF) output. All 3D sounds are mixed into these mixbins.</li>
+ <LI>VPMIXBIN_FXSEND<em>n</em>&nbsp;&nbsp;&nbsp;<em>n</em> = 0&#8211;19, one of the 20 user-definable effects send mixbins. These may be used for any purpose and are typically used as effects sends.</li>
+</UL>
+
+<P class="content">The GP mixbins represent data to go from the GP to either the speakers or back to system memory for further processing, usually by another hardware voice. Specifically, sound may be output to the speakers by setting the output to any of the GPMIXBIN_<i>speaker</i> outputs. </P> 
+<P class="note"><B><I>Important Note</I></B>&nbsp;&nbsp;&nbsp;The GPMIXBINS and VPMIXBINS share the same DSP memory. Therefore, be careful when setting GPMIXBIN output destinations and ensure you are not overwriting a VPMIXBIN with valid data in it. Also for this reason, by default, the VPMIXBINs are automatically "connected" to the corresponding GPMIXBINs. Therefore, it is not necessary to explicitly route data from VPMIXBIN_FRONTLEFT to GPMIXBIN_FRONTLEFT; this is done automatically.</P>
+
+
+<UL>
+ <LI>GPMIXBIN_FRONTLEFT&nbsp;&nbsp;&nbsp;Data from the GP designated to go to the front-left speaker.</li>
+ <LI>GPMIXBIN_FRONTRIGHT&nbsp;&nbsp;&nbsp;Data from the GP designated to go to the front-right speaker.</li>
+ <LI>GPMIXBIN_CENTER&nbsp;&nbsp;&nbsp;Data from the GP designated to go to the center speaker.</li>
+ <LI>GPMIXBIN_LFE&nbsp;&nbsp;&nbsp;Data from the GP designated to go to the subwoofer.</li>
+ <LI>GPMIXBIN_BACKLEFT&nbsp;&nbsp;&nbsp;Data from the GP designated to go to the rear-left speaker.</li>
+ <LI>GPMIXBIN_BACKRIGHT&nbsp;&nbsp;&nbsp;Data from the GP designated to go to the rear-right speaker.</li>
+ <LI>GPMIXBIN_I3DL2SEND, GPMIXBIN_XTLK_FL, GPMIXBIN_XTLK_FR, GPMIXBIN_XTLK_BL, GPMIXBIN_XTLK_BR&nbsp;&nbsp;&nbsp;Do not use these GPMIXBINS.</li>
+ <LI>GPMIXBIN_FXSEND<em>n</em>&nbsp;&nbsp;&nbsp;<em>n</em> = 0&#8211;19, one of the 20 user-definable effects send mixbins. </li>
+ <LI>GPTEMPBIN<em>n</em>&nbsp;&nbsp;&nbsp;Used to specify a temporary area for either storing the output from an effect or reading the input from an effect.</li>
+</UL>
+
+<P class="content">For example:</P>
+
+<PRE>[MyMixbin15Graph_FX0_Chorus]	// Effect definition for chorus
+FX_DSPCODE = c:\DSPBINS\chorus.scr
+FX_DSPSTATE = c:\DSPBINS\chorus.ini
+FX_NUMINPUTS = 1
+FX_NUMOUTPUTS = 1
+FX_INPUT0 = VPMIXBIN_FXSEND0	
+FX_OUTPUT0 = GPMIXBINFRONT_LEFT</PRE>
+
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.&#169 2000 Microsoft Corporation. All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

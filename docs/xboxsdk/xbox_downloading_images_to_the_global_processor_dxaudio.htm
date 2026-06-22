@@ -1,0 +1,356 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Downloading Images to the Global Processor</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="Downloading Images to the Global Processor">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Downloading Images to the Global Processor"/>
+<MSHelp:Keyword Index="F" Term="Downloading Images to the Global Processor"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="xbox_downloading_images_to_the_global_processor_dxaudio"></A>Downloading Images to the Global Processor</H1>
+
+<P>This tutorial describes how to download a DSP effects image to the global processor in the Xbox Media Communications Processor (MCP).</P>
+
+<P>Currently, any application using 3D sound in either DirectMusic or DirectSound must download an effects image containing both Crosstalk and I3DL2 reverberation effects to the global processor.</P>
+
+<UL>
+	<LI><A HREF="#xbox_downloading_images_to_the_global_processor_dxaudio_require"><B>Prerequisites and Requirements</B></A></LI>
+    <LI><A HREF="#xbox_downloading_images_to_the_global_processor_dxaudio_steps"><B>Implementation Steps</B></A></LI>
+    <LI><A HREF="#xbox_downloading_images_to_the_global_processor_dxaudio_related"><B>Related Topics</B></A></LI>
+</UL>
+
+<H2><A NAME="xbox_downloading_images_to_the_global_processor_dxaudio_require"></A>Prerequisites and Requirements</H2>
+
+<P>To complete this tutorial, you will either need the default DSP effects image (Dsstdfx.bin) included with the samples in the XDK or you will need to create your own DSP effects image using the either the Xgpimage.exe or DSPBuilder tool.</P>
+
+<H2><A NAME="xbox_downloading_images_to_the_global_processor_dxaudio_steps"></A>Implementation Steps</H2>
+
+<P>Complete the following steps to download a DSP effects image to the global processor.</P>
+
+<OL>
+    <LI>Define the variables that are required.</LI>
+<PRE>
+HRESULT hr;
+HANDLE hFile;
+DWORD dwSize;
+DWORD dwBytesRead;
+LPDIRECTSOUND8 m_pDSound;
+LPDSEFFECTIMAGEDESC pDesc;
+DSEFFECTIMAGELOC  EffectLoc;
+</PRE>
+
+    <LI>Create the DirectSound object using the <A HREF="xbox_jc_directsoundcreate_dxaudio.htm"><B>DirectSoundCreate</B></A> function.</LI>
+<PRE>
+HRESULT hr;
+HANDLE hFile;
+DWORD dwSize;
+DWORD dwBytesRead;
+LPDIRECTSOUND8 m_pDSound;
+LPDSEFFECTIMAGEDESC pDesc;
+DSEFFECTIMAGELOC  EffectLoc;
+
+hr = DirectSoundCreate( NULL, &amp;m_pDSound, NULL )
+</PRE>
+
+    <LI>Create a handle to the DSP effects image file using the <A HREF="filesio_7wmd.htm"><B>CreateFile</B></A> function.</LI>
+    
+<PRE>
+HRESULT hr;
+HANDLE hFile;
+DWORD dwSize;
+DWORD dwBytesRead;
+LPDIRECTSOUND8 m_pDSound;
+LPDSEFFECTIMAGEDESC pDesc;
+DSEFFECTIMAGELOC  EffectLoc;
+
+hr = DirectSoundCreate( NULL, &amp;m_pDSound, NULL )
+
+hFile = CreateFile( pszScratchFile,
+                    GENERIC_READ,
+                    0,
+                    NULL,
+                    OPEN_EXISTING,
+                    0,
+                    NULL );
+
+</PRE>
+
+    <LI>Get the file size by using the <A HREF="filesio_05id.htm"><B>GetFileSize</B></A> function.</LI>
+<PRE>
+HRESULT hr;
+HANDLE hFile;
+DWORD dwSize;
+DWORD dwBytesRead;
+LPDIRECTSOUND8 m_pDSound;
+LPDSEFFECTIMAGEDESC pDesc;
+DSEFFECTIMAGELOC  EffectLoc;
+
+hr = DirectSoundCreate( NULL, &amp;m_pDSound, NULL )
+
+hFile = CreateFile( pszScratchFile,
+                    GENERIC_READ,
+                    0,
+                    NULL,
+                    OPEN_EXISTING,
+                    0,
+                    NULL );
+
+dwSize = GetFileSize(hFile, NULL);
+</PRE>        
+<!-- OMIT: 
+dwSize = SetFilePointer( hFile, 0, NULL, FILE_END );
+SetFilePointer(hFile, 0, NULL, FILE_BEGIN);
+
+dwSize = GetFileSize (hFile, NULL) ; 
+-->
+
+    <LI>Allocate the memory needed to read the DSP effects image from the disk.</LI>
+<PRE>
+HRESULT hr;
+HANDLE hFile;
+DWORD dwSize;
+DWORD dwBytesRead;
+LPDIRECTSOUND8 m_pDSound;
+LPDSEFFECTIMAGEDESC pDesc;
+DSEFFECTIMAGELOC  EffectLoc;
+
+hr = DirectSoundCreate( NULL, &amp;m_pDSound, NULL )
+
+hFile = CreateFile( pszScratchFile,
+                    GENERIC_READ,
+                    0,
+                    NULL,
+                    OPEN_EXISTING,
+                    0,
+                    NULL );
+
+dwSize = GetFileSize(hFile, NULL);
+
+pBuffer = new BYTE[dwSize];
+</PRE>
+
+    <LI>Read the file into memory using the <A HREF="filesio_39id.htm"><B>ReadFile</B></A> function.</LI>
+
+<PRE>
+HRESULT hr;
+HANDLE hFile;
+DWORD dwSize;
+DWORD dwBytesRead;
+LPDIRECTSOUND8 m_pDSound;
+LPDSEFFECTIMAGEDESC pDesc;
+DSEFFECTIMAGELOC  EffectLoc;
+
+hr = DirectSoundCreate( NULL, &amp;m_pDSound, NULL )
+
+hFile = CreateFile( pszScratchFile,
+                    GENERIC_READ,
+                    0,
+                    NULL,
+                    OPEN_EXISTING,
+                    0,
+                    NULL );
+
+dwSize = GetFileSize(hFile, NULL);
+
+pBuffer = new BYTE[dwSize];
+
+BOOL bResult = ReadFile( hFile,
+                         pBuffer,
+                         dwSize,
+                         &amp;dwBytesRead,
+                         0 );
+</PRE>    
+
+<LI>Specify the indexes of the effects images that are used by DirectSound in the <A HREF="xbox_dseffectimageloc_dxaudio.htm"><B>DSEFFECTIMAGELOC</B></A> structure. The indexes are found in the .h file generated by the <A HREF="xbox_jbh_tool_xgpimage.htm"><B>xgpimage.exe</B></A> tool. For this example, let's say that the DSP effects image being used doesn't include the I3DL2 reverb effect (so we'll use DSFX_IMAGELOC_UNUSED for the index) and the index for the Crosstalk cancellation effect is MIXBIN0_CHAIN_XTALK.</LI>
+
+<PRE>
+HRESULT hr;
+HANDLE hFile;
+DWORD dwSize;
+DWORD dwBytesRead;
+LPDIRECTSOUND8 m_pDSound;
+LPDSEFFECTIMAGEDESC pDesc;
+DSEFFECTIMAGELOC  EffectLoc;
+
+hr = DirectSoundCreate( NULL, &amp;m_pDSound, NULL )
+
+hFile = CreateFile( pszScratchFile,
+                    GENERIC_READ,
+                    0,
+                    NULL,
+                    OPEN_EXISTING,
+                    0,
+                    NULL );
+
+dwSize = GetFileSize(hFile, NULL);
+
+pBuffer = new BYTE[dwSize];
+
+BOOL bResult = ReadFile( hFile,
+                         pBuffer,
+                         dwSize,
+                         &amp;dwBytesRead,
+                         0 );
+
+EffectLoc.dwI3DL2ReverbIndex = DSFX_IMAGELOC_UNUSED;
+EffectLoc.dwCrosstalkIndex = MIXBIN0_CHAIN_XTALK;
+
+</PRE>    
+
+<LI>Call the <A HREF="xbox_idirectsound8_downloadeffectsimage_dxaudio.htm"><B>IDirectSoundBuffer8::DownloadEffectsImage</B></A> method to download the DSP effects image to the global processor. The title should pass the handle of the file containing the effects image, the size of the file, the <B>DSEFFECTIMAGELOC</B> structure, and the <A HREF="xbox_dseffectimagedesc_dxaudio.htm"><B>LPDSEFFECTIMAGEDESC</B></A> structure.</LI>
+
+<PRE>
+HRESULT hr;
+HANDLE hFile;
+DWORD dwSize;
+DWORD dwBytesRead;
+LPDIRECTSOUND8 m_pDSound;
+LPDSEFFECTIMAGEDESC pDesc;
+DSEFFECTIMAGELOC  EffectLoc;
+
+hr = DirectSoundCreate( NULL, &amp;m_pDSound, NULL )
+
+hFile = CreateFile( pszScratchFile,
+                    GENERIC_READ,
+                    0,
+                    NULL,
+                    OPEN_EXISTING,
+                    0,
+                    NULL );
+
+dwSize = GetFileSize(hFile, NULL);
+
+pBuffer = new BYTE[dwSize];
+
+BOOL bResult = ReadFile( hFile,
+                         pBuffer,
+                         dwSize,
+                         &amp;dwBytesRead,
+                         0 );
+
+EffectLoc.dwI3DL2ReverbIndex = DSFX_IMAGELOC_UNUSED;
+EffectLoc.dwCrosstalkIndex = MIXBIN0_CHAIN_XTALK;
+
+hr = m_pDSound->DownloadEffectsImage( pBuffer,
+                                      dwSize,
+                                      &amp;EffectLoc,
+                                      &amp;pDesc );
+</PRE>
+    
+    <LI>Delete the buffer.</LI>
+
+<PRE>
+HRESULT hr;
+HANDLE hFile;
+DWORD dwSize;
+DWORD dwBytesRead;
+LPDIRECTSOUND8 m_pDSound;
+LPDSEFFECTIMAGEDESC pDesc;
+DSEFFECTIMAGELOC  EffectLoc;
+
+hr = DirectSoundCreate( NULL, &amp;m_pDSound, NULL )
+
+hFile = CreateFile( pszScratchFile,
+                    GENERIC_READ,
+                    0,
+                    NULL,
+                    OPEN_EXISTING,
+                    0,
+                    NULL );
+
+dwSize = GetFileSize(hFile, NULL);
+
+pBuffer = new BYTE[dwSize];
+
+BOOL bResult = ReadFile( hFile,
+                         pBuffer,
+                         dwSize,
+                         &amp;dwBytesRead,
+                         0 );
+
+EffectLoc.dwI3DL2ReverbIndex = DSFX_IMAGELOC_UNUSED;
+EffectLoc.dwCrosstalkIndex = MIXBIN0_CHAIN_XTALK;
+
+hr = m_pDSound->DownloadEffectsImage( pBuffer,
+                                      dwSize,
+                                      &ampEffectLoc,
+                                      &amp;pDesc );
+
+delete[] pBuffer;
+</PRE>
+    
+    <LI>Close the file handle using the <A HREF="handobj_289x.htm"><B>CloseHandle</B></A> function.</LI>
+
+<PRE>
+HRESULT hr;
+HANDLE hFile;
+DWORD dwSize;
+DWORD dwBytesRead;
+LPDIRECTSOUND8 m_pDSound;
+LPDSEFFECTIMAGEDESC pDesc;
+DSEFFECTIMAGELOC  EffectLoc;
+
+hr = DirectSoundCreate( NULL, &amp;m_pDSound, NULL )
+
+hFile = CreateFile( pszScratchFile,
+                    GENERIC_READ,
+                    0,
+                    NULL,
+                    OPEN_EXISTING,
+                    0,
+                    NULL );
+
+dwSize = GetFileSize(hFile, NULL);
+
+pBuffer = new BYTE[dwSize];
+
+BOOL bResult = ReadFile( hFile,
+                         pBuffer,
+                         dwSize,
+                         &amp;dwBytesRead,
+                         0 );
+
+EffectLoc.dwI3DL2ReverbIndex = DSFX_IMAGELOC_UNUSED;
+EffectLoc.dwCrosstalkIndex = MIXBIN0_CHAIN_XTALK;
+
+hr = m_pDSound->DownloadEffectsImage( pBuffer,
+                                      dwSize,
+                                      &ampEffectLoc,
+                                      &amp;pDesc );
+
+delete[] pBuffer;
+
+if( hFile != INVALID_HANDLE_VALUE ) 
+{
+    CloseHandle( hFile );
+}
+</PRE>
+</OL>
+
+<P>For another example of downloading a DSP effects image, see the <B>DownloadScratchImage</B> function in the Play3DSound sample that is included with the XDK.</P>
+
+
+<H2><A NAME="xbox_downloading_images_to_the_global_processor_dxaudio_related"></A>Related Topics</H2>
+
+<P>The following topics are related to downloading DSP effects images to the global processor.</P>
+
+<UL>
+    <LI><A HREF="xbox_dsp_effects_processing_dxaudio.htm"><B>DSP Effects Processing</B></A></LI>
+    <li><a href="xbox_tool_dsp_builder_dxaudio.htm">DSP Builder Tool (dspbuilder)</a></li>
+    <li><a href="xbox_jbh_tool_xgpimage.htm">GP DSP Image Builder (xgpimage)</a></li>
+	<LI><A HREF="xbox_creating_a_dsp_effects_image_dxaudio.htm"><B>Creating a DSP Effects Image</B></A></LI>
+</UL>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

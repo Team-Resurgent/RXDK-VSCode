@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>WSAGetOverlappedResult</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="WSAGetOverlappedResult">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="WSAGetOverlappedResult"/>
+<MSHelp:Keyword Index="F" Term="WSAGetOverlappedResult"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="xbox_wsagetoverlappedresult_winsock"></A>WSAGetOverlappedResult</H1>
+
+<P>Returns the results of an overlapped operation on the specified socket.</P>
+
+<PRE class=syntax><B>BOOL WSAGetOverlappedResult(
+  SOCKET </B><I>s</I>,<B>                      </B>
+<B>  LPWSAOVERLAPPED </B><I>lpOverlapped</I>,<B>  </B>
+<B>  LPDWORD </B><I>lpcbTransfer</I>,<B>          </B>
+<B>  BOOL </B><I>fWait</I>,<B>                    </B>
+<B>  LPDWORD </B><I>lpdwFlags              </I>
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>s</I></DT>
+
+<DD>[in] Descriptor identifying the socket. This is the same socket that was specified when the overlapped operation was started by a call to <A HREF="xbox_wsarecv_winsock.htm">WSARecv</A>, <A HREF="xbox_wsarecvfrom_winsock.htm">WSARecvFrom</A>, <A HREF="xbox_wsasend_winsock.htm">WSASend</A>, or <A HREF="xbox_wsasendto_winsock.htm">WSASendTo</A>.</DD>
+
+<DT><I>lpOverlapped</I></DT>
+
+<DD>[in] Pointer to a <A HREF="xbox_wsaoverlapped_winsock.htm">WSAOVERLAPPED</A> structure that was specified when the overlapped operation was started.</DD>
+
+<DT><I>lpcbTransfer</I></DT>
+
+<DD>[out] Pointer to a 32-bit variable that receives the number of bytes that were actually transferred by a send or receive operation.</DD>
+
+<DT><I>fWait</I></DT>
+
+<DD>[in] Flag that specifies whether the function should wait for the pending overlapped operation to complete. If TRUE, the function does not return until the operation has been completed. If FALSE and the operation is still pending, the function returns FALSE and the <A HREF="xbox_wsagetlasterror_winsock.htm">WSAGetLastError</A> function returns WSA_IO_INCOMPLETE.</DD>
+
+<DT><I>lpdwFlags</I></DT>
+
+<DD>[out] Pointer to a 32-bit variable that will receive one or more flags that supplement the completion status. If the overlapped operation was initiated through <A HREF="xbox_wsarecv_winsock.htm">WSARecv</A> or <A HREF="xbox_wsarecvfrom_winsock.htm">WSARecvFrom</A>, this parameter will contain the results value for <I>lpFlags </I>parameter.
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If <B>WSAGetOverlappedResult</B> succeeds, the return value is TRUE. This means that the overlapped operation has completed successfully and that the value pointed to by <I>lpcbTransfer</I> has been updated. If <B>WSAGetOverlappedResult</B> returns FALSE, this means that either the overlapped operation has not completed, the overlapped operation completed but with errors, or the overlapped operation's completion status could not be determined due to errors in one or more parameters to <B>WSAGetOverlappedResult</B>. On failure, the value pointed to by <I>lpcbTransfer</I> will <I>not</I> be updated. Use <A HREF="xbox_wsagetlasterror_winsock.htm">WSAGetLastError</A> to determine the cause of the failure (either of <B>WSAGetOverlappedResult</B> or of the associated overlapped operation).</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=46%>Error code</TH>
+<TH align=left width=54%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=46%>WSANOTINITIALISED</TD>
+<TD width=54%>A successful <A HREF="xbox_wsastartup_winsock.htm">WSAStartup</A> call must occur before using this function.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=46%>WSAENOTSOCK</TD>
+<TD width=54%>The descriptor is not a socket.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=46%>WSA_IO_INCOMPLETE</TD>
+<TD width=54%>The <I>fWait</I> parameter is FALSE and the I/O operation has not yet completed.</TD>
+</TR>
+
+</TABLE><BR>
+
+<H4>Remarks</H4>
+
+<P>The <B>WSAGetOverlappedResult</B> function reports the results of the last overlapped operation for the specified socket. The <B>WSAOverlappedResult </B>function is passed the socket descriptor and the <A HREF="xbox_wsaoverlapped_winsock.htm">WSAOVERLAPPED</A> structure that was specified when the overlapped function was called. A pending operation is indicated when the function that started the operation returns FALSE and the <A HREF="xbox_wsagetlasterror_winsock.htm">WSAGetLastError</A> function returns WSA_IO_PENDING. When an I/O operation such as <A HREF="xbox_wsarecv_winsock.htm">WSARecv</A> is pending, the function that started the operation resets the <I>hEvent</I> member of the <B>WSAOVERLAPPED</B> structure to the nonsignaled state. Then, when the pending operation has completed, the system sets the event object to the signaled state.</P>
+
+<P>If the <I>fWait</I> parameter is TRUE, <B>WSAGetOverlappedResult</B> determines whether the pending operation has been completed by waiting for the event object to be in the signaled state.</P>
+
+<H4>Requirements</H4>
+<p>
+<b>Header: </b>Declared in winsockx.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xnet.lib for titles that only support system link play, XOnline.lib for titles that support online play. Use the secure versions of the library file (Xnets.lib or XOnlines.lib) for final testing.
+</p>
+
+
+<H4>See Also</H4>
+
+<P>
+<a href="xbox_winsock_overview_winsock.htm">Winsock Overview</A>,
+<a href="xbox_winsock_functions_winsock.htm">Winsock Functions</A> |
+<A HREF="xbox_wsacreateevent_winsock.htm">WSACreateEvent</A>,
+<A HREF="xbox_wsarecv_winsock.htm">WSARecv</A>,
+<A HREF="xbox_wsarecvfrom_winsock.htm">WSARecvFrom</A>,
+<A HREF="xbox_wsasend_winsock.htm">WSASend</A>,
+<A HREF="xbox_wsasendto_winsock.htm">WSASendTo</A>,
+<A HREF="xbox_wsawaitformultipleevents_winsock.htm">WSAWaitForMultipleEvents</A>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

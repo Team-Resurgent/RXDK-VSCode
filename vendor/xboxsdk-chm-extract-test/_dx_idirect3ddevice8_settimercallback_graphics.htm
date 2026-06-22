@@ -1,0 +1,71 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>IDirect3DDevice8::SetTimerCallback</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="F" Term="SetTimerCallback"/>
+<MSHelp:Keyword Index="K" Term="SetTimerCallback (IDirect3DDevice8)"/>
+<MSHelp:Keyword Index="K" Term="IDirect3DDevice8::SetTimerCallback"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>IDirect3DDevice8::SetTimerCallback</h1>
+<p>Sets a callback function that will execute at a certain time.</p>
+<pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>SetTimerCallback(</b>
+    <b>ULONGLONG</b> <i>Time</i><b>,</b>
+    <b>D3DCALLBACK</b> <i>pCallback</i><b>,</b>
+    <b>DWORD</b> <i>Context</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+			<dt><i>Time</i></dt>
+<dd>[in]  Specifies the absolute time (in <a href="r.htm#rdtsc_units_gloss">rdtsc units</a>) when the callback should execute. </dd>
+			<dt><i>pCallback</i></dt>
+<dd>[in]  Address of the callback function of type <b>D3DCALLBACK</b> that is called after the period of time given in <i>Time</i> has passed. Setting <i>pCallback</i> to NULL cancels pending callbacks.</dd>
+			<dt><i>Context</i></dt>
+<dd>[in]  A 32-bit value that is passed to the callback. This can be set to any value the title desires. It will be passed as the <i>Context</i> parameter of the callback routine.</dd>
+		</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>Returns S_OK if successful, an error code otherwise.</p>
+<h4><a name="remarks"></a>Remarks</h4>
+<p>The callback function will get called only once; however, the callback function itself can call <b>SetTimerCallback</b> in order to reschedule itself.</p>
+
+<p><b>SetTimerCallback</b> is called at the time of deferred procedure calls (DPC) and should do little processing. Only a few XTL functions are safe to call at DPC level: The <b>Interlocked</b> functions are safe to use, as are the following XTL functions, if given a valid object handle:</p>
+<ul>
+<li><a href="synchro_8ut0.htm">SetEvent</a></li>
+<li><a href="synchro_4f78.htm">ResetEvent</a></li>
+<li><a href="synchro_1ylw.htm">PulseEvent</a></li>
+<li><a href="synchro_1vqd.htm">ReleaseSemaphore</a></li>
+<li><a href="synchro_59o8.htm">ReleaseMutex</a></li>
+</ul>
+
+<p>When these functions are called at DPC with an invalid handle, their behavior is undefined.</p>
+
+<p>Do not perform floating-point math, SSE instructions, and MMX instructions during DPC unless the <a href="XSaveFloatingPointStateForDpc.htm">XSaveFloatingPointStateForDpc</a> and <a href="XRestoreFloatingPointStateForDpc.htm">XRestoreFloatingPointStateForDpc</a> functions are used.</p>
+
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in D3d8.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use D3d8.lib.</p>
+    <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

@@ -1,0 +1,320 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Twenty-Five Tips for Improving Your Fill Rate</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Twenty-Five Tips for Improving Your Fill Rate"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+  <MSHelp:Keyword Index="K" Term="fill rate, improving"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Twenty-Five Tips for Improving Your Fill Rate</h1>
+<p><i>By Michael Austin and Mikey Wetzel, Xbox Advanced Technology Group</i></p><p>One of the challenges many games for the Microsoft&reg; Xbox&reg; video game system have is managing fill rate. Postprocessing effects, full screen antialiasing, and particle systems can bring the Xbox system to its knees. We've collected 25 tips for reducing fill rate that will help make your game look and perform its best.</p><h2><a name="IDA20JV"></a>0. Know the fundamentals</h2>
+<p>Two main factors affect fill rate: memory bandwidth and shader throughput. The total memory bandwidth for the Xbox is 6.4 gigabytes/second (GB/sec). The CPU is limited to around 1 GB/sec, leaving approximately 5.4 GB/sec for the GPU. The pixel shader operates on a 233-megahertz (MHz) clock. Each cycle, the pixel shader can do 4 pixels in parallel, giving a max throughput of around 933 megapixels/second (Mp/sec)&#8212;around 922 Mp/sec is the actual optimal value because of slight inefficiencies.</p><p>Both memory and shader throughput can constrain your fill rate; identifying which one is the constraint can help you target your optimizations. The ideal fill rate column in the Performance Investigator for Xbox (PIX) provides a good measure of how efficient your shader is. Many factors contribute to a lower actual fill rate, but if your shader is efficient and you're still experiencing a low fill rate, you are most likely memory bound.</p><p>The following table shows which of the tips in this white paper cut down memory usage and which improve shader performance.</p><table>
+<tr>
+ <th>No.</th>  
+ <th>Tip</th>  
+ <th>Memory bandwidth savings</th>
+ <th>Shader impact</th>
+</tr>
+
+<tr>  
+ <td>1.</td>
+ <td><a href="prog_wp_fillrate.htm#alphablending">Turn off alphablending</a></td>
+ <td>4 bytes/pixel</td>
+ <td> </td>
+</tr>
+
+<tr>  
+ <td>2.</td>
+ <td><a href="prog_wp_fillrate.htm#alphatest">Use alphatest</a></td>
+ <td>8 bytes/failed pixel</td>
+ <td> </td>
+</tr>
+
+<tr>  
+ <td>3.</td>
+ <td><a href="prog_wp_fillrate.htm#alphakill">Use alphakill</a></td>
+ <td>8 bytes/failed pixel</td>
+ <td>Fewer pixels run</td>
+</tr>
+
+<tr>  
+ <td>4.</td>
+ <td><a href="prog_wp_fillrate.htm#minreads">Minimize z-buffer reads</a></td>
+ <td>4 bytes/pixel</td>
+ <td> </td>
+</tr>
+
+<tr>  
+ <td>5.</td>
+ <td><a href="prog_wp_fillrate.htm#minwrites">Minimize z-buffer writes</a></td>
+ <td>4 bytes/pixel</td>
+ <td> </td>
+</tr>
+
+<tr>  
+ <td>6.</td>
+ <td><a href="prog_wp_fillrate.htm#maxbuff">Maximize z-buffer compression</a></td>
+ <td>Up to 875 KB/frame</td>
+ <td> </td>
+</tr>
+
+<tr>  
+ <td>7.</td>
+ <td><a href="prog_wp_fillrate.htm#consider16bit">Consider 16-bit buffers</a></td>
+ <td>Half of memory bandwidth</td>
+ <td> </td>
+</tr>
+
+<tr>  
+ <td>8.</td>
+ <td><a href="prog_wp_fillrate.htm#optimizepixelshaders">Optimize pixel shaders</a></td>
+ <td> </td>
+ <td>Fewer cycles/pixel</td>
+</tr>
+
+<tr>  
+ <td>9.</td>
+ <td><a href="prog_wp_fillrate.htm#optimizeinterpolator">Optimize interpolator use</a></td>
+ <td> </td>
+ <td>Fewer cycles/pixel</td>
+</tr>
+
+<tr>  
+ <td>10.</td>
+ <td><a href="prog_wp_fillrate.htm#reducepasses">Reduce the number of passes</a></td>
+ <td>16+ bytes/pixel</td>
+ <td>More cycles/pixel</td>
+</tr>
+
+<tr>  
+ <td>11.</td>
+ <td><a href="prog_wp_fillrate.htm#considermulti">Consider multisampling</a></td>
+ <td> </td>
+ <td>Fewer pixels run</td>
+</tr>
+
+<tr>  
+ <td>12.</td>
+ <td><a href="prog_wp_fillrate.htm#experimentbackbuffer">Experiment with the back-buffer scale</a></td>
+ <td>Fewer pixels drawn</td>
+ <td>Fewer pixels run</td>
+</tr>
+
+<tr>  
+ <td>13.</td>
+ <td><a href="prog_wp_fillrate.htm#smallerviewport">Use a smaller viewport</a></td>
+ <td>Fewer pixels drawn</td>
+ <td>Fewer pixels run</td>
+</tr>
+
+<tr>  
+ <td>14.</td>
+ <td><a href="prog_wp_fillrate.htm#skybox">Draw a common-sense skybox</a></td>
+ <td>Fewer pixels drawn</td>
+ <td>Fewer pixels run</td>
+</tr>
+
+<tr>  
+ <td>15.</td>
+ <td><a href="prog_wp_fillrate.htm#redundantclears">Avoid redundant clears</a></td>
+ <td>Fewer pixels drawn</td>
+ <td>Fewer pixels run</td>
+</tr>
+
+<tr>  
+ <td>16.</td>
+ <td><a href="prog_wp_fillrate.htm#backface">Use back-face culling</a></td>
+ <td>Fewer pixels drawn</td>
+ <td>Fewer pixels run</td>
+</tr>
+
+<tr>  
+ <td>17.</td>
+ <td><a href="prog_wp_fillrate.htm#fronttoback">Render front to back</a></td>
+ <td>Fewer pixels drawn</td>
+ <td>Fewer pixels run</td>
+</tr>
+
+<tr>  
+ <td>18.</td>
+ <td><a href="prog_wp_fillrate.htm#trianglesize">Optimize triangle size with proper LODs</a></td>
+ <td> </td>
+ <td>Better pipelining</td>
+</tr>
+
+<tr>  
+ <td>19.</td>
+ <td><a href="prog_wp_fillrate.htm#uselods">Use LODs on shaders</a></td>
+ <td> </td>
+ <td>Fewer cycles/pixel</td>
+</tr>
+
+<tr>  
+ <td>20.</td>
+ <td><a href="prog_wp_fillrate.htm#overdraw">Check overdraw</a></td>
+ <td>Fewer pixels drawn</td>
+ <td>Fewer pixels run</td>
+</tr>
+
+<tr>  
+ <td>21.</td>
+ <td><a href="prog_wp_fillrate.htm#genre">Make genre-specific optimizations</a></td>
+ <td>Fewer pixels drawn</td>
+ <td>Fewer pixels run</td>
+</tr>
+
+<tr>  
+ <td>22.</td>
+ <td><a href="prog_wp_fillrate.htm#tiling">Write to tiled buffers</a></td>
+ <td>Better cache coherency</td>
+ <td> </td>
+</tr>
+
+<tr>  
+ <td>23.</td>
+ <td><a href="prog_wp_fillrate.htm#texturelookup">Optimize texture lookups</a></td>
+ <td> </td>
+ <td>Fewer cycles</td>
+</tr>
+
+<tr>  
+ <td>24.</td>
+ <td><a href="prog_wp_fillrate.htm#caching">Optimize texture caching; use mipmapping</a></td>
+ <td>Better cache coherency</td>
+ <td> </td>
+</tr>
+
+<tr>  
+ <td>25.</td>
+ <td><a href="prog_wp_fillrate.htm#usepix">Check your numbers in PIX</a></td>
+ <td> </td>
+ <td> </td>
+</tr>
+</table>
+<h2><a name="alphablending"></a>1. Turn off alphablending when you don't need it</h2>
+<p>Alphablending can potentially cut the ideal fill rate in half on 32-bit render targets, due to the memory demands of its additional 4-byte color read per pixel. If a pixel shader always outputs opaque pixels, make sure to turn alpha blending off with this call:</p>
+<pre class="clsCode">
+SetRenderState( D3DRS_ALPHABLENDENABLE, FALSE );
+</pre>
+    <h2><a name="alphatest"></a>2. Use alphatest for alphablended objects</h2>
+<p>Alphatesting can discard pixels with very small alpha values without doing a read or write to the render target. For particle systems and HUD elements, this can result in significant fill rate savings. The value 0x10 tends to work well as the ALPHAREF (the threshold alpha for pixels to be discarded by the alphatest), but different values can be tested for each effect.</p><p>After enabling alphatesting, it is important to verify that it is actually being used. Using PIX, look at the overdraw; if you see rectangular boxes around particles, alphatesting is not working properly.</p><p>A common reason for alphatesting to not work properly is that additive blending (also known as one:one blending) is being used with opaque textures, such as DXT1, where there is no alpha channel to test on. To fix this problem, simply copy the blue channel to the alpha channel in the pixel shader with an instruction such as:</p>
+<pre class="clsCode">
+mov r0.a, t0.b
+</pre>
+    <p>To turn on alphatesting, use these render states:</p>
+<pre class="clsCode">
+SetRenderState( D3DRS_ALPHATESTENABLE, TRUE );
+SetRenderState( D3DRS_ALPHAFUNC, D3DCMP_GREATER ); 
+SetRenderState( D3DRS_ALPHAREF, 0x00000010 );
+</pre>
+    <h2><a name="alphakill"></a>3. Use alphakill when appropriate</h2>
+<p>Alphakill is slightly different from alphatest in that alphakill discards pixels with very small alpha values on the basis of a texture lookup rather than as the result of the entire pixel shader calculation. If you have a complicated pixel shader, alphakill can save cycles by bailing when the texture fetch brings in an alpha value of exactly 0. For more information, see the <a href="_dx_alphakill_graphics.htm">Alphakill</a> white paper.</p><p>Alphakill is set on an individual texture stage rather that the entire shader. To turn on alphakill for texture stage 0, use:</p>
+<pre class="clsCode">
+SetTextureStageState(0, D3DTSS_ALPHAKILL, TRUE );
+</pre>
+    <h2><a name="minreads"></a>4. Minimize z-buffer reads</h2>
+<p>Turn off z-buffer reads whenever possible. For 32-bit z-buffers, turning off reads saves 4 bytes per pixel of bandwidth with uncompressed data. Z-buffer reads are generally unnecessary when:</p><ul>
+<li>Drawing the skybox immediately after clearing the render target.</li>
+<li>Drawing 2D HUD elements at the end of a scene.</li>
+<li>Rendering to a projected shadow texture.</li>
+</ul>
+<p>To disable z-buffer reads, use this call:</p>
+<pre class="clsCode">
+SetRenderState( D3DRS_ZENABLE, FALSE );
+</pre>
+    <h2><a name="minwrites"></a>5. Minimize z-buffer writes</h2>
+<p>Similarly, turn off z-buffer writes whenever possible. For 32-bit z-buffers, this saves 4 bytes per pixel of bandwidth and preserves z-buffer compression. Z-buffer writes can be avoided in the same situations as listed for z-buffer reads. To disable z-buffer writes, use this call:</p>
+<pre class="clsCode">
+SetRenderState( D3DRS_ZWRITEENABLE, FALSE );
+</pre>
+    <h2><a name="maxbuff"></a>6. Maximize z-buffer compression</h2>
+<p>Depth buffer compression greatly reduces the memory bandwidth used by z-buffer reads and writes. Compression when the depth values are all the same, such as after a clear, is 8:1. Under normal circumstances, 4:1 is often possible. Since a 32-bit z-buffer can only be compressed if all of the stencil bits are zero, writing a zero into each of the eight stencil bits at the same time as you write the depth value can improve performance by 30 percent in some cases. The golden rules from the <a href="whitepaper_depth_buffer_compression_graphics.htm">Depth-Buffer Compression and Performance Implications</a> white paper are:</p><ul>
+<li>When you use the <a href="_dx_idirect3ddevice8_clear_graphics.htm">IDirect3DDevice8::Clear</a> method on the depth buffer, clear the stencil buffer as well.</li>
+<li>Always keep the stencil buffer cleared except when you are using it.</li>
+<li>When you set the D3DRS_ZENABLE and D3DRS_ZWRITEENABLE render states to TRUE and aren't using a stencil, do one of the following: Set read-before-write by setting the D3DRS_ROPZCMPALWAYSREAD render state to TRUE, or always write a zero to the stencil buffer when you write to the depth buffer.</li>
+</ul>
+<p>To clear the stencil buffer when you clear the z-buffer, use this call:</p>
+<pre class="clsCode">
+Clear( 0, NULL, D3DCLEAR_STENCIL | D3DCLEAR_ZBUFFER, 0x00, 1.0f, 0 );
+</pre>
+    <p>To preserve a cleared stencil buffer when writing to the z-buffer, use this:</p>
+<pre class="clsCode">
+SetRenderState( D3DRS_ROPZCMPALWAYSREAD, TRUE );
+</pre>
+    <h2><a name="consider16bit"></a>7. Consider 16-bit buffers</h2>
+<p>Several shipping games have successfully used 16-bit buffers with great visual quality. Using 16-bit buffers cuts memory usage and bandwidth for reads and writes in half. This savings can be particularly useful for rendering environment maps or bloom effects where precision is not critical.</p><p>Note that the hardware performs best when the render target and the z-buffer are the same depth, so mix and match only after measuring real world performance using PIX.</p><h2><a name="optimizepixelshaders"></a>8. Optimize pixel shaders</h2>
+<p>For fill rate limited calls (such as for the skybox or particle systems), make sure your pixel shaders are optimized. The Xbox hardware can do two combiners plus the final combiner and two texture fetches per clock cycle. Using a third combiner cuts your fill rate in half. Performing a third or dependent texture lookup also cuts your fill rate in half. There are many tricks to hand-optimizing pixel shaders that are outside the scope of this paper. If you want to learn more, the Xbox Advanced Technology Group (ATG) team would be happy to help; just send a PIX capture (which contains all the shaders and timing information) to your technical game manager or <a href="mailto:xboxds@xbox.com">xboxds@xbox.com</a> and request assistance.</p><p>For other useful tips, see the <a href="prog_wp_optimizing_pixel_shaders.htm">Pixel Shader Optimizing</a> white paper.</p><h2><a name="optimizeinterpolator"></a>9. Optimize interpolator use</h2>
+<p>The Xbox has a single hardware interpolator used for diffuse and specular interpolation in addition to the hardware texture interpolators. Using both diffuse and specular interpolation requires two cycles, cutting fill rate in half. However, if you only have one texture, you can often use the second free set of texture coordinates to do the specular interpolation and stay at maximum fill rate (though you do it through t1 not v1 in the pixel shader).</p><p>The white paper <a href="whitepaper_diffuse_specular_interpolation_graphics.htm">A Note on the Performance of Diffuse and Specular Interpolation</a> provides details on how the interpolators work.</p><h2><a name="reducepasses"></a>10. Reduce the number of passes</h2>
+<p>Whenever possible, try to collapse multiple rendering passes down to a single uber-pass. In most cases, the eight instructions and four texture fetches available in the pixel shader can do enough processing to combine two or more simpler rendering passes into a single pass. Combining all passes into one is especially important for ported games. Not only do you save CPU and GPU front-end (vertex processing) resources if you do one rendering pass, but fill rate is dramatically reduced. In one pass, 12 bytes of memory bandwidth are needed for every pixel (a 4-byte read and a 4-byte write to the depth buffer along with a 4-byte write to the back buffer). With two passes, 28 bytes of memory are needed for every pixel&#8212;12 bytes are needed for each pass, plus an additional 4-byte read for the alphablend.</p><p>One uber-pass can have a greater demand on the texture cache, as well as requiring more texture fetches and register combiners, but the benefits usually make it an obvious win.</p><h2><a name="considermulti"></a>11. Consider multisampling</h2>
+<p>Use 4&#0215; multisampling when the fidelity loss won't make a visual difference. This type of multisampling renders 16 pixels at a time instead of 4; each has an individual z value but replicated color.</p><p>Using 4&#0215; multisampling doesn't reduce memory bandwidth, but it cuts down on pixel shader usage. In the usual pipeline, the Xbox processes 4 pixels at a time. With 4&#0215; multisampling turned on, the Xbox still processes 4 samples but replicates the results to the surrounding 16 pixels (see the following diagram). The Xbox interpolates to positions A, B, C, and D and runs through a pixel shader pass, and then propagates the color information to the surrounding a, b, c, and d pixels.</p>
+<pre class="clsCode">
+a a b b
+ A   B
+a a b b
+
+c c d d
+ C   D
+c c d d
+</pre>
+    <p>Note that the z values and coverage information for these 16 pixels are not replicated but calculated individually.</p><p>Good uses of multisampling include:</p><ul>
+<li>Z-only rendering (such as to a shadow buffer).</li>
+<li>Rendering solid colors.</li>
+<li>Rendering low-fidelity images or images that lack high-frequency components such as bump-mapped water, ground, or sky.</li>
+<li>Particle systems. Alphablending and overdraw tend to hide the loss of fidelity.</li>
+</ul>
+<p>To turn on 4&#0215; multisampling, use this call:</p>
+<pre class="clsCode">
+SetRenderState( D3DRS_MULTISAMPLEMODE,  
+  D3DMULTISAMPLEMODE_4X );
+</pre>
+    <p>This type of multisampling does not result in a 4&#0215; reduction of fill. Actual results are difficult to measure but typically weigh in around a 20 percent reduction, which is still a very nice improvement. You can also use 2&#0215; multisampling for a smaller gain.</p><p>For more details, see the <a href="prog_wp_antialiasing.htm">Antialiasing, Multisampling, and Supersampling</a> white paper.</p><h2><a name="experimentbackbuffer"></a>12. Experiment with the back-buffer scale</h2>
+<p>Back-buffer scaling can help improve fill rate by reducing the number of pixels drawn. This technique works by constraining the viewport to a smaller section of the back buffer, then scaling up the back buffer during the call to the <a href="_dx_idirect3ddevice8_swap_graphics.htm">IDirect3DDevice8::Swap</a> method, where it's used as a texture and copied to the front buffer. Since full-screen antialiasing (FSAA) works the same way (using a larger buffer and scaling down), when using FSAA, back-buffer scaling is free&#8212;essentially allowing you to scale anywhere between 1&#0215; and true 4&#0215; FSAA.</p><p>Another variation on this trick is to render particles into a smaller off-screen buffer (such as 160&#0215;120 pixels), and then do an additive blend to the frame or back buffer. This technique dramatically reduces the fill requirements for particle systems, which are usually worst-case scenarios&#8212;alphablended and heavily overdrawn.</p><p>For back-buffer scaling (in this example to 50 percent), simply call:</p>
+<pre class="clsCode">
+SetBackBufferScale( 0.5f, 0.5f );
+</pre>
+    <p>For more details, see the BackBufferScale graphics sample.</p><h2><a name="smallerviewport"></a>13. Use a smaller viewport</h2>
+<p>If you have a portal-based renderer, setting the viewport to the size of the portal can help save bandwidth and shader cycles. For example, if you are indoors, you can set the viewport to the visible door or window and clip out the pixels and triangles that aren't visible.</p><p>You can also shrink the size of the viewport you are rendering to if you know in advance that a large area of the screen will be overdrawn, for instance by an opaque HUD.</p><p>To change the viewport, use the following function call:</p>
+<pre class="clsCode">
+SetViewport( &amp;NewViewport );
+</pre>
+    <h2><a name="skybox"></a>14. Draw a common-sense skybox</h2>
+<p>Unless your game is set in outer space, it's impossible to see below the horizon. Avoid drawing your skybox (and clouds, and so on) below the horizon to save fill rate.</p><h2><a name="redundantclears"></a>15. Avoid redundant clears</h2>
+<p>All games start the scene by clearing the z-buffer, but only very rarely does a game need to clear the render target. One common excuse for clearing the render target is to reduce artifacts from cracks in the geometry, but it is better to fix the problem than to waste GPU resources every frame.</p><p>Check the number of <a href="_dx_idirect3ddevice8_clear_graphics.htm">Clear</a> calls you see in a PIX capture. You should have one <b>Clear</b> call per render target; any others are probably redundant.</p><p>When you clear the z-buffer, don't forget to clear the stencil as well (see Tip 6, <a href="prog_wp_fillrate.htm#maxbuff">Maximize z-buffer compression</a>).</p><p>For a 32-bit depth buffer, call <b>Clear</b> as follows:</p>
+<pre class="clsCode">
+Clear(0, NULL, D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0x00, 1.0, 0);
+</pre>
+    <h2><a name="backface"></a>16. Use back-face culling</h2>
+<p>Many games set the D3DRS_CULLMODE render state to CULL_NONE for many or all objects. Usually, the reason is to save polygons where the interior and exterior of an object are both potentially visible (trees with single polygons with both sides visible, for example). Sometimes, however, due to miscommunication between artists and programmers or a bug in the programming pipeline, art content is inconsistently set up and culling is left off to avoid "missing polygons."</p><p>Leaving culling off requires twice the fill rate on all polygons where it is done. It is better to fix the artwork to use proper back-face culling than to waste GPU resources. There are legitimate reasons for turning culling off (generally for situations that require two-sided lighting), but even in these cases it can be better to just duplicate the polygons to avoid mistakes.</p><p>You can identify missing back-face culling in PIX with the overdraw view. Mouse over a suspect part of the image, and check the overdraw count in the status bar. If your count goes up and down in increments of 2, then the polygons are drawn two-sided without back-face culling.</p><p>Set this once for your game, and don't look back:</p>
+<pre class="clsCode">
+SetRenderState( D3DRS_CULLMODE, CULL_CCW );
+</pre>
+    <h2><a name="fronttoback"></a>17. Render front to back</h2>
+<p>For opaque objects, rendering images front to back allows the z-test to discard pixels before running them through the pixel shader. This process saves clock cycles that can then go to shader instructions, texture fetches, and reads and writes to the back buffer for blending.</p><p>Rendering the skybox is an exception to this rule. If most of the skybox is visible, it's fastest to draw it first with z-buffer reads and writes turned off. If most of the skybox is not visible, it's fastest to render it last, using the z-test to reject most of the pixels.</p><h2><a name="trianglesize"></a>18. Optimize triangle size with proper LODs</h2>
+<p>Use proper levels of detail (LODs) to achieve an ideal triangle-to-pixel relation. Triangles that are too small tend to be vertex bound, but with a lightweight vertex shader, they can hurt fill as well. The pixel hardware in the Xbox processes 4 pixels at a time in 2&#0215;2 quads, but small triangles have fewer than 4 pixels and can't fill the 2&#0215;2 quads. The maximum fill rate on the Xbox is 933 Mp/sec (4 pixels per clock cycle &#0215; 233 MHz clock rate). However, pixel sized triangles waste three of the pipelines, for an effective fill rate of only 233 Mp/sec. Roughly 25 pixels per triangle is a good target to aim for.</p><p>Use PIX to tell you if your LODs are proper (and therefore your triangle-to-pixel ratios). To do so, view the scene in wireframe mode. If any meshes look as if they were solid-rendered, you should adjust your LODs.</p><h2><a name="uselods"></a>19. Use LODs on shaders, too</h2>
+<p>When thinking of LODs, don't stop at your geometry. For distant objects, rendering fidelity is less important. That eight-instruction, four-texture, bump-mapped object sitting off on the horizon can probably get by with a one-instruction, one-texture shader just fine. There's also a distance at which complex shadow algorithms can be reduced to a simple, static decal, and another distance at which shadows go away altogether.</p><p>The best engines try to determine what objects and characters in the scene deserve the most resources, using not just the distance but also other factors involving gameplay, situation, player psychology, and so on. When an object is less important, scale back the geometry and shader complexity.</p><h2><a name="overdraw"></a>20. Check overdraw</h2>
+<p>Check the overdraw view in PIX. Overdraw in opaque objects is wasted fill. This type of waste usually can't be entirely avoided, but problem areas should be apparent in PIX and should be cleared up. To improve the situation, change the order of your scene drawing to front to back.</p><p>Visibility testing can also help. In classic visibility testing, you render a bounding volume instead of a suspect object, and only render the full object if the visibility test for the bounding volume returns a nonzero pixel count.</p><h2><a name="genre"></a>21. Make genre-specific optimizations</h2>
+<p>Many games can benefit from genre-specific optimizations. For example, in racing games usually all four tires (and rims and brakes and so on) are drawn because they pass the camera cull test. Unless the car is above you in the air, however, you almost never see all four tires at once. The goal is to not draw what you know is not visible.</p><p>Some engines, such as portal engines, are already highly optimized for this goal, but many other engines can benefit from analyzing what is visible and what is not.</p><h2><a name="tiling"></a>22. Write to tiled buffers</h2>
+<p>Tiling is a subtle but important consideration for fill rate performance. The Xbox rasterization hardware is optimized for writing pixels to tiled surfaces (that is, the memory is arranged specially in hardware to improve rendering performance). However, the texturing hardware doesn't deal well with tiled memory, so the question is when to use it.</p><p>In the back buffer and z-buffer, tiled memory is a must, and fortunately they are tiled upon creation. When you create your own off-screen render target, however, tiling is left up to you. By default, it is off.</p><p>To see whether you should turn tiling on for a render target, test. Measure your scene both ways using PIX. Generally speaking, the more a surface is rendered to, the more you should turn to tiling and improve rendering performance. For surfaces that are rendered once and referenced as textures often, leave tiling off.</p><p>To learn more about tiling, refer to the XDK documentation for the 
+<a href="_dx_idirect3ddevice8_settile_graphics.htm">IDirect3DDevice8::SetTile</a> method and the Tiling graphics sample in the XDK.</p><h2><a name="texturelookup"></a>23. Optimize texture lookups</h2>
+<p>Which order and types of textures you use can make a big difference in performance. The FillRate tool, found in the ...\Tools\Xbox\Graphics\FillRate directory in your XDK setup, can help you choose the appropriate layout. Better yet, refer to the Texaddrops-alltests.txt file found in the same directory for every possible combination of texture addressing operations.</p><h2><a name="caching"></a>24. Optimize texture caching and use mipmapping</h2>
+<p>The texture cache in the Xbox is only 8 KB, which is enough space for storing one 32&#0215;64 texture at 32 bits per pixel. Larger textures and multiple textures competing for the texture cache space result in more cache misses, and thus more memory bus transactions to keep the cache filled.</p><p>Using smaller textures to reduce cache misses can reap huge rewards, which is the primary argument for using mipmapping; smaller levels make better use of the texture cache. Mipmapping increases the memory requirements of a texture by 40 percent, but the improved fill performance makes it worth it. Note, however, to not include mip levels that aren't needed. Character eyeballs do not need a 512&#0215;512 mip level, nor do 2D HUD elements need any mip levels at all.</p><p>In general, the Xbox memory controller reads from memory at 64 bytes per clock cycle. However, the implementation of the texture cache is such that only DXT compressed textures have a "cache fill rate" this high. All other textures are read into the cache at half-speed, or 32 bytes per clock cycle. Compressed textures are a win on many levels.</p><p>Palletized textures generally have the worst performance when filling the cache, as the Xbox has limited resources for decompressing palletized textures. This limited lookup rate can have an impact of many clock cycles. For more information, see the <a href="whitepaper_xbox_palettized_texture_performance_graphics.htm">Xbox Palletized Texture Performance</a> white paper.</p><p>Note that it is common for the occasional inappropriately sized texture to make it into a game. A good sanity check is often needed and can quickly be done by scanning the <b>% texture bound column</b> in PIX. If you find a suspect texture, ask yourself, "Is this a reasonable size? Can it be mipmapped? Is it compressed?"</p><p>Other tricks involve combining textures. One situation that comes up occasionally is the ability to put a scalar image (such as a specular map) in the alpha channel of a bump map, saving an entire texture fetch. You'll also get improved texture cache coherency and a faster shader to boot!</p><h2><a name="usepix"></a>25. Check your numbers in PIX</h2>
+<p>PIX is a great tool for checking your fill rate; always check the ideal fill rate column and ask yourself whether you accept the result. Whenever the number is not roughly 933 Mp/sec, the reason why is somewhere in this white paper. Keep in mind that actual numbers do vary quite a bit due to memory bandwidth competition from the vertex processing and the CPU, and often a 466 Mp/sec or lower throughput is reasonable for more complex shaders.</p><p>If you still can't figure out what the problem is, let us know; we'd love to help. Send your issue to <a href="mailto:xboxds@xbox.com">xboxds@xbox.com</a>.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineLogonTaskGetResults</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineLogonTaskGetResults"/>
+<MSHelp:Keyword Index="F" Term="XOnlineLogonTaskGetResults"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineLogonTaskGetResults</h1>
+<p>Returns the result of a completed <a href="XOnlineLogon.htm">XOnlineLogon</a> or <a href="XOnlineSilentLogon.htm">XOnlineSilentLogon</a> call.</p><pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineLogonTaskGetResults(</b>
+    <b>XONLINETASK_HANDLE</b> <i>hLogonTask</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+<dt><i>hLogonTask</i></dt>
+<p><dd>[in]  Online task handle returned by the call to <b>XOnlineLogon</b>.</dd>
+</p>
+</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>The<b>XOnlineLogonTaskGetResults</b> function returns one of the following values. The return value is the result status of the completed <b>XOnlineLogon</b> call.</p>
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+    <tr>
+<td>XONLINE_S_LOGON_CONNECTION_ESTABLISHED</td>
+<td>
+        The logon was successful.
+    </td>
+</tr>
+    <tr>
+<td>XONLINE_E_LOGON_CANNOT_ACCESS_SERVICE</td>
+<td>
+        One or more problems were encountered trying to log onto the Xbox <i>Live</i> service. The player should be given the option to reboot into the network troubleshooting portion of the Xbox Dashboard.
+    </td>
+</tr>
+    <tr>
+<td>XONLINE_E_LOGON_CONNECTION_LOST</td>
+<td>
+        The connection to the service was lost.  Assume all socket connections are lost, and close the logon task.  A new call may be made to <b>XOnlineLogon</b> if desired.
+    </td>
+</tr>
+    <tr>
+<td>XONLINE_E_LOGON_INVALID_USER</td>
+<td>
+        A logon could not be performed because of problems with one or more of the specified player accounts.  The player should be given the option to reboot into the accounts management section of the Xbox Dashboard to resolve the problem.
+    </td>
+</tr>
+    <tr>
+<td>XONLINE_E_LOGON_KICKED_BY_DUPLICATE_LOGON</td>
+<td>
+        The player accounts currently logged on from this console has logged onto the service from another console.  The player logged onto this console has been logged off.
+    </td>
+</tr>
+    <tr>
+<td>XONLINE_E_LOGON_SERVERS_TOO_BUSY</td>
+<td>
+        The logon servers are currently too busy to perform the logon request.  The player should be instructed to try to log on again later.
+    </td>
+</tr>
+    <tr>
+<td>XONLINE_E_LOGON_UPDATE_REQUIRED</td>
+<td>
+        The title should call <a href="XOnlineTitleUpdate.htm">XOnlineTitleUpdate</a> to update the title.
+    </td>
+</tr>
+</table>
+
+<h4><a name="remarks"></a>Remarks</h4>
+<p>Once the <b>XOnlineLogon</b> task has completed (<a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> returns a value other than XONLINETASK_S_RUNNING for that task), the results of the logon can be obtained by calling <b>XOnlineLogonTaskGetResults</b>.  This function may return more complete status information than <b>XOnlineTaskContinue</b> did.</p><h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p><a href="x_mt_xonline_functions.htm">Xbox Live Functions</a> | <a href="XOnlineLogon.htm">XOnlineLogon</a>, <a href="XOnlineSilentLogon.htm">XOnlineSilentLogon</a>, <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a></p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

@@ -1,0 +1,181 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>DuplicateHandle</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="DuplicateHandle">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="DuplicateHandle"/>
+<MSHelp:Keyword Index="F" Term="DuplicateHandle"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_duplicatehandle"></A>DuplicateHandle</H1>
+
+<P>The <B>DuplicateHandle</B> function duplicates an object handle. The duplicate handle refers to the same object as the original handle. Therefore, any changes to the object are reflected through both handles. For example, the current file mark for a file handle is always the same for both handles. </P>
+
+<PRE class=syntax><B>BOOL DuplicateHandle(
+  HANDLE</B><I> hSourceProcessHandle</I><B>,  </B>// handle to source process
+<B>  HANDLE</B><I> hSourceHandle</I><B>,         </B>// handle to duplicate
+<B>  HANDLE</B><I> hTargetProcessHandle</I><B>,  </B>// handle to target process
+<B>  LPHANDLE</B><I> lpTargetHandle</I><B>,      </B>// duplicate handle
+<B>  DWORD</B><I> dwDesiredAccess</I><B>,        </B>// requested access
+<B>  BOOL</B><I> bInheritHandle</I><B>,          </B>// handle inheritance option
+<B>  DWORD</B><I> dwOptions</I>               // optional actions
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>hSourceProcessHandle</I></DT>
+
+<DD>[in] Ignored.</DD>
+
+<DT><I>hSourceHandle</I></DT>
+
+<DD>[in] Handle to duplicate. This must be a valid open object handle.  For a list of objects whose handles can be duplicated, see the following <B>Remarks</B> section. </DD>
+
+<DT><I>hTargetProcessHandle</I></DT>
+
+<DD>[in] Ignored.</DD>
+
+<DT><I>lpTargetHandle</I></DT>
+
+<DD>[out] Pointer to a variable that receives the value of the duplicate handle. This handle value is valid in the context of the target process. 
+
+<P><I>lpTargetHandle</I> can be NULL if <I>dwOptions</I> is DUPLICATE_CLOSE_SOURCE.  With this combination of values, the source handle is closed and no new handle is created.  You should use <A HREF="handobj_289x.htm">CloseHandle</A> to achieve this same result.</P></DD>
+
+<DT><I>dwDesiredAccess</I></DT>
+
+<DD>[in] Ignored; use zero.
+</DD>
+
+<DT><I>bInheritHandle</I></DT>
+
+<DD>[in] Ignored; use FALSE.</DD>
+
+<DT><I>dwOptions</I></DT>
+
+<DD>[in] Specifies optional actions. This parameter can be zero, or the following value. 
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=48%>Value</TH>
+<TH align=left width=52%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=48%>DUPLICATE_CLOSE_SOURCE</TD>
+<TD width=52%>Closes the source handle. This occurs regardless of any error status returned.</TD>
+</TR>
+</TABLE><BR>
+
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is nonzero.</P>
+
+<P>If the function fails, the return value is zero. To get extended error information, call <A HREF="errors_3uwi.htm">GetLastError</A>. </P>
+
+<H4>Remarks</H4>
+
+<P><B>DuplicateHandle</B> can duplicate handles to the following types of objects. </P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=34%>Object</TH>
+<TH align=left width=66%>Description</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=34%>Directory</TD>
+<TD width=66%>The handle is returned by the <A HREF="filesio_7wmd.htm">CreateFile</A> function.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=34%>Event</TD>
+<TD width=66%>The handle is returned by the <A HREF="synchro_8ub8.htm">CreateEvent</A> or the <A HREF="synchro_5myc.htm">OpenEvent</A> function.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=34%>File</TD>
+<TD width=66%>The handle is returned by the <A HREF="filesio_7wmd.htm">CreateFile</A> function.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=34%>Mutex</TD>
+<TD width=66%>The handle is returned by the <A HREF="synchro_1a2g.htm">CreateMutex</A> or the <A HREF="synchro_82pk.htm">OpenMutex</A> function.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=34%>Semaphore</TD>
+<TD width=66%>The handle is returned by the <A HREF="synchro_9zol.htm">CreateSemaphore</A> or the <A HREF="synchro_3y3p.htm">OpenSemaphore</A> function.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=34%>Thread</TD>
+<TD width=66%>The handle is returned by the <A HREF="prothred_4084.htm">CreateThread</A>, or the <A HREF="prothred_8mn8.htm">GetCurrentThread</A> function.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=34%>Timer</TD>
+<TD width=66%>The handle is returned by the <A HREF="synchro_51o2.htm">CreateWaitableTimer</A> or the <A HREF="synchro_0lv6.htm">OpenWaitableTimer</A> function. </TD>
+</TR>
+
+</TABLE><BR>
+
+<P>Note that <B>DuplicateHandle</B> should not be used to duplicate handles to I/O completion ports. In this case, no error is returned, but the duplicate handle cannot be used.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p>
+
+<H4>See Also</H4>
+<P> 
+<a href="xbox_mt_xtl_sll_handles_and_objects_functions.htm">Handle and Object Functions</a> | 
+<A HREF="handobj_289x.htm">CloseHandle</A>
+</P>
+
+<BR><BR>
+<h6>Win32 Deltas</H6>
+
+<P>The <I>hSourceProcessHandle</I> and <I>hTargetProcessHandle</I> parameters are ignored.  There is only one process&mdash;the title.  <B>GetCurrentProcess</B> can be passed to these parameters if desired.</P>
+
+<P>The <I>dwDesiredAccess</I> parameter is ignored.  All handles have full access.</P>
+
+<P>The <I>bInheritHandle</I> parameter is ignored.  Child processes cannot be created.  There is nothing that could inherit the handle.</P>
+
+<P>The DUPLICATE_SAME_ACCESS flag of the <I>dwOptions</I> parameter is ignored.  The flag is still defined and can be used, but all handles have the same full access as the source handle.</P>
+
+<P>To make a call that will also work under Win32:</P>
+
+<UL>
+<LI>Use <B>GetCurrentProcess</B> as the argument for the <I>hSourceProcessHandle</I> and <I>hTargetProcessHandle</I> parameters.</LI>
+
+<LI>Specify the DUPLICATE_SAME_ACCESS flag for <i>dwOptions</i>.  In Win32, this means that the duplicate handle will have the same access as the source handle, and the <I>dwDesiredAccess</I> parameter will be ignored.</LI>
+</UL>
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

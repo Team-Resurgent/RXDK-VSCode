@@ -1,0 +1,66 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirectSoundBuffer8::SetOutputBuffer</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="IDirectSoundBuffer8::SetOutputBuffer [C++]">
+<META NAME="MS-HKWD" CONTENT="SetOutputBuffer (IDirectSoundBuffer8) [C++]">
+<META NAME="MS-HKWD" CONTENT="SetOutputBuffer [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="SetOutputBuffer (IDirectSoundBuffer8)"/>
+<MSHelp:Keyword Index="K" Term="IDirectSoundBuffer8::SetOutputBuffer"/>
+<MSHelp:Keyword Index="F" Term="SetOutputBuffer"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="xbox_jc_idirectsoundbuffer8_setoutputbuffer_dxaudio"></A>IDirectSoundBuffer8::SetOutputBuffer</H1>
+
+<P>Specifies that the output of this buffer should go to the input of another buffer.</P>
+
+<PRE class="syntax"><B>HRESULT SetOutputBuffer(</B>
+    <B>LPDIRECTSOUNDBUFFER</B> <I>pOutputBuffer</I>
+<B>);</B></PRE>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>pOutputBuffer</I></DT>
+<DD>Pointer to the destination buffer for output of this buffer. If <I>pOutputBuffer</I> is NULL, the buffer is treated as a normal DirectSound buffer and its output is sent to the final output.</DD>
+</DL>
+
+<H4>Return Values</H4>
+<P>Returns S_OK if successful, an error code otherwise.</P>
+
+<H4>Remarks</H4>
+
+<p><b>SetOutputBuffer</b> will reset your mixbins assignments, but you're free to call <a href="xbox_jc_idirectsoundbuffer8_setmixbins_dxaudio.htm">SetMixBins</a> after that. If you set the mixbins after calling <b>SetOutputBuffer</b>, they'll be preserved if you call <b>SetOutputBuffer(NULL)</b>.</p>
+
+<P CLASS="note"><B><I>Note</I></B>&nbsp;&nbsp;&nbsp;&nbsp;The <a href="_dx_idirectsoundbuffer8_setformat_dxaudio.htm">SetFormat</a> call also resets the mixbin assignments and should be called before calling <b>SetOutputBuffer</b>. See the <b>SetFormat</b> function for more information.</P>
+
+<P><I>pOutputBuffer</I> must have been created with either the DSBCAPS_MIXIN or DSBCAPS_FXIN flag set. This specifies that the destination buffer cannot have any data written to it directly by the application; the data instead comes from one or more other DirectSound buffers or streams.</P>
+
+<p>Buffers created with the DSBCAPS_FXIN2 flag can be passed to the <b>SetOutputBuffer</b> function, but the application is expected to call Play (PlayEx) and Stop (StopEx) on the destination voice for buffers of this type. Buffers created with either the DSBCAPS_MIXIN or DSBCAPS_FXIN flags automatically start playing when the first source voice starts and stop when the last source voice stops. Additionally, source buffers attached to an FXIN2 destination do not have to be mono, and do not automatically have their mixbins reset. You must point the source at the destination's input mixbin manually.</p>
+
+<p>As mentioned above, you can disconnect the output buffer by calling <b>SetOutputBuffer(NULL)</b>. However, if you stop the source voice and then immediately disconnect it before the hardware sends stop notification, you will not be able to stop or free the destination voice. See <a href="_dx_idirectsoundbuffer8_stop_dxaudio.htm">IDirectSoundBuffer8::Stop</a> or <a href="xbox_jc_idirectsoundbuffer8_stopex_dxaudio.htm">IDirectSoundBuffer8::StopEx</a> for more information.</p>
+
+<p>This method cannot be used by buffers that were created with either the DSBCAPS_MIXIN or DSBCAPS_FXIN flag set, and cannot be called on a buffer that is already playing.</p>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in Dsound.h.</P>
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work. &#169 2000 Microsoft Corporation. All rights reserved.</DIV>
+</BODY>
+</HTML>

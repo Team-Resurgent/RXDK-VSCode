@@ -1,0 +1,156 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>XInputDebugInitKeyboardQueue</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="XInputDebugInitKeyboardQueue">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XInputDebugInitKeyboardQueue"/>
+<MSHelp:Keyword Index="F" Term="XInputDebugInitKeyboardQueue"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_xbox_xinputdebuginitkeyboardqueue"></A>XInputDebugInitKeyboardQueue</H1>
+
+<P>The <B>XInputDebugInitKeyboardQueue</B> function initializes the debug keyboard and prepares a keyboard input queue for the title's use.</P>
+
+<P>To use this function, you must define the DEBUG_KEYBOARD compiler define before including xtl.h.  Do not use this function in actual shipping retail game titles.</P>
+
+<PRE class=syntax><B>DWORD XInputDebugInitKeyboardQueue(</B>
+  <b>PXINPUT_DEBUG_KEYQUEUE_PARAMETERS</b><I> pParameters</I>
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>pParameters</I></DT>
+<DD>[in] Pointer to an <A HREF="x_mt_xinput_debug_keyqueue_parameters.htm">XINPUT_DEBUG_KEYQUEUE_PARAMETERS</a> structure that specifies configuration and notification options for keyboard input.  If <I>pParameters</I> is NULL, default settings are used.</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is ERROR_SUCCESS.</P>
+
+<P>If the function fails, the return value is an error code defined in Winerror.h. The function does not use <B>SetLastError</B> to set the calling thread's last-error code.</P>
+
+<H4>Remarks</H4>
+
+<P><B>XInputDebugInitKeyboardQueue</B> initializes debug keyboard input options and prepares a queue to detect and report keyboard events.  After the keyboard input queue has been initialized, the title must enumerate peripheral devices to find a connected keyboard.  Call <A HREF="x_jsk_xgetdevices.htm">XGetDevices</a> with XDEVICE_TYPE_DEBUG_KEYBOARD to retrieve a bitmask of connected keyboards.  If a connected keyboard is found, call <A HREF="x_jsk_xinputopen.htm">XInputOpen</a> with XDEVICE_TYPE_DEBUG_KEYBOARD for the device type, and with the port number returned by <B>XGetDevices</B> as the port to open.</P>
+
+<P>Once the keyboard is successfully opened, key events can be retrieved with the <A HREF="x_mt_xinputdebuggetkeystroke.htm">XInputDebugGetKeystroke</a> function.</P>
+
+<P>Any standard USB keyboard should work correctly, but testing has been limited primarily to Microsoft keyboards.  The keyboard can only be used on development consoles, and must be plugged into one of the Xbox controller ports using a USB-to-Xbox port adapter.</P>
+
+<P>The debug keyboard does not toggle the keyboard lights when corresponding keys are pressed (for example, caps lock).</P>
+
+<BR>
+<P>The following code example demonstrates a simple use of the debug keyboard.<P>
+
+<PRE>
+//------------------------------------------------------------------------------ 
+// debugkbd.cpp
+//
+// Example use of the debug keyboard functions.
+// Initialize the debug keyboard and send keystrokes to the debugger.
+//------------------------------------------------------------------------------ 
+
+#define DEBUG_KEYBOARD
+#include &lt;xtl.h&gt;
+
+
+void main( void )
+{
+    XINPUT_POLLING_PARAMETERS xpp = { TRUE, TRUE, 0, 32, 32, 0 };
+    XINPUT_DEBUG_KEYQUEUE_PARAMETERS xdkp = {
+        XINPUT_DEBUG_KEYQUEUE_FLAG_KEYDOWN     |
+         XINPUT_DEBUG_KEYQUEUE_FLAG_KEYREPEAT  |
+         XINPUT_DEBUG_KEYQUEUE_FLAG_ASCII_ONLY,
+        50,
+        500,
+        70 };
+    XDEVICE_PREALLOC_TYPE xdpt[] = {
+        {XDEVICE_TYPE_GAMEPAD, 4},
+        {XDEVICE_TYPE_MEMORY_UNIT, 2},
+        {XDEVICE_TYPE_DEBUG_KEYBOARD, 1} };
+    XINPUT_DEBUG_KEYSTROKE ks;
+    DWORD dwIns, dwRem, dwPort = 0;
+    CHAR szOut[2] = "X";
+    HANDLE hKeyboard;
+
+
+    // Initialize the peripherals.
+    XInitDevices( sizeof(xdpt) / sizeof(XDEVICE_PREALLOC_TYPE), xdpt );
+
+    // Create the keyboard queue.
+    if( ERROR_SUCCESS == XInputDebugInitKeyboardQueue( &amp;xdkp ) )
+    {
+        // Wait for the device to show up.
+        dwIns = XGetDevices( XDEVICE_TYPE_DEBUG_KEYBOARD );
+        while( !dwIns )
+        {
+            XGetDeviceChanges( XDEVICE_TYPE_DEBUG_KEYBOARD, &amp;dwIns, &amp;dwRem );
+        }
+
+        // Convert the bitmask into a port number.
+        while( !(dwIns &amp; (1 &lt;&lt; dwPort)) )
+        {
+            dwPort++;
+        }
+
+        // Open the keyboard device.
+        if( hKeyboard = XInputOpen(
+                            XDEVICE_TYPE_DEBUG_KEYBOARD,
+                            dwPort,
+                            XDEVICE_NO_SLOT,
+                            &amp;xpp ) )
+        {
+            // Loop waiting for keyboard input.
+            while( TRUE )
+            {       
+                if( ERROR_SUCCESS == XInputDebugGetKeystroke( &amp;ks ) )
+                {
+                    *szOut = ks.Ascii;
+                    OutputDebugString( szOut );
+                }
+            }       
+        }   
+    }    
+
+    // Don't return from main.
+    Sleep( INFINITE );
+}
+</PRE>
+
+<P>The example code above has been simplified to demonstrate the minimum requirements for reading from the debug keyboard.  It does not properly handle device removal or re-insertion, and is not architected to handle multiple device types.  For a more complete treament of device interaction, including sample code, see <a href="x_mt_input_oview.htm">Using Xbox Peripherals</a>.</P>
+
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Xkbd.h, for include use Xtl.h.<br><b>Import Library: </b>Use xkbd.lib
+
+<H4>See Also</H4>
+<P>
+<A HREF="x_jsk_xid_functions.htm">Input Device Functions</a> |
+<A HREF="x_mt_xinput_debug_keyqueue_parameters.htm">XINPUT_DEBUG_KEYQUEUE_PARAMETERS</a>,
+<A HREF="x_mt_xinputdebuggetkeystroke.htm">XInputDebugGetKeystroke</a>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

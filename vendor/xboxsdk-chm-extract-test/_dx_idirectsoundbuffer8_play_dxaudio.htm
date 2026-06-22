@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirectSoundBuffer8::Play</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="IDirectSoundBuffer8::Play [C++]">
+<META NAME="MS-HKWD" CONTENT="Play (IDirectSoundBuffer8) [C++]">
+<META NAME="MS-HKWD" CONTENT="Play [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Play (IDirectSoundBuffer8)"/>
+<MSHelp:Keyword Index="K" Term="IDirectSoundBuffer8::Play"/>
+<MSHelp:Keyword Index="F" Term="Play"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_idirectsoundbuffer8_play_dxaudio"></A>IDirectSoundBuffer8::Play</H1>
+
+<P>Causes the sound buffer to play, starting at the play cursor.</P>
+
+<PRE class="syntax"><B>HRESULT Play(</B>
+    <B>DWORD</B> <I>dwReserved1</I>,
+    <B>DWORD</B> <I>dwReserved2</I>,
+    <B>DWORD</B> <I>dwFlags</I>
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>dwReserved1</I></DT>
+
+<DD>Reserved. Must be set to zero.</DD>
+
+<DT><I>dwReserved2</I></DT>
+
+<DD>Reserved. Must be set to zero.</DD>
+
+<DT><I>dwFlags</I></DT>
+
+<DD>Flags specifying how to play the buffer. The following flags are defined:</DD>
+
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td>DSBPLAY_FROMSTART</td>
+<td>Play the buffer from the beginning, regardless of current position.</td>
+</tr>
+
+<tr>
+<td>DSBPLAY_LOOPING</td>
+<td>After the end of the audio buffer is reached, play restarts at the beginning of the buffer. Play continues until explicitly stopped.</td>
+</tr>
+
+<tr>
+<td>DSBPLAY_SYNCHPLAYBACK</td>
+<td>Synchronize playback of multiple buffers and streams. This causes the buffer to reset the play cursor to zero, the equivalent of specifying the DSBPLAY_FROMSTART. See the <a href="xbox_idirectsound8_synchplayback_dxaudio.htm">IDirectSound8::SynchPlayback</a> function for more information on using this flag.</td>
+</tr>
+</table>
+
+<P CLASS="note"><B><I>Note</I></B>&nbsp;&nbsp;&nbsp;&nbsp;These flags are not supported with buffers created using the DSBCAPS_FXIN2 flag.</P>
+
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>Returns DS_OK if successful, an error code otherwise. Can be one of the following values:</P>
+
+
+<TABLE>
+<TR VALIGN="top">
+<TD width=100%><A HREF="_dx_directsound_return_values_by_name_dxaudio.htm#_dx_dserr_invalidcall_dxaudio"><B>DSERR_INVALIDCALL</B></A> </TD>
+</TR>
+
+</TABLE>
+
+<H4>Remarks</H4>
+
+<P>If the buffer specified in the method is already playing, the call to the method succeeds and the buffer continues to play. However, the flags defined in the most recent call supersede flags defined in previous calls. For example, if a looping buffer is currently playing, you can call <b>Play</b> again without the <b>DSBPLAY_LOOPING</b> flag and the buffer will continue playing to the end without continuing to loop.</P>
+
+<P>Because of restrictions in the hardware, this call can cause a busy-wait state.  Before performing additional operations on the buffer, you must make sure that the buffer is stopped by polling <a href="_dx_idirectsoundbuffer8_getstatus_dxaudio.htm">IDirectSoundBuffer8::GetStatus</a>. Check the <b>DSBSTATUS_PLAYING</b> flag after calling <a href="_dx_idirectsoundbuffer8_stop_dxaudio.htm">IDirectSoundBuffer8::Stop</a> or <a href="xbox_jc_idirectsoundbuffer8_stopex_dxaudio.htm">IDirectSoundBuffer8::StopEx</a> as in the following example:</P>
+
+<pre class="clsCode">DWORD dwStatus;
+pDSBuffer-&gt;StopEx( 0, DSBSTOPEX_IMMEDIATE );
+do
+{
+    pDSBuffer-&gt;GetStatus( &amp;dwStatus );
+} while( dwStatus &amp; DSBSTATUS_PLAYING );</pre>
+
+<P>Additionally, calling some methods on the buffer immediately after stopping the buffer can generate debug warning messages.  See <a href="xbox_directsound_warning_messages_dxaudio.htm">DirectSound Warning Messages</a> for more information.</P>
+
+<p>This command is valid for buffers created using the DSBCAPS_FXIN2, but is not valid for buffers created using the DSBCAPS_FXIN or DSBCAPS_MIXIN flags.</p>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in Dsound.h.</P>
+
+<H4>See Also</H4>
+
+<P><A HREF="_dx_idirectsoundbuffer8_dxaudio.htm"><B>IDirectSoundBuffer8</B></A></P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

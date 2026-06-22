@@ -1,0 +1,349 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Understanding the Xbox Vertex Shader Processor</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Understanding the Xbox Vertex Shader Processor"/>
+<MSHelp:Keyword Index="F" Term="Understanding the Xbox Vertex Shader Processor"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Understanding the Xbox Vertex Shader Processor</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<!--****Intro paragraph. Should be a three or four sentence summary of the topic.****-->
+<P class="content"><I>By Jack Palevich</I></P>
+
+<body>
+<P class="content">Microsoft&#174; DirectX&#174; 8.0 vertex shaders provide a powerful abstraction for processing vertices. Vertex shaders are simple assembly-level programs for an idealized vertex processor. The shader author writes to the idealized processor, and DirectX takes care of interpreting the shader. On some (PC-based) DirectX systems, the shader might be converted to x86 machine code. On others, it might be converted to microcode for some form of programmable vertex processor that may or may not resemble the idealized processor.</P>
+<P class="content">As it happens, the graphics processing unit for the Xbox&#174; video game system from Microsoft (Xbox GPU) contains a microcoded vertex processing unit that closely resembles the idealized vertex processor. The Xbox GPU vertex processing unit executes a superset of the DirectX 8.0 vertex shader instruction set. The full power of this processing unit has been exposed in the Xbox DirectX libraries.
+This paper gives a detailed description of the Xbox GPU's vertex shader processor, along with tips for programming it.
+</P>
+<P class="content">The Xbox GPU vertex shader processor has the following features:
+<UL>
+<LI>Registers</LI>
+<UL TYPE="circle">
+<LI TYPE="circle">All registers have four single precision floating point components.
+</LI>
+<LI TYPE="circle">16 input registers: v0 through v15.</LI>
+<LI TYPE="circle">12 temporary registers: r0 through r11. r12 is a special read-only 13th temporary register that shadows output register oPos.</LI>
+<LI TYPE="circle">192 constant registers: c&#150;96 through c95.</LI>
+<LI TYPE="circle">One address register: a0.x, used for indirect addressing when reading from constant registers.</LI>
+<LI TYPE="circle">11 output registers: the normal DirectX 8 ones, plus oB0 and oB1, which are the back face versions of oD0 and oD1.</LI></UL>
+<LI>Instructions</LI>
+<UL TYPE="circle">
+<LI TYPE="circle">Shader operations</LI>
+<UL TYPE="square">
+<LI TYPE="square">13 MAC (multiply-accumulate) opcodes</LI>
+<LI TYPE="square">7 ILU (inverse logic unit) opcodes</LI></UL>
+<LI TYPE="circle">136 microcode instructions. Each instruction can:</LI>
+<UL TYPE="square">
+<LI TYPE="square">Read from three registers with optional swizzle and negation.</LI>
+<LI TYPE="square">Compute one MAC operation and one ILU operation.</LI>
+<LI TYPE="square">Write to up to one output register and two temporary registers with optional component masking.</LI></UL>
+<LI TYPE="circle">Shader types</LI>
+<UL TYPE="square">
+<LI TYPE="square">Normal vertex shaders</LI>
+<LI TYPE="square">Read/write vertex shaders</LI>
+<LI TYPE="square">Vertex state shaders</LI></UL>
+<LI TYPE="circle">Timing</LI>
+<UL TYPE="square">
+<LI TYPE="square">The cycle speed is 250 MHz.</LI>
+<LI TYPE="square">For normal vertex shaders, instructions take between one-half cycle and one cycle to complete.</LI>
+<LI TYPE="square">For read/write and vertex state shaders, instructions take between one cycle and six cycles to complete.</LI></UL></UL></UL></P><BR><BR>
+<IMG SRC="images/whitepaper_vertex1.gif" WIDTH="651" HEIGHT="427" ALT="" BORDER="0"><BR><BR>
+<P class="content">Inputs:</P>
+<UL>
+<LI>Input A is used by all MAC operations.</LI>
+<LI>Input B is used by all MAC instructions except mov, arl, and add.</LI>
+<LI>Input C is used by MAC instructions add and mad, and by all ILU instructions.</LI></UL>
+<P class="content">Operations:</P>
+<UL>
+<LI>Up to two operations can be performed in each instruction. One operation must be a MAC operation, and the other must be an ILU operation. The mov operation can be either a MAC operation or an ILU operation. (Except for mov a0.x, which must be a MAC operation.)</LI>
+<LI>There are 136 instruction slots. Shader execution can start at any specified slot, and continues until an instruction is encountered that has the eos bit set.</LI>
+</UL>
+<P class="content">Output:</P>
+<UL>
+<LI>The output of an operation can be written to both an r register and to an output (o or c) register.</LI>
+<LI>In a paired instruction:</LI>
+
+<UL TYPE="circle">
+<LI TYPE="circle">Only one of the two operations can write to an output register.
+</LI>
+<LI TYPE="circle">The MAC operation can't write to r1. (If it tries to, the write will be ignored.)</LI>
+<LI TYPE="circle">The only r register the ILU operation can write to is r1.</LI>
+</UL>
+</UL>
+<P class="content">An example of a paired instruction that writes to multiple outputs:
+<PRE>mul r2,r1,c0        ; MAC operation, writes to r register
++ mul oPos,r1,c0    ; same operation, writes to an o register
++ rsq r1.w,v0       ; ILU operation, writes to r1.
+</PRE></P>
+<H3>Instruction Categories</H3>
+<P class="content">This table shows which instructions are executed by which logic units. It also shows which instructions use which inputs.</P>
+<TABLE width="100%"><TR><TH>Instruction</TH><TH>MLU</TH><TH>ALU</TH><TH>ILU</TH><TH>A</TH><TH>B</TH><TH>C</TH><TH>Comments</TH></TR>
+<TR><TD>add</TD><TD>&nbsp;</TD><TD>X</TD><TD>&nbsp;</TD><TD>X</TD><TD>&nbsp;</TD><TD>X</TD><TD>&nbsp;</TD></TR>
+<TR><TD>arl</TD><TD>X</TD><TD>&nbsp;</TD><TD>&nbsp;</TD><TD>X</TD><TD>&nbsp;</TD><TD>&nbsp;</TD><TD>Internal name for mov a0.x</TD></TR>
+<TR><TD>dp3</TD><TD>X</TD><TD>X</TD><TD>&nbsp;</TD><TD>X</TD><TD>X</TD><TD>&nbsp;</TD><TD>&nbsp;</TD></TR>
+<TR><TD>dp4</TD><TD>X</TD><TD>X</TD><TD>&nbsp;</TD><TD>X</TD><TD>X</TD><TD>&nbsp;</TD><TD>&nbsp;</TD></TR>
+<TR><TD>dph</TD><TD>X</TD><TD>X</TD><TD>&nbsp;</TD><TD>X</TD><TD>X</TD><TD>&nbsp;</TD><TD>&nbsp;</TD></TR>
+<TR><TD>dst</TD><TD>X</TD><TD>&nbsp;</TD><TD>&nbsp;</TD><TD>X</TD><TD>X</TD><TD>&nbsp;</TD><TD>&nbsp;</TD></TR>
+<TR><TD>exp</TD><TD>&nbsp;</TD><TD>&nbsp;</TD><TD>X</TD><TD>&nbsp;</TD><TD>&nbsp;</TD><TD>X</TD><TD>scalar, uses C.x not C.w</TD></TR>
+<TR><TD>imv</TD><TD>&nbsp;</TD><TD>&nbsp;</TD><TD>X</TD><TD>&nbsp;</TD><TD>&nbsp;</TD><TD>X</TD><TD>Internal name for mov that uses ILU. Xsasm automatically converts mov to imv if required. Because of this conversion, you won't see an imv opcode in assembly or disassembly.</TD></TR>
+<TR><TD>lit</TD><TD>&nbsp;</TD><TD>&nbsp;</TD><TD>X</TD><TD>&nbsp;</TD><TD>&nbsp;</TD><TD>X</TD><TD>&nbsp;</TD></TR>
+<TR><TD>log</TD><TD>&nbsp;</TD><TD>&nbsp;</TD><TD>X</TD><TD>&nbsp;</TD><TD>&nbsp;</TD><TD>X</TD><TD>scalar, uses C.x not C.w</TD></TR>
+<TR><TD>mad</TD><TD>X</TD><TD>X</TD><TD>&nbsp;</TD><TD>X</TD><TD>X</TD><TD>X</TD><TD>&nbsp;</TD></TR>
+<TR><TD>max</TD><TD>X</TD><TD>&nbsp;</TD><TD>&nbsp;</TD><TD>X</TD><TD>X</TD><TD>&nbsp;</TD><TD>&nbsp;</TD></TR>
+<TR><TD>min</TD><TD>X</TD><TD>&nbsp;</TD><TD>&nbsp;</TD><TD>X</TD><TD>X</TD><TD>&nbsp;</TD><TD>&nbsp;</TD></TR>
+<TR><TD>mov</TD><TD>X</TD><TD>&nbsp;</TD><TD>&nbsp;</TD><TD>X</TD><TD>&nbsp;</TD><TD>&nbsp;</TD><TD>&nbsp;</TD></TR>
+<TR><TD>mul</TD><TD>X</TD><TD>&nbsp;</TD><TD>&nbsp;</TD><TD>X</TD><TD>X</TD><TD>&nbsp;</TD><TD>&nbsp;</TD></TR>
+<TR><TD>rcc</TD><TD>&nbsp;</TD><TD>&nbsp;</TD><TD>X</TD><TD>&nbsp;</TD><TD>&nbsp;</TD><TD>X</TD><TD>scalar, uses C.x not C.w</TD></TR>
+<TR><TD>rcp</TD><TD>&nbsp;</TD><TD>&nbsp;</TD><TD>X</TD><TD>&nbsp;</TD><TD>&nbsp;</TD><TD>X</TD><TD>scalar, uses C.x not C.w</TD></TR>
+<TR><TD>rsq</TD><TD>&nbsp;</TD><TD>&nbsp;</TD><TD>X</TD><TD>&nbsp;</TD><TD>&nbsp;</TD><TD>X</TD><TD>scalar, uses C.x not C.w</TD></TR>
+<TR><TD>sge</TD><TD>X</TD><TD>&nbsp;</TD><TD>&nbsp;</TD><TD>X</TD><TD>X</TD><TD>&nbsp;</TD><TD>&nbsp;</TD></TR>
+<TR><TD>slt</TD><TD>X</TD><TD>&nbsp;</TD><TD>&nbsp;</TD><TD>X</TD><TD>X</TD><TD>&nbsp;</TD><TD>&nbsp;</TD></TR></TABLE>
+<H4>Beware of Scalar ILU Instructions</H4>
+<P class="content">Although the microcode instructions are almost a perfect match with the DirectX vertex shader instructions, there is one subtle difference in the way scalar ILU instructions are implemented. The DirectX vertex shader language specifies that the exp, log, rcc, rcp, and rsq instructions all operate on the "w" component of the input. But the microcode versions of these instructions actually operate on the "x" component of the input. This has subtle implications. For example, you might think you could pair these two instructions:
+<PRE>add oPos, v0, c0
++rsq r1, c0          ;can't be paired, swizzles conflict
+</PRE></P>
+<P class="content">But in fact, you can't, because the add instruction requires that the c input's x component hold the value c0.x, while the rsq instruction requires that the c input's x component hold the value c0.w. You could pair these two instructions if the rsq instruction was written "rsq r1, c0.x".</P>
+<H4>Single-Threading vs. Multi-Threading</H4>
+<P class="content">Normal vertex shaders run multi-threaded. There are two copies of the vertex shader pipeline, and each copy can run up to three threads. Therefore, a total of six threads can be active at once. When three threads are run on a pipeline, each thread's instructions are executed once every third cycle.</P>
+<P class="content">Read/write vertex shaders and vertex state shaders run single threaded, on a single pipeline.</P>
+<P class="content">Even though instructions are executed up to three times more often, single-threaded shaders are inherently slower than multi-threaded shaders, for two reasons:
+<OL>
+<LI>Only one of the two vertex shader pipelines is used.</LI>
+<LI>As you will see in the next section, multi-threading reduces the cost of stalling.</LI>
+</OL></P>
+<H4>Stalling</H4>
+<P class="content">All inputs to an instruction must be ready before an instruction can start. If the inputs are not ready, the instruction stalls until the inputs are available.</P>
+<P class="content">Instructions normally take six cycles to compute their outputs. There are three special "bypass" cases: the ALU, ILU, and MLU bypasses. When you chain together certain sequences of instructions, the result of an instruction is ready for future instructions to use after only three cycles. The bypass path allows swizzling and negation of the result. See the <B>Bypass Details</B> section, below, for more information.</P>
+<P class="content">Multi-threading reduces the cost of a stall because each thread tries only to start a new instruction every three cycles. Once started, a multi-threaded instruction still completes in six cycles. This effectively divides the stall penalties by three.</P>
+<P class="content">In the following table, "Register Type" is the type of the register that appears as an input to the instruction. A stall occurs if the number of cycles between the instruction that last wrote to the register and the first instruction that reads from the register is less than the number of cycles listed under "Effective Stall."</P>
+<TABLE WIDTH="100%">
+<TR><TH rowspan="2">Register Type</TH><TH COLSPAN="2">Effective Stall</TH><TH ROWSPAN="2" COLSPAN="1">Rules</TH></TR>
+<TR><TH>1 thread</TH><TH>3 threads</TH></TR>
+<TR><TD>a0.x</TD><TD>0</TD><TD>0</TD><TD>Never stalls.</TD></TR>
+<TR><TD>v</TD><TD>0</TD><TD>0</TD><TD>Never stalls.</TD></TR>
+<TR><TD ROWSPAN="2">r</TD><TD>+2</TD><TD>0</TD><TD>ALU, ILU, and MLU bypass. See Bypass Details section below.</TD></TR>
+<TR><TD>+5</TD><TD>+1</TD><TD>All other cases.</TD></TR>
+<TR><TD>c</TD><TD>+5</TD><TD>n/a</TD><TD>The memory is divided into two sections based on address bit 2, into blocks of four constants. Writing a section and then reading it causes a stall. The sections are interleaved (odd blocks of four and even blocks of four).</TD></TR>
+<TR><TD>0</TD><TD>n/a</TD><TD>n/a</TD><TD>Can't read from an output register, except for oPos, which is treated as if it were r12.</TD></TR>
+</TABLE><BR><BR>
+<P class="content"><B>Stalling Notes</B></P>
+<UL>
+<LI>In the single-threaded case, a thread can have up to six instructions in flight at once. When starting a new instruction, the previous five instructions must be considered when calculating whether the new instruction will stall:
+<PRE>xvsw.1.1
+rcp r0,v0      ;1 cycle, starts writing to r0
+rcp oPos,r0    ;stalls for 5 cycles, waiting for r0
+
+xvsw.1.1 
+rcp r0,v0      ;1 cycle starts writing to r0
+mov r1,v1      ;1 cycle
+mov r2,v2      ;1 cycle
+mov r3,v3      ;1 cycle
+mov r4,v4      ;1 cycle
+rcp oPos,r0    ;stalls for 1 cycle, waiting for r0
+</PRE></LI>
+<LI>In the single-threaded case, when writing to a constant register toward the end of a shader, the potential for stalling lasts beyond the end of the shader, to the first few instructions of the next cycle of the same shader.
+<PRE>
+xvsw.1.1 
+rcp r0,c0      ;1 cycle first iteration, 6 cycles on
+   ;subsequent iterations
+
+; ... body of shader omitted ...
+
+rcp c0,r0      ;Last instruction of shader, causes stall of
+		   ;the first instruction on the next iteration
+</PRE></LI>
+<LI>For the multi-threaded case, a thread can have only two instructions in flight at once. When starting a new instruction, only the previous instruction in that thread needs to be considered.
+<PRE>xvs.1.1
+rcp r0,v0    ;1 cycle
+rcp r1,r0    ;stalls for 1 cycle, waiting for r0
+</PRE></LI>
+<LI>For the multi-threaded case, the last instruction of the shader program can't stall the first instruction of the next iteration of the shader.</LI>
+<LI>Stalls are tracked on a per-component basis. So, for example, there is no stall between these two instructions:
+<PRE>
+rcp r0.x,v0
+rcp oPos,r0.y   ;r0.y is a different component than r0.x
+</PRE>
+</LI></UL>
+<H3>Bypass Details</H3>
+<P class="content">The ALU, ILU, and MLU bypass paths allow some instruction sequences to execute more quickly than normal. However, there are numerous restrictions:</P>
+<OL>
+<LI>In order to use the ALU bypass, the source instruction must use the ALU. It's OK if the source instruction also uses the MLU as part of their process, such as dp4. The destination instruction has to be either the add or mad instruction, and the result of the source instruction must only be used on the C input. (In other words, only as the final argument to the add or mad instruction.) A common sequence would be mad,mad,mad,add for implementing a transposed matrix multiply.</LI>
+<LI>In order to use the ILU bypass, the source instruction must use the ILU. The destination instruction has to be either the add or mad instruction, and the result of the source instruction must only be used on the C input. (In other words, only as the final argument to the add or mad instruction.) An example sequence would be rsq, add.</LI>
+<LI>In order for to use the MLU bypass, the source instruction must use the MLU, but not the ALU. An example would be the mul instruction. It doesn't work on source instructions that don't use the MLU, such as rsq, and it doesn't work on source instructions that also use the ALU, such as dp3. Any instruction can be used as the destination instruction. An example sequence would be mul, rsq.</LI><BR>
+<LI>The bypass paths allow the results of an instruction to be used as inputs to a new instruction after exactly three cycles. If for some reason the new instruction is not ready to start after three cycles, the opportunity to bypass is lost, and the result won't be ready until six cycles have elapsed, even if all the other inputs are available on the fourth cycle. For example:
+<PRE>xvss.1.1              ; Vertex state shader
+rsq r0.y,v0           ; 1 cycle, no stall
+mul r0.x,v1,c0        ; 1 cycle, no stall
+mul r0.x,r0,r0        ; 3 cycles, only r0.x is read, MLU bypass works
+
+xvss.1.1              ; Vertex state shader
+rsq r0.y,v0           ; 1 cycle, no stall
+mul r0.x,v1,c0        ; 1 cycle, no stall
+mul r0.y,r0,r0        ; 4 cycles, only r0.y is read, must wait for rsq
+                      ; to complete
+
+xvss.1.1              ; Vertex state shader
+rsq r0,v0             ; 1 cycle, no stall
+mul r0.x,v1,c0        ; 1 cycle, no stall
+mul r0.xy,r0,r0       ; 6 cycles. r0.xy are read. Missed bypass chance
+			    ; because must wait for rsq to complete. Then,
+			    ; must wait for non-bypass mul r0.x to complete.
+</PRE></LI>
+</OL>
+<H3>The oPos to Screen Space Transformation</H3>
+<P class="content">For normal vertex shaders, the xsasm assembler automatically appends the following instructions onto the end of the vertex shader:</P>
+<PRE>mul oPos.xyz, r12, c-38 ; scale
++ rcc r1.x, r12.w       ; compute 1/w
+mad oPos.xyz, r12, r1.x, c-37 ; scale by 1/w, add offset
+</PRE>
+<P class="content">These instructions transform the vertex position from homogenous space into screen space. As you can see, these instructions simply perform a scale, perspective divide, and offset.</P>
+<P class="content">Examining these instructions, we see the use of r12 to read back the current value of oPos. You can use this technique in your own code if you want to. It allows you to treat oPos as a thirteenth temporary register. There's no performance penalty to doing this.</P>
+<P class="content">There's no requirement that these instructions be the final instructions of the vertex shader. And, in fact, the xsasm optimizer will often move the mul/rcc pair up, to avoid the stall between the rcc and the mad.</P>
+<P class="content">Depending upon how your shader computes oPos, you may be able to save some cycles by merging these three instructions with other calculations that you're already doing. If this is the case, you can use the "#pragma screenspace" statement to tell xsasm to not append these three instructions.</P>
+<P class="content">#pragma screenspace only affects how the shader microcode is generated. It doesn't tell Direct3D to stop generating values for registers c-37 and c-38. If want to use registers c-37 and c-38 for your own purposes, you must call <B>Direct3D::SetShaderConstantMode</B> with the D3DSCM_NORESERVEDCONSTANTS flag. This flag prevents Direct3D from modifying registers c-37 and c-38.</P>
+
+<H3>Calculating the Screen Space Scale and Offset Parameters</H3>
+<P class="content">DirectX calculates the scale and offset values from the arguments to the <B>Direct3DDevice::SetViewport</B> call. If you calculate these values on your own, you must first transform the x, y, and z values into screen space, and then make adjustments.</P>
+<P class="content">Screen space means:
+<UL><LI>0 &#60;= x &#60; width (in pixels)</LI>
+<LI>0 &#60;= y &#60; height (in pixels)</LI>
+<LI>0 &#60;= z &#60;= D3DZ_MAX_D16, D3DZ_MAX_D24S8, D3DZ_MAX_F16, or D3DZ_MAX_F24S8, depending upon the depth buffer format.</LI></UL></P>
+<P class="content">The adjustment table:</P>
+<TABLE WIDTH="100%">
+<TR><TH rowspan="2">D3DMULTISAMPLE_TYPE</TH><TH colspan="2">Scale</TH><TH colspan="2">Offset</TH></TR>
+<TR><TH>X</TH><TH>Y</TH><TH>X</TH><TH>Y</TH></TR>
+<TR><TD>D3DMULTISAMPLE_NONE</TD><TD>1.0</TD><TD>1.0</TD><TD>0.53125</TD><TD>0.53125</TD></TR>
+<TR><TD>D3DMULTISAMPLE_2_SAMPLES_MULTISAMPLE_LINEAR</TD><TD>1.0</TD><TD>1.0</TD><TD>0.03125</TD><TD>0.03125</TD></TR>
+<TR><TD>D3DMULTISAMPLE_2_SAMPLES_MULTISAMPLE_QUINCUNX</TD><TD>1.0</TD><TD>1.0</TD><TD>0.03125</TD><TD>0.03125</TD></TR>
+<TR><TD>D3DMULTISAMPLE_2_SAMPLES_SUPERSAMPLE_HORIZONTAL_LINEAR&nbsp;&nbsp;</TD><TD>2.0</TD><TD>1.0</TD><TD>0.53125</TD><TD>0.53125</TD></TR>
+<TR><TD>D3DMULTISAMPLE_2_SAMPLES_SUPERSAMPLE_VERTICAL_LINEAR</TD><TD>1.0</TD><TD>2.0</TD><TD>0.53125</TD><TD>0.53125</TD></TR>
+<TR><TD>D3DMULTISAMPLE_4_SAMPLES_MULTISAMPLE_LINEAR</TD><TD>1.0</TD><TD>1.0</TD><TD>0.03125</TD><TD>0.03125</TD></TR>
+<TR><TD>D3DMULTISAMPLE_4_SAMPLES_MULTISAMPLE_GAUSSIAN</TD><TD>1.0</TD><TD>1.0</TD><TD>0.03125</TD><TD>0.03125</TD></TR>
+<TR><TD>D3DMULTISAMPLE_4_SAMPLES_SUPERSAMPLE_LINEAR</TD><TD>2.0</TD><TD>2.0</TD><TD>0.53125</TD><TD>0.53125</TD></TR>
+<TR><TD>D3DMULTISAMPLE_4_SAMPLES_SUPERSAMPLE_GAUSSIAN</TD><TD>2.0</TD><TD>2.0</TD><TD>0.53125</TD><TD>0.53125</TD></TR>
+<TR><TD>D3DMULTISAMPLE_9_SAMPLES_MULTISAMPLE_GAUSSIAN</TD><TD>1.5</TD><TD>1.5</TD><TD>0.03125</TD><TD>0.03125</TD></TR>
+<TR><TD>D3DMULTISAMPLE_9_SAMPLES_SUPERSAMPLE_GAUSSIAN</TD><TD>3.0</TD><TD>3.0</TD><TD>0.53125</TD><TD>0.53125</TD></TR></TABLE>
+<P class="content">The offset value of 0.53125 is 0.5 + 1/32. The number 0.5 is the difference between the OpenGL pixel center rasterization rules and the Direct3D rasterization rules. Adding 1/32 implements rounding to the nearest 1/16 of a pixel. The offset of 0.5 is not used when multisampling.</P>
+<P class="content">From this table, you can see that the D3DMULTISAMPLE_9_SAMPLES_MULTISAMPLE_GAUSSIAN mode is actually implemented by the hardware as a four-sample multi-sample followed by a 1.5 &times; 1.5 super-sample.</P>
+<H3>A Vertex Shader Optimization Case Study</H3>
+<P class="content">Say you have four lights, and you want to compute the four normalized difference vectors between the vertex and four lights. You might write the code as follows:
+<PRE>add r4,-r9,c10 ; r9 is the vertex position
+               ; c10 is light 0's position
+dp3 r4.w,r4,r4 ; normalize
+rsq r4.w,r4.w
+mul r4,r4,r4.w
+
+add r5,-r9,c11 ; light 1
+dp3 r5.w,r5,r5
+rsq r5.w,r5.w
+mul r5,r5,r5.w
+add r6,-r9,c12 ; light 2
+dp3 r6.w,r6,r6
+rsq r6.w,r6.w
+mul r6,r6,r6.w
+
+add r7,-r9,c13 ; light 3
+dp3 r7.w,r7,r7
+rsq r7.w,r7.w
+mul r7,r7,r7.w
+</PRE></P>
+<P class="content">This code is 16 instructions long, but because of stalls, this code takes a total of 4 &times; 7 = 28 cycles to execute.</P>
+<P class="content">The first optimization is to reorder the instructions to eliminate stalls. This is easy to do because there are plenty of temporary registers to hold the intermediate results:
+<PRE>add r4,-r9,c10
+add r5,-r9,c11
+add r6,-r9,c12
+add r7,-r9,c13
+dp3 r4.w,r4,r4
+dp3 r5.w,r5,r5
+dp3 r6.w,r6,r6
+dp3 r7.w,r7,r7
+rsq r4.w,r4.w
+rsq r5.w,r5.w
+rsq r6.w,r6.w
+rsq r7.w,r7.w
+mul r4,r4,r4.w
+mul r5,r5,r5.w
+mul r6,r6,r6.w
+mul r7,r7,r7.w
+</PRE></P>
+<P class="content">This new code has no stalls in it. Each instruction will run immediately, because all of its input data is already available. This sequence of instructions will take 16 cycles to execute, quite an improvement over the original 28 cycles.</P>
+<P class="content">But wait, there's more: The four rsq instructions can be paired with the nearby MLU instructions. To do this, we have to rewrite the code so that the rsq instructions write to the r1 register. Write masks can be used to allow r1 to hold up to four different scalar values.
+<PRE>
+add r4,-r9,c10
+add r5,-r9,c11
+add r6,-r9,c12
+add r7,-r9,c13
+dp3 r4.w,r4,r4
+dp3 r5.w,r5,r5
+dp3 r6.w,r6,r6
++   rsq r1.x,r4.w       ; paired with previous instruction
+dp3 r7.w,r7,r7
++   rsq r1.y,r5.w       ; paired with previous instruction
+mul r4,r4,r1.x
++   rsq r1.x,r6.w       ; paired with previous instruction
+mul r5,r5,r1.y
++   rsq r1.y,r7.w       ; paired with previous instruction
+mul r6,r6,r1.x
+mul r7,r7,r1.y
+</PRE></P>
+<P class="content">This code has the same effect as the original code but takes only 12 cycles to execute.</P>
+<P class="content">Finally, if this code is part of a longer sequence, there are still eight potential slots for instruction pairing. The four slots associated with the add instructions are not very useful, because they are restricted to using the add instruction's last argument as their input. But the other four slots (for the first two dp3 instructions, and the last two mul instructions) are potentially useful. One common use of such free slots is to use the mov instruction to copy data from an input register to an output register. For example, if this shader wanted to pass texture coordinates through to the pixel shader, it could use the following pairing:
+<PRE>
+dp3 r5.w,r5,r5
++   mov oT0,v7         ; paired with previous instruction</PRE>
+</P>
+<H3>Hand-Optimization Tips</H3>
+<P class="content">All the normal DirectX 8 vertex shader optimization tips still apply. Shorter shaders usually execute in less time than longer shaders. In addition, these special rules apply to the Xbox GPU vertex shader:</P>
+<UL>
+<LI>Use the xsasm assembler to help you optimize. Have it optimize your code, and then examine the listing output to see if you can do even better by hand.</LI>
+<LI>To avoid stalls in normal shaders, try not to use the output of an instruction for at least one instruction.</LI>
+<LI>Sometimes swapping the order of arguments to an add instruction will avoid a stall, by enabling the ALU or ILU bypass paths.</LI>
+<LI>Try to make r1 the target of all ILU instructions that write to r registers, so that they can be paired. This includes mov instructions that write to r registers. </LI>
+<LI>Sometimes it's useful to write a result to both an r register and an output register.</LI>
+<LI>Because all instructions take the same time to execute, consider upgrading weaker instructions into more powerful instructions. For example, a mul is no more expensive than a mov. And a mad is no more expensive than a mul or an add. Sometimes this allows you to get an extra effect "for free".</LI>
+<LI>Some instructions compute four separate results at once. These instructions are add, mul, mad, min, max, sge, and slt. With these instructions it's just as cheap to compute four results as one. For example, in lighting calculations the max instruction is often used to clamp a light's intensity to a positive value. When multiple lights are being calculated, you can batch four lights' intensities into the four components of a temporary register, and then use a single max instruction to clamp all four lights' intensities. This saves three max instructions for every four lights. (See the VSLights sample for details.) </LI>
+</UL>
+<P class="content">The following tips rely on little-known features of normal vertex shaders which are also present in the Xbox GPU hardware:</P>
+<UL>
+<LI>Rely on the w component of output registers being pre-initialized to 1.0f. You don't need to merge in a "1.0" before writing to an output register. Just write to the output register using an .xyz mask.</LI>
+<LI>Rely on the hardware automatically clamping the oD0, oD1, oB0, and 0B1 components to the range [0.0..1.0].</LI>
+<LI>Rely on the hardware automatically clamping oFog in the following way: oFog is interpolated based upon the unclamped value you write. The interpolated fog value is clamped to a legal fog table index value at the time it's used. (i.e. the oFog clamping is done for each output pixel color computation, not just for the three vertices of the triangle.)</LI>
+</UL>
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>D3DSWAPEFFECT</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="D3DSWAPEFFECT">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="D3DSWAPEFFECT"/>
+<MSHelp:Keyword Index="F" Term="D3DSWAPEFFECT"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_d3dswapeffect_graphics"></A>D3DSWAPEFFECT</H1>
+
+<P>Defines swap effects.</P>
+
+<PRE class=syntax>typedef enum _D3DSWAPEFFECT {
+    D3DSWAPEFFECT_DISCARD         = 1,
+    D3DSWAPEFFECT_FLIP            = 2,
+    D3DSWAPEFFECT_COPY            = 3,
+
+    D3DSWAPEFFECT_FORCE_DWORD       = 0x7fffffff
+
+} D3DSWAPEFFECT;
+</PRE>
+
+<H4>Constants</H4>
+
+<DL>
+<DT>D3DSWAPEFFECT_DISCARD</DT>
+
+<DD>When a swap chain is created with a swap effect of D3DSWAPEFFECT_FLIP or D3DSWAPEFFECT_COPY, the run time will guarantee that a <A HREF="_dx_idirect3ddevice8_present_graphics.htm"><B>IDirect3DDevice8::Present</B></A> operation will not affect the content of any of the back buffers. Unfortunately, meeting this guarantee can involve substantial video memory or processing overheads, especially when implementing flip semantics for a windowed swap chain or copy semantics for a full-screen swap chain. An application may use the D3DSWAPEFFECT_DISCARD swap effect to avoid these overheads and to enable the display driver to select the most efficient presentation technique for the swap chain. This is also the only swap effect that may be used when specifying a value other than D3DMULTISAMPLE_NONE for the <B>MultiSampleType</B> member of <A HREF="_dx_d3dpresent_parameters_graphics.htm"><B>D3DPRESENT_PARAMETERS</B></A>.
+
+<P>Like a swap chain that uses D3DSWAPEFFECT_FLIP, a swap chain that uses D3DSWAPEFFECT_DISCARD might include more than one back buffer, any of which may be accessed using <A HREF="_dx_idirect3ddevice8_getbackbuffer_graphics.htm"><B>IDirect3DDevice8::GetBackBuffer</B></A>. The swap chain is best envisaged as a queue in which 0 always indexes the back buffer that will be displayed by the next Present operation and from which buffers are discarded once they have been displayed.
+
+
+<P>An application that uses this swap effect cannot make any assumptions about the contents of a discarded back buffer and should therefore update an entire back buffer before invoking a <B>Present</B> operation that would display it. Although this is not enforced, the debug version of the run time will overwrite the contents of discarded back buffers with random data to enable developers to verify that their applications are updating the entire back buffer surfaces correctly.
+
+
+<P>For a full-screen swap chain, the presentation rate is determined by the value assigned to the <B>FullScreen_PresentationInterval</B> member of the <B>D3DPRESENT_PARAMETERS</B> structure when the device or swap chain is created. Unless this value is D3DPRESENT_INTERVAL_IMMEDIATE, the presentation will be synchronized with the vertical sync of the monitor. For a windowed swap chain, the presentation is implemented by means of copy operations and always occurs immediately.
+</DD>
+
+<DT>D3DSWAPEFFECT_FLIP</DT>
+
+<DD>The swap chain might include multiple back buffers and is best envisaged as a circular queue that includes the front buffer. Within this queue, the back buffers are always numbered sequentially from 0 to (N -1), where N is the number of back buffers, so that 0 denotes the least recently presented buffer. When <B>Present</B> is invoked, the queue is "rotated" so that the front buffer becomes back buffer (N - 1), while the back buffer 0 becomes the new front buffer.
+
+<P>For a full-screen swap chain, the presentation rate is determined by the value assigned to the <B>FullScreen_PresentationInterval</B> member of the D3DPRESENT_PARAMETERS structure when the device or swap chain is created. Unless this value is D3DPRESENT_INTERVAL_IMMEDIATE, the presentation will be synchronized with the vertical sync of the monitor. For a windowed swap chain, the flipping is implemented by means of copy operations and the presentation always occurs immediately.
+</DD>
+
+<DT>D3DSWAPEFFECT_COPY</DT>
+
+<DD>This swap effect may be specified only for a swap chain comprising a single back buffer. Whether the swap chain is windowed or full-screen, the run time will guarantee the semantics implied by a copy-based <B>Present</B> operation, namely that the operation leaves the content of the back buffer unchanged, instead of replacing it with the content of the front buffer as a flip-based <B>Present</B> operation would.
+
+<P>For a windowed swap chain, a <B>Present</B> operation causes the back buffer content to be copied to the client area of the target window immediately. No attempt is made to synchronize the copy with the vertical retrace period of the display adapter, so "tearing" effects may be observed.</p>
+
+
+<P>For a full-screen swap chain, the run time uses a combination of flip operations and copy operations, supported if necessary by hidden back buffers, to accomplish the <B>Present</B> operation. Accordingly, the presentation is synchronized with the display adapter's vertical retrace and its rate is constrained by the chosen presentation interval. A swap chain specified with the D3DPRESENT_INTERVAL_IMMEDIATE flag is the only exception. (Refer to the description of the <B>FullScreen_PresentationInterval</B> member of the <B>D3DPRESENT_PARAMETERS</B> structure.) In this case, a <B>Present</B> operation copies the back-buffer content directly to the front buffer without waiting for the vertical retrace.
+</DD>
+
+<DT>D3DSWAPEFFECT_FORCE_DWORD</DT>
+
+<DD>Forces this enumeration to compile to 32 bits in size. This value is not used.
+</DD>
+</DL>
+
+<H4>Remarks</H4>
+
+<P>The state of the back buffer after a call to <B>Present</B> is well-defined by each of these swap effects, and whether the Microsoft&#174; Direct3D&#174; device was created with a full-screen swap chain or a windowed swap chain has no effect on this state. In particular, the D3DSWAPEFFECT_FLIP swap effect operates the same whether windowed or full-screen, and the Direct3D run time guarantees this by creating extra buffers. As a result, it is recommended that applications use D3DSWAPEFFECT_DISCARD whenever possible to avoid any such penalties, since this swap effect will always be the most efficient in terms of memory consumption and performance.</P>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in d3d8types.h.</P>
+
+<H4>See Also</H4>
+
+<P><A HREF="_dx_idirect3ddevice8_reset_graphics.htm"><B>IDirect3DDevice8::Reset</B></A>, <A HREF="_dx_d3dpresent_parameters_graphics.htm"><B>D3DPRESENT_PARAMETERS</B></A></P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

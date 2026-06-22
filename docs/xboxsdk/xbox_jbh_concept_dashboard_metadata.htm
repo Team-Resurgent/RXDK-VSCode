@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Dashboard Metadata</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Dashboard Metadata"/>
+<MSHelp:Keyword Index="F" Term="Dashboard Metadata"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Dashboard Metadata</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<H3 class="subheading1">A Simple Walk-Through</H3>
+
+<P class="content">For this walk-through, use the <A HREF="xbox_jbh_samp_gra_dolphinclassic.htm"><B>DolphinClassic</B></A> sample that comes with the XDK. Although it's not nearly as fun as plugging your game into the Xbox Dashboard, using an XDK sample will at least help you get an idea of how things work. When you're finished, you'll have a game called "DolphinClassic" listed in the Games Area of the Dashboard, along with the required title image. </P>
+
+<OL>
+	<LI><P class="content">Load the <B>DolphinClassic</B> sample into Microsoft&#174 Visual C++&#174. For this example, the XDK should be installed in the default location, C:\Program Files\Microsoft Xbox SDK. You can find the project file under C:\Program Files\Microsoft Xbox SDK\Samples\Xbox\Graphics\DolphinClassic. In <B>Project</B> / <B>Settings</B> / <B>Xbox Image</B>, select <B>Title Info</B> from the <B>Category</B> drop-down menu. You can assign the title name, the publisher name, and the title ID by filling in the appropriate fields. These values are already completed for you in the <B>DolphinClassic</B> sample. </P>
+
+	<LI><P class="content">Create a title image that can be displayed in the Games Area of the Xbox Dashboard. To do this, create an image using your favorite graphics utility. The image can be any 128 x 128 Microsoft&#174; Direct3D&#174; texture. For the purposes of this walk-through, create a bitmap image in Microsoft&#174 Paint. After opening the Paint program (from the <B>Start</B> menu, click <B>Accessories</B>, and then click <B>Paint</B>), use the <B>Image</B> drop-down menu and select <B>Attributes</B>. There you can set both the width and the height of the image to 128. Draw a picture to represent your game. Once you've created your image, save the bitmap as C:\Program Files\Microsoft Xbox SDK\Samples\Xbox\Graphics\DolphinClassic\title.bmp.</P>
+
+	<LI><P class="content">Open a command-line shell and change your directory to the location where you saved the bitmap (in the previous step). Now you need to create a resource definition file (.rdf). This file describes the bitmap so that it can be built into a Direct3D resource file. Launch Microsoft&#174; Notepad (<B>Start</B> / <B>Accessories</B> / <B>Notepad</B>) and enter the following information. Save this file as "title.rdf" in the DolphinClassic directory.</P>
+
+<PRE>Texture MyTex
+{
+   Source title.bmp
+   Format D3DFMT_DXT1
+   Width 128
+   Height 128
+}</PRE></LI>
+
+	<LI><P class="content">Once you've saved the file, exit Notepad. You can now use the Bundler utility (included with the XDK) to transform your bitmap into a Direct3D resource file. For our walk-through, type "bundler title.rdf -o titleimage.xbx." You should now have a file called "titleimage.xbx." Close the command-line window and return to Visual C++.</P>
+
+	<LI><P class="content">Add the parameters necessary to embed the resource file you just created into your Xbox executable. In <B>Project</B> / <B>Settings</B> / <B>Xbox Image</B>, select <B>Title Info</B> from the <B>Category</B> drop-down menu and enter "titleimage.xbx" in the Title Image field.</P>
+
+	<LI><P class="content">Build the <B>DolphinClassic</B> sample. Visual C++ automatically calls <A HREF="xbox_jbh_tool_imagebld.htm"><B>ImageBld</B></A> with the proper switches to incorporate your image within your .xbe, and it also calls <A HREF="xbox_jbh_tool_remote_xbcp.htm"><B>xbcp</B></A> to copy the .xbe to your target system. The <B>ImageBld</B> settings are acquired from the data that you enter on the Project / Settings / Xbox Image tab in Visual C++. See the documentation for <B>ImageBld</B> for more information.</P>
+</OL>
+
+<P class="note"><B><I>Note</I></B>&nbsp;&nbsp;&nbsp;The first time you run the sample, the metadata is automatically extracted from your .xbe and copied to the appropriate title directory. Because of this, you need to run the sample once on your target machine from the Title Launcher before it will be displayed in the Dashboard.
+
+<H3 class="subheading1">Save Game Metadata</H3>
+
+
+<P class="content">Besides having to create the title image, you are also required to include metadata for saved games. The textual metadata is created automatically when you call the <B>XCreateSaveGame</B> function. The name of the saved game passed to this function will be displayed by the Dashboard.</P>
+
+<P class="content">Saved games must have an associated image. You can use the Bundler utility to create an image file for saved games. The process for creating this image is similar to that for  creating the title's image file. Saved game images must be stored in the saved game's directory. It must be named "saveimage.xbx" and must be 64 &#215 64 pixels. The XDK also includes a function that will allow you to create an "saveimage.xbx" file from a screen shot or other drawing surface (see <A HREF="xbox_xgwritesurfaceortexturetoxpr_graphics.htm"><B>XGWriteSurfaceOrTextureToXPR</B></A>).</P>
+
+<!-- OMIT per Pete Kelly and Hiroo <humeno@xbox.com> (email 2002-4-19)
+
+<P class="content">Your saved games must also support launching from a saved game. When a user launches a particular saved game, the Dashboard will call <B>XLaunchNewImage</B>() with the saved game information. When the game starts, it must call <B>XGetLaunchInfo</B>() to determine the appropriate saved game to load.</P>
+
+-->
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

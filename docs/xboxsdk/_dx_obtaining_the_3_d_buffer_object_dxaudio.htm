@@ -1,0 +1,48 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Obtaining the 3D Buffer Object</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Obtaining the 3D Buffer Object"/>
+<MSHelp:Keyword Index="F" Term="Obtaining the 3D Buffer Object"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H4><A NAME="_dx_obtaining_the_3_d_buffer_object_dxaudio"></A>Obtaining the 3D Buffer Object</H4>
+
+<P>Use the <A HREF="_dx_idirectsound8_createsoundbuffer_dxaudio.htm"><B>IDirectSound8::CreateSoundBuffer</B></A> method to retrieve an <A HREF="_dx_idirectsoundbuffer8_dxaudio.htm"><B>IDirectSoundBuffer8</B></A> object. </P></P>
+
+<P>If your application is using the DirectMusic performance and audiopaths, you can create an audiopath containing a 3D buffer by passing DMUS_APATH_DYNAMIC_3D as the <I>dwType</I> parameter to <A HREF="_dx_idirectmusicperformance8_createstandardaudiopath_dxaudio.htm"><B>IDirectMusicPerformance8::CreateStandardAudioPath</B></A>. </P>
+
+<P>You can also create a suitable audiopath from a configuration object. An audiopath configuration can specify 3D parameters for a buffer. When the audiopath is created, the 3D properties of the buffer are initialized with these parameters.</P>
+
+<P>To obtain an interface to a 3D buffer in an audiopath, call <A HREF="_dx_idirectmusicaudiopath8_getobjectinpath_dxaudio.htm"><B>IDirectMusicAudioPath8::GetObjectInPath</B></A> or <A HREF="_dx_idirectmusicsegmentstate8_getobjectinpath_dxaudio.htm"><B>IDirectMusicSegmentState8::GetObjectInPath</B></A>, with <I>dwStage</I> set to DMUS_PATH_BUFFER. </P>
+
+<P>The following sample code creates a standard audio path and retrieves an <B>IDirectSoundBuffer8</B> interface:</P>
+
+<PRE>HRESULT                  hr;
+IDirectMusicAudioPath8*  g_p3DAudioPath;
+IDirectSoundBuffer8*   g_pDSBuffer; 
+
+if (FAILED(hr = pPerformance-&gt;CreateStandardAudioPath(
+        DMUS_APATH_DYNAMIC_3D, 64, TRUE, &amp;g_p3DAudioPath)))
+    return hr;
+ 
+if (FAILED(hr = g_p3DAudioPath-&gt;GetObjectInPath( 
+        DMUS_PCHANNEL_ALL, DMUS_PATH_BUFFER, 0,
+        GUID_NULL, 0, GUID_NULL, 
+        (LPVOID*) &amp;g_pDSBuffer)))
+    return hr;
+ </PRE>
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

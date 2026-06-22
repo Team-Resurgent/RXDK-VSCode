@@ -1,0 +1,405 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Best Practices for DirectMusic on Xbox</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Best Practices for DirectMusic on Xbox"/>
+<MSHelp:Keyword Index="F" Term="Best Practices for DirectMusic on Xbox"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1 class="heading"><A NAME=""></A>Best Practices for DirectMusic on Xbox</H1>
+
+<p><i>By Scott Selfon, Audio Content Consultant, Xbox Advanced Technology Group</i></p>
+
+<p><b><i>Note</i></b>&nbsp;&nbsp; We generally recommend that developers not using MIDI-based playback instead investigate either using the XACT engine or using Microsoft&#174; DirectSound&#174; to build their own custom engine. </p>
+
+<h2>Introduction</h2>
+
+<p>The Microsoft&#174; DirectMusic&#174; library provides several powerful features for authoring and implementing audio content. Most notably, the DirectMusic library excels at interactivity, variability, and understanding musical concepts (musical concepts such as tempo, chord progressions, musical boundaries, and sequencing MIDI and wave data). All this
+information is created by the content creator, using the DirectMusic Producer for Xbox authoring tool. This allows the developer to play pieces of content without needing to know exactly how the pieces were implemented. DirectMusic allows composers and developers to use a simple scripting language, AudioVBScript, to abstract audio events to "triggers" for game calls. DirectMusic also allows composers and developers to create self-modifying
+music. However, DirectMusic's background as a PC sound engine solution often leads to design philosophies contrary to the console method of implementation. As a result, developers interested in using DirectMusic should be aware of the library's status, limitations, and known issues. This guide covers some of these obstacles, as well as how content creators have successfully navigated the many interfaces of DirectMusic to ship titles.</p>
+
+<h2>DirectMusic Library: Status Report</h2>
+
+<p>The DirectMusic library and its authoring tool have been "locked down" in final version for the Xbox&#174; video game from Microsoft. This "locked down" status means that no new features or bug fixes are planned for DirectMusic or DirectMusic Producer. If, as the title is being developed, a specific title encounters issues with DirectMusic, Microsoft will help
+investigate workarounds. However, to avoid risk of the DirectMusic library becoming destabilized, it will not be changed if a specific title encounters issues with DirectMusic. That said, DirectMusic (in its current form) provides a mostly stable platform for authoring audio (subject to the limitations discussed below), and has been used successfully by several Xbox titles. </p>
+
+<h2>Isn't XACT a Replacement for DirectMusic?</h2>
+
+<p>With current audio development efforts focused on the Xbox Audio Creation Tool (XACT), one might wonder if XACT is indeed intended to replace DirectMusic. The answer is that while XACT will share some behaviors with DirectMusic (for example, the ability to add variation to audio playback), as a whole, XACT is not meant to replace DirectMusic.</p>
+
+<p>DirectMusic provides:</p>
+
+<ul>
+ <li><em>MIDI and DLS support (sequenced music).</em> DirectMusic supports MIDI and DLS, which provide complex sequencing of instrument triggers along a timeline. By contrast, XACT is not intended as a MIDI synthesizer, does not use a standard "note" protocol, and does not currently support the concept of DLS collections. Rather, XACT audio currently consists of "pre-rendered" wave files.</li>
+ <li><em>An advanced music engine</em> that understands concepts like intensity, chord
+     progressions, tempo, musical boundaries, and so on. XACT does not intend to support most of the more advanced music concepts, though future scripting support could allow content creators to implement some of these concepts themselves.</li>
+ <li><em>A scripting language</em> for self-modifying music and abstracting sounds to
+     game events for the developer. Although future plans for XACT include support
+     for a scripting language, no scripting support is currently natively available.</li>
+</ul>
+
+<p>By contrast, XACT provides:</p>
+
+<ul>
+ <li><em>Xbox-optimized resource management</em> under developer control. As a PC-originating technology, DirectMusic often handles such concepts as CPU usage, memory
+     management, and file access. However, DirectMusic does not give the developer the ability to control exactly when specific resources are used.</li>
+ <li><em>Optimized wave streaming performance, with zero latency (primed) streaming.</em>
+     While DirectMusic does support primed and non-primed streams, it does not provide optimal streaming from the game disc or from the Xbox hard disk.</li>
+ <li><em>Easy "jukebox" API access to WMA soundtracks</em>. XACT provides simple access to both WMA soundtracks provided with a title and WMA soundtracks created by the user from his audio CDs. DirectMusic does not support WMA decoding on the Xbox, nor does it support the ability to access user-created soundtracks.</li>
+ <li><em>Clear delineation between the roles of developer and content author</em>. When
+     using DirectMusic, the coder and the sound engineer need to exchange a
+     significant amount of information. To make matters more confusing, desired
+     behaviors can often be handled and manipulated by both parties, allowing a
+     certain amount of "tug of war" to occur. Conversely, XACT focuses on
+     giving the developer access to the information he needs, and leaving the
+     specifics of content authoring to the composer/sound designer.</li>
+</ul>
+
+<h2><a name="OLE_LINK1">The Strengths of DirectMusic</a></h2>
+
+<p>From a content authoring point of view, DirectMusic provides
+some fairly unique features. We'll cover the DirectMusic features later that you
+should investigate if you are creating a DirectMusic solution for your title.
+(A title that does not take advantage of these features will often be better
+served with an XACT or lower-level DirectSound solution.)</p>
+
+<ul>
+ <li><em>Variability</em>.
+     Variations should be top priority for both a sequenced score or
+     DirectMusic-based sound effects. If you're taking the trouble to render
+     your music and sound effects in real time, the effects should render a
+     little bit differently each time they play. Otherwise, why not just create
+     and stream a pre-rendered wave file? DirectMusic provides several levels
+     of variability that are discussed more fully in the following white
+     papers: <a
+     href="cd_aud_wp_variations1.htm">Variations:
+     Adding Basic Variability to Audio Content in DirectMusic Producer</a> and <a
+     href="https://xds.xbox.com/BPProgInfo.asp?Page=content/cd_aud_wp_intermediatescripting.htm" target="blank">Intermediate
+     Scripting Techniques: Variable Playback and Self-Modifying Music</a>.</li>
+ <li><em>Musical
+     boundary information</em>. The ability of DirectMusic to understand
+     measures, beats, and content-authored markers can allow more seamless and convincing
+     musical transitions from one musical cue to another. Although it is
+     sometimes appropriate to transition abruptly between music sequences,
+     consider creating smooth transitions where possible.</li>
+ <li><em>Variable
+     tempo</em>. A pre-rendered score cannot easily speed up and slow down in
+     response to game events. Consider modifying the game score's tempo based
+     on player health, number of enemies, and so on. But do keep in mind the
+     tempo-related restrictions discussed in the next topic.</li>
+ <li><em>Scale/chord
+     interaction</em>. This interaction is one of the most unique and intriguing
+     DirectMusic concepts. Scale/chord interaction allows for some very
+     interesting underscore possibilities. This interaction allows a musical
+     motif for a player or event to be played over a score that contains chord
+     information. That motif will subsequently transpose and revoice itself to
+     fit with the specified chord progression, if desired. Similarly, as an
+     enemy enters the room, you can instruct the score to suddenly shift into a
+     minor mode. This feature will also allow you to compose your score using
+     chordmaps, which are instructions that allow random chord progression
+     paths to be chosen as the music is played.</li>
+ <li><em>Groove
+     levels (musical intensity)</em>. DirectMusic gives the composer the ability
+     to abstract music to an intensity level. Rather than transitioning between
+     various pieces of music, the developer can change a global variable. The
+     music will then respond based on the varying intensity levels authored by
+     the composer. This process has been successfully used on many PC and Xbox
+     DirectMusic titles. For a more complete introduction to groove levels, see
+     the white paper <a
+     href="https://xds.xbox.com/BPProgInfo.asp?Page=content/cd_aud_wp_style.htm" target="blank">Style-Based
+     Playback: An Introduction to DirectMusic Style Files</a>.</li>
+ <li><em>Content-driven
+     access to Xbox hardware settings</em>. Rather than depending on passing a
+     long list of coefficients and settings to the developer, the DLS-2
+     (Downloadable Sounds Level 2) envelopes, LFOs, and filters&mdash;all of which
+     are available on every hardware voice&mdash;can be accessed and manipulated
+     within content itself. DLS collection instruments specify most of these
+     settings, and MIDI continuous controllers in DirectMusic segments can
+     manipulate them in realtime per voice. In addition, mixbin audiopaths
+     allow for content to drive the volumes that content sends, per channel, up
+     to eight mixbins. This means that you can create sequenced music with 5.1
+     positioning per voice, or you can modify how a sound is affected by Global
+     Processor effects. For more details on multichannel usage, see the following
+     white paper: <a
+     href="cd_aud_wp_multichannel.htm">DirectMusic and Multichannel Audio</a>.</li>
+</ul>
+
+<h2>DirectMusic Limitations</h2>
+
+<p>When working with DirectMusic, content creators and developers
+should be aware of restrictions imposed by the engine. Developers should also
+be aware of commonly needed behaviors that are not native to the library's
+interfaces (because these behaviors will require coding).</p>
+
+<ul>
+ <li><em>One
+     primary segment can play at a time</em>. This is specified in the flags
+     passed into the play call, not in the content. Playing another primary
+     segment implicitly replaces any previously playing primary segment. A
+     segment played as a secondary segment will not have this restriction.</li>
+ <li><em>Crossfades
+     are non-trivial</em>. For primary segments, the above limitation comes into
+     play: a crossfade would involve both segments playing simultaneously,
+     which is not allowed. Consequently, one or both of the segments will typically
+     be secondary segments. Furthermore, because there is no predefined
+     crossfade transition, the crossfade transition must be implemented within
+     code, scripting, or content. For more details on potential
+     implementations, see the following white paper: <a
+     href="https://xds.xbox.com/BPProgInfo.asp?Page=content/cd_aud_wp_crossfades.htm" target="blank">Crossfade
+     Solutions Using DirectMusic: Volume Controller Curves, Audiopaths, and
+     DirectX Audio Scripting</a>.</li>
+ <li><em>A
+     DirectMusic Performance can only use one tempo at a time</em>. All segments
+     are played onto a DirectMusic performance object. Because each DirectMusic
+     performance can only have one tempo (by which all segments must abide),
+     you can encounter issues where your tempo speeds up and all or some of
+     your sound effects subsequently cut out. (In this case, the sound effects
+     cut out because they were authored to play at one specific tempo). One workaround
+     is to use clock time segments. In clock time segments, tempo is ignored in
+     favor of absolute time (in milliseconds). For instance, a wave intended
+     for 4.5 seconds duration will play for exactly that duration regardless of
+     tempo changes. Another alternative is to use multiple DirectMusic
+     performance objects, a method which incurs fairly small additional CPU
+     overhead.</li>
+
+ <li><em>DLS
+     collections cannot be streamed.</em> DLS collections must be fully
+     resident in memory for their instruments to be accessed. While collections
+     can be loaded and unloaded as often as you wish, the parsing of DLS
+     collections data occupies CPU time. Waves can be streamed by placing DLS
+     collections in wave tracks, but this eliminates all note functionality as
+     well as access to hardware filter, LFO, and envelope settings. And, as
+     we'll discuss in a moment, DirectMusic's streaming functionality is
+     synchronous and sub-optimal.</li>
+ <li><em>Many
+     aspects of DirectMusic are not sample accurate.</em> While wave playback
+     itself (DLS and wave tracks) is sample accurate as far as loops, both the
+     segment duration and playing from an offset into a wave are not. In music
+     time segments, accuracy varies with tempo and is based on ticks. In clock
+     time segments, accuracy is millisecond accurate. In the case of sample
+     accurate ambiences and sound effects, this can make looping DirectMusic
+     segments difficult. Typically, then, content that needs sample accurate
+     looping should either use XACT, low level DirectSound, or a content creator
+     (a content creator capable of creating a very long segment with a wave
+     that loops repeatedly).</li>
+ <li><em>Difficulty
+     using DirectMusic with highly dynamic sound effects.</em> Primarily due to
+     the previous issue, DirectMusic is not ideal for playback of either looping
+     or extremely variable sounds (variable sounds such as engine noises, for
+     example). DirectMusic segments are of some fixed length. Pitch shifting
+     these fixed-length segments only alters the speed of wave playback, not
+     the length of the segment. Consequently, when a segment that is pitch
+     shifted up, you will start to notice a silent gap before the repeat
+     occurs, while a segment that is pitch shifted down will loop before the
+     wave has completed. Concepts of MIDI note on and note off are also
+     somewhat foreign to the following types of sound effects: (1) effects that
+     are typically played to completion (regardless of how long playback will
+     take), or (2) effects started as looping waves with no definite specified end
+     time.</li>
+
+ <li><em>Stitching
+     dynamic length content is difficult.</em> For variable music, a content
+     creator might create several versions of an eight bar phrase within a
+     segment. DirectMusic can randomly choose one of these to play. But if the
+     content creator wants to sometimes have a variation that is only seven
+     bars long, implementation becomes much more difficult. Similar issues
+     exist for stitching dialog. If the sports announcer has several versions of
+     the introduction for two teams playing a match, the individual waves
+     desired should be queued up rather than being authored into a segment with
+     variability. For more details about using DirectX Audio Scripting to
+     stitch dialog, see the white paper <a
+     href="https://xds.xbox.com/BPProgInfo.asp?Page=content/cd_aud_wp_dialog.htm" target="blank">Talking
+     the Talk: DirectX Audio Scripting Solutions for Dialog Scenarios</a>.</li>
+ <li><em>Pause/resume
+     must be implemented.</em> DirectMusic has no inherent "pause"
+     functionality. To implement this functionality, when a segment is paused, the
+     developer must subtract the current time from the segment's start time&mdash;taking
+     into account segment loops. Upon resuming the segment, the developer needs
+     to replay the segment, using that offset time as the start point. All
+     this information needs to be tracked for every segment that might have been
+     previously playing. Tracking all this information can become complicated
+     if you are using dynamic tempo changes, multiple concurrent segments, or
+     playing segments on musical boundaries. In addition, MIDI+DLS music will
+     resume beyond the "note on" event (and DirectMusic lacks the ability to
+     play DLS waves from an offset), so long sustained DLS notes will not
+     resume when your music is unpaused. Pause/resume will be more successful
+     for wave tracks, but playback from an offset into a segment can often
+     incur some inaccuracy in the specific resume position. Furthermore, as
+     we'll discuss in the next topic, playing ADPCM waves from an offset is not
+     supported.</li>
+ <li><em>A lot of
+     information still needs to be communicated to the developer</em>. The
+     content creator will need to track what kind of audiopath on which to play
+     the music (stereo, 3D positioned, 5.1, and so on), and provide this
+     information to the developer. In addition, it is the developer's responsibility
+     to pass in the appropriate transition flag (the boundary on which the
+     piece of music is started) on play calls. The burden of communicating all
+     of this information can be mitigated somewhat by using DirectX Audio
+     scripting, which places more of the responsibility in the hands of the
+     audio content creator. For an overview of scripting, see the following white
+     paper: <a
+     href="https://xds.xbox.com/BPProgInfo.asp?Page=content/cd_aud_wp_bridging.htm" target="blank">Bridging
+     the Content-Coding Gap: An Introduction to DirectX Audio Scripting</a>.</li>
+</ul>
+
+<h2>DirectMusic Design Issues</h2>
+
+<p>Due in general to the limitations discussed above, DirectMusic
+has several restrictions that a content author should consider. Some of these restrictions
+are listed below:</p>
+
+<ul>
+ <li><em>Non-optimal
+     streaming wave usage.</em> DirectMusic does not take advantage of
+     the recommended asynchronous non-buffered streaming that is used by XACT.
+     (This recommended asynchronous non-buffered streaming is available as
+     source code in the WaveBankStream sample.) Content streamed on DirectMusic
+     can become blocked on file I/O, and its playback depends on frequent calls
+     to <b>DirectMusicDoWork</b>. In general, if you wish to stream DirectMusic
+     content, you should place this content on the Xbox hard disk rather than
+     on the game disc. In addition, looping streaming waves with DirectMusic
+     has known accuracy limitations; specifically, loop points may be slightly
+     offset from where they were authored.</li>
+
+ <li><em>DLS
+     collections must be less than 8 MB. </em>The Xbox audio hardware can
+     only address 8 MB of DirectSound buffers simultaneously. This applies to
+     all "in-memory" waves, including DLS collections as well as non-streaming
+     waves in wave tracks. Consequently, you should make sure that the sum
+     total of DLS collections resident in memory is always less than 8 MB (and
+     perhaps even less if other wave data will be in memory at the same time). Note
+     that ADPCM is decoded in hardware, so only the compressed wave size counts
+     against the 8-MB limit.</li>
+ <li><em>Avoid
+     playing ADPCM waves from an offset</em>. Recall that DirectMusic is
+     typically tick- or millisecond-accurate. The Xbox hardware requires ADPCM
+     waves to be played from 64 sample boundaries. When ADPCM-compressing waves
+     with loop points, DirectMusic Producer enforces this boundary restriction,
+     offering to resample or pad the wave for you. However, there is no way for
+     the restriction to be enforced when you play an ADPCM wave streamed or
+     in-memory from an offset (that is, from a position other than the
+     beginning). Because waves are always played from the beginning, DLS
+     collections will not have this issue. However, playback in a wave track
+     can raise this issue, especially when you intend to implement
+     pause/resume. Use uncompressed PCM if you intend to play waves from an
+     offset.</li>
+ <li><em>WMA is not supported by DirectMusic</em>. If you want your title to use WMA streaming, investigate the appropriate XDK samples or the simple "jukebox"-style methods
+     available through the XACT engine.</li>
+
+ <li><em>Multichannel wave files cannot be edited in DirectMusic Producer for Xbox</em>. 4.0 and 5.1 wave files are supported by the DirectMusic engine, but the authoring tool cannot be used to edit these files or place them in segments. This means that multichannel wave files will be most useful as looping or one-shot sounds that do not require interaction with other sounds (information such as tempo, measure placement, and markers will not be available from these sounds). Note, however, that as discussed above, music composed of mono and stereo instruments can, in real time, be panned among the various speakers to create a realtime multichannel mix without the associated streaming bandwidth of a six-channel file.</li>
+</ul>
+
+<h2><a name="OLE_LINK2">DirectMusic Implementation and Performance Issues</a></h2>
+
+<p>Again, often due to its origins as a PC audio solution, some
+DirectMusic behaviors may not be desired or optimal for Xbox console audio
+development. We'll break these issues down based on specific audio hardware
+resources .We'll also discuss how DirectMusic can impact Xbox system resources.</p>
+
+<ul>
+ <li><em>File I/O (Content Load). </em>Unlike XACT wavebanks and soundbanks, DirectMusic file formats are not an exact binary image of the data. This is an issue because an exact binary image of the data is needed in memory.) Consequently, when content is loading, some parsing and file linking will occur. Loading a large number of files simultaneously may block the CPU, even if the bandwidth exists to quickly load the files into memory. But scattering file loads will take much more time and increase the probability of significant CPU blocks during load. As a result, depending on when you intend to load content, one of the following management practices should be used:<br><br>
+ <ul>
+  <li><em>Before/during level load.</em> Generally bundle your content into larger files. The DirectMusic container (.con) file format can work well for bundling into larger files. For more details about containers, see the following white paper: <a href="https://xds.xbox.com/BPProgInfo.asp?Page=content/cd_aud_wp_contentdelivery.htm" target="blank">Delivering the Goods: File Management Tricks and Tips</a>. 
+
+<p>The developer should stream the entire file into memory, and
+then allow DirectMusic to parse the file from there. Next, the developer should
+discard the file when all of the DirectMusic objects are read in.</p></li>
+
+ <li><em>In the middle of a game.</em> To avoid blocking the CPU, use multiple smaller
+      files and read them in directly from the game disc.</li>
+
+</ul></li>
+
+<li><em>Memory management.</em> DirectMusic's memory use can often be somewhat
+     non-deterministic, particularly with the presence of variable content. The
+     first time a segment is played, ten waves might be used; the next time,
+     twenty. Granted, most of the memory footprint is dictated by the number of
+     in-memory waves (DLS collections and non-streamed waves in wave tracks). Furthermore,
+     don't forget about the 8 MB limit on in-memory DirectSound buffers (which both
+     DLS collections and in-memory wave tracks count towards).
+     <p>
+     DirectMusic takes a more PC-centered approach by caching content when you
+     are finished using it. You can use <b>IDirectMusicLoader8::ClearCache</b>
+     to flush unused objects. When debugging, you can use <b>DirectMusicMemCheck</b><i>
+     </i>to confirm that only the objects you need are still in memory. Other
+     aspects can come into play as well. For instance, DirectMusic maintains a
+     pool of performance messages that it reuses as new note data is ready to
+     be played. This pool will grow as large as the most voices that are played
+     simultaneously&mdash;with no way to reduce the size of the pool once it has
+     increased. Continuous controller curves, particularly when broadcast to
+     multiple performance channels, can cause the pool to grow to a fairly large
+     size. While pmessages themselves are fairly small (on the order of bytes),
+     developers of a game that is strapped for memory will want to make sure to
+     keep the amount of simultaneous data to a manageable level. </p></li>
+ <li><em>Library
+     footprint</em>. By default, the entire DirectMusic library will be linked
+     with your title. As most titles use a small subset of the full library,
+     you should generally make sure to run the DirectMusic content analyzer
+     (audanalyze.exe). This analyzer scans your content to determine library
+     components that can be excluded. This scan often leads to a savings of 100
+     KB or more.</li>
+ <li><em>CPU
+     management. </em>While threading was removed to optimize DirectMusic
+     performance for Xbox, we still generally recommend spinning a separate
+     thread that calls <b>DirectMusicDoWork</b> in each frame. Due to the
+     synchronous nature of many of its calls, a separate thread will mitigate
+     some of the potential for blocking and framerate hits.</li>
+</ul>
+
+<h2>Wrap-Up: Using DirectMusic </h2>
+
+<p>Based on various game experiences developing with DirectMusic,
+the following is a list of recommendations for implementing procedures and
+features. When using DirectMusic to develop your title, remember to focus on
+leveraging its audio strengths, while keeping the preceding limitations and
+issues in mind.</p>
+
+<ol>
+ <li><em>Prototype,
+     prototype, prototype.</em> Developers should code up implementations with
+     placeholder content to confirm that DirectMusic works the way they expect
+     it to. Conversely, content creators should experiment in DirectMusic
+     Producer for Xbox before settling on an implementation plan. Non-linear
+     audio can be created successfully in a number of different ways. Often the
+     simplest methods are best (for example, using several pieces of music with
+     simple variation and two bar transitions to get from one piece to another).</li>
+ <li><em>Keep an
+     eye on system performance.</em> DirectMusic's instrumented library contains
+     an enormous amount of data that can be tracked with either the Xbox
+     Performance Monitor (xbperfmon.exe) or with the game itself. Make sure the
+     number of objects remains at the expected level. It is also important to use
+     the performance monitor to determine what your actual in-game audio
+     footprint is.</li>
+ <li><em>Focus on
+     features not typically available in a streamed "red book" score.</em> If
+     you are just streaming a bunch of pre-rendered pieces of audio, XACT may
+     be a better option. But if you are using a DLS score, take advantage of
+     the features outlined in the section above, <b>Strengths of DirectMusic</b>.
+     For instance, rather than showing a static and silent load screen while
+     your game loads, you can instead place a small DLS collection in memory and
+     play a musical or ambient sequence.</li>
+</ol>
+
+<p >For more information about
+topics presented here, please consult the <a href="cd_aud_wp_bp.htm">Xbox Audio Best Practices Guide</a>, the
+Xbox Development Kit documentation, and the white papers in the Audio
+Designer's Corner. Please feel free to send an e-mail message to <a
+href="mailto:content@xbox.com">content@xbox.com</a>.</p>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

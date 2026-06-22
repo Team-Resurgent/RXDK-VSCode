@@ -1,0 +1,78 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>XMediaObject::Process</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="XMediaObject::Process [C++]">
+<META NAME="MS-HKWD" CONTENT="Process (XMediaObject) [C++]">
+<META NAME="MS-HKWD" CONTENT="Process [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Process (XMediaObject)"/>
+<MSHelp:Keyword Index="K" Term="XMediaObject::Process"/>
+<MSHelp:Keyword Index="F" Term="Process"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="xbox_jc_xmediaobject_process_xmo"></A>XMediaObject::Process</H1>
+
+<P>Submits buffer to the stream.</P>
+
+<PRE class="syntax"><B>HRESULT Process(</B>
+    <B>LPCXMEDIAPACKET</B>  <I>pInputBuffer</I>, 
+    <B>LPCXMEDIAPACKET</B>  <I>pOutputBuffer</I>
+<B>);</B></PRE>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>pInputBuffer</I></DT>
+<DD>Address of the input <A HREF="xbox_jc_xmediapacket_xmo.htm">XMEDIAPACKET</A> structure.</DD>
+
+<DT><I>pOutputBuffer</I></DT>
+<DD>Address of the output <B>XMEDIAPACKET</B> structure. Data processed by the Xbox Media Object will be placed in this packet.</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>Returns DS_OK if successful, or an error specific to the Xbox Media Object otherwise.</P>
+
+<H4>Remarks</H4>
+
+<P><B>Process</B> creates an output packet for a given input packet. In the case of asynchronous Xbox Media Objects, <B>Process</B> will return immediately; synchronous Xbox Media Objects will return when the Xbox Media Object has finished its processing and written data to the output packet.<BR><BR>
+Upon return, the following items are modified:</P>
+<P>Asynchronous Xbox Media Objects:</P>
+<UL>
+<LI><I>pOutputBuffer</I>-><B>pdwCompletedSize</B> is set reflecting the amount of data processed by the Xbox Media Object.
+<LI><I>pOutputBuffer</I>-><B>pdwStatus</B> is set to XMEDIAPACKET_STATUS_PENDING.<BR>
+<LI><I>pInputBuffer</I>-><B>pdwCompletedSize</B> is set reflecting the amount of data processed by the Xbox Media Object.<BR>
+<LI><I>pInputBuffer</I>-><B>pdwStatus</B> is set to XMEDIAPACKET_STATUS_PENDING.
+</UL>
+<P>Synchronous Xbox Media Objects:</P>
+<UL>
+<LI><I>pOutputBuffer</I>-><B>pdwCompletedSize</B> is set reflecting the amount of data processed by the Xbox Media Object.<BR>
+<LI><I>pInputBuffer</I>-><B>pdwCompletedSize</B> is set reflecting the amount of data processed by the Xbox Media Object.<BR>
+<LI><I>pOutputBuffer</I>-><B>pvBuffer</B> contains newly processed data.
+</UL>
+
+<H4>Requirements</H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in dsound.h.</P>
+
+<H4>See Also</H4>
+
+<P><A HREF="xbox_jc_xmediapacket_xmo.htm">XMEDIAPACKET</A></P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

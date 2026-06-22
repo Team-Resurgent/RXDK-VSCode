@@ -1,0 +1,169 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineStorageDownload</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineStorageDownload"/>
+<MSHelp:Keyword Index="F" Term="XOnlineStorageDownload"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineStorageDownload</h1>
+            <p>Downloads a storage item from the specified storage facility.</p>
+        <pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineStorageDownload(</b>
+    <b>DWORD</b> <i>dwFacility</i><b>,</b>
+    <b>DWORD</b> <i>dwUserIndex</i><b>,</b>
+    <b>LPCWSTR</b> <i>wszStoragePath</i><b>,</b>
+    <b>LPCSTR</b> <i>szInstallDirectory</i><b>,</b>
+    <b>DWORD</b> <i>dwDownloadFlags</i><b>,</b>
+    <b>HANDLE</b> <i>hWorkEvent</i><b>,</b>
+    <b>PXONLINETASK_HANDLE</b> <i>phTask</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+            <dt><i>dwFacility</i></dt>
+				<p>
+					<dd>[in]  Storage facility; this value can be one of the following:</dd>
+					<table>
+						<tr>
+							<th>Value</th>
+							<th>Description</th>
+						</tr>
+						<tr>
+							<td>XONLINESTORAGE_FACILITY_STATS</td>
+							<td>Game clips (stats with attachments) facility.</td>
+						</tr>
+						
+						<tr>
+							<td>XONLINESTORAGE_FACILITY_TEAMS</td>
+							<td>Teams storage facility.</td>
+						</tr>
+						<tr>
+							<td>XONLINESTORAGE_FACILITY_PER_TITLE</td> 
+							<td>Title managed global storage.</td>
+						</tr>
+						<tr>
+							<td>XONLINESTORAGE_FACILITY_PER_USER_TITLE</td>
+							<td>Per title, per user storage.</td>
+						</tr>
+					</table>
+					<p>For a complete list of facility values, see the <a href="XONLINESTORAGE_FACILITY.htm">XONLINESTORAGE_FACILITY</a> page.</p>
+				</p>
+            
+            <dt><i>dwUserIndex</i></dt>
+                <dd>[in]  Controller index (zero-based) of the player for whom to download the attachment.</dd>
+            
+            <dt><i>wszStoragePath</i></dt>
+                <dd>[in]  Service's storage path for the storage item. For game clips, this path can be obtained by
+calling <a href="XOnlineStatRead.htm">XOnlineStatRead</a> when specifying the XONLINESTORAGE_FACILITY_STATS facility. This path is stored in the <b>lpString</b> member of the statistic attribute (<a href="XONLINE_STAT.htm">XONLINE_STAT</a> structure) that has an ID equal to XONLINE_STAT_ATTACHMENT_PATH. For all other facilities, you can use <a href="XOnlineStorageCreateServerPath.htm">XOnlineStorageCreateServerPath</a> to create the storage path for desired storage item.</dd>
+            
+            
+            <dt><i>szInstallDirectory</i></dt>
+                <p>
+<dd>[in]  String indicating the destination to which to save the file. See the Remarks 
+section below for details.</dd>
+                </p>
+            
+            <dt><i>dwDownloadFlags</i></dt>
+                <p>
+<dd>[in]  Flags that qualify the download process. The title should specify zero
+for this parameter.</dd>
+                </p>
+            
+            <dt><i>hWorkEvent</i></dt>
+                <p>
+<dd>[in, optional]  Handle to an event that is signaled when there is work to do on the asynchronous
+task returned by the <i>phTask</i> parameter. This parameter can be
+NULL if no such synchronization is required.</dd>
+                </p>
+            
+            <dt><i>phTask</i></dt>
+                <p>
+<dd>[out]  Pointer to a variable of type <b>XONLINETASK_HANDLE</b> that receives
+a task handle. Use this handle in calls to <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> to process
+the file download.</dd>
+                </p>
+            
+        </dl>
+<h4><a name="return"></a>Return Values</h4>
+            
+                <p>If <b>XOnlineStorageDownload</b> succeeds, the return value is S_OK.</p>
+                <p>If <b>XOnlineStorageDownload</b> fails, the return value is one of the following error codes:</p>
+                <table>
+                    <tr>
+                        <th>Value</th>
+                        <th>Description</th>
+                    </tr>
+                    <tr>
+                        <td>XONLINE_E_STORAGE_INVALID_REQUEST</td>
+                        <td>The request is invalid.</td>
+                    </tr>
+                    <tr>
+                        <td>XONLINE_E_STORAGE_INVALID_ACCESS_TOKEN</td>
+                        <td>The access token signature is invalid.</td>
+                    </tr>
+                    <tr>
+                        <td>XONLINE_E_STORAGE_CANNOT_FIND_PATH</td>
+                        <td>Name resolution failed.</td>
+                    </tr>
+                    <tr>
+                        <td>XONLINE_E_STORAGE_FILE_IS_ELSEWHERE</td>
+                        <td>The client received a redirection request.</td>
+                    </tr>
+                    <tr>
+                        <td>XONLINE_E_STORAGE_INVALID_STORAGE_PATH</td>
+                        <td>Invalid storage path.</td>
+                    </tr>
+                    <tr>
+                        <td>XONLINE_E_STORAGE_INVALID_FACILITY</td>
+                        <td>Invalid facility code.</td>
+                    </tr>
+					<tr>
+						<td>XONLINE_E_STORAGE_UNSUPPORTED_CONTENT_TYPE</td>
+						<td>Returned when the content type of the storage item is not supported by this operation (see remarks).</td>
+					</tr>
+                    <tr>
+                        <td>Other</td>
+                        <td>See <a href="xbox_online_errors.htm">Online Errors</a> for information about
+                        other possible errors.</td>
+                    </tr>
+                </table>
+            
+        <h4><a name="remarks"></a>Remarks</h4>
+            <p>For game clips, the client API enforces a limit of 20 cached attachments per title across all leaderboards.</p>
+
+			<p>The <i>szInstallDirectory</i> must be NULL for game clips. Specifying NULL for other facilities will result in the content being downloaded to a default location. The default install locations for each storage item can be obtained via a call to the <a href="XOnlineStorageGetInstallLocation.htm">XOnlineStorageGetInstallLocation</a> function.  If an explicit install path is specified (except for game clips), the content will be installed at the specified location instead.</p>
+			
+			<p><b>XOnlineStorageDownload</b> downloads all storage items that were previously uploaded using either <a href="XOnlineStorageUpload.htm">XOnlineStorageUpload</a> or <a href="XOnlineStorageUploadByServerPath.htm">XOnlineStorageUploadByServerPath</a>. Any attempt to download storage items uploaded with <a href="XOnlineStorageUploadFromMemory.htm">XOnlineStorageUploadFromMemory</a> results in the XONLINE_E_STORAGE_UNSUPPORTED_CONTENT_TYPE error.</p>
+
+			<p>Only one download operation at a time is supported.</p>
+        <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+        <a href="x_mt_xonline_functions.htm">Xbox Live Functions</a> | <a href="xbox_Live_Clips.htm">Game Clips</a>  | <a href="XOnlineStatRead.htm">XOnlineStatRead</a>, <a href="XOnlineStorageUpload.htm">XOnlineStorageUpload</a>, <a href="XOnlineStorageGetInstallLocation.htm">XOnlineStorageGetInstallLocation</a>
+        </p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

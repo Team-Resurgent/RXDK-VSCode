@@ -1,0 +1,85 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>XGQuaternionLn</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="XGQuaternionLn">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XGQuaternionLn"/>
+<MSHelp:Keyword Index="F" Term="XGQuaternionLn"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_d3dxquaternionln_graphicsd3dx"></A>XGQuaternionLn</H1>
+
+<P>Calculates the natural logarithm.</P>
+
+<PRE class=syntax><B>XGQUATERNION* XGQuaternionLn(
+</B>  <B>XGQUATERNION* </B><I>pOut</I><B>,</B>
+<B>  CONST XGQUATERNION* </B><I>pQ</I>
+<B>); </B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>pOut</I></DT>
+
+<DD>[in, out] Pointer to the <A HREF="xgraphics_xgquaternion.htm"><B>XGQUATERNION</B></A> structure that is the result of the operation.</DD>
+
+<DT><I>pQ</I></DT>
+
+<DD>[in] Pointer to the source <B>XGQUATERNION</B> structure.
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>Pointer to a <B>XGQUATERNION</B> structure that is the natural logarithm.</P>
+
+<H4>Remarks</H4>
+
+<P>The <B>XGQuaternionLn</B> function works only for unit quaternions.</P>
+
+<P>This function is implemented in the following manner. </P>
+
+<PRE>q = (cos(theta), sin(theta) * v)
+|v| = 1
+ln(q) = (0, theta * v)
+</PRE>
+
+<P>The <A HREF="xgraphics_xgquaternionexp.htm"><B>XGQuaternionExp</B></A> and <B>XGQuaternionLn</B> functions are useful when using the <A HREF="xgraphics_xgquaternionsquad.htm"><B>XGQuaternionSquad</B></A> function. Given a set of quaternion keys (q0, q1, q2, ..., q<I>n</I>), you can compute the inner quadrangle points (a1, a2, a3, ..., a<I>n</I>-1) to insure that the tangents are continuous across adjacent segments.</P>
+
+<PRE>        a1    a2    a3
+  q0    q1    q2    q3    q4
+ 
+a[i] = q[i] * exp( -(ln(inv(q[i])*q[i+1]) + ln(inv(q[i])*q[i-1])) / 4 )
+</PRE>
+
+<P>Once (a1, a2, a3, ...) are computed, you can use the results to interpolate along the curve.</P>
+
+<PRE>qt = Squad(t, q[i], a[i], a[i+1], q[i+1])
+</PRE>
+
+<P>The return value for this function is the same value returned in the <I>pOut</I> parameter. In this way, the <B>XGQuaternionLn</B> function can be used as a parameter for another function.</P>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in xgmath.h.<BR>
+<B>&nbsp;&nbsp;Import Library:</B> Use xgraphics.lib.</P>
+
+<H4>See Also</H4>
+
+<P><A HREF="xgraphics_xgquaternionexp.htm"><B>XGQuaternionExp</B></A>, <A HREF="xgraphics_xgquaternionsquad.htm"><B>XGQuaternionSquad</B></A> </P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

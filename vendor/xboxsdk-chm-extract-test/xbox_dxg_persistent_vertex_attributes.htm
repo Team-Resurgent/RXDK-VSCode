@@ -1,0 +1,56 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Persistent Vertex Attributes</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Persistent Vertex Attributes"/>
+<MSHelp:Keyword Index="F" Term="Persistent Vertex Attributes"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Persistent Vertex Attributes</H1>
+<!--***********************************************************-->
+<p>In some cases, a number of vertices are sent to the graphics chip that have the same value for a particular vertex attribute.  For example, a planar object may specify the same normal for each vertex, or a textured object might have a constant diffuse color for each vertex.  These constant values consume storage space and use up memory bandwidth when they are sent to the GPU.</p>
+
+<p>Direct3D for Xbox provides an extension that allows one or more vertex attributes to be set only once for a block of vertices. In the GPU is an array of 16 vertex attributes that are assembled and then processed for each vertex.  Each vertex attribute consists of up to four floating-point values.  When a vertex shader program is created, it specifies how data in a vertex buffer is mapped to each of these slots.  The fixed-function pipeline does this mapping based on the Flexible Vertex Format (FVF) code associated with the vertex buffer.  If no data in the vertex buffer is associated with a vertex attribute slot, that slot remains constant as long as that vertex buffer is being processed.</p>
+
+<p>The default behavior for Direct3D when diffuse or specular color is not specified in an FVF or vertex shader stream declaration with the fixed-function pipeline, is to initialize these values to defaults.  To use diffuse or specular persistent attributes with the fixed-function pipeline requires that the D3DUSAGE_PERSISTENTDIFFUSE, D3DUSAGE_PERSISTENTSPECULAR, D3DUSAGE_PERSISTENTBACKDIFFUSE, and D3DUSAGE_PERSISTENTBACKSPECULAR flags be specified in the <i>Usage</i> field of the function <a href="_dx_idirect3ddevice8_createvertexshader_graphics.htm">IDirect3DDevice8::CreateVertexShader</a>.  When these flags are present, Direct3D will not overwrite the corresponding persistent attributes with the default values (white for diffuse and black for specular).</p>
+
+<p>To enable persistent vertex attributes on Xbox, use the following functions:
+<ul>
+	<li><a href="_dx_idirect3ddevice8_SetVertexData2f_graphics.htm">IDirect3DDevice8::SetVertexData2f</a></li>
+	<li><a href="_dx_idirect3ddevice8_SetVertexData4f_graphics.htm">IDirect3DDevice8::SetVertexData4f</a></li>
+	<li><a href="_dx_idirect3ddevice8_SetVertexData2s_graphics.htm">IDirect3DDevice8::SetVertexData2s</a></li>
+	<li><a href="_dx_idirect3ddevice8_SetVertexData4s_graphics.htm">IDirect3DDevice8::SetVertexData4s</a></li>
+	<li><a href="_dx_idirect3ddevice8_SetVertexData4ub_graphics.htm">IDirect3DDevice8::SetVertexData4ub</a></li>
+	<li><a href="_dx_idirect3ddevice8_setvertexdatacolor_graphics.htm">IDirect3DDevice8::SetVertexDataColor</a></li>
+</ul>
+</p>
+
+<p>Each of these methods do essentially the same thing.  They differ only in the number of values they set in each slot (2 or 4) and the data formats that they accept (<b>FLOAT</b>, <b>SHORT</b>, <b>BYTE</b>).</p>
+
+<p>Using these methods, any (or all) data for a vertex may be specified.  After that, an application should create or use a vertex shader program that does not map a stream of data from a vertex buffer to the constant attribute.  The streams are defined in the declaration section of a vertex shader.  Even the fixed-function vertex shader can be used in this way by creating a vertex shader based on an FVF format that also has a declaration section.</p>
+
+<!--*******************************************************************************-->
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

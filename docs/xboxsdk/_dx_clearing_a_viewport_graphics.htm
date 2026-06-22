@@ -1,0 +1,31 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Clearing a Viewport</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Clearing a Viewport"/>
+<MSHelp:Keyword Index="F" Term="Clearing a Viewport"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_clearing_a_viewport_graphics"></A>Clearing a Viewport</H1>
+
+<P>Clearing the viewport resets the contents of the viewport rectangle on the render-target surface as well as the rectangle in the depth and stencil buffer surfaces, if specified. Typically, you clear the viewport before rendering a new frame to ensure that graphics and other data are ready to accept new rendered objects without displaying artifacts.</P>
+
+<P>The <A HREF="_dx_idirect3ddevice8_graphics.htm">IDirect3DDevice8</A> interface offers C++ developers the <A HREF="_dx_idirect3ddevice8_clear_graphics.htm">IDirect3DDevice8::Clear</A> method to clear the viewport. The method accepts one or more rectangles that define the areas on the surfaces being cleared. In cases where the scene being rendered includes motion throughout the entire viewport rectangle&#8212;in a first-person perspective game, for example&#8212;you might want to clear the entire viewport each frame. In this situation, you set the <I>Count</I> parameter to 1, and the <I>pRects</I> parameter to the address of a single rectangle that covers the entire viewport area. If it is more convenient, you can set the <I>pRects</I> parameter to NULL and the <I>Count</I> parameter to 0 to indicate that the entire viewport rectangle should be cleared. </P>
+
+<P>The <B>Clear</B> method is flexible, and it provides support for clearing stencil bits within a depth buffer. The <I>Flags</I> parameter accepts three flags that determine how it clears the render target and any associated depth or stencil buffers. If you include the D3DCLEAR_TARGET flag, the method clears the viewport using an arbitrary RGBA color that you provide in the <I>Color</I> parameter (not the material color). If you include the D3DCLEAR_ZBUFFER flag, the method clears the depth buffer to an arbitrary depth you specify in <I>Z</I>:. 0.0 is the closest distance, and 1.0 is the farthest. Including the D3DCLEAR_STENCIL flag causes the method to reset the stencil bits to the value you provide in the <I>Stencil</I> parameter. You can use integers that range from 0 to 2<I><SUP>n</SUP></I>&minus;1, where <I>n</I> is the stencil buffer bit depth. </P>
+
+<P class=note><B><i>Note</i></B>&nbsp;&nbsp; Microsoft&#174; DirectX&#174; 5.0 allowed background materials to have associated textures, making it possible to clear the viewport to a texture rather than a simple color. This feature was little used, and not particularly efficient. Interfaces for DirectX 6.0 and later do not accept texture handles, meaning that you can no longer clear the viewport to a texture. Rather, applications must now draw backgrounds manually. As a result, there is rarely a need to clear the viewport on the render-target surface. As long as your application clears the depth buffer, all pixels on the render-target surface will be overwritten anyway.</P>
+
+<P>In some situations, you might be rendering only to small portions of the render target and depth buffer surfaces. The clear methods also enable you to clear multiple areas of your surfaces in a single call. Do this by setting the <I>Count</I> parameter to the number of rectangles you want cleared, and specify the address of the first rectangle in an array of rectangles in the <I>pRects</I> parameter. </P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

@@ -1,0 +1,73 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>XGetDisplayBlocks</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="XGetDisplayBlocks">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XGetDisplayBlocks"/>
+<MSHelp:Keyword Index="F" Term="XGetDisplayBlocks"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_xbox_xgetdisplayblocks"></A>XGetDisplayBlocks</H1>
+
+<P>The <B>XGetDisplayBlocks</B> function returns the number of 'blocks' that should be reported to the user as in use by a specified file or directory.  Display 'blocks', rather than actual byte counts, are used to represent storage usage and free space when presenting that information to the user.</P>
+
+<PRE class=syntax><B>DWORD XGetDisplayBlocks(</B>
+    <B>LPCSTR</B><I> lpPathName</I>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+
+<DT><I>lpPathName</I></DT>
+<DD>[in] Pointer to a null-terminated string that specifies either a file or a directory for which the number of blocks in use are to be determined.  For a file, the number of blocks reported is based on the blocks used by the file.  For a directory, the number of blocks is computed based on the blocks used by the directory and by all files in the directory and any subdirectories of that directory.</DD>
+
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is the number of blocks that should be reported to the user as being in use by the specified file or directory.</P>
+
+<P>If the function fails, the return value is zero.  To get extended error information, call <A HREF="errors_3uwi.htm">GetLastError</a>.</P>
+
+<h4>Remarks</h4>
+
+<P><B>XGetDisplayBlocks</B> first computes the storage used by the file or, for directories, recursively computes the storage used by the directory itself and all files in the directory and any subdirectories.  The function then converts the number of storage bytes used into the number of 16-KB blocks used, and finally applies the check against the MAX_DISPLAY_BLOCKS limit to assure that the user is never presented a display block count greater than MAX_DISPLAY_BLOCKS.  The final return value is the proper number of blocks to display to the user as in use by the file or directory.</P>
+
+<P>The function may be used for files or directories on the hard drive or memory units.</P>
+
+<P><B>XGetDisplayBlocks</B> will return a value of 1 for an empty directory, as the directory entry itself requires some storage space.  Also note that <B>XGetDisplayBlocks</B> can in some cases underestimate the size used if a large number of files or subdirectories (greater than 256) have been deleted from a directory, because the directory entry data will grow to accommodate a large number of files but will not shrink when the files are deleted.</p>
+
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Xbox.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+
+<H4>See Also</H4>
+<P>
+<A HREF="x_mt_xgetdiskclustersize.htm">XGetDiskClusterSize</a>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

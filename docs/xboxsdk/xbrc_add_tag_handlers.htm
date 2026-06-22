@@ -1,0 +1,55 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Adding Tag Handlers (XbRC)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Adding Tag Handlers (XbRC)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Adding Tag Handlers (XbRC)</h1>
+<p>The next step to extend XbRC is adding the tag handlers for the new data type as members of <b>CXBParser</b>.</p><p>Whenever a new element is encountered in the XML file, the SAX parser calls back with the information for that tag using the <a href="xbrc_content_handler.htm#start">startElement</a> member function. This function is essentially a giant switch statement. It examines the current context on the stack and the element tag that was passed in, and tries to take an appropriate action. If it cannot find an action for the current context and tag name, it generates an error message and stops parsing. So, for the cube map tag, you need to add a new if statement to the XBRC_XDX context to handle finding a cube map element as a child of the XDX element, and you need to add a case to the switch statement for the XBRC_CUBEMAP context. The definition for XBRC_CUBEMAP is in xbRawData.h. The XML element tags are also listed to help with error messages in xbtags.h. These are good places to add any additional tag and resource type information for your project. (As a side note, any comments in the code that are useful or important to outside developers are commented with DEVELOPER: so that you can search for them easily.) The additional if statement to the XBRC_XDX context is trivial. Simply add the following codeto the list of if statements already present.</p>
+<pre class="clsCode">
+else if( Match( g_strXBRC_CubeMap, pwchLocalName, cchLocalName ) )
+    return Begin_CubeTexture( pAttributes );
+</pre>
+    <p>Adding the case for XBRC_CUBEMAP is also relatively straightforward:</p>
+<pre class="clsCode">
+case XBRC_CUBEMAP:
+{
+    // Legal to have another texture inside.  Its the Face(s)
+    if( Match( g_strXBRC_cubeFace, pwchLocalName, cchLocalName ) )
+        return Begin_LocalTexture( pAttributes, pXDXData );
+    else 
+        return UnexpectedToken(pwchLocalName, cchLocalName, E_FAIL);
+}
+break;
+</pre>
+    <p>This says that while you are inside a cube map element, the only valid element tag you can find is a &lt;<a href="xdx_element_cubeFace.htm">cubeFace</a>&gt; element. Any other element tag inside a cube map will generate an error.  Note that you now need to define a <b>Begin_LocalTexture</b>, which you pass the attributes from the parser and the current resource you are working with. You do this so that you can store the individual cube-map face textures in a separate list from the main list. They are not separate texture resources but instead are local textures used by this cube map. Looking at the <b>Begin_LocalTexture</b> source, you see that it is essentially identical to the <b>Begin_Texture</b> source. The only real difference is that you add the resulting <b>XBRCTextureData</b> container to the local cube map list and not the main list. You also do not push a context change, because you are still inside a cube map.</p><p>You now need to setup the <a href="xbrc_content_handler.htm#end">endElement</a> function with the new resource type. This function is also a giant switch statement. You  need only worry about the cube map context here. Simply add a new case for XBRC_CUBEMAP, as follows:</p>
+<pre class="clsCode">
+case XBRC_CUBEMAP:
+    if( Match( g_strXBRC_CubeMap, pwchLocalName, cchLocalName ) )
+        return End_CubeTexture();
+    else if( Match( g_strXBRC_cubeFace, pwchLocalName, cchLocalName ) )
+        return End_LocalTexture();
+    break;
+</pre>
+    <p>Note that you have to handle two different element endings here for the cube map. First, handle the end of the cube map context itself by simply calling <b>End_CubeTexture</b>, which is defined above. You must also handle the end of a texture element inside the cube map context. Do this by calling <b>End_LocalTexture</b>. This function would usually pop the texture context from the stack, but in the cube map case, the local texture is not on the main stack and is instead contained within the cube map. As a result, this function actually does nothing but return S_OK so that the parsing can continue. (In fact, there is no need for a function call at all; you could simply return S_OK. The function call is there to preserve the pattern for ease of understanding.) If you didn't handle this return of S_OK here, the end of the element would fall through to the bottom of the <b>endElement</b> function, which would return an error and stop parsing. Be careful!</p><h4><a name="seealso"></a>See Also</h4>
+<p><a href="xbrc_writing_tag_handlers.htm">Previous Step</a>, <a href="xbrc_writing_constructor.htm">Next Step</a></p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

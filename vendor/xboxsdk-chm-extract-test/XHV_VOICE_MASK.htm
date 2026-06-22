@@ -1,0 +1,80 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XHV_VOICE_MASK</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XHV_VOICE_MASK"/>
+<MSHelp:Keyword Index="F" Term="XHV_VOICE_MASK"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+    <body topmargin="0">
+        <table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+        <h1>XHV_VOICE_MASK</h1>
+
+        
+        
+<p>Contains input voice mask parameters for a specified local talker.</p>
+
+	
+		
+
+<pre class="syntax">typedef struct _XHV_VOICE_MASK{
+    FLOAT fSpecEnergyWeight;
+    FLOAT fPitchScale;
+    FLOAT fWhisperValue;
+    FLOAT fRoboticValue;
+} XHV_VOICE_MASK, *PXHV_VOICE_MASK;</pre>
+                    
+                
+            
+            
+                <h4><a name="members"></a>Members</h4>
+<dl>
+			<dt><b>fSpecEnergyWeight</b></dt>
+				<dd>Value that scales the spectral content of the speech signal. Specify a value for this member that is between zero and 1 inclusive, or specify &#8722;1 to turn off this effect. The value of the member is mapped to a value between 0.65 and 1.50. A mapped value greater than 1.00 modifies the spectral shape in such a way as to lower perceived resonances (formants). A mapped value of less than 1.00 modifies the spectral shape in such a way as to raise perceived resonances (formants). A value of XHV_VOICE_MASK_PARAM_DISABLED turns off this effect.</dd>
+			
+			<dt><b>fPitchScale</b></dt>
+				<dd>Value that scales the fundamental frequency according to a preset mapping. Specify a value for this member that is between zero and 1 inclusive, or specify &#8722;1 to turn off this effect. The value of the member is mapped to a value between 0.5 and 3.5. A mapped value of less than 1.0 lowers the fundamental frequency, while a mapped value above 1.0 raises the fundamental frequency. If the scaled fundamental frequency exceeds the limits of the voice masking system, the value is set to the respective lower or upper limit. The limit is dependent on the compression algorithm being used. Typically, the lower limit is 50 Hz and the upper limit is 750 Hz. A value of XHV_VOICE_MASK_PARAM_DISABLED turns off this effect.</dd>
+			
+			<dt><b>fWhisperValue</b></dt>
+				<dd>Value indicating that the voice should be synthesized using a constant amount of noise for a given spectral region. Specify a value for this member that is between zero and 1 inclusive, or specify &#8722;1 to turn off this effect. The value of the member is mapped linearly to a value between 0 Hz and 3500 Hz. The mapped value is the frequency below which noise is generated. For example, a member value of zero generates noise throughout the entire spectrum, a member value of .5 generates noise throughout the lower half of the spectrum, and a member value of 1 removes all noise from the spectrum (that is, the spectrum will be entirely harmonic). A value of XHV_VOICE_MASK_PARAM_DISABLED turns off this effect.</dd>
+			
+			<dt><b>fRoboticValue</b></dt>
+				<dd>Value indicating that the fundamental frequency should be forced to a single value. Specify a value for this member that is between zero and 1 inclusive, or specify &#8722;1 to turn off this effect. The value of the member is mapped to a value between 50 Hz and 500 Hz. For example, a member value zero sets the fundamental frequency to 50 Hz, and a value of one to 500 Hz. A value of XHV_VOICE_MASK_PARAM_DISABLED turns off this effect.</dd>
+			
+		</dl>
+                <h4><a name="remarks"></a>Remarks</h4>
+			<p>Timbre refers to the perceptual quality of sounds. As a perceptual attribute, timbre is a way of characterizing sound. In terms of voice, we can characterize voices by what they sound like (for example, child-like, cartoon-like, or whispering). Modifying configuration values such as <b>fSpecEnergyWeight</b> and <b>fPitchScale</b> transforms a voice that may have originally sounded like a male into a voice that sounds like a child.</p>
+			<p>When the voice produces a sound, the resonance (caused primarily by the shape of the vocal tract) produces regions of energy in the spectrum. These energy regions are often referred to as formants. Spectral shape, and hence formant structure, is an important determinant of the timbre (sometimes called coloration) of the voice. Changing the value of <b>fSpecEnergyWeight</b> modifies the spectral shape.</p>
+			<p>The term fundamental frequency refers to the lowest frequency at which a periodic signal repeats itself. The fundamental frequency is an important determinant of both the perceived pitch of the voice and its timbre. Changing the value of <b>fPitchScale</b> modifies the fundamental frequency.</p>
+			<p>There are several predefined voice mask types defined in Xvoice.h, including the parameters for the required anonymous voice mask. Games that support voice chat using the Xbox Voice Communicator should use these settings when using the anonymous voice mask.</p>
+			<p>Specifying a value of XHV_VOICE_MASK_PARAM_DISABLED for any member of <b>XHV_VOICE_MASK</b> disables the masking effects controlled by that member.</p>
+		
+				
+            
+                <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xhv.h.</p>
+            
+                <h4><a name="seealso"></a>See Also</h4>
+<p><a href="XHVEngine_SetVoiceMask.htm">IXHVEngine::SetVoiceMask</a></p>
+
+        <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+    </body>
+    </html>

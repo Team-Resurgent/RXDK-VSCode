@@ -1,0 +1,87 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Adding a New Class (XbRC)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Adding a New Class (XbRC)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Adding a New Class (XbRC)</h1>
+<p>The first step in extending XbRC is to add a new class, derived from <a href="xbrc_extending.htm#xbrcrawdata">XBRCRawData</a>, to represent your data type. In this step, you derive a class from <b>XBRCRawData</b>. For the example, you create a resource class to handle cube maps. You must add data members to the class and create functions for all of the pure virtual functions declared above. Here is the listing for the <a href="xbrc_adding_new_class.htm#xbrccubemapdata">XBRCCubeMapData</a> class:</p><h2><a name="xbrccubemapdata"></a></h2>
+<pre class="clsCode">
+class XBRCCubeMapData : public XBRCRawData
+{
+    protected:
+        string                  m_strIdentifier;
+        string                  m_strFilter;
+        string                  m_strFormat;
+        DWORD                   m_dwSize;
+        DWORD                   m_dwLevels;
+        string                  m_strMapData;
+        DWORD                   m_dwNormalMap;
+        DWORD                   m_dwSizeSpecified;
+
+        CCubemapCompiler        *m_pCubeMap;
+
+    public:
+        XBRCCubeMapData()
+        {
+            m_dwResourceType = XBRC_CUBEMAP;
+        }
+
+        XBRCCubeMapData( ISAXAttributes *pAttributes );
+
+        virtual ~XBRCCubeMapData();
+
+        virtual HRESULT addData( WCHAR *pwchChars, int cchChars );
+
+        virtual HRESULT compile();
+        virtual HRESULT optimize();
+        virtual HRESULT link();
+
+        virtual HRESULT outputIntermediateFile();
+        virtual HRESULT inputIntermediateFile();
+
+        virtual BOOL needsCompiling();
+
+        virtual string *getResourceIdentifier()
+        {
+            return &amp;( m_strIdentifier );
+        }
+
+        vector&lt;XBRCRawData *&gt;   m_vCubeData;
+};
+</pre>
+    <p>The following data was added to the base class based on the XDX specification for cube maps:</p><ul>
+	<li><b>m_strIdentifier</b> &#8211; Identifies the resource. Any other cube maps encountered in the XML file with the same identifier will be assumed by the compiler to be the same cube map and will be merged at link time. </li>
+	<li><b>m_strFilter</b> &#8211; Identifies the filtering to use on the textures.</li>
+	<li><b>m_strFormat</b> &#8211; Specifies the format of the texture output.</li>
+	<li><b>m_dwSize</b> &#8211; Specifies the width and height of the cube map.</li>
+	<li><b>m_dwLevels</b> &#8211; Specifies the number of MIP levels for the cube map.</li>
+	<li><b>m_strMapData</b> &#8211; Tells us if we should generate a normal map from the texture data supplied.</li>
+	<li><b>m_dwNormalMap</b> &#8211; Specifies to the compiler if we should generate a normal map.</li>
+	<li><b>m_dwSizeSpecified</b> &#8211; Specifies if <b>m_dwSize</b> was set during the construction of the class.</li>
+	<li><b>m_pCubeMap</b> &#8211; Specifies the compiler class that creates the cube map from the data supplied. It will create a Direct3D cube map resource.</li>
+	<li><b>m_vCubeData</b> &#8211; Specifies a vector containing all of the texture data in </li>
+	<li><b>XBRCTextureData</b> &#8211; Specifies the format that makes up this cube map. It is really nothing more then a list of <b>XBRCTextureData</b> pointers.</li>
+</ul>
+<h4><a name="seealso"></a>See Also</h4>
+<p><a href="xbrc_extending.htm">Previous Step</a>, <a href="xbrc_writing_tag_handlers.htm">Next Step</a></p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

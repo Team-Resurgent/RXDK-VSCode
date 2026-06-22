@@ -1,0 +1,30 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Writing the needsCompiling Function (XbRC)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Writing the needsCompiling Function (XbRC)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+<MSHelp:Keyword Index="K" Term="needsCompiling function, writing (XbRC)"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Writing the needsCompiling Function (XbRC)</h1>
+<p>After writing the <b>addData</b> function, the next step to extend XbRC is to write the <b>needsCompiling</b> member function for the class derived from <b>XBRCRawData</b>. The <b>needsCompiling</b> function must first check for the presence of the intermediate file. If it's not there, you need to recompile. If the intermediate file is there, check its time-date stamp against the XDX file you are compiling and linking. If the intermediate file is older than the XDX file, load the intermediate file to see if any of the local data changed between the XDX file and the intermediate file. Remember, the XDX file is made up of lots of resources (in theory!), and only one of them may have been changed.</p><p>Checking whether any of the local data changed saves having to recompile the entire file for a change to one resource. The intermediate file names are generated using the resource identifier from the XDX file and the resource type number. This means you can even reorder the resources in the XDX file, and it will not recompile them; just link them in the new order! Duplicate resources get merged at present. You must also check any external files for changes against the intermediate file. You could, for example, have included a new external texture for the cube map, which probably would not have updated the XDX file if the file name for the new texture was identical. </p><p><i>Warning!</i> This is the one place that can become fairly complicated because, if you make a mistake here, you will either compile every time (way slow!) or not recompile when you need to (way bad!). Be careful when writing your dependency checking, and remember that always recompile always works!</p><h4><a name="seealso"></a>See Also</h4>
+<p><a href="xbrc_writing_adddata.htm">Previous Step</a>, <a href="xbrc_writing_compile.htm">Next Step</a></p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

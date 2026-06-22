@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Updating Existing Networking Code</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="Updating Existing Networking Code">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="networking code, updating to work with XSNL"/>
+<MSHelp:Keyword Index="K" Term="Updating Existing Networking Code"/>
+<MSHelp:Keyword Index="F" Term="Updating Existing Networking Code"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="xbox_updating_existing_networking_code_xsnl"></A>Updating Existing Networking Code</H1>
+
+
+
+<P>Existing code written for the previous version of the Xbox <i>Live</i> Library or for Winsock should work with the Xbox Secure Network Library (SNL) after a few modifications. This tutorial covers the general steps needed to update your code to work with the Xbox SNL.</P>
+
+<UL>
+	<LI><A HREF="#xbox_updating_existing_networking_code_steps">Implementation Steps</A></LI>
+    <LI><A HREF="#xbox_updating_existing_networking_code_related">Related Topics</A></LI>
+</UL>
+
+<H2><A NAME="xbox_updating_existing_networking_code_steps"></A>Implementation Steps</H2>
+<P>Complete the following steps to update your existing networking code.</P>
+
+<OL>
+<LI>Check if the calls in your existing Winsock code are supported on Xbox. For more information about what is supported in the Xbox Winsock library, see the <A HREF="xbox_xbox_winsock_implementation_notes_winsock.htm">Winsock Implementation Notes</A>.</LI>
+
+<LI>Call <A HREF="xbox_xnetstartup_xsnl.htm">XNetStartup</A> to initialize the network stack. This call must come before any networking calls are made. In most cases, the titles won't need to change the default settings, so they can just pass NULL to <B>XNetStartup</B>.
+<PRE>
+INT err = XNetStartup(NULL);
+</PRE>
+
+<P>If you are using the network for private game debugging or monitoring purposes, you will need to instruct the Xbox SNL to allow insecure communications with a personal computer. To do this, you will need to set the XNET_STARTUP_BYPASS_SECURITY flag in the <A HREF="xbox_xnetstartupparams_xsnl.htm">XNetStartupParams</A> structure that you are using in your call to the <B>XNetStartup</B> function.</P>
+
+<P>The following example shows a how to allocate the <B>XNetStartupParams</B> structure, set the necessary flag, and call <B>XNetStartup:</B></P>
+
+<PRE>
+XNetStartupParams xnsp;
+memset( &amp;xnsp, 0, sizeof( xnsp ) );
+xnsp.cfgSizeOfStruct = sizeof( XNetStartupParams );
+xnsp.cfgFlags = XNET_STARTUP_BYPASS_SECURITY;
+INT err = XNetStartup( &amp;xnsp );
+</PRE>
+
+<P>When linking to the secure version of the Xnet SNL (Xnets.lib), setting the XNET_STARTUP_BYPASS_SECURITY flag is not an error, but the flag is ignored by the library.</P>
+
+<P CLASS="note"><B><I>Note</I></B>&nbsp;&nbsp;&nbsp;<B>XNetStartup</B> replaces <B>XnetInitialize</B>.</P>
+</LI>
+<LI>Call <A HREF="xbox_wsastartup_winsock.htm">WSAStartup</A> to initialize the Winsock layer (if your existing networking code is not doing it already).</LI>
+
+<LI>Add the rest of your networking code. If the title supports system link play, it will need to make use of the other Xbox SNL functions. For more information, see the <A HREF="xbox_winsock_reference_winsock.htm">Xbox Secure Network Library Reference</A>.</LI>
+
+<LI>After the title is finished using the network, call <A HREF="xbox_wsacleanup_winsock.htm">WSACleanup</A> to terminate the Winsock layer (if your existing networking code is not doing it already).</LI>
+
+<LI>Call <A HREF="xbox_xnetcleanup_xsnl.htm">XNetCleanup</A>.
+<P CLASS="note"><B><I>Note</I></B>&nbsp;&nbsp;&nbsp;<B>XNetCleanup</B> replaces <B>XnetCleanup</B>.</P></LI>
+</OL>
+
+<H2><A NAME="xbox_updating_existing_networking_code_related"></A>Related Topics</H2>
+<P>The following topics are related to updating your existing networking code.</P>
+
+<UL>
+	<LI><A HREF="xbox_secure_network_library_overview_xsnl.htm">Xbox Secure Network Library Overview</A></LI>
+    <LI><A HREF="xbox_xbox_winsock_implementation_notes_winsock.htm">Winsock Implementation Notes</A></LI>
+    <LI><A HREF="xbox_mt_xtl_winsock_mem_oview.htm">Xbox Network Subsystem Memory Management</A></LI>
+</UL>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

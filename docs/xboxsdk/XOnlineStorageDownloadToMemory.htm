@@ -1,0 +1,165 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineStorageDownloadToMemory</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineStorageDownloadToMemory"/>
+<MSHelp:Keyword Index="F" Term="XOnlineStorageDownloadToMemory"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineStorageDownloadToMemory</h1>
+<p>Downloads a storage item that was previously uploaded using the <a href="XOnlineStorageUploadFromMemory.htm">XOnlineStorageUploadFromMemory</a> function.</p><pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineStorageDownloadToMemory(</b>
+    <b>DWORD</b> <i>dwFacility</i><b>,</b>
+    <b>DWORD</b> <i>dwUserIndex</i><b>,</b>
+    <b>LPCWSTR</b> <i>wszStoragePath</i><b>,</b>
+    <b>PBYTE</b> <i>pbReceiveBuffer</i><b>,</b>
+    <b>DWORD</b> <i>cbReceiveBuffer</i><b>,</b>
+    <b>DWORD</b> <i>dwDownloadFlags</i><b>,</b>
+    <b>HANDLE</b> <i>hWorkEvent</i><b>,</b>
+    <b>PXONLINETASK_HANDLE</b> <i>phTask</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+		<dt><i>dwFacility</i></dt>
+			<p>
+				<dd>[in]  Storage facility; this value can be one of the following:</dd>
+				<table>
+					<tr>
+						<th>Value</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>XONLINESTORAGE_FACILITY_STATS</td>
+						<td>Game clips (stats with attachments) facility.</td>
+					</tr>
+					
+					<tr>
+						<td>XONLINESTORAGE_FACILITY_TEAMS</td>
+						<td>Teams storage facility.</td>
+					</tr>
+					<tr>
+						<td>XONLINESTORAGE_FACILITY_PER_TITLE</td> 
+						<td>Title managed global storage.</td>
+					</tr>
+					<tr>
+						<td>XONLINESTORAGE_FACILITY_PER_USER_TITLE</td>
+						<td>Per-title, per-user storage.</td>
+					</tr>
+				</table>
+				<p>For a complete list of facility values, see the <a href="XONLINESTORAGE_FACILITY.htm">XONLINESTORAGE_FACILITY</a> page.</p>
+			</p>
+		
+
+		<dt><i>dwUserIndex</i></dt>
+<dd>[in]  Controller index (zero-based) of the player for whom to download the attachment.</dd>
+            
+
+		<dt><i>wszStoragePath</i></dt>
+<dd>[in]  Service's storage path for the attachment (this is typically created by the <a href="XOnlineStorageCreateServerPath.htm">XOnlineStorageCreateServerPath</a> function).</dd>
+            
+
+		<dt><i>pbReceiveBuffer</i></dt>
+			<dd>[in, out]  Buffer to contain the downloaded data.</dd>
+		
+
+		<dt><i>cbReceiveBuffer</i></dt>
+			<dd>[in]  Size of the buffer, in bytes. The minimum buffer size must be at least 750 bytes, even if the data you intend to download to is less than 750 bytes.</dd>
+		
+
+		<dt><i>dwDownloadFlags</i></dt>
+<dd>[in]  Flags that qualify the download process. This value must be zero.</dd>
+            
+
+		<dt><i>hWorkEvent</i></dt>
+<dd>[in, optional]  Handle to an event that is signaled when there is work to do on the asynchronous task returned by the <i>phTask</i> parameter. This parameter can be NULL if no such synchronization is required.</dd>
+            
+
+		<dt><i>phTask</i></dt>
+<dd>[out]  Pointer to a variable of type <b>XONLINETASK_HANDLE</b> that receives a task handle. Use this handle in calls to the <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> function to process the file download.</dd>
+            
+	</dl>
+<h4><a name="return"></a>Return Values</h4>
+		<p>If <b>XOnlineStorageDownloadToMemory</b> succeeds, the return value is S_OK.</p>
+		<p>If <b>XOnlineStorageDownloadToMemory</b> fails, the return value is one of the following error codes:</p>
+		<table>
+			<tr>
+				<th>Value</th>
+				<th>Description</th>
+			</tr>
+			<tr>
+				<td>XONLINE_E_STORAGE_INVALID_REQUEST</td>
+				<td>The request is invalid.</td>
+			</tr>
+			<tr>
+				<td>XONLINE_E_STORAGE_ACCESS_DENIED</td>
+				<td>The client doesn't have sufficient permissions to download the file.</td>
+			</tr>
+			<tr>
+				<td>XONLINE_E_STORAGE_FILE_NOT_FOUND</td>
+				<td>The file to download was not found.</td>
+			</tr>
+			<tr>
+				<td>XONLINE_E_STORAGE_INVALID_ACCESS_TOKEN</td>
+				<td>The access token signature is invalid.</td>
+			</tr>
+			<tr>
+				<td>XONLINE_E_STORAGE_CANNOT_FIND_PATH</td>
+				<td>Name resolution failed.</td>
+			</tr>
+			<tr>
+				<td>XONLINE_E_STORAGE_FILE_IS_ELSEWHERE</td>
+				<td>The client received a redirection request.</td>
+			</tr>
+			<tr>
+				<td>XONLINE_E_STORAGE_INVALID_STORAGE_PATH</td>
+				<td>Invalid storage path.</td>
+			</tr>
+			<tr>
+				<td>XONLINE_E_STORAGE_INVALID_FACILITY</td>
+				<td>Invalid facility code.</td>
+			</tr>
+			<tr>
+				<td>XONLINE_E_STORAGE_UNSUPPORTED_CONTENT_TYPE</td>
+				<td>Returned when the content type of the storage item is not supported by this operation (see remarks).</td>
+			</tr>
+			<tr>
+				<td>ERROR_INSUFFICIENT_BUFFER</td>
+				<td>Buffer isn't large enough to hold content.</td>
+			</tr>
+		</table>
+		<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Titles should handle the case gracefully where the content isn't found on title managed storage (that is, should not display a dialog box to the user that says content could not be downloaded).</p>
+	<h4><a name="remarks"></a>Remarks</h4>
+		<p>This function is very similar to the <a href="XOnlineStorageDownload.htm">XOnlineStorageDownload</a> function, except that it downloads storage items previously uploaded using <a href="XOnlineStorageUploadFromMemory.htm">XOnlineStorageUploadFromMemory</a> to the specified buffer. Upon success, the downloaded data can be retrieved by a call to the <a href="XOnlineStorageDownloadToMemoryGetResults.htm">XOnlineStorageDownloadToMemoryGetResults</a> function.</p>
+		<p>This function is intended for smaller downloads such as voice messages that just get stored in memory and never get written to disk. This function does not have a maximum size for downloads, except that it is constrained by the size of the buffer passed into the function.</p>
+		<p>The integrity of the data is verified by the function prior to being returned to the caller. However, the downloaded data is returned as-is without additional security features. It is not recommended that titles save such downloaded data to disk without additional security measures.</p>
+		<p><b>XOnlineStorageDownloadToMemory</b> downloads all storage items previously uploaded using <b>XOnlineStorageUploadFromMemory</b>. Any attempt to download storage items uploaded with the <a href="XOnlineStorageUpload.htm">XOnlineStorageUpload</a> or <a href="XOnlineStorageUploadByServerPath.htm">XOnlineStorageUploadByServerPath</a> function results in the XONLINE_E_STORAGE_UNSUPPORTED_CONTENT_TYPE error.</p>
+		<p>Only one download-to-memory operation at a time is supported.</p>
+	<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p><a href="x_mt_xonline_functions.htm">Xbox Live Functions</a> | <a href="XOnlineStorageDownloadToMemoryGetResults.htm">XOnlineStorageDownloadToMemoryGetResults</a>, <a href="XOnlineStorageUploadFromMemory.htm">XOnlineStorageUploadFromMemory</a></p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

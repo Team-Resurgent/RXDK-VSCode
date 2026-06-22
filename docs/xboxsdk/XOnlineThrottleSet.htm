@@ -1,0 +1,309 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineThrottleSet</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineThrottleSet"/>
+<MSHelp:Keyword Index="F" Term="XOnlineThrottleSet"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineThrottleSet</h1>
+<p>Sets the current throttle settings for the given throttle type.</p><pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineThrottleSet(</b>
+    <b>DWORD</b> <i>dwServiceID</i><b>,</b>
+    <b>LPCSTR</b> <i>szThrottleTag</i><b>,</b>
+    <b>DWORD</b> <i>dwThrottleFlags</i><b>,</b>
+    <b>DWORD</b> <i>dwDelay</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+		<dt><i>dwServiceID</i></dt>
+<p><dd>[in]  Identifier for the service to set. May be one of the following:</dd>
+			<table>
+				<tr>
+					<th>Service Identifier</th>
+					<th>Description</th>
+				</tr>
+				<tr>
+					<td>XONLINE_STATISTICS_SERVICE</td>
+					<td>Refers to the statistics service functions</td>
+				</tr>
+				<tr>
+					<td>XONLINE_QUERY_SERVICE</td>
+					<td>Refers to the query service functions</td>
+				</tr>
+				<tr>
+					<td>XONLINE_ARBITRATION_SERVICE</td>
+					<td>Refers to the arbitration service functions</td>
+				</tr>
+				<tr>
+					<td>XONLINE_MESSAGING_SERVICE</td>
+					<td>Refers to the messaging service functions</td>
+				</tr>
+				<tr>
+					<td>XONLINE_TEAM_SERVICE</td>
+					<td>Refers to the team service functions</td>
+				</tr>
+			</table>
+			<p>A complete listing of these flags and their relation to the <i>szThrottleTag</i> parameter can be found in the Remarks section below.</p></p>
+		
+
+		<dt><i>szThrottleTag</i></dt>
+<dd>[in]  String which indicates the specific method to set. See the Remarks section below for a complete listing of valid throttle tag values and their relation to the <i>dwServiceID</i> parameter.</dd>
+		
+
+		<dt><i>dwThrottleFlags</i></dt>
+<p><dd>[in]  Flag values returned. May be the following:</dd>
+			<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+				<tr>
+<td>XONLINE_THROTTLE_FLAG_DELAY</td>
+<td>Delay starting each new operation until the throttle delay period expires.</td>
+</tr>
+				<tr>
+<td>XONLINE_THROTTLE_FLAG_FAIL</td>
+<td>Return XONLINE_E_TASK_THROTTLED for new tasks that are started during the throttle delay period.</td>
+</tr>
+				<tr>
+<td>XONLINE_THROTTLE_FLAG_CANCEL_PREVIOUS</td>
+<td>Force the previous task of the same type to fail with XONLINE_E_TASK_ABORTED_BY_DUPLICATE when possible.</td>
+</tr>
+				<tr>
+<td>XONLINE_THROTTLE_FLAG_RIP</td>
+<td>RIP in debug.</td>
+</tr>
+				<tr>
+<td>XONLINE_THROTTLE_FLAG_IGNORE_SERVER</td>
+<td>Ignore any changes in the delay or flags that the server requests (debug only).</td>
+</tr>
+			</table>
+</p>
+		
+
+		<dt><i>dwDelay</i></dt>
+<dd>[in]  Delay time, in seconds.</dd>
+	</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>Returns S_OK if successful, an error code otherwise.</p><h4><a name="remarks"></a>Remarks</h4>
+		<p>This function is a debug-only method. It is useful to temporarily work around the debug RIP that occurs when the throttle limits are exceeded, or to observe how the title behaves with different throttle settings.</p>
+		<p>The supported parameter combinations for <i>dwServiceID</i> and <i>szThrottleTag</i> are listed as follows:</p>
+<table>
+	<tr>
+<th rowspan="2">Throttle Tag</th>
+<th rowspan="2">Associated Function</th>
+<th colspan="5">Service Identifier
+			
+			
+			
+			
+			
+		</th>
+</tr>
+<tr>
+<td style="writing-mode:tb-rl;">XONLINE_STATISTICS_SERVICE</td>
+<td style="writing-mode:tb-rl;">XONLINE_QUERY_SERVICE</td>
+<td style="writing-mode:tb-rl;">XONLINE_ARBITRATION_SERVICE</td>
+<td style="writing-mode:tb-rl;">XONLINE_MESSAGING_SERVICE</td>
+<td style="writing-mode:tb-rl;">XONLINE_TEAM_SERVICE</td>
+</tr>
+	<tr>
+		<td>XONLINE_THROTTLE_TAG_XOSTATLEADERENUMERATE</td>
+		<td><a href="XOnlineStatLeaderEnumerate.htm">XOnlineStatLeaderEnumerate</a></td>
+		<td>X</td>
+		<td>
+</td>
+		<td>
+</td>
+		<td>
+</td>
+		<td>
+</td>
+	</tr>
+	<tr>
+		<td>XONLINE_THROTTLE_TAG_XOSTATREAD</td>
+		<td><a href="XOnlineStatRead.htm">XOnlineStatRead</a></td>
+		<td>X</td>
+		<td>
+</td>
+		<td>
+</td>
+		<td>
+</td>
+		<td>
+</td>
+	</tr>
+	<tr>
+		<td>XONLINE_THROTTLE_TAG_XOSTATRESET</td>
+		<td><a href="XOnlineStatReset.htm">XOnlineStatReset</a></td>
+		<td>X</td>
+		<td>
+</td>
+		<td>
+</td>
+		<td>
+</td>
+		<td>
+</td>
+	</tr>
+	<tr>
+		<td>XONLINE_THROTTLE_TAG_XOSTATUNITREAD</td>
+		<td><a href="XOnlineStatUnitRead.htm">XOnlineStatUnitRead</a></td>
+		<td>X</td>
+		<td>
+</td>
+		<td>
+</td>
+		<td>
+</td>
+		<td>
+</td>
+	</tr>
+	<tr>
+		<td>XONLINE_THROTTLE_TAG_XOSTATUNITENUMERATE</td>
+		<td><a href="XOnlineStatUnitEnumerate.htm">XOnlineStatUnitEnumerate</a></td>
+		<td>X</td>
+		<td>
+</td>
+		<td>
+</td>
+		<td>
+</td>
+		<td>
+</td>
+	</tr>
+	<tr>
+		<td>XONLINE_THROTTLE_TAG_XOSTATWRITE</td>
+		<td><a href="XOnlineStatWrite.htm">XOnlineStatWrite</a></td>
+		<td>X</td>
+		<td>
+</td>
+		<td>
+</td>
+		<td>
+</td>
+		<td>
+</td>
+	</tr>
+	<tr>
+		<td>XONLINE_THROTTLE_TAG_XOSTATWRITEEX</td>
+		<td><a href="XOnlineStatWriteEx.htm">XOnlineStatWriteEx</a></td>
+		<td>X</td>
+		<td>
+</td>
+		<td>
+</td>
+		<td>
+</td>
+		<td>
+</td>
+	</tr>
+	<tr>
+		<td>XONLINE_THROTTLE_TAG_XOQUERYSEARCH</td>
+		<td><a href="XOnlineQuerySearch.htm">XOnlineQuerySearch</a></td>
+		<td>
+</td>
+		<td>X</td>
+		<td>
+</td>
+		<td>
+</td>
+		<td>
+</td>
+	</tr>
+	<tr>
+		<td>XONLINE_THROTTLE_TAG_XOARBITRATIONEXTENDROUND</td>
+		<td><a href="XOnlineArbitrationExtendRound.htm">XOnlineArbitrationExtendRound</a></td>
+		<td>
+</td>
+		<td>
+</td>
+		<td>X</td>
+		<td>
+</td>
+		<td>
+</td>
+	</tr>
+	<tr>
+		<td>XONLINE_THROTTLE_TAG_XOARBITRATIONREGISTER</td>
+		<td><a href="XOnlineArbitrationRegister.htm">XOnlineArbitrationRegister</a></td>
+		<td>
+</td>
+		<td>
+</td>
+		<td>X</td>
+		<td>
+</td>
+		<td>
+</td>
+	</tr>
+	<tr>
+		<td>XONLINE_THROTTLE_TAG_XOARBITRATIONREPORT</td>
+		<td><a href="XOnlineArbitrationReport.htm">XOnlineArbitrationReport</a></td>
+		<td>
+</td>
+		<td>
+</td>
+		<td>X</td>
+		<td>
+</td>
+		<td>
+</td>
+	</tr>
+	<tr>
+		<td>XONLINE_THROTTLE_TAG_XOMESSAGESEND</td>
+		<td><a href="XOnlineMessageSend.htm">XOnlineMessageSend</a></td>
+		<td>
+</td>
+		<td>
+</td>
+		<td>
+</td>
+		<td>X</td>
+		<td>
+</td>
+	</tr>
+	<tr>
+		<td>XONLINE_THROTTLE_TAG_TEAM_ENUMERATION</td>
+		<td><a href="XOnlineTeamEnumerate.htm">XOnlineTeamEnumerate</a>, <a href="XOnlineTeamEnumerateByUserXUID.htm">XOnlineTeamEnumerateByUserXUID</a>, <a href="XOnlineTeamMembersEnumerate.htm">XOnlineTeamMembersEnumerate</a></td>
+		<td>
+</td>
+		<td>
+</td>
+		<td>
+</td>
+		<td>
+</td>
+		<td>X</td>
+	</tr>
+</table>		
+	<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonlined.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p><a href="x_mt_xonline_functions.htm">Xbox Live Functions</a> | <a href="XOnlineThrottleGet.htm">XOnlineThrottleGet</a></p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

@@ -1,0 +1,213 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Xbox Palettized Texture Performance</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Xbox Palettized Texture Performance"/>
+<MSHelp:Keyword Index="F" Term="Xbox Palettized Texture Performance"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Xbox Palettized Texture Performance</H1>
+<p><i>By Mike Abrash</i></p>
+<!--***********************************************************-->
+
+<!--****Intro paragraph. Should be a three or four sentence summary of the topic.****-->
+<p>On the Xbox video game system from Microsoft, each palettized texture is associated with a palette of up to 256 entries, with each entry in 8888 format. Each texel consists of an 8-bit value; when the texture is used (in the course of rendering a triangle), each 8-bit texel is looked up in the palette as it's loaded into the texture cache, and the looked-up 8888 value is stored in the cache. The 8888 value is then used as the texel value for texture mapping. The 4:1 compression that palettized textures thereby achieve has significant benefits in terms of both memory footprint and memory bandwidth.</p>
+
+<p>DXT-compressed textures can also be compressed 4:1, but with different strengths and weaknesses. On the plus side, DXTC isn't limited to 256 colors; on the downside, unlike palettized textures, DXTC can't have an independent, precise value for every texel. (Only four values can be used in each 4 &times; 4 block of DXTC texels, and the four values aren't independent of one another.) So, for example, if you need thousands of colors in a texture, DXTC is a better choice, but if you want to store a compressed normal map, and 256 distinct normals will suffice, a palettized texture will work much better, because it will allow perfect decompression of the normals.</p>
+
+<p>Thus, palettized textures can be quite useful in the proper context. However, there is one performance implication associated with palettized textures that you should be aware of: palettized textures can result in slower loading of the texture cache, which in turn can reduce performance. To understand why, we need to look at how texturing works.</p>
+
+<h4>The texture cache</h4>
+
+<p>The texture cache is an 8-KB cache that stores recently used texels in 64-B cache lines, organized as four 16-B sectors per line. Up to 32 B can be read by the texture cache from memory on each clock; this can be done either in the form of 32 B read from a single texture, or 16 B read from each of two textures simultaneously. Up to 64 B can be stored into the texture cache on each clock; since only 32 B can be read, obviously a 64-B store can only happen due to decompression. (In particular, 64-B stores can only happen as the result of decompression of DXT-compressed textures, which compress 4:1 and decompress 16 8888 texels or 32 1555 texels in a single clock; as we'll see, palettized textures, although they also compress at 4:1, can only decompress 8 texels/clock, so they can't store more than 32 B into the texture cache on a single clock.) From now on, I'll call the rate at which bytes can be stored into the texture cache the texture cache fill rate.</p>
+
+<p>There are 32 taps into the texture cache for the texture units to use to sample data. Since there are four rasterization pipelines, this means that there are 8 taps per pipeline; in other words, each pipeline can read up to eight texels per clock.</p>
+
+<p>Next, let's look at some common ways that data can be read from the texture cache: 2D bilinear filtering, 2D trilinear filtering, and 3D trilinear and quadlinear filtering.</p>
+
+<h4>Bilinear filtering</h4>
+
+<p>With 2D bilinear filtering, four adjacent samples are read for each pixel. If mipmapping isn't used, samples from different pixels can be widely scattered when textures are minified, and that can cause a significant slowdown (both from hardware implementation restrictions and from reading data into the texture cache that is not used), so mipmapping should always be used whenever minification is possible. To simplify the analysis of performance, this paper will assume that mipmapping is used.</p>
+
+<p>I'll repeat it again, because it's a very important rule to follow, not only for palettized textures but for all textures: use mipmapping for any texture that could otherwise be minified.</p>
+
+<p>This paper will further assume that textures are swizzled for maximum cache coherency, and that is likewise a practice you should follow whenever possible for non-DXT-compressed textures, except in the rare cases where image textures line up efficiently with the texel-scanning pattern (which basically happens only when textures are parallel to the viewplane and rotated 90 degrees around the z axis in viewspace).</p>
+
+<p>Mipmapping causes between 0.5 and 2 texels to be loaded into the texture cache per pixel (keep in mind that samples are usually shared between adjacent pixels), resulting in an average of about 4 texels/texture (across the four pixel pipelines) loaded into the cache per clock, and a maximum of 8 texels/texture/clock. Up to two 2D textures can be processed in a single clock, so the overall average for two 2D textures is 8 texels loaded into the texture cache per clock, and the maximum is 16 texels/clock. We'll examine the implications of these numbers shortly.</p>
+
+<p>Please be aware that these numbers are ideal values and do not take into account various other factors; we will fudge them later to compensate for the fact that caches are not ideal in practice. Also note that the numbers can be considerably lower for highly magnified textures, or for textures that fit in the cache and are reused multiple times, and can be higher for minified textures.</p>
+
+<p>Note that using point sampling doesn't reduce the number of texels fetched from the texture cache. When point sampling is enabled, the same texels are fetched as would be fetched for bilinear filtering, then all but one of the samples are discarded.</p>
+
+<h4>Trilinear filtering</h4>
+
+<p>With 2D trilinear filtering, eight samples are read for each pixel, four from the lower miplevel and four from the higher miplevel. To be precise, between 0.25 and 1 texel is read from the lower miplevel, and between 1 and 4 texels are read from the higher miplevel. This results in an average of about 10 texels/clock loaded into the texture cache across the four pipelines, and a maximum of 20 texels/clock. Only one trilinear texture can be processed in a single clock, since one trilinear texture essentially takes up the same resources as two bilinear textures.</p>
+
+<h4>3D trilinear and quadlinear filtering</h4>
+
+<p>For 3D textures, the equivalent of 2D bilinear filtering is 3D trilinear filtering. This is different from 2D trilinear filtering, involving eight samples (the corners of a cube) in a single 3D texture. As such, eight samples are read for each pixel. Again, mipmapping should always be used when minification is a possibility.</p>
+
+<p>With mipmapped 3D trilinear textures, between 0.35 and 2.83 texels are loaded into the texture cache per pixel. This results in an average of about 4 texels/4 pixels (again, across the four pipelines), and a maximum of 11.3 texels/4 pixels. Each trilinear texture takes two clocks. Thus, the texel requirements listed above are cut in half on a per-clock basis.</p>
+
+<p>The 3D analogue of 2D trilinear filtering is 3D quadlinear, which filters together two 3D trilinear miplevels. Like 3D trilinear, each 3D quadlinear texture requires two clocks to run. Over those two clocks, between 0.125 and 1 texel is read from the lower miplevel, and between 1 and 8 texels are read from the higher miplevel. This results in an average of about 6.4 texels/clock across the four pipelines, and a maximum of 18 texels/clock.</p>
+
+<h4>The palette RAMs</h4>
+
+<p>As mentioned above, palettized texels are decompressed (looked up) as they're loaded into the texture cache. The graphics chip contains eight internal palette RAMs, each of which can store an entire 256-entry palette. Each palette RAM can perform the lookup for a single texel in one clock, and the palette RAMs can operate in parallel, so up to eight palettized texels can be looked up in one clock. Apart from the bandwidth required to copy a palette from memory into the palette RAMs when the palette is initially accessed (a relatively small cost-all eight palette RAMs together are only 8 KB, compared to 256 KB for a single use of a 256 &times; 256 8888 texture-although you wouldn't want to switch to a new palettized texture every triangle), no extra memory bandwidth is required to look up palettized texels, so palettized textures really do result in a bandwidth reduction of very nearly 4:1.</p>
+
+<p>The on-demand copying of a palette into the palette RAMs does take time-128 clocks to copy a full 256-entry palette-and the time is proportional to the number of entries copied. (Note that this time is the same no matter whether one or all eight palette RAMs are being loaded; replication to multiple palette RAMs while copying is free.) Valid palette sizes are 32, 64, 128, and 256. Apart from palette loading, it makes no difference how many palette entries are used. In particular, it is not possible to have, for example, sixteen 128-entry palettes rather than eight 256-entry palettes. Only eight palettes can ever be active, and any excess portion of a palette RAM is simply unused. </p>
+ 
+<h4>Performance with a single palettized texture</h4>
+
+<p>Given the above information, we can see how likely we are to run into a texture cache fill bottleneck with a single palettized texture. Note that a fudge factor of 1.25 has been applied to the number of texels required, to account for edge, rotational, and other effects.</p>
+
+<table>
+<tr><th>&nbsp;</th><th>2D bilinear&nbsp;&nbsp;</th><th>2D trilinear&nbsp;&nbsp;</th><th>3D trilinear&nbsp;&nbsp;</th><th>3D quadlinear&nbsp;&nbsp;</th></tr>
+<tr><td>Avg texels needed/clock</td><td>5</td><td>12.5</td><td>2.5</td><td>8</td></tr>
+<tr><td>Max texels needed/clock</td><td>10</td><td>25</td><td>7.1</td><td>22.5</td></tr>
+<tr><td>Max texels available/clock</td><td>8</td><td>8</td><td>8</td><td>8</td></tr>
+<tr><td>Avg texels available/needed</td><td>160%</td><td>64%</td><td>320%</td><td>100%</td></tr>
+<tr><td>Max texels available/needed&nbsp;&nbsp;</td><td>80%</td><td>32%</td><td>113%</td><td>36%</td></tr>
+</table>
+
+<p>(Note that because each 3D trilinear or quadlinear texture takes 2 clocks, the per-clock bandwidth required is cut in half relative to the total number of texels required by a 3D trilinear or quadlinear texture.)</p>
+
+<p>As you can see, 2D palettized textures with bilinear filtering will slow down at least a little (there will probably be at least some slowdown associated with texels minified to almost the miplevel transition). Similarly, 3D quadlinear textures will slow down for about half the possible levels of detail (LODs). A single 3D trilinear texture shouldn't slow down at all, mainly because the two-clock speed of a single 3D trilinear texture spreads out the bandwidth demands. However, there will likely be a substantial shortfall in texture cache fill rate, and hence performance, for 2D trilinear palettized textures.</p>
+
+<p>Note that equivalent shortfalls would exist for uncompressed 8888 textures, since only 32 B-eight 8888 texels-can be read by the cache in a single clock. And, in fact, if two textures are being loaded into the cache at once, 8888 can load only four texels-16 B-while eight palettized texels can be loaded and still leave a 16-B load free for the other texture. Thus, palettized textures compare well to 8888 textures, providing the same texture cache fill rate at the cost of only about one-quarter the bandwidth and memory footprint. However, DXT2-5 texels could be loaded at twice the rate of palettized texels, and DXT1 texels can be loaded four times as fast.</p>
+
+<p>That doesn't mean that palettized textures aren't worth using. If you need 8888 texels and can get by with 256 colors, the bandwidth savings of palettized textures makes them clearly superior to uncompressed 8888, and even in comparison with 16-bit textures, palettized textures have only half the maximum cache fill rate, but also require only half the bandwidth and memory footprint. Also, if you have an expensive vertex shader and small triangles, or if you have an expensive register combiner program, the extra clocks required to store palettized texels into the cache may be partly or completely hidden. And, as mentioned above, the maximum rate of eight palettized texels takes up only one of the texture cache's two 16-B memory read buses, so additional texels can be read for another texture at the same time palettized texels are being read.
+That raises an interesting question: what happens if two palettized textures are used at once? The answer is more complicated than you might think.</p>
+
+<h4>Using multiple textures that share the same palette</h4>
+
+<p>First, let's consider the simpler case, where two or more textures share the same palette. ("Same" means "at the same address"; thus, two textures will share a single palette if each specifies the same memory location for its palette.) Even with multiple palettized textures, there are still only eight palette RAMs, so the maximum decompression rate is still 8 palettized texels/clock, total. Thus, if two palettized textures are accessed on the same clock, palette lookup performance will be considerably lower than for the single-palettized-texture case and will tend to be a bottleneck, as follows. (Again, as above, the following table applies a factor of 1.25 to account for edge and rotational effects. This will be the case in all subsequent tables as well.) Note that the following table reflects total texel demand for both textures.</p>
+
+<table width="75%">
+<tr><th>&nbsp;</th><th>Paired 2D bilinear textures</th></tr>
+<tr><td>Avg texels needed/clock</td><td>10</td></tr>
+<tr><td>Max texels needed/clock</td><td>20</td></tr>
+<tr><td>Max texels available/clock</td><td>8</td></tr>
+<tr><td>Avg texels available/needed</td><td>80%</td></tr>
+<tr><td>Max texels available/needed</td><td>40%</td></tr></table>
+
+<p>Note that paired 2D bilinear textures overlap-that is, they execute simultaneously, on the same clock-so they run in 1 clock total for the pair, assuming there's no texel-fetch delay. (This is also true of cubemaps, or of a cubemap paired with a 2D texture.) The texels/clock figures reflect this. The 2D trilinear and 3D trilinear and quadlinear cases aren't listed because they don't allow two textures to overlap-that is, two textures of those types can't execute on the same clock-so two of any of those have exactly the same per-clock texel fetching performance as one, and take twice as long overall. Thus, if two 2D trilinear palettized textures are used, each one will effectively take a full clock, so each of them will be able to look up eight texels per clock, and the results for each will be as described in the earlier table; likewise for two 3D trilinear and quadlinear textures, except that in that case each texture will take 2 clocks.</p>
+
+<p>In the above table, we're only concerned with the case in which two palettized textures are referenced on the same clock, because that's the situation that causes contention for the limited lookup resources of the eight palette RAMs.</p>
+
+<p>If two textures share a palette, they are not guaranteed to be referenced on the same clock. Understanding why that is the case requires a short digression regarding the concept of pairing.</p>
+
+<p>The hardware can process up to four textures per pixel per pipeline. If there are two or more textures, the first two textures processed pair with each other and are processed during the same clock if they are capable of overlapping with each other (as 2D bilinear textures are, for example). Then, if there are two remaining textures, they pair with each other, and likewise overlap if possible. However, there are two exceptions: the textures in stages 0 and 2 cannot pair, and the textures in stages 1 and 3 cannot pair.</p>
+
+<p>Note that pairing by itself doesn't have any performance effect. However, it is only when textures are paired that they have the opportunity to run simultaneously if they're capable of overlapping, which in turn can improve performance by reducing the number of clocks the pixel shader requires to process pixels.</p>
+
+<p>What determines the order in which textures are processed, and hence paired? Simply the numeric order of their texture stages. The lowest-numbered enabled texture stage is first, the next lowest is second, and so on. Here are all the possible combinations of multiple enabled texture stages, and the pairing that results.</p>
+
+<table width="75%">
+<tr><th>Enabled texture stages</th><th>Pairing</th></tr>
+<tr><td>0,1</td><td>0+1</td></tr>
+<tr><td>0,1,2</td><td>0+1</td></tr>
+<tr><td>0,1,2,3</td><td>0+1, 2+3</td></tr>
+<tr><td>0,2</td><td>none</td></tr>
+<tr><td>0,2,3</td><td>2+3</td></tr>
+<tr><td>0,1,3</td><td>0+1</td></tr>
+<tr><td>0,3</td><td>0+3</td></tr>
+<tr><td>1,2</td><td>1+2</td></tr>
+<tr><td>1,3</td><td>none</td></tr>
+<tr><td>1,2,3</td><td>1+2</td></tr>
+<tr><td>2,3	</td><td>2+3</td></tr></table>
+
+<p>Textures that are paired run simultaneously if they're overlappable; otherwise, the first member of the pair runs, followed by the second memory. Any textures that aren't paired run by themselves. Thus, assuming that 2D bilinear textures, which are overlappable, are selected for all active texture stages, then in the 0,1 case, textures 0 and 1 pair and overlap, taking as little as 1 clock total (depending on whether texels are fetched quickly enough to avoid stalling); in the 1,2,3 case, 1 and 2 pair and overlap, followed by 3, taking a minimum of 2 clocks; and in the 0,2 case, texture 0 runs, and then texture 2, taking a minimum of 2 clocks, with no pairing or overlap. In the four-texture case, 0 and 1 pair and overlap on one clock, and then 2 and 3 pair and overlap as soon as 0 and 1 are finished, so the four textures take a minimum of 2 clocks total.</p>
+
+<p>Obviously, it is desirable to get as much overlapping as possible, in order to minimize the number of clocks the pixel shader takes, which means pairing overlappable textures whenever possible. For example, if you have two 2D bilinear textures and one 3D trilinear texture, they will run in 4 clocks if they are arranged like this:</p>
+
+<p>Stage 0: 3D trilinear</p>
+
+<p>Stage 1: 2D bilinear #1</p>
+
+<p>Stage 2: 2D bilinear #2</p>
+
+<p>The reason for the 4-clock performance is that 0 and 1 pair but can't overlap, so together they take the sum of their 2- and 1-clock execution times, and then 2 runs by itself in 1 clock. In contrast, this:</p>
+
+<p>Stage 0: 2D bilinear #1</p>
+
+<p>Stage 1: 2D bilinear #2</p>
+
+<p>Stage 2: 3D trilinear #1</p>
+
+<p>runs in 3 clocks, with the 2D textures pairing and running overlapped in a single clock, and the 3D texture then running by itself in 2 clocks. (Note that while the above description is accurate, the overall overlapping rules are actually more complex than this makes them appear-for example, a 2D bilinear can pair with a following 3D trilinear, but not with a preceding 3D trilinear-and will be discussed in detail in another paper.)</p>
+
+<p>You might think the point of all this is to tell you that if you pair palettized textures that share a palette, they'll contend for the palette RAM and that will slow things down. Actually, however, that's not the case. In terms of how the graphics hardware works internally, cache misses aren't neatly synchronized with when texture units run; there's a lot of internal pipelining and queuing, so it's quite possible for palettized textures in stages 0 and 3 to miss the texture cache at the same time. Certainly if you have only two textures, both 2D bilinear, and they share the same palette, they are going to contend a great deal, but as you add additional non-palettized textures and/or slower texture ops, it becomes difficult to estimate how much contention will occur, regardless of what textures are in what stages.</p>
+
+<p>Thus, feel free to use palettized textures that share the same palette in any texture stages, but be aware that you will likely experience some degree of slowdown, because they are likely to contend for the palette RAMs to at least some degree, and possibly a great deal. At times when they don't contend, each will run just as fast as if it had the palette RAMs to itself (which it effectively does), but when they do contend, they'll run as described by the table above.</p>
+
+<h4>Palette RAM allocation</h4>
+
+<p>The really messy-and slow-case is when there are multiple palettized textures that have different palettes. To understand this, we'll have to look at how the palette RAMs are managed.</p>
+
+<p>(I should point out, in case it's not clear from the above paragraph, that the standard restriction in Microsoft DirectX 8 that all palettized textures must share the same palette doesn't apply on Xbox. You could, if you want, have four palettized textures, each with a different palette-although I don't recommend it for performance reasons, as discussed next.) </p>
+
+<p>The eight palette RAMs are effectively a cache that stores whatever palettes are currently active. (With reference to a palette, "active" means "a texture that uses that palette currently being read by a texture unit.") Whenever a palettized texture is referenced by a texture unit and the associated palette is not in the palette RAMs, the palette is automatically loaded into the texture cache, where it remains until the time when no texture associated with that palette is selected.</p>
+
+<p>The interesting question is what happens if two or more palettized textures are active, and each of those palettized textures has a different palette. The answer is that the palette RAMs get allocated between the various palettes, as follows:</p>
+
+<table border="0" width="60%">
+<tr><td># palettes</td><td>palette RAMs allocated to each texture</td></tr>
+<tr><td>1</td><td>8</td></tr>
+<tr><td>2</td><td>4:4</td></tr>
+<tr><td>3</td><td>4:2:2</td></tr>
+<tr><td>4</td><td>2:2:2:2</td></tr></table>
+
+<p>(Note that in the case of three palettes, it's the palettized texture that's selected into the lowest-numbered texture stage that is allocated four palette RAMs.) So, for example, if there are two palettized textures, with different palettes, each has only four palette RAMs available for looking up its texels as it's stored into the texture cache.</p>
+
+<h4>Palettized texture performance with different palettes</h4>
+
+<p>Obviously, allocating the palette RAMs among multiple palettes will have a considerable impact on performance, since it cuts per-texture lookup performance to 50 percent or even 25 percent of maximum. The performance of each palettized texture when there are two palettized textures with different palettes is as follows.</p>
+
+<table>
+<tr><th>&nbsp;</th><th>2D bilinear&nbsp;&nbsp;</th><th>2D trilinear&nbsp;&nbsp;</th><th>3D trilinear&nbsp;&nbsp;</th><th>3D quadlinear&nbsp;&nbsp;</th></tr>
+<tr><td>Avg texels needed/clock</td><td>5</td><td>12.5</td><td>2.5</td><td>8</td></tr>
+<tr><td>Max texels needed/clock</td><td>10</td><td>25</td><td>7.1</td><td>22.5</td></tr>
+<tr><td>Max texels available/clock</td><td>4</td><td>4</td><td>4</td><td>4</td></tr>
+<tr><td>Avg texels available/needed</td><td>80%</td><td>32%</td><td>160%</td><td>50%</td></tr>
+<tr><td>Max texels available/needed&nbsp;&nbsp;</td><td>40%</td><td>16%</td><td>56%</td><td>18%</td></tr>
+</table>
+
+<p>(Again, a single 3D trilinear texture takes 2 clocks; the 3D trilinear per-clock numbers reflect this.) Clearly, from a performance perspective it's worth thinking twice before using multiple palettized textures with different palettes, because they will always be at least somewhat texel fill-constrained, substantially so for everything but 3D trilinear.</p>
+
+<p>Note that unlike the shared texture case above, the performance of each texture is the same regardless of whether or not the palettized textures end up fetching texels on the same clock, because textures with different palettes each have their own set of palette RAMs, rather than competing for shared ones.</p>
+
+<h4>Summary</h4>
+
+<p>Using palettized textures is the only way on Xbox to get 4:1 compression together with fully independent 8888 values for each texel (although this does require you to limit yourself to no more than 256 total colors per texture), thereby saving both memory bandwidth and memory footprint. However, Xbox has limited resources for decompressing palettized textures, and this limited lookup rate can have an impact ranging from no effect at all (for a single non-minified 2D bilinear filtered texture) to many clocks per pixel. How big the slowdown will be is highly context-dependent.</p>
+
+<p>For example, if you have a 50-clock vertex shader, and your triangles average only 3 pixels in size, you're unlikely to see any slowdown. Similarly, if you pair a palettized texture with a slow texture address op, the extra lookup clocks may overlap completely. On the other hand, if you have a fast vertex shader and large triangles, and you're using two trilinear palettized textures with different palettes, you're likely to slow down a lot. The only way to know for sure how it'll affect your code is to time it and see. Bear in mind that the bandwidth savings of palettized textures frequently more than balance any lost clocks, if the alternative is to use uncompressed textures.</p>
+
+<p>All in all, you should consider palettized textures a useful part of your Xbox toolkit. DXTC textures should generally provide higher performance than palettized textures, with the same 4:1 compression, and should be used whenever possible, but for cases where DXTC textures aren't appropriate, palettized textures are well worth considering.</p>
+
+
+<!--*******************************************************************************-->
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

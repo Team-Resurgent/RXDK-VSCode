@@ -1,0 +1,152 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Five Easy Ways to Make Your Xbox Game Sound Better</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Five Easy Ways to Make Your Xbox Game Sound Better"/>
+<MSHelp:Keyword Index="F" Term="Five Easy Ways to Make Your Xbox Game Sound Better"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1 class="heading"><A NAME=""></A>Five Easy Ways to Make Your Xbox Game Sound Better</H1>
+
+<p><i>By Scott Selfon, Audio Content Consultant, Xbox Advanced Technology Group</i></p>
+
+
+<h2>Introduction</h2>
+<p>The audio system in the Xbox&#174; video game system from Microsoft provides a somewhat intimidating array of functionality and power for playing and manipulating audio data. But between the resources needed for other aspects of a console title and a desire for cross-platform compatibility, the audio architecture is often underused-or even unused. This paper covers five of the easiest ways to make a difference for implementing your audio system on Xbox, without needing to sacrifice significant developer or porting time:</p>
+<ol>
+<li><a href="#1">User soundtracks</a></li>
+<li><a href="#2">High fidelity audio</a></li>
+<li><a href="#3">Nonrepetitive audio</a></li>
+<li><a href="#4">Effective use of 5.1 audio</a></li>
+<li><a href="#5">Interactive, immersive environments</a></li>
+</ol>
+<h2><a name="1">1. User Soundtracks</a></h2>
+<p><em>The top Xbox customer support request is whether a particular title supports user soundtracks.</em> Granted, user soundtracks are not appropriate for every title, particularly those that have interactive scores composed exclusively for the title. But they are extremely popular in soundtrack-driven titles, particularly in driving games. And nothing says user soundtracks have to be used exclusively as underscore-the player's favorite songs can easily pop up in unexpected places, such as clubs, bars, their base, or sports stadium PA systems.</p>
+
+<h3>Making It Easy</h3>
+<ul>
+<li>The Xbox Audio Creation Tool (XACT) provides a library for jukebox-style playback of user soundtracks as well as easy integration of user soundtracks and the game-supplied soundtrack. See the XActWMAPlayList sample for cut-and-paste code.</li>
+<li>If your title does not wish to use the XACT engine, the BackgroundMusic sample provides optimized cut-and-paste code for adding user soundtracks to your title.</li>
+<li>Soundtracks supplied by the game can be installed on the hard disk by using a single programming function (<b>XAddSoundtrack</b>).</li>
+
+</ul>
+
+<h3>Things to Watch Out For</h3>
+<ul>
+<li>Remember that user soundtracks use Microsoft&#174; Windows Media&#174; Audio (WMA) compression, so some CPU overhead (~4.2 percent) is required to decompress each stream for playback.</li>
+<li>You must provide an in-game volume control if the game supports user soundtracks (certification requirement).</li>
+<li>Don't assume that a player has created user soundtracks (so you'll want to provide at least a few of your own tracks).</li>
+<li>The primary development time requirement is typically in user interface design&#8212;how soundtracks are selectively played or skipped by your title.</li>
+</ul>
+<h2><a name="2">2. High Fidelity Audio</a></h2>
+<p>With game audio assets being created for multiple platforms, low fidelity audio assets are sometimes used (22 kHz, 11 kHz, or even 8 kHz, often using ADPCM compression). This level of quality falls far below native titles, which tend to use 44 or 48 kHz PCM or ADPCM. The Xbox audio hardware provides an enormous amount of real-time audio processing power, and these signal processing features are in dedicated hardware, so <em>there's no performance cost</em> to using them. And the availability of a hard disk, game disc, and unified (shared) memory architecture leaves little excuse for low quality source materials. An easy way to overcome the fidelity issue is to author at high fidelity for the Xbox and then downsample or compress for other consoles.</p>
+<h3>Making It Easy</h3>
+<ul>
+<li>Hard disk and game disc streaming are natively supported using XACT, or can be implemented using pluggable code from the WaveBankStream sample. Streaming gives the game access to megabytes or gigabytes of audio data without using a lot of system memory, which allows for very high fidelity. Some games have streamed all of their sounds from the hard disk.</li>
+<li>The Xbox audio system runs at 48 kHz, performing high quality interpolation to upsample lower resolution sounds. It also natively supports PCM and ADPCM on every voice.</li>
+</ul>
+
+<h3>Things to Watch Out For</h3>
+<ul>
+<li>Always author at high fidelity and downsample only when necessary, maintaining the original versions of assets. Strive for 48 kHz or 44.1 kHz whenever possible.</li>
+<li>Author audio assets as loud as possible, so that they can be mixed down programmatically as needed. There is no amplification present on the Xbox. </li>
+<li>If bandwidth becomes an issue, consider lower sampling rates and/or ADPCM compression. ADPCM compression can add noticeable artifacting at lower sampling rates (22 kHz).</li>
+<li>When downsampling, don't think that you need to be locked into the "standard" sampling rates of 48/44.1/22/11 kHz; the audio chip does high quality interpolation to upsample all content to 48 kHz and supports all sampling rates down to 188 Hz.</li>
+</ul>
+
+<h2><a name="3">3. Nonrepetitive Audio (Variability)</a></h2>
+<p>No matter how good the sound quality is, nothing is more grating for a player than to hear the exact same sound effect, static ambience loop, or line of dialog repeated over and over as the game proceeds, without any variation. For the most commonly heard sound and voice elements, consider no fewer than ten variations. Again the presence of a vast storage area (hard disk, game disc, shared memory) can help alleviate this. Furthermore, the Xbox audio system provides per-voice real-time audio processing power equivalent to some studio configurations. Long ago, graphics sprites (static images that moved around the screen) gave way to more dynamic 3D rendering; there's no excuse for Xbox titles to use audio "sprites" (static sounds).</p>
+
+<h3>Making It Easy</h3>
+<ul>
+<li>XACT provides native variability in wave selection (including variation weighting), pitch, volume, and filtering. Once authored into content, the developer simply triggers an XACT cue to get different sounds every time. Pitch, volume, and filtering are available per voice in hardware with no performance impact.</li>
+<li>Hard disk and game disc streaming (see <a href="#2">High Fidelty Audio</a>, above) provide low or zero latency access to large amounts of audio data, so there's no reason for a title to limit itself to a single (or even several) voice phrases for a character. For more details, see the WaveBankStream sample in the XDK.</li>
+<li>An entire processor on the audio chip is provided for real-time effects like reverb and distortion. These can make sounds even more dynamic in their interactions with the game environment and events.</li>
+</ul>
+
+<h3>Things to Watch Out For</h3>
+<ul>
+<li>For best performance when streaming, use XACT-authored wavebanks (even when not using the XACT engine).</li>
+<li>Particularly when using ADPCM compression, use real-time effects rather than rendering reverberation and other effects directly into sounds.</li>
+</ul>
+<h2><a name="4">4. Effective Use of 5.1 Audio</a></h2>
+<p>While it is indeed difficult to create an Xbox title that does not natively support Dolby&#174; Digital (5.1) and Dolby&#174; Surround, there is more to these formats than 3D-positioned sounds. Pre-rendered (but not encoded) multichannel audio can create a much more immersive experience for score, ambience, and cutscenes. Use of the center channel can anchor dialog and other on-screen elements to the visuals. And the low frequency effects (LFE) channel provides the neighborhood-shaking experience gamers crave.</p>
+<h3>Making It Easy</h3>
+<ul>
+<li>Three-D-positioned sounds are automatically panned between the multichannel speakers when you use Microsoft&#174; DirectSound&#174; 3D interfaces, 3D Microsoft&#174; DirectMusic&#174; Audiopaths, or 3D sound sources in XACT.</li>
+<li>Sounds can be simultaneously sent by the programmer to the LFE channel, where they are automatically filtered to add appropriate rumble.</li>
+<li>A cheap but effective way to make ambience and music more immersive is to take a stereo signal and play it in the front speakers at full volume while doubling it in the rear speakers at half volume. This trick incurs <em>no performance hit</em> and requires only a trivial amount of code:
+
+<pre>DSMIXBINVOLUMEPAIR dsmbvp[4] = {
+  {DSMIXBIN_FRONT_LEFT, DSBVOLUME_MAX},
+  {DSMIXBIN_FRONT_RIGHT, DSBVOLUME_MAX},
+  {DSMIXBIN_BACK_LEFT, -600},
+  {DSMIXBIN_BACK_RIGHT, -600}};
+DSMIXBINS dsmb;
+dsmb.dwMixBinCount = 4;
+dsmb.lpMixBinVolumePairs = dsmbvp;
+pBuffer-&gt;SetMixBins(&dsmb);</pre></li>
+<li>Composers and sound designers can create pre-rendered four- or six-channel mixes of audio that DirectSound or XACT play to the appropriate speakers without any extra code.</li>
+<li>Dolby Digital mixes are automatically downmixed to Dolby Surround, stereo, or mono for to the analog outputs, with no programmer effort or performance impact.</li>
+</ul>
+
+<h3>Things to Watch Out For</h3>
+<ul>
+<li>Don't forget to use the center channel. It's often most appropriate for dialog in cutscenes, first person sounds, and menu/user interface sounds but can also be used for 3D positioning if you wish.</li>
+<li>Don't ignore the LFE channel&#8212;separate "rumble tracks" can be extremely tiny, yet enormously effective in adding punch to explosions, collisions, and other massive sounds. Or sounds can be doubled in the LFE similar to the above rear speaker example, where their low frequency components become much more apparent.</li>
+<li>If you have limited bandwidth off the DVD or hard disk, consider breaking a six-channel wave file up into multiple mono or stereo files, and then play them panned to the appropriate speakers. These files can use multiple sampling rates or ADPCM compression for added bandwidth savings.</li>
+</ul>
+
+<h2><a name="5">5. Interactive, Immersive Environments</a></h2>
+<p>The Xbox fully supports the Interactive 3D Level 2 (I3DL2) standard for environmental modeling (reverberation), occlusion (filtering when a sound source is in another room from the listener), and obstruction (filtering when an object is between the listener and the sound source). Because these are all in hardware, there is no resource impact to taking advantage of placing your sounds in the environments, rather than having to pre-render reverb into source material, needing to develop sounds specific to particular environments, and so on.</p>
+<h3>Making It Easy</h3>
+<ul>
+<li>The Play3DSound sample demonstrates the various I3DL2 reverb presets as well as occlusion and obstruction filtering through multiple materials.</li>
+<li>I3DL2 reverb is included in the default effects image and can be adjusted by an audio designer in the DSP Builder real-time audition tool, or programmatically by using the <b>SetI3DL2Listener</b> function. Changing these values allows the acoustic environment to morph between various presets or customized settings determined by the sound designer. For instance, setting the environment to a cathedral, and then to a forest:
+
+<pre>pDSound->SetI3DL2Listener (DSI3DL2_ENVIRONMENT_PRESET_CATHEDRAL, DS3D_IMMEDIATE); 
+// enter giant hall
+[...]
+pDSound-&gt;SetI3DL2Listener (DSI3DL2_ENVIRONMENT_PRESET_FOREST,DS3D_IMMEDIATE); 
+// left building</pre></li>
+<li>Three-D-positioned sounds default to use the I3DL2 reverb with no extra code. Non-3D sounds can add reverb trivially. For instance, for a stereo sound:
+
+<pre>DSMIXBINVOLUMEPAIR dsmbvp[4] = {
+  DSMIXBINVOLUMEPAIRS_DEFAULT_STEREO, 
+  {DSMIXBIN_I3DL2, DSBVOLUME_MAX},
+  {DSMIXBIN_I3DL2, DSBVOLUME_MAX}}; // sent twice to get L+R
+DSMIXBINS dsmb;
+dsmb.dwMixBinCount = 4;
+dsmb.lpMixBinVolumePairs = dsmbvp;
+pBuffer-&gt;SetMixBins(&dsmb);</pre></li>
+<li>Real-time DSP effects are available to be used at no performance cost because they run on a dedicated audio signal processing chip.</li>
+</ul>
+
+<h3>Things to Watch Out For</h3>
+<ul>
+<li>Reverberation does require memory to retain its delay lines (about 400 KB of memory per instance of reverberation). Typically one reverb is sufficient, though two have been used successfully by some titles for smoother environment crossfading.</li>
+<li>Determining occlusion/obstruction filtering is often easier using simplified versions of world geometry to determine whether the path from a sound source to the player is clear.</li>
+<li>The default DSP effects image contains one of every possible DSP effect, and two reverberation instances. If your title is not using two reverberations, using DSP Builder to author your own image will save 400 KB of memory.</li>
+</ul>
+<h2>Wrap-Up</h2>
+<p>The Xbox audio system sits idle, waiting for you to take advantage of it. A small amount of work can go a long way toward making game audio more organic and immersive, giving you the kind of standout sound that your fans and the press will rave about until your sequel. By considering audio early on, these "free" features can be easy ways to make your game's audio stand out from the pack. And features that don't impact any resources on the Xbox give you that much more opportunity to pack better gameplay, visuals, physics, and other aspects into title. Best of all, most of the suggestions made here require little if any programmer time, allowing the artists to focus on what they know best: creating the sounds that help pull a user into the game experience.</p>
+<p>For more information about the topics presented here or for questions about your specific title, please consult the <a href="cd_aud_wp_bp.htm">Xbox Audio Best Practices Guide</a>, the Xbox Development Kit documentation, the white papers on Audio Designer's Corner, or send an e-mail message to <a href="mailto:content@xbox.com">content@xbox.com</a>.</p>
+<p><SMALL>Tuesday, September 24, 2002</SMALL></p>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

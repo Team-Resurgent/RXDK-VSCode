@@ -1,0 +1,150 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>WriteFileEx</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="WriteFileEx">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="WriteFileEx"/>
+<MSHelp:Keyword Index="F" Term="WriteFileEx"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_writefileex"></A>WriteFileEx</H1>
+
+<P>The <B>WriteFileEx</B> function writes data to a file. It is designed solely for asynchronous operation, unlike <A HREF="filesio_3kkl.htm">WriteFile</A>, which is designed for both synchronous and asynchronous operation.</P>
+
+<P><B>WriteFileEx</B> reports its completion status asynchronously, calling a specified completion routine when writing is completed or canceled and the calling thread is in an alertable wait state.</P>
+
+<PRE class=syntax><B>BOOL WriteFileEx(
+  HANDLE</B><I> hFile</I><B>,</B>                                       // handle to output file
+<B>  LPCVOID</B><I> lpBuffer</I><B>,</B>                                   // data buffer
+<B>  DWORD</B><I> nNumberOfBytesToWrite</I><B>,</B>                        // number of bytes to write
+<B>  LPOVERLAPPED</B><I> lpOverlapped</I><B>,</B>                          // overlapped buffer
+<B>  LPOVERLAPPED_COMPLETION_ROUTINE</B><I> lpCompletionRoutine</I> // completion routine
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>hFile</I></DT>
+
+<DD>[in] Handle to the file to be written to. This handle must have been created using the <A HREF="filesio_7wmd.htm">CreateFile</A> function with the FILE_FLAG_OVERLAPPED and FILE_FLAG_NO_BUFFERING flags, and must have at least GENERIC_WRITE access to the file.</P>
+
+<P>For the write to be performed asynchronously, the size of the file cannot grow during the operation.  See the <B>Remarks</B> section below for more details.</P>
+</DD>
+
+<DT><I>lpBuffer</I></DT>
+
+<DD>[in] Pointer to the buffer containing the data to be written to the file. 
+
+<P>This buffer must remain valid for the duration of the write operation. The caller must not use this buffer until the write operation is completed. 
+</DD>
+
+<DT><I>nNumberOfBytesToWrite</I></DT>
+
+<DD>[in] Specifies the number of bytes to write to the file. 
+
+<P>If <I>nNumberOfBtyesToWrite</I> is zero, this function does nothing; in particular, it does not truncate the file.</DD>
+
+<DT><I>lpOverlapped</I></DT>
+
+<DD>[in] Pointer to an <A HREF="synchro_8tf6.htm">OVERLAPPED</A> data structure that supplies data to be used during the overlapped (asynchronous) write operation.
+
+<P>For files that support byte offsets, you must specify a byte offset at which to start writing to the file. You specify this offset by setting the <B>Offset</B> and <B>OffsetHigh</B> members of the <B>OVERLAPPED</B> structure. For files that do not support byte offsets, <B>Offset</B> and <B>OffsetHigh</B> are ignored. 
+
+
+<P>The <B>WriteFileEx </B>function ignores the <B>OVERLAPPED</B> structure's <B>hEvent</B> member. An application is free to use that member for its own purposes in the context of a <B>WriteFileEx</B> call. <B>WriteFileEx</B> signals completion of its writing operation by calling, or queuing a call to, the completion routine pointed to by <I>lpCompletionRoutine</I>, so it does not need an event handle.
+
+
+<P>The <B>WriteFileEx</B> function does use the <B>Internal</B> and <B>InternalHigh</B> members of the <B>OVERLAPPED</B> structure. You should not change the value of these members.
+
+
+<P>The <A HREF="synchro_8tf6.htm">OVERLAPPED</A> data structure must remain valid for the duration of the write operation. It should not be a variable that can go out of scope while the write operation is pending completion.
+</DD>
+
+<DT><I>lpCompletionRoutine</I></DT>
+
+<DD>[in] Pointer to a completion routine to be called when the write operation has been completed and the calling thread is in an alertable wait state. For more information about this completion routine, see <A HREF="filesio_1v1h.htm">FileIOCompletionRoutine</A>. 
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is nonzero.</P>
+
+<P>If the function fails, the return value is zero. To get extended error information, call <A HREF="errors_3uwi.htm">GetLastError</A>.</P>
+
+<P>If the <B>WriteFileEx </B>function succeeds, the calling thread has an asynchronous I/O (input/output) operation pending: the overlapped write operation to the file. When this I/O operation finishes, and the calling thread is blocked in an alertable wait state, the system calls the function pointed to by <I>lpCompletionRoutine</I>, and the wait completes with a return code of WAIT_IO_COMPLETION.</P>
+
+<P>If the function succeeds and the file-writing operation finishes, but the calling thread is not in an alertable wait state, the system queues the call to *<I>lpCompletionRoutine, </I>holding the call until the calling thread enters an alertable wait state. See <A HREF="unresolved.htm">Synchronization</A> for more information about alertable wait states and overlapped input/output operations. </P>
+
+<H4>Remarks</H4>
+
+<P>For the write operation to be performed asynchronously, the size of the file specified by <I>hFile</I> cannot grow during the <B>WriteFileEx</B> operation.  If the file is not already large enough to hold the data being written, the file will grow but the entire write operation will be performed synchronously.  If asynchronous operation is desired, then, before calling <B>WriteFileEx</B>, set the size of the target file to be large enough to contain all data that will be written to the file during the operation.  The <A HREF="filesio_8iwi.htm">SetFilePointer</A> and <A HREF="filesio_18bp.htm">SetEndOfFile</A> functions can be used for this purpose, as shown in the following example (where <I>dwSize</I> is the desired size):</P>
+
+<PRE>#define ONE_KILOBYTE	1024
+SetFilePointer( hFile, dwSize + ONE_KILOBYTE, NULL, FILE_BEGIN );
+SetEndOfFile( hFile );</PRE>
+
+<P>When using <B>WriteFileEx</B> you should check <B>GetLastError</B> even when the function returns "success" to check for conditions that are "successes" but have some outcome you might want to know about. For example, a buffer overflow when calling <B>WriteFileEx</B> will return TRUE, but <B>GetLastError</B> will report the overflow with ERROR_MORE_DATA. If the function call is successful and there are no warning conditions, <B>GetLastError</B> will return ERROR_SUCCESS.</P>
+
+<P>An application must meet certain requirements when working with files opened with FILE_FLAG_NO_BUFFERING:
+
+<UL>
+	<LI>File access must begin at byte offsets within the file that are integer multiples of the volume's sector size.  The sector size of the hard disk is 512 bytes.  The sector size of the DVD ROM is two kilobytes (2 KB).  You can call <B>XGetDiskSectorSize</B> to determine the sector size of a given disk.</LI>
+
+	<LI>File access must be for numbers of bytes that are integer multiples of the volume's sector size. For example, if the sector size is 512 bytes, an application can request reads and writes of 512, 1024, or 2048 bytes, but not of 335, 981, or 7171 bytes. </LI>
+
+	<LI>Buffer addresses for read and write operations must be DWORD aligned.</LI>
+</UL>
+
+<P>Accessing the output buffer while a write operation is using the buffer may lead to corruption of the data written from that buffer. Applications must not read from, write to, reallocate, or free the output buffer that a write operation is using until the write operation completes.</P>
+
+<P>The <B>WriteFileEx</B> function may fail, returning the messages ERROR_INVALID_USER_BUFFER or ERROR_NOT_ENOUGH_MEMORY if there are too many outstanding asynchronous I/O requests. </P>
+
+<P>An application uses the <A HREF="synchro_5yrc.htm">WaitForSingleObjectEx</A>, <A HREF="synchro_5lbs.htm">WaitForMultipleObjectsEx</A>, <A HREF="synchro_5h2s.htm">SignalObjectAndWait</A>, and <A HREF="prothred_0o8o.htm">SleepEx</A> functions to enter an alertable wait state. Refer to <A HREF="unresolved.htm">Synchronization</A> for more information about alertable wait states and overlapped input/output operations. </P>
+
+<p>Also note that due to limitations of the file system used on the hard disk,
+an asynchronous call to <b>WriteFileEx</b> may not return immediately, and may
+in fact block for a significant period of time. As a result, in a situation where blocking might affect a title's
+performance (such as within a game's rendering loop), performing asynchronous writes to the hard disk is not recommended.</p>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p>
+
+<H4>See Also</H4>
+<P>
+
+<A HREF="xbox_mt_xtl_sll_file_io_functions.htm">File I/O Functions</A> | 
+<A HREF="filesio_7wmd.htm">CreateFile</A>,
+<A HREF="synchro_8tf6.htm">OVERLAPPED</A>,
+<A HREF="filesio_0660.htm">ReadFileEx</A>,
+<A HREF="filesio_8iwi.htm">SetFilePointer</A>,
+<A HREF="filesio_18bp.htm">SetEndOfFile</A>,
+<A HREF="prothred_0o8o.htm">SleepEx</A>,
+<A HREF="synchro_5h2s.htm">SignalObjectAndWait</A>,
+<A HREF="synchro_5lbs.htm">WaitForMultipleObjectsEx</A>,
+<A HREF="synchro_5yrc.htm">WaitForSingleObjectEx</A>,
+<A HREF="filesio_3kkl.htm">WriteFile</A>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

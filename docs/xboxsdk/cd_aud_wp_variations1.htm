@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Variations: Adding Basic Variability to Audio Content in DirectMusic Producer</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Variations: Adding Basic Variability to Audio Content in DirectMusic Producer"/>
+DirectMusic Producer, variability in audio content
+<MSHelp:Keyword Index="F" Term="Variations: Adding Basic Variability to Audio Content in DirectMusic Producer"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1 class="heading"><A NAME=""></A>Variations: Adding Basic Variability to Audio Content in DirectMusic Producer</H1>
+
+<p><i>By Scott Selfon, Audio Content Consultant <br>Content and Design Team, Xbox Advanced Technology Group</i></P>
+
+<P><I>This is part of a series of "column-style" white papers on various aspects of Microsoft&#174; DirectMusic&#174; Producer, the content creation tool for DirectMusic. If you would like to see a specific area addressed, please send e-mail to</I> <a href="mailto:content@xbox.com">content@xbox.com</a>.</P>
+
+<h2>Introduction</h2>
+<p>Variations are among the most powerful features of Microsoft&#174; DirectMusic&#174;. They allow the sound designer/composer to create multiple versions (up to 32 per part) of audio tracks that can then be chosen from purely randomly, or in a more controlled manner, in the final runtime performance. The author controls what notes are in each variation, how subtle or obvious the differences between variations are, and whether one instrument picking a variation means any other instruments should play the same variation. A pair of quick examples:</p>
+
+<p>A drum part with five different variations, a bass guitar with four different variations, and a melodic solo with two variations could yield up to 20 different unique performances.</p>
+
+<p>An outdoor soundscape with 20 different variations of crickets (different timings, pitch-shifted and/or different samples) and 32 different variations of wind blowing could yield 640 unique performances.</p>  
+
+<p>The behavior of variations in DirectMusic Producer can be somewhat confusing for someone coming from a linear sequencer or digital audio software. This paper will clarify how variations work in Producer as well as differences between behavior in Producer and the behavior in the runtime environment.</p>
+
+<h2>The 32 Variation Buttons: DirectMusic Producer's User Interface</h2>
+<p>Variations are used in several areas of DirectMusic:</p>
+<ul>
+<li>Segments (.sgp/.sgt)
+<ul>
+<li>Wave Tracks&#8212;for pre-authored digital audio (.wav files)</li>
+<li>Pattern Tracks&#8212;for DLS-triggered audio</li>
+</ul></li>
+<li>Styles (.stp/.sty)
+<ul>
+<li>Patterns&#8212;for DLS-triggered audio</li>
+</ul></li>
+</ul>
+<p>If you've looked at a Wave Track Part or Pattern Track Part (within a Segment) or a Pattern Part (within a Style), you've probably noticed the following interface:</p>
+<img src="images/variations_figure1.gif" border="0">
+<p>This interface is how DirectMusic Producer displays the 32 variations per part; each button represents one variation's state for this part. You can listen to ("audition" <sup>1</sup>) one or more specific variations or let the playback engine choose variations as it would in the performance. The button states also indicate which variation(s) you're currently editing, allowing you to add or remove waves (for Wave Tracks) or MIDI data (for Pattern Tracks and Pattern Parts).</p>
+
+<h2>Button Label Color: Variation Is Empty (White) or Contains Data (Black)</h2>
+<p><IMG src="images/variations_figure2.gif" border="0"></p>
+<p><b>Figure 1</b>&nbsp;&nbsp; Variation 1 has data; Variation 2 is empty.</p>
+
+<p>If a number is white, this variation is currently empty. If it's black, it contains one or more notes, MIDI controller messages, or waves. Note that an empty variation doesn't necessarily mean the composition engine will never choose this variation. It is entirely reasonable and often creatively desirable to have "empty" variations in many contexts. For instance, when creating a looping ambience, you might not want to hear a certain sample of the wind howling on every single loop.</p>
+
+<h2>Button Background Color: Variation Is Enabled (Gray) or Disabled (Checkered)</h2>
+<IMG src="images/variations_figure3.gif" border="0">
+<p><b>Figure 2</b>&nbsp;&nbsp; Variations 1 and 2 are enabled; 3 and 4 are disabled.</p>
+
+<p>Often you won't wish to author 32 different variations for every Track. If you want to use only several, you can disable other variations&#8212;disabled variations will never be chosen by the performance engine. A disabled variation, which appears with a checkered background, can still be auditioned and edited within Producer. With few exceptions, it's a good idea to remove data from variations you have disabled, because this will often save space in runtime files.</p>
+
+<p>To toggle enable/disable:</p>
+<ol>
+<li>Press down the button(s) for the variations you want to enable or disable.</li>
+<li>Right click anywhere over the variation buttons.</li>
+<li>Choose the appropriate option from the shortcut menu that appears.</li>
+</ol>
+<IMG src="images/variations_figure4.gif" border="0">
+<p><b>Figure 3</b>&nbsp;&nbsp; Preparing to disable variations 3 and 4.</p>
+
+<h2>Button Pressed State: Down (Select/Audition) or Up (Unselected/Don't Audition)</h2>
+<IMG src="images/variations_figure5.gif" border="0">
+<p><b>Figure 4</b>&nbsp;&nbsp; Variation 1 is selected, variation 2 is unselected.</p>
+
+<p>The button pressed state indicates which variations are currently displayed in the Track in Producer for editing. It also dictates which variations will receive inserted notes/MIDI controller data/waves.<sup>2</sup> (An inserted note will belong to all of the variations whose buttons are pressed.) Note that button selection state has no effect on the runtime performance: a pressed button will not be chosen any more or less frequently than an unselected button. However, button selection does determine variation selection in Producer's audition mode (see <a href="#audition">Audition Mode</a> section below).</p>
+
+<p>To toggle select/unselect for a variation, click its button. Again, note that you can select and edit disabled variations.</p>
+ 
+<p>To select all enabled variations, click the narrow vertical bar to the left of the variation buttons. Or you can click and drag over the buttons to press them.</p>
+
+<IMG src="images/variations_figure6.gif" border="0">
+<p><b>Figure 5</b>&nbsp;&nbsp; Clicking the <b>Select All</b> bar selects all enabled variations (in this case, 1&#8211;4; 17&#8211;20 are disabled, so they remain unselected)</p>
+
+<p>To select a single variation (and unselect all other variations), double click its button. (Double clicking again will toggle back to the previous state of variation selections.)</p>
+
+<h2 id="audition">Audition Mode: Controlling Variation Behavior (in Producer Only)</h2>
+<p>Now that we've got a few variations put together for a Track, we want to listen to some of them. We've got two choices: as they'll appear in the runtime environment or in the track's audition mode.</p>
+
+<p>To put a Track in audition mode, click anywhere in the Track. Note that only one Track can be in this mode at a time. The indication that a Track is in audition mode is when its selection bar (the thin strip to the left of the track title bar) is yellow.<sup>3</sup></p>
+<IMG src="images/variations_figure7.gif" border="0">  
+<p><b>Figure 6</b>&nbsp;&nbsp; A Wave Track in audition mode. Variation 1 will play every time this Segment is triggered (in Producer only).</p> 
+
+<p>While a Track is in audition mode, the engine's variation choices are overridden by the button states in the track. If multiple buttons are pressed down, they will all play simultaneously. If no buttons are selected, no variations will be played. Again, these behaviors are not applied in a real world performance&#8212;at runtime, only one variation can be played at a time per Track.</p>
+
+<p>Audition mode is useful in particular to check content you've just recorded or just to hold one part steady while all others change variations with each playback/loop.</p>
+
+<p>To take a Track out of audition mode, click in another Track. Note that Tracks other than Wave Tracks, Pattern Tracks, and Pattern Parts in Styles do not have an audition mode, because they don't have variations. You can also click in the topmost area (the timeline) in a Style or Segment to ensure no Tracks are in audition mode.</p>
+
+<h2>Controlling Variation Behavior at Runtime</h2>
+<p>The default behavior for a Track at runtime (and in Producer when not in audition mode) is to choose a random variation. You can influence the choice in several ways, the most basic of which is by changing a Track's variation behavior in its <b>Properties</b> dialog box.</p>
+
+<p>To open the <b>Properties</b> dialog box,<sup><small>4</small></sup> right click in a track and choose <b>Properties</b> from the shortcut menu, or just press F11.</p>
+ 
+<IMG src="images/variations_figure8.gif" border="0">
+<p><b>Figure 7</b>&nbsp;&nbsp; A Wave Track Part <b>Properties</b> dialog box.</p>
+
+<p>The following behaviors are supported:</p>
+
+<p><b>Play in Random Order</b>&#8212;The default behavior. A random enabled variation is chosen.</p>
+
+<p><b>Play in Order From First</b>&#8212;The first time a Segment is played, variation 1 is chosen. The next time it plays (or loops), variation 2 is chosen, and so on, looping around after variation 32. If a variation is disabled, it is skipped.</p>
+
+<p><b>Play in Order From Random</b>&#8212;A random variation is chosen when the Segment is first played. The next play/loop will choose the next enabled variation.</p>
+
+<p><b>Play With No Repeats</b>&#8212;A random variation is chosen each time, but the same variation will never be selected twice in a row.</p>
+
+<p><b>Play By Shuffling</b>&#8212;A random variation is chosen each time, but no variation will repeat until all enabled variations have been chosen once.</p>
+
+<p>By setting two or more parts to the same Lock ID, you can ensure that they always choose the same variation as each other. The variation that they choose will still be influenced by the play mode and other factors, but if, for instance, part A plays variation 24, you will be assured part B plays variation 24 as well. This is very effective for variability in orchestration&#8212;two instruments (say, a flute and an oboe) have the melody but on different variations. Lock them together, and you're guaranteed that only one will play the melody on each playback.</p>
+
+<p>For more information about variations and other topics, please consult the DirectMusic Producer help document, or send e-mail to <a href="mailto:content@xbox.com">content@xbox.com</a>.</p>
+
+<hr width="300" align="left">
+
+<p class="footnote"><sup>1</sup>&nbsp;In most instances, the word audition (aka "design-time") refers to items that can be experimented with in Producer without affecting final playback in the application (aka "run-time"). For instance, if you mute a channel in the output status toolbar (toolbar with the <b>All Notes Off</b> button), that mute will not be applied to the content you create when played outside of Producer.</p>
+
+<p class="footnote"><sup>2</sup>&nbsp;For information on basic DirectMusic Producer functionality, such as note insert, please consult the "Getting Started with DirectMusic Producer" white paper.</p>
+
+<p class="footnote"><sup>3</sup>&nbsp;The track is also in audition mode if the strip is orange&#8212;this actually indicates "red" (selected for clipboard operations from the timeline) and "yellow" (audition mode) at the same time.</p>
+
+<p class="footnote"><sup>4</sup>&nbsp;Producer makes use of <b>open property dialog boxes</b>. You'll notice they generally don't have the <b>OK/Cancel/Apply</b> buttons of some traditional dialog boxes. This is because Producer property dialog box edits are applied immediately, while the property dialog box is open. This is so you can keep the property dialog box open, and as you click on something, any properties that object exposes are listed for immediate editing in the property dialog box.
+</p>
+
+
+<SMALL>Tuesday, December 12, 2000</SMALL>
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

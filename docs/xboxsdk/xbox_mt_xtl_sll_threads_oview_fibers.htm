@@ -1,0 +1,51 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Fibers</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Fibers"/>
+<MSHelp:Keyword Index="F" Term="Fibers"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR></TR>
+</TABLE>
+<!--**********************************-->
+
+<H3 class="heading"><A NAME=""></A>Fibers</H3>
+
+<P>A <I>fiber</I> is a unit of execution that must be manually scheduled by the title. Fibers run in the context of the threads that schedule them. Each thread can schedule multiple fibers. In general, fibers do not provide advantages over a multithreaded implementation. However, using fibers can make it easier to port titles or algorithms that were designed to schedule their own threads.</P>
+
+<P>From a system standpoint, a fiber assumes the identity of the thread that created it. For example, if a fiber accesses thread local storage (TLS), it is accessing the thread local storage of the thread that created it. However, a fiber does not have all the same state information associated with it as that associated with a thread. The only state information maintained for a fiber is its stack, a subset of its registers, its exception list, and the fiber data provided during fiber creation. The saved registers are ebp, esi, edi, and ebx.</P>
+
+<P>Fibers are not preemptively scheduled. You schedule a fiber by switching to it from another fiber. The system still schedules threads to run. When a thread running fibers is preempted, its currently running fiber is preempted. The fiber runs when its thread runs.</P>
+
+<P>Before scheduling the first fiber, call the <A HREF="prothred_converttofiber.htm"><B>ConvertThreadToFiber</B></A> function to convert the thread into a fiber.  Additional fibers can then be created and scheduled from this new fiber.  The fiber data passed as an argument to <B>ConvertThreadToFiber</B> is stored as part of the fiber state information.</P>
+
+<P>The <A HREF="prothred_createfiber.htm"><B>CreateFiber</B></A> function is used to create a new fiber from an existing fiber; the call requires the stack size, the starting address, and the fiber data. The starting address is typically a user-supplied function, called the fiber function, that takes one parameter (the fiber data) and does not return a value. A fiber should never return from its fiber function.
+
+<P>To execute any fiber created with <B>CreateFiber, </B>call the <A HREF="prothred_switchtofiber.htm"><B>SwitchToFiber</B></A><B> </B>function. You can call <B>SwitchToFiber</B> with the address of a fiber created by a different thread, except for fibers created by <B>ConvertThreadToFiber</B>, by specifying the fiber address returned when the other thread called <B>CreateFiber</B>.  When scheduling fibers on other threads, use proper synchronization between the two threads to avoid unpredictable results.</P>
+
+<P>A fiber can retrieve the fiber data by calling the <A HREF="prothred_getfiberdata.htm"><B>GetFiberData</B></A> macro. A fiber can retrieve the fiber address at any time by calling the <A HREF="prothred_getcurrentfiber.htm"><B>GetCurrentFiber</B></A><B> </B>macro.</P>
+
+<P>To clean up the data associated with a fiber (the fiber's stack), call the <A HREF="prothred_deletefiber.htm"><B>DeleteFiber</B></A><B> </B>function from a fiber other than the one to be deleted.  <B>DeleteFiber</B> cannot be used to delete the currently executing fiber, and it cannot be used to delete a fiber created with <B>ConvertThreadToFiber</B>. Either action will cause an assertion breakpoint in debug builds and access violations in retail builds.</P>
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

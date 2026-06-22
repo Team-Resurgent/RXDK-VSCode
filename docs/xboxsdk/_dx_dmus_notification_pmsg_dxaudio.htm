@@ -1,0 +1,171 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>DMUS_NOTIFICATION_PMSG</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="DMUS_NOTIFICATION_PMSG  [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="DMUS_NOTIFICATION_PMSG"/>
+<MSHelp:Keyword Index="F" Term="DMUS_NOTIFICATION_PMSG"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_dmus_notification_pmsg_dxaudio"></A>DMUS_NOTIFICATION_PMSG</H1>
+
+<P>Contains message data for a notification.</P>
+
+<PRE class=syntax>typedef struct DMUS_NOTIFICATION_PMSG {
+    DMUS_PMSG_PART
+    GUID guidNotificationType;
+    DWORD dwNotificationOption;
+    DWORD dwField1;
+    DWORD dwField2;
+} DMUS_NOTIFICATION_PMSG;
+</PRE>
+
+<DL>
+<DT><B>DMUS_PMSG_PART</B></DT>
+
+<DD>Macro for common message members. See <A HREF="_dx_dmus_pmsg_dxaudio.htm"><B>DMUS_PMSG</B></A>.</DD>
+
+<DT><B>guidNotificationType</B></DT>
+
+<DD>Identifier of the notification type. The following types are defined:</DD>
+
+<DL>
+<DT>GUID_NOTIFICATION_CHORD</DT>
+
+<DD>Chord change.</DD>
+
+<DT>GUID_NOTIFICATION_COMMAND</DT>
+
+<DD>Command event.</DD>
+
+<DT>GUID_NOTIFICATION_MEASUREANDBEAT</DT>
+
+<DD>Measure and beat event. </DD>
+
+<DT>GUID_NOTIFICATION_PERFORMANCE</DT>
+
+<DD>Performance event, further defined in <B>dwNotificationOption</B>.</DD>
+
+<DT>GUID_NOTIFICATION_RECOMPOSE</DT>
+
+<DD>A track has been recomposed. In the current version, this is always a chord track.</DD>
+
+<DT>GUID_NOTIFICATION_SEGMENT</DT>
+
+<DD>Segment event, further defined in <B>dwNotificationOption</B>.</DD>
+</DL>
+
+
+<DT><B>dwNotificationOption</B></DT>
+
+<DD>Identifier of the notification subtype.
+
+<P>If the notification type is GUID_NOTIFICATION_SEGMENT, this member can contain one of the following values:</DD>
+
+
+<DL>
+<DT>DMUS_NOTIFICATION_SEGABORT</DT>
+
+<DD>The segment was stopped prematurely or was removed from the primary segment queue.</DD>
+
+<DT>DMUS_NOTIFICATION_SEGALMOSTEND</DT>
+
+<DD>The segment has reached the end minus the <A HREF="_dx_prepare_time_dxaudio.htm"><B>prepare time</B></A>.</DD>
+
+<DT>DMUS_NOTIFICATION_SEGEND</DT>
+
+<DD>The segment has been stopped by the title.</DD>
+
+<DT>DMUS_NOTIFICATION_SEGLOOP</DT>
+
+<DD>The segment has looped.</DD>
+<P CLASS="note"><B><I>Note</I></B>&nbsp;&nbsp;&nbsp;&nbsp; This notification will not be sent for any loops authored into a wave file when that wave file is loaded and played as a segment.</P>
+
+<DT>DMUS_NOTIFICATION_SEGSTART</DT>
+
+<DD>The segment has started.</DD>
+</DL>
+
+
+<P>If the notification type is GUID_NOTIFICATION_COMMAND, this member can contain one of the following values:</P>
+
+
+<DL>
+<DT>DMUS_NOTIFICATION_GROOVE</DT>
+
+<DD><A HREF="g.htm#_dx_groove_level_glos"><B>Groove level</B></A> change.</DD>
+
+<DT>DMUS_NOTIFICATION_EMBELLISHMENT</DT>
+
+<DD>Embellishment command (intro, fill, break, or end).</DD>
+</DL>
+
+
+<P>If the notification type is GUID_NOTIFICATION_PERFORMANCE, this member can contain one of the following values:</P>
+
+
+<DL>
+<DT>DMUS_NOTIFICATION_MUSICALMOSTEND</DT>
+
+<DD>The currently playing primary segment has reached the end minus the prepare time, and no more primary segments are cued to play. </DD>
+
+<DT>DMUS_NOTIFICATION_MUSICSTARTED</DT>
+
+<DD>Playback has started.</DD>
+
+<DT>DMUS_NOTIFICATION_MUSICSTOPPED</DT>
+
+<DD>Playback has been stopped by the title.</DD>
+</DL>
+
+
+<P>If the notification type is GUID_NOTIFICATION_MEASUREANDBEAT, this member contains DMUS_NOTIFICATION_MEASUREBEAT. No other subtypes are defined.</P>
+
+
+<P>If the notification type is GUID_NOTIFICATION_CHORD, this member contains DMUS_NOTIFICATION_CHORD. No other subtypes are defined.</P>
+
+
+<P>If the notification type is GUID_NOTIFICATION_RECOMPOSE, this member contains DMUS_NOTIFICATION_RECOMPOSE. No other subtypes are defined.</P>
+
+
+<DT><B>dwField1</B></DT>
+
+<DD>Extra data specific to the type of notification. For GUID_NOTIFICATION_MEASUREANDBEAT notifications, this member returns the beat number within the measure. </DD>
+
+<DT><B>dwField2</B></DT>
+
+<DD>Extra data specific to the type of notification. Reserved for future or application-defined use.</DD>
+</DL>
+
+<H4>Remarks</H4>
+
+<P>For most notifications, the <B>punkUser</B> member (see <A HREF="_dx_dmus_pmsg_dxaudio.htm"><B>DMUS_PMSG</B></A>) contains the <B>IUnknown</B> pointer of the segment state.</P>
+
+<P>For notifications of type GUID_NOTIFICATION_PERFORMANCE, the <B>punkUser</B> member is always NULL.</P>
+
+<P>Applications can define their own notification message types and subtypes and use <B>dwField1</B> and <B>dwField2</B> for extra data. Such custom notification messages can be allocated and sent like any other message.</P>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in Dmusic.h.</P>
+
+<H4>See Also</H4>
+
+<P><A HREF="_dx_notification_and_event_handling_dxaudio.htm"><B>Notification and Event Handling</B></A>, <A HREF="_dx_idirectmusicperformance8_sendpmsg_dxaudio.htm"><B>IDirectMusicPerformance8::SendPMsg</B></A> </P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

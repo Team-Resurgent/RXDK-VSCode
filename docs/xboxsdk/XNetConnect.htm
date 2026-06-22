@@ -1,0 +1,57 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XNetConnect</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XNetConnect"/>
+<MSHelp:Keyword Index="F" Term="XNetConnect"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XNetConnect</h1>
+<p>Establishes a secure connection with a specified internet address (<a href="xbox_in_addr_winsock.htm">in_addr</a>).</p>
+<pre class="syntax" xml:space="preserve"><b>INT</b> <b>XNetConnect(</b>
+    <b>const IN_ADDR</b> <i>ina</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+            <dt><i>ina</i></dt>
+                <dd>The <a href="xbox_in_addr_winsock.htm">in_addr</a> with which a secure connection will be established.  The specified <b>in_addr</b> must have been returned from a previous call to <a href="xbox_xnetxnaddrtoinaddr_xsnl.htm">XNetXnAddrToInAddr</a>, <a href="xbox_xnetservertoinaddr_xsnl.htm">XNetServerToInAddr</a>, or <a href="XOnlineGetServiceInfo.htm">XOnlineGetServiceInfo</a>.</dd>
+            
+        </dl>
+<h4><a name="return"></a>Return Values</h4>
+            <p>Returns zero if successful, an error code otherwise.</p>
+        <h4><a name="remarks"></a>Remarks</h4>
+<h2><a name="IDAPRM2"></a></h2>
+<h3><a name="IDARRM2"></a></h3>
+<p>If the <b>in_addr</b> specified in <i>ina</i> is invalid, the function returns WSAEINVAL.  For a valid <b>in_addr</b> that is in the PENDING or COMPLETED states, the function does nothing and returns zero (but see <a href="XNetGetConnectStatus.htm">XNetGetConnectStatus</a>).  For an <b>in_addr</b> to an online server with which a security connection has been lost, the function will reinitiate the security connection and return zero.  For an <b>in_addr</b> to an Xbox peer with which a security connection has been lost, the function does <i>not</i> reinitiate a connection, and instead returns WSAEINVAL.</p><p>Secure connections are normally automatically created in the background the first time a packet is sent to a valid <b>in_addr</b>.  A title can call <b>XNetConnect</b> to explicitly start that process before the first packet is sent, initiating the NAT traversal and key exchange required to establish a secure connection. Once a security connection has been lost, the connection is <i>not</i> automatically reestablished when packets are sent; to reestablish lost security connections, titles must either call <b>XNetConnect</b> (for connections to an online server), or <b>XNetXnAddrToInAddr</b> (for connections to another Xbox).</p><p>A secure connection can be lost when either side of the connection calls <a href="xbox_xnetunregisterinaddr_xsnl.htm">XNetUnregisterInAddr</a> or <a href="xbox_xnetunregisterkey_xsnl.htm">XNetUnregisterKey</a>, or when normal background keep-alive packets are not received for long enough that the connection is deemed broken.  <b>XNetGetConnectStatus</b> will return XNET_CONNECT_STATUS_LOST for connections that are in the LOST state.</p><p>The process for creating a secure connection and for reestablishing a lost connection depends on the type of connection: Xbox-to-SG, Xbox-to-Xbox (active), or Xbox-to-Xbox (passive).</p><h4><a name="IDAATM2"></a>Xbox-to-SG</h4>
+<p>For a connection from an Xbox to SG, the title typically gets the IN_ADDR to the SG by calling <a href="XOnlineLogon.htm">XOnlineLogon</a> with a set of service identifiers.  The logon task acquires the IP address to the security gateway that provides that service, then calls <b>XNetServerToInAddr</b> to convert the address to a secure IP address.  This secure IP address is then returned to the title when the title calls <b>XOnlineGetServiceInfo</b>.  Alternatively, the title may call <b>XNetServerToInAddr</b> itself to connect to some other datacenter (but this will be rare in practice).  The IN_ADDR obtained from either <b>XOnlineGetServiceInfo</b> or <b>XNetServerToInAddr</b> will remain valid for as long as the logon task remains connected to the main datacenter.  Unlike an Xbox-to-Xbox IN_ADDR, an Xbox-to-SG IN_ADDR will not become invalid when its state becomes disconnected.</p><p>A security association for an Xbox-to-SG connection starts out in the IDLE state.  The state becomes PENDING if the title calls <b>XNetConnect</b> or if a packet is sent to the given <b>in_addr</b>.  In the PENDING state, all packets sent on the security association are queued for transmit until the key exchange completes successfully and the state changes to CONNECTED.</p><p>If key exchange fails, or if the security association becomes disconnected (either because the other side sent an explicit disconnect request, or because a packet has not been received from the other side for a while), the state of the security association becomes LOST.  In the LOST state, any attempt to send a packet will fail with a WSAEHOSTUNREACH error.  The title can reestablish connectivity with the SG by calling <b>XNetConnect</b> on the <b>in_addr</b>.</p><p>The game server behind the security gateway will see the client as having a different IP address each time the security association between the Xbox and the SG is lost and reestablished.  This is the same as previous behavior (before <b>XNetConnect</b> was implemented), except that now the title will have to explicitly cause the reconnect to happen instead of relying on an automatic reconnect attempt the next time a packet is transmitted.</p><h4><a name="IDACUM2"></a>Xbox-to-Xbox (Active Connect)</h4>
+<p>For a connection from one Xbox to another Xbox, the title gets the <b>in_addr</b> to the other Xbox by calling <b>XNetXnAddrToInAddr</b>.  This security association starts out in the IDLE state.  The state becomes PENDING if the title calls <b>XNetConnect</b> or if a packet is sent to the given <b>in_addr</b>.  In the PENDING state all packets sent on the security association are queued for transmit until the key exchange completes successfully and the state changes to CONNECTED.</p><p>Should key exchange fail, or should the security association become disconnected (either because the other side sent an explicit disconnect request with a call to <b>XNetUnregisterInAddr</b> or <b>XNetUnregisterKey</b>, or because a packet has not been received from the other side for a while), the state of the security association becomes LOST.  An Xbox-to-Xbox <b>in_addr</b> in the LOST state is forever invalid, and any attempt to transmit a packet to that <b>in_addr</b> will return WSAEHOSTUNREACH.</p><p>Once a peer-to-peer security association becomes LOST the only way to reestablish connectivity to the peer is for the title to once again call <b>XNetXnAddrToInAddr</b>, which will return a different <b>in_addr</b> to the peer.  A packet transmitted over this new security association, or an explicit call to <b>XNetConnect</b>, will initiate key exchange and a new security connection with the peer.</p><h4><a name="IDACVM2"></a>Xbox-to-Xbox (Passive Connect)</h4>
+<p>A passive connection from Xbox to Xbox occurs when a host or peer that has registered a key pair (with a call to <a href="xbox_xnetregisterkey_xsnl.htm">XNetRegisterKey</a>) receives an incoming key exchange initiator from another peer.  At that point, a security association is passively created.  The title, upon receiving a packet from the peer, can determine the <a href="xbox_xnaddr_xsnl.htm">XNADDR</a> of the peer by calling <a href="xbox_xnetinaddrtoxnaddr_xsnl.htm">XNetInAddrToXnAddr</a>.</p><p>The initial state of a passive security association is CONNECTED, because a packet cannot arrive until the security association has been established.  The security association becomes LOST if the other side fails to send a packet for a while, or if the other side sends an explicit disconnect request with a call to <b>XNetUnregisterInAddr</b> or <b>XNetUnregisterKey</b>.  An Xbox-to-Xbox <b>in_addr</b> in the LOST state is forever invalid, and any attempt to transmit a packet to that <b>in_addr</b> will return WSAEHOSTUNREACH.</p><p>As for an active connection, once a passive peer-to-peer security association becomes LOST the only way to reestablish connectivity to the peer is for the title to once again call <b>XNetXnAddrToInAddr</b>, which will return a different <b>in_addr</b> to the peer.  A packet transmitted over this new security association, or an explicit call to <b>XNetConnect</b>, will initiate key exchange and a new security connection with the peer.</p>    <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Winsockx.h. for include use Xtl.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xnet.lib for titles that only support system link play, XOnline.lib for titles that support online play. For online titles, use the secure version of the library file (XOnlines.lib) for final testing (not available for system link play).</p>
+    <h4><a name="seealso"></a>See Also</h4>
+            <p><a href="XNetGetConnectStatus.htm">XNetGetConnectStatus</a>, <a href="xbox_xnetxnaddrtoinaddr_xsnl.htm">XNetXnAddrToInAddr</a>, <a href="xbox_xnetservertoinaddr_xsnl.htm">XNetServerToInAddr</a>, <a href="XOnlineGetServiceInfo.htm">XOnlineGetServiceInfo</a>, <a href="xbox_xnetunregisterinaddr_xsnl.htm">XNetUnregisterInAddr</a>, <a href="xbox_xnetunregisterkey_xsnl.htm">XNetUnregisterKey</a>, <a href="xbox_in_addr_winsock.htm">in_addr</a>, <a href="xbox_xnaddr_xsnl.htm">XNADDR</a></p>
+        <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>DSBUFFERDESC</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="DSBUFFERDESC  [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="DSBUFFERDESC"/>
+<MSHelp:Keyword Index="F" Term="DSBUFFERDESC"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_dsbufferdesc_dxaudio"></A>DSBUFFERDESC</H1>
+
+<P>Describes the characteristics of a new <B>DirectSoundBuffer</B> object. Used by the <A HREF="_dx_idirectsound8_createsoundbuffer_dxaudio.htm"><B>IDirectSound8::CreateSoundBuffer</B></A> method.</P>
+
+
+<PRE class="syntax">typedef struct { 
+    DWORD dwSize; 
+    DWORD dwFlags; 
+    DWORD dwBufferBytes; 
+    LPWAVEFORMATEX lpwfxFormat; 
+    LPCDSMIXBINS lpMixBins;
+    DWORD dwInputMixBin;
+} DSBUFFERDESC, *LPDSBUFFERDESC; 
+ 
+typedef const DSBUFFERDESC *LPCDSBUFFERDESC;
+</PRE>
+
+<H4>Members</H4>
+
+<DL>
+<DT><B>dwSize</B></DT>
+<DD>Size of the structure, in bytes.</DD>
+
+<DT><B>dwFlags</B></DT>
+<DD>Flags specifying the capabilities to include when creating a new <B>DirectSoundBuffer</B> object. The following values are defined. </DD>
+
+    <DL>
+		<TABLE border=0 cellpadding=5 cols=1 frame=below rules=rows>
+
+		<TR VALIGN="top">
+		<TD class=blue width=30%><B>Value</B></TD>
+		<TD class=blue width=70%><B>Description</B></TD>
+		</TR>
+
+		<TR VALIGN="top">
+		<TD class=blue width=30%>DSBCAPS_CTRL3D</TD>
+		<TD class=blue width=70%>The buffer will be a 3D HRTF buffer. Can only be set for buffers with a mono format.</TD>
+		</TR>
+
+		<TR VALIGN="top">
+		<TD class=blue width=30%>DSBCAPS_CTRLPOSITIONNOTIFY</TD>
+		<TD class=blue width=70%>The buffer must have position notification capability.</TD>
+		</TR>
+
+		<TR VALIGN="top">
+		<TD class=blue width=30%>DSBCAPS_FXIN</TD>
+		<TD class=blue width=70%>The buffer is used as the destination of a post-effects submix operation. When specifying this flag, the <i>lpwfxFormat</i> parameter must be null.</TD>
+		</TR>
+
+		<TR VALIGN="top">
+		<TD class=blue width=30%>DSBCAPS_FXIN2</TD>
+		<TD class=blue width=70%>The buffer is used as the destination of a post-effects submix operation. Buffers of this type cannot be passed to SetOutputBuffer. Instead, the application is expected to call Play (PlayEx) and Stop (StopEx) on the destination voice. When specifying this flag, the <i>lpwfxFormat</i> parameter must be null.</TD>
+		</TR>
+		
+		<TR VALIGN="top">
+		<TD class=blue width=30%>DSBCAPS_LOCDEFER</TD>
+		<TD class=blue width=70%>The buffer will not be assigned a hardware voice until it is played. If this flag is not set, the hardware voice is permanently allocated to this buffer or stream.</TD>
+		</TR>
+
+		<TR VALIGN="top">
+		<TD class=blue width=30%>DSBCAPS_MIXIN</TD>
+		<TD class=blue width=70%>The buffer must be capable of receiving data from other buffers. The value of <B>lpwfxFormat</B> should be set to NULL.<!-- COMMENT: The wave format in lpwfxFormat must be an 8-bit or 16-bit PCM format with no more than two channels.  -->  For buffers created with DSBCAPS_MIXIN, <B>SetFrequency</B>, <B>Lock</B>, and <B>SetBufferData</B> will fail.  MIXIN buffers only receive data from other DirectSound buffers, streams, or effects chains.</TD>
+		</TR>
+		
+		<TR VALIGN="top">
+		<TD class=blue width=30%>DSBCAPS_MUTE3DATMAXDISTANCE</TD>
+		<TD class=blue width=70%>The buffer is muted and no rolloff calculations are performed if the distance from the listener meets or exceeds the buffer's MaxDistance value.</TD>
+		</TR>
+		</TABLE>
+    </DL>
+
+<P>The following flags are ignored by DirectSound on Xbox.  They are included solely to allow easier porting of existing code:</P>
+
+<DL>
+<DT>DSBCAPS_CTRLFREQUENCY</DT>
+<DT>DSBCAPS_CTRLVOLUME</DT>
+</DL>
+
+<BR>
+<DT><B>dwBufferBytes</B></DT>
+<DD>Size of the new buffer, in bytes.   If this value is 0, DirectSound will not allocate any memory for this DirectSound Buffer.  In this case, the application should use <A HREF="xbox_jc_idirectsoundbuffer8_setbufferdata_dxaudio.htm"><B>IDirectSoundBuffer8::SetBufferData</B></A> to tell DirectSound where the sound buffer data, allocated by the application, resides.</DD>
+
+<P>This value must be 0 when creating a buffer with the DSBCAPS_MIXIN or DSBCAPS_FXIN flag.  For other buffers, the minimum and maximum sizes allowed are specified by DSBSIZE_MIN and DSBSIZE_MAX, defined in Dsound.h.</P> 
+
+<DT><B>lpwfxFormat</B></DT>
+<DD>Address of a <A HREF="_dx_waveformatex_dxaudio.htm"><B>WAVEFORMATEX</B></A> structure specifying the waveform format for the buffer.</DD>
+
+<dt><b>lpMixBins</b></dt>
+    <dd>Address of a <a href="xbox_dsmixbins_dxaudio.htm"><B>DSMIXBINS</B></a> structure that contains the output mixbin identifiers and volume pairs. Can be set to NULL, which specifies that the default mixbin volume pairs are used. (See <a href="xbox_mixbin_constants_dxaudio.htm#xbox_mixbin_constants_dxaudio_combo">Mixbin Volume Pair Combinations</a> for more information about the default mixbin volume pairs.)</dd>
+
+<dt><b>dwInputMixBin</b></dt>
+    <dd>Value that contains the identifier for the input mixbin for FXIN buffers only, zero otherwise.</dd>
+
+</DL>
+
+<H4>Remarks</H4>
+<p>Because DSBCAPS_MIXIN, DSBCAPS_FXIN, and DSBCAPS_FXIN2 buffers are used to receive audio data instead of generating it, the following settings are required:</p>
+
+<ul>
+	<li>The <b>dwBufferBytes</b> member must be set to 0.</li>
+    <li>The <b>dwFlags</b> member cannot include the DSBCAPS_LOCDEFER or DSBCAPS_CTRLPOSITIONNOTIFY flags. DSBCAPS_FXIN2 buffers are an exception to this and can include the DSBCAPS_LOCDEFER flag.</li>
+    <li>The <b>lpwfxFormat</b> member must be set to NULL.</li>
+</ul> 
+
+<p>Buffers created with either the DSBCAPS_MIXIN or DSBCAPS_FXIN flags automatically start playing when the first source voice starts and stop when the last source voice stops.</p>
+
+<p>Buffers created with the DSBCAPS_FXIN2 flag cannot be passed to the <b>SetOutputBuffer</b> function. Instead, the application must explicitly call Play (PlayEx) and Stop (StopEx) on the destination voice for buffers of this type. Calls to SetPitch will have no effect on the destination voice. Doppler shifting of a 3D FXIN2 buffer will also have no effect.</p>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in Dsound.h.</P>
+
+<H4>See Also</H4>
+
+<P><A HREF="_dx_idirectsound8_createsoundbuffer_dxaudio.htm"><B>IDirectSound8::CreateSoundBuffer</B></A>, <A HREF="_dx_directsound_buffers_dxaudio.htm"><B>DirectSound Buffers</B></A></P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

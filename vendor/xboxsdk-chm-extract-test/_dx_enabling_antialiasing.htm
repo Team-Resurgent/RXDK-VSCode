@@ -1,0 +1,48 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Enabling Antialiasing</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Enabling Antialiasing"/>
+<MSHelp:Keyword Index="F" Term="Enabling Antialiasing"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1>Enabling Antialiasing</H1>
+
+<p>Antialiasing is enabled by specifying something other than D3DMULTISAMPLE_NONE for the <b>MultiSampleType</b> member of <a href="_dx_d3dpresent_parameters_graphics.htm"><b>D3DPRESENT_PARAMETERS</b></a> when creating or resetting the device.</p>
+
+<pre>// This sample assumes that pD3D is a valid pointer to an IDirect3D8
+// interface and the pDevice is a pointer to an IDirect3DDevice8
+// interface.
+
+// Set up the structure used to create the device.
+D3DPRESENT_PARAMETERS d3dPP;
+ZeroMemory( &amp;d3dPP, sizeof(d3dPP) );
+d3dPP.BackBufferWidth       = 640;
+d3dPP.BackBufferHeight      = 480;
+d3dPP.BackBufferFormat      = D3DFMT_X8R8G8B8;
+d3dPP.BackBufferCount       = 1;
+d3dPP.MultiSampleType       = D3DMULTISAMPLE_4_SAMPLES_MULTISAMPLE_LINEAR;
+d3dPP.SwapEffect            = D3DSWAPEFFECT_DISCARD;
+
+// Create the device.
+if ( FAILED( pD3D-&gt;CreateDevice( 0, D3DDEVTYPE_HAL, NULL,
+                                 D3DCREATE_HARDWARE_VERTEXPROCESSING,
+                                 &amp;d3dPP, &amp;pDevice ) ) )
+     return E_FAIL;
+</pre>
+
+<p>By setting the <b>MultiSampleType</b> member to be a multisampling type (as opposed to a supersampling type), multisampling is enabled. This is unlike the behavior under DirectX 8.0 for the PC where it is necessary to turn on multisampling using the render state D3DRS_MULTISAMPLEANTIALIAS.</p>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

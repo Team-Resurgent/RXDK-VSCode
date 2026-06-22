@@ -1,0 +1,675 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>API Insight: What Happens When I Call Present()?</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="API Insight: What Happens When I Call Present()?"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+  <MSHelp:Keyword Index="K" Term="presenting versus swapping"/>
+  <MSHelp:Keyword Index="K" Term="swapping versus presenting"/>
+  <MSHelp:Keyword Index="K" Term="back buffer scaling"/>
+  <MSHelp:Keyword Index="K" Term="full-screen antialiasing"/>
+  <MSHelp:Keyword Index="K" Term="double-buffering"/>
+  <MSHelp:Keyword Index="K" Term="swap routines, user-defined"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>API Insight: What Happens When I Call Present()?</h1>
+<p><i>By Mikey Wetzel and Hung Nguyen, Xbox Advanced Technology Group</i></p>
+
+<p>Welcome to a new white paper series that aims to expose and document what happens inside some of the more mysterious Xbox API calls. In this first-pass attempt at a new idea, we'll be looking into the <b>D3DDevice::Present</b> call, which has historically been a source of confusion and has generated more than its fair share of e-mails to the Xbox support alias.</p>
+
+<p>You may have asked before, "Why not just release the actual source code?" but by now you also know that there are a variety of reasons (ahem, legal) why that has not happened. Besides, 90 percent of the source is really (cross my heart!) uninteresting. This white paper series attempts to fill in the void, giving you the gist of what's going on inside the more interesting API calls.</p>
+
+<p>In <a href="prog_wp_API_Insight_Present.htm#appendix_a">Appendix A: Pseudo-code</a>, you will find detailed pseudo-code that is referred to throughout this document. We recommend having a separate print out of the pseudo-code, or perhaps even copying it into a source editor, for easy reference while reading this paper.</p>
+
+<p>Now, let's get started.</p>
+
+<h2><a name="IDAOBN2"></a>Presenting vs. Swapping</h2>
+<p>Let's kick off the discussion by first defining what we mean by "present" and what we mean by "swap." When you present a scene, you are simply telling the Direct3D API that the contents of the current back buffer should now be displayed. Typically, the back buffer becomes the front buffer, and vice versa, and the video signal (after the next vertical blank) starts coming from the new front buffer. This process is called a "flip" or, especially with triple-buffering, might be referred to as "rotating" the "swap chain."</p><p>You can probably picture in your head that the code to do this is fairly simple. It's really just swapping some surface pointers and telling the GPU which surface is now the new render target (the back buffer) and which surface should now generate the video signal (the front buffer). This is true in most cases, the exception being when the application is using full-screen antialiasing (FSAA) or is scaling the back buffer. In both of these cases, the back buffer contents need to get filter-blitted to the front buffer.</p><p>As noted in the XDK documentation, the <b>Swap</b> function is an alternative to the <b>Present</b> function, allowing an application to have a bit more control over the code path that includes the back buffer blit operation. Interestingly, if you take a peek at the D3D8.h header file, you will see that <b>D3DDevice_Present</b> actually calls <b>D3DDevice_Swap</b>. Note that the zero value corresponds to the D3DSWAP_DEFAULT parameter. In other words, the <b>Present</b> call is really just a subset of <b>Swap</b>, using default flags.</p><p>The first thing to notice in the pseudo-code is that when you call <b>Swap</b> with the <i>dwFlags</i> parameter equal to D3DSWAP_DEFAULT (or zero, as <b>Present</b> does), the flags are actually set to D3DSWAP_COPY and D3DSWAP_FINISH.</p><p>Looking again at the pseudo-code, trace through the logic to convince yourself that slightly different code paths are executed depending on how you pass in these flags. The real fun begins when <b>Swap</b> is used for FSAA, back buffer scaling, or when you implement your own copy routine. Let's look at these specific cases:</p><ul>
+<li><a href="#IDARCN2">Case 1: Double-Buffering, No FSAA</a></li><li><a href="#IDAEEN2">Case 2: Full-screen Antialiasing</a></li><li><a href="#IDAJHN2">Case 3: Back Buffer Scaling</a></li><li><a href="#IDAKIO2">Case 4: User-defined Swap Routines</a></li></ul>
+<h3><a name="IDARCN2"></a>Case 1: Double-Buffering, No FSAA</h3>
+<p>This case applies to most Xbox games currently shipping. That is, the application uses double-buffering (one front buffer and one back buffer), and does not use full-screen antialiasing. For this case, the application would create the device with the D3DSWAPEFFECT_DISCARD or D3DSWAPEFFECT_FLIP flag, and just call <b>Present</b> at the end of each frame, because it just wants the default swapping behavior, which merely flips the buffers.</p><p>As we walk through the pseudo-code, feel free to follow along in the source. (If you haven't done so, this would be a good time to print out this document, or at least open up a second instance of it.) First, <b>Present</b> calls</p>
+<pre class="clsCode">
+D3DDevice_Swap( D3DSWAP_DEFAULT)
+</pre>
+    <p>The <b>Swap</b> call changes the <i>dwFlags</i> parameter to the D3DSWAP_COPY and D3DSWAP_FINISH flags. The logic then falls into the block</p>
+<pre class="clsCode">
+else SwapEffect != D3DSWAPEFFECTCOPY
+</pre>
+    <p>Inside that block, since the D3DSWAP_FINISH flag is set, the following three calls are invoked:</p><ol>
+	<li><b>SwapStart</b></li>
+	<li><b>SwapFlip</b></li>
+	<li><b>SwapFinish</b></li>
+</ol>
+<p><b>SwapStart</b> and <b>SwapFinish</b> do some record-keeping for the time and internal swap count, with the finish call actually causing the frame to become visible. This pseudo-code is simplified from the actual code, but it's enough to get the picture. The timing information is needed to help enforce that we don't get two many frames in our push-buffer. After two full-frames, it's evident that the CPU is running too far ahead of the GPU, and we need to block the CPU until the GPU can catch up. (This is the de facto sign that the application is GPU bound.)</p><p>The <b>SwapFlip</b> call does the meat of the work. It starts off by rotating the swap chain, so the last back buffer becomes the new front buffer, and so on. The next part is just a bunch of mumbo-jumbo to inform the GPU that there's a new front buffer in town. Note here that with an immediate presentation interval, the GPU is programmed immediately. Otherwise, the flip needs to occur during the next vertical blank, so an internal flag is set to record a pending flip. Finally, the <b>SwapFlip</b> call informs the GPU that we have a new back buffer, as well.</p><p>What are the ramifications of this code path? None really, since no render states, and so on are tweaked in the process. This code path is fast and simple, leaving the system the same as it was before the <b>Swap</b> call.</p><h3><a name="IDAEEN2"></a>Case 2: Full-screen Antialiasing</h3>
+<p>Full-screen antialiasing on Xbox makes use of a larger back buffer that is down-sampled to the normal-sized front buffer. For example, using 4&#0215; FSAA on a 640&#0215;480 device results in a 1280&#0215;960 back buffer and a 640&#0215;480 front buffer. Note that non-matching buffer sizes means rotating the swap chain (that is, a flip) no longer is possible, so a filter-blitted copy is the only meaningful swap operation. Therefore, when the device is created with a valid multisample type, the swap effect is internally forced by the <b>CreateDevice</b> function to be D3DSWAPEFFECT_COPY.</p><p>During a frame, the back buffer is rendered to mostly as normal, other than the fact that it's much bigger. At the end of rendering a frame, the application calls <b>Swap</b> with the D3DSWAP_DEFAULT flag. Now let's trace through the <b>D3DDevice_Swap</b> pseudo-code to see what happens inside.</p><p>The first <b>if</b> block will get executed, since we're guaranteed in this case to be using D3DSWAPEFFECT_COPY. Given the value of the <i>dwFlags</i>, the next three functions will be executed:</p><ol>
+	<li><b>SwapStart</b></li>
+	<li><b>SwapCopy(</b> <i>dwFlags</i> <b>)</b></li>
+	<li><b>SwapFinish</b></li>
+</ol>
+<p>This looks very similar to the flip case, except we are doing a <b>SwapCopy</b> instead of a <b>SwapFlip</b>. The <b>SwapStart</b> and <b>SwapFinish</b> were already covered in the previous case, and do not change for this code path.</p><p>The magic, therefore, happens inside <b>SwapCopy</b> so let's turn our attention there. The first check is for triple-buffering, in which case we need to rotate the back buffers. The back buffer that we just finished drawing to will be copied to the front buffer, and then the other back buffer will become the new one for the application to draw on.</p><p>Skip ahead towards the end of the function, and find a reference to <b>SwapCopyBlt</b>. This is where the copy operation actually happens. The code prior to and after this call is merely saving and restoring state that the copy operation obliterates, and setting state needed for the copy operation.</p><p>The copy operation uses the GPU to render one big primitive onto the front buffer, using the back buffer as a texture. This conveniently uses the texture hardware to do a minification filter on the oversized back buffer. The draw call is programmed using the low-overhead <b>Begin</b>/<b>End</b> functions, with some texture coordinate tricks so that one oversized triangle can be used to cover the entire screen.</p><p>Before rendering, we need to set the front buffer as the render target, the back buffer as a texture, and a whole bunch of appropriate render and texture stage states. To be friendly to the application, this is why the code also tries to save and restore state wherever possible. Look back now at the calls to <b>SwapSetSurfaces</b>, <b>SwapSetRenderState</b>, and <b>SwapSetTextureStageState</b>, as well as the various save and restore calls. This code is fairly straightforward, but there are two areas of interest.</p><p>First, note that pure devices, by definition, do not save state. On Xbox, state can be simple, meaning is it controlled merely by setting a <b>DWORD</b>, or non-simple, in which a function needs to be called to set the state and handle any other work required. Pure devices on Xbox don't save simple state, but they may be able to save some non-simple state. Without going much further into this, let's just leave it at the obvious fact that if you use pure devices, calling <b>Swap</b> on an antialiased surface may return your system with some modified states.</p><p>Which brings us to the second area of interest: which states are modified? The <b>SwapSetState</b> function shows you the detailed list. Some make total sense, such as the fill-mode obviously needs to be solid. Others are less intuitive, but all are needed for correct rendering. If your application is using antialiasing, and you are seeing some corrupted states, this is a good place to check.</p><p>Note that using PIX exposes much of what the hardware is doing when <b>Swap</b> is called for an antialiased scene. You would see the new state going into the push-buffer, keeping in mind that the code tries to only set state that wouldn't be redundant. You would also see the <b>Begin</b>/<b>End</b> calls that use the back buffer as a texture. Furthermore, and of the most interest, you would see the performance cost of the swap operation.</p><p>The cost of full-screen antialiasing can be broken into two pieces. The first piece is the unavoidable fill cost of all the extra pixels that need to be rasterized, given that your back buffer is much larger. This cost is highly variable, as it is affected by memory bandwidth, the texture cache, texture mip levels, and how vertex bound your application is. The second piece of antialiasing cost is the swap operation, and that cost should be much more fixed. If you are aiming for a 16.67 ms frame time, you will need to lop the swap time (in the neighborhood of 1 ms for 2&#0215; FSAA) off of your budget. Again, PIX will give you more precise numbers.</p><p>Before we leave the topic, note that the default use of the <b>Swap</b> call tells it to the D3DSWAP_COPY and the D3DSWAP_FINISH at the same time. You could break this into two separate calls, allowing you to meddle with the newly-filtered front buffer between the copy and finish operations. This is useful for drawing your HUD without incurring the extra pixel costs of drawing to the large back buffer. In fact, this is the only recommended way of drawing screenspace elements when using FSAA. Keep in mind that your z-buffer is sized to match your back buffer, so it will not be useable when rendering to the front buffer.</p><h3><a name="IDAJHN2"></a>Case 3: Back Buffer Scaling</h3>
+<p>The next interesting case is a game that uses <b>SetBackBufferScale</b> to reduce the fill requirements. It may be apparent already that, lacking any native hardware support for smaller frame buffers, back buffer scaling, like FSAA, is also implemented with a blit operation.</p><p>In fact, back buffer scaling is implemented in a very similar way to FSAA. For starters, when back buffer scaling is used, the device is forced into a D3DSWAPEFFECT_COPY mode. When <b>SetBackBufferScale</b> is called, the API really just sets up various multisample registers and scaling factors. The only other thing the API does is change the viewport so that subsequent rendering into the back buffer will be restricted to a smaller section of the back buffer.</p><p>The code path through <b>Swap</b> is almost exactly the same as the FSAA case. The only real difference is that there's a shortcut path for when back buffer scaling is effectively turned off by setting the scale factors to one. In that case, the API tries to resort to just doing a flip.</p><p>In the <b>SwapCopyBlt</b> function, if you look close, you will see the only place where the back buffer scale factors are applied. Those factors modify the texture coordinates so that only the appropriate part of the back buffer is rasterized onto the front buffer.</p><p>Is essence, back buffer scaling is the opposite of FSAA. Instead of a larger back buffer that gets down-sampled, we're using a smaller one that gets magnified. Back buffer scaling can even be used with FSAA to partially undo what FSAA does, allowing the application to scale anywhere between no-FSAA and full-FSAA. Following through the pseudo-code, it should be clear that back buffer scaling is essentially free if you are already using FSAA since the only cost is in the <b>SwapCopyBlt</b> operation.</p><p>Speaking of performance, using back buffer scaling is intended to help performance by reducing the fill requirements of a scene. However, whenever it's used (and FSAA is not), there's the end-of-frame cost of doing the swap. At some point, the back buffer scale will save enough fill to make up for the cost of the swap, but just keep in mind that there is a break-even point. For your game, use PIX to see what the exact end-of-frame cost is, as it will depend on the size of your back buffer and the back buffer scaling amount. While you're at it, take a look at the render states going into the push-buffer.</p><p>An application using back buffer scaling will typically call the <b>Swap</b> function in two passes. First comes the D3DSWAP_COPY pass, which scales the reduced back buffer onto the front buffer. Then the application draws its HUD and any screenspace elements so they are not degraded by the back buffer scaling. Finally, the new buffer is made visible with the D3DSWAP_FINISH pass.</p><h3><a name="IDAKIO2"></a>Case 4: User-defined Swap Routines</h3>
+<p>Perhaps you are thinking by now that it'd be nice to have the real source code so that you could implement your own custom swap routine. Although the actual code is too dependent on low-level GPU programming and interoperability with other internal functions, you still can implement your own swap routines. If you are read up on the XDK documentation, then you probably already new this.</p><p>To implement your own swap routine, simply do the following. First, create your device with the D3DSWAPEFFECT_COPY flag, so that Direct3D will know not to simply flip your back buffers. Then, when you call <b>Swap</b>, use the D3DSWAP_BYPASSCOPY flag. As we can see by looking at the source code, this will prep the system to do the swap copy, but stop short of calling the <b>SwapCopyBlt</b> function. In other words, your application will have the appropriate surfaces (render target and texture) you need to do your own copy operation. After your copy is complete, call <b>Swap</b> with the D3DSWAP_FINISH flag to tidy things up.</p><p>What you don't have is any render states or texture stage states set up for you. Since you are implementing the copy, you need to specify what states you need. The benefit here is that you can tie into state management code that your engine may already have, and there are no guesses as to what state <b>Swap</b> may leave your system in. It's all up to you.</p><h2><a name="IDA3IO2"></a>Conclusion</h2>
+<p>The cases above cover all the possible uses of swapping and presenting a scene. The provided pseudo-code should give you new insight into the performance aspects and state-setting ramifications of calling the <b>Swap</b> function. We hope this document helps you better understand what's going on in one of the more mysterious D3D functions.</p><h2><a name="appendix_a"></a>Appendix A: Pseudo-code</h2>
+<p>This section contains the pseudo-code for the <b>D3DDevice_Swap</b> function. Please note that the pseudo-code is a highly simplified version of the actual code, and therefore is incomplete and will not compile. The pseudo-code is intended as an educational reference only. Any other use is sure to cause headaches, upset stomach, and general unhappiness.</p><p>Some functions and objects are referenced in the pseudo-code, but are not defined or implemented (for example, g_pDevice). These are used as placeholders for functionality that exists in the actual code, and are apt to be somewhat fictitious.</p>
+<pre class="clsCode">
+
+//------------------------------------------------------------------------------
+// Name: D3DDevice_Swap()
+// Desc: Presents the contents of the next in the sequence of back buffers.
+//------------------------------------------------------------------------------
+extern DWORD D3DDevice_Swap( DWORD dwFlags )
+{
+    // Assign default flags
+    if( dwFlags == D3DSWAP_DEFAULT ) // Note: D3DSWAP_DEFAULT == 0
+    {
+        dwFlags = D3DSWAP_COPY | D3DSWAP_FINISH;
+    }
+
+    // Handle case if the device is set up to do a SWAPEFFECT_COPY.
+    // Note: In addition to user-selected presentation parameters, a
+    //       SWAPEFFECT_COPY is also forced any time SetBackBufferScale()
+    //       is in use.
+    if( ( g_pDevice-&gt;m_SwapEffect == D3DSWAPEFFECT_COPY ) ||
+        ( g_pDevice-&gt;m_BackBufferScaleX != 1.0f ||  
+          g_pDevice-&gt;m_BackBufferScaleY != 1.0f ) )
+    {
+        if( dwFlags &amp; (D3DSWAP_COPY | D3DSWAP_BYPASSCOPY) )
+            SwapStart();
+
+        SwapCopy( dwFlags );
+
+        if( dwFlags &amp; D3DSWAP_FINISH )
+            SwapFinish();
+    }
+    else // SwapEffect != D3DSWAPEFFECT_COPY
+    {
+        // Handle the flip when the FINISH flag is specified
+        if( dwFlags &amp; D3DSWAP_FINISH )
+        {
+            SwapStart();
+
+            SwapFlip();
+
+            SwapFinish();
+        }
+    }
+
+    // After every Swap() call finishes, dirty the lighting state to make it
+    // easier for the PIX tool to accurately capture all lighting state.
+    if( dwFlags &amp; D3DSWAP_FINISH )
+    {
+        D3D__DirtyFlags |= (D3DDIRTYFLAG_LIGHTS | D3DDIRTYFLAG_LIGHT_SLOTS);
+    }
+
+    return g_pDevice-&gt;m_dwSwapCount;
+}
+ 
+//------------------------------------------------------------------------------
+// Name: SwapStart()
+// Desc: Internal function to initiate the swap process.
+//------------------------------------------------------------------------------
+static VOID SwapStart()
+{
+    // Setting a fence here will let any objects that are no longer being used
+    // be unlocked before the VBlank or BlockOnTime below occurs.
+    SetFence(0);
+
+    // Enforce a limit to the number of frames that can be queued up in the 
+    // push-buffer. If we exceed that amount, block the CPU.
+    if( g_pDevice-&gt;m_dwNumberPendingSwapsInPushBuffer &gt; 2 )
+    {
+        BlockOnTime( g_pDevice-&gt;m_SwapTime, D3DWAIT_PRESENT );
+    }
+
+    // Increment the swap count
+    g_pDevice-&gt;m_SwapCount++;
+}
+
+
+
+//------------------------------------------------------------------------------
+// Name: SwapFinish()
+// Desc: Internal function to complete the swap process.
+//------------------------------------------------------------------------------
+static VOID SwapFinish()
+{
+    // Update the time-stamp of the frame buffer which we've just made visible,
+    // in order to make sure that a LockRect() can't be done on it until the
+    // flip is actually processed or that the copy-blt is completely done.
+    g_pDevice-&gt;m_pFrameBuffer[1]-&gt;Lock = g_CpuTime;
+
+    // Record the time
+    g_pDevice-&gt;m_SwapTime = SetFence(0);
+}
+
+
+
+//------------------------------------------------------------------------------
+// Name: SwapFlip()
+// Desc: Internal function to rotate the framebuffer chain.
+//------------------------------------------------------------------------------
+static VOID SwapFlip()
+{
+    // Rotate the Data and Lock pointers for the frame buffers.
+    if( g_pDevice-&gt;m_FrameBufferCount == 2 )
+    {
+        // Double-buffering case
+        D3DSurface* pFrameBuffer1 = g_pDevice-&gt;m_pFrameBuffer[1];
+        D3DSurface* pFrameBuffer0 = g_pDevice-&gt;m_pFrameBuffer[0];
+
+        DWORD OldData = pFrameBuffer1-&gt;Data;
+        DWORD OldLock = pFrameBuffer1-&gt;Lock;
+
+        pFrameBuffer1-&gt;Data = pFrameBuffer0-&gt;Data;
+        pFrameBuffer1-&gt;Lock = pFrameBuffer0-&gt;Lock;
+
+        pFrameBuffer0-&gt;Data = OldData;
+        pFrameBuffer0-&gt;Lock = OldLock;
+    }
+    else if( g_pDevice-&gt;m_FrameBufferCount == 3 )
+    {
+        // Triple-buffering case
+        D3DSurface* pFrameBuffer2 = g_pDevice-&gt;m_pFrameBuffer[2];
+        D3DSurface* pFrameBuffer1 = g_pDevice-&gt;m_pFrameBuffer[1];
+        D3DSurface* pFrameBuffer0 = g_pDevice-&gt;m_pFrameBuffer[0];
+        
+        DWORD OldData = pFrameBuffer2-&gt;Data;
+        DWORD OldLock = pFrameBuffer2-&gt;Lock;
+        pFrameBuffer2-&gt;Data = pFrameBuffer1-&gt;Data;
+        pFrameBuffer2-&gt;Lock = pFrameBuffer1-&gt;Lock;
+
+        pFrameBuffer1-&gt;Data = pFrameBuffer0-&gt;Data;
+        pFrameBuffer1-&gt;Lock = pFrameBuffer0-&gt;Lock;
+
+        pFrameBuffer0-&gt;Data = OldData;
+        pFrameBuffer0-&gt;Lock = OldLock;
+    }
+
+    // Send commands to the GPU to inform it of the new front buffer.
+    ExecuteGPUCommand( WAIT_FOR_IDLE );
+    ExecuteGPUCommand( SET_NEW_FRONTBUFFER, g_pDevice-&gt;m_pFrameBuffer[1]-&gt;Data );
+
+    // If the current render target is not a texture, then tell the hardware
+    // the location of the new back buffer.
+    if( (g_pDevice-&gt;m_pRenderTarget == g_pDevice-&gt;m_pFrameBuffer[0]) ||
+        (g_pDevice-&gt;m_PresentationInterval==D3DPRESENT_INTERVAL_IMMEDIATE) )
+    {
+        // Stall the graphics pipe until we've flipped, because we can't let
+        // the app write to the new buffer until the flip actually occurs.
+        ExecuteGPUCommand( FLIP_STALL );
+    }
+    else
+    {
+        // We don't have to stall the GPU while rendering to a texture. But we
+        // need to mark a flag so that when SetRenderTarget() is called to set
+        // the render target back to the back-buffer, we'll remember to
+        // synchronize at that point.
+        g_pDevice-&gt;m_StateFlags |= STATE_FLIPSTALLPENDING;
+    }
+
+    // Set the new back buffer
+    ExecuteGPUCommand( SET_NEW_BACKBUFFER, g_pDevice-&gt;m_pFrameBuffer[0]-&gt;Data );
+}
+
+
+
+//------------------------------------------------------------------------------
+// Name: SwapCopy()
+// Desc: Internal function to copy the back buffer to the front buffer.
+//------------------------------------------------------------------------------
+static VOID SwapCopy( DWORD dwFlags )
+{
+    // Begin the swap copy
+    if( dwFlags &amp; (D3DSWAP_COPY | D3DSWAP_BYPASSCOPY) )
+    {
+        // In the triple-buffering case, we have two back buffers that need to
+        // be rotated.
+        if( g_pDevice-&gt;m_FrameBufferCount == 3 )
+        {
+            // Swap the buffers so that index '1' points to the visible surface
+            D3DSurface* pBuffer1 = g_pDevice-&gt;m_pFrameBuffer[1];
+            D3DSurface* pBuffer2 = g_pDevice-&gt;m_pFrameBuffer[2];
+
+            // Swap Data and Lock members.
+            DWORD OldData = pBuffer2-&gt;Data;
+            pBuffer2-&gt;Data = pBuffer1-&gt;Data;
+            pBuffer1-&gt;Data = OldData;
+
+            DWORD OldLock = pBuffer2-&gt;Lock;
+            pBuffer2-&gt;Lock = pBuffer1-&gt;Lock;
+            pBuffer1-&gt;Lock = OldLock;
+        }
+
+        // Save current render target and textures
+        SwapSaveSurfaces();
+
+        // Set new current render target and textures
+        SwapSetSurfaces();
+
+        if( dwFlags &amp; D3DSWAP_COPY )
+        {
+            // Save away any rendering state we're about to clobber
+            SwapSaveState();
+
+            // Set any state in preparation for our final sampling blt
+            SwapSetState();
+        }
+
+        // Handle flips with one back buffer (double-buffering)
+        if( g_pDevice-&gt;FrameBufferCount == 2 )
+        {
+            // Synchronize blt command with the next vblank
+            if( g_pDevice-&gt;m_PresentationInterval != D3DPRESENT_INTERVAL_IMMEDIATE )
+            {
+                ExecuteGPUCommand( WAIT_FOR_IDLE );
+            }
+
+            ExecuteGPUCommand( FLIP_STALL );
+        }
+
+        // Handle flips with two back buffers (triple-buffering)
+        else if( g_pDevice-&gt;FrameBufferCount == 3 )
+        {
+            ExecuteGPUCommand( FLIP_STALL );
+        }
+    }
+
+    // Perform the blt
+    if( dwFlags &amp; D3DSWAP_COPY )
+    {
+        SwapCopyBlt( g_pDevice );
+
+        SwapRestoreState();
+    }
+
+    // End the swap
+    if( dwFlags &amp; D3DSWAP_FINISH )
+    {
+        SwapRestoreSurfaces( g_pDevice );
+
+        // Handle the two back buffer case
+        if( g_pDevice-&gt;BackBufferCount == 2 )
+        {
+            // Make sure the back-end is not doing any work
+            ExecuteGPUCommand( WAIT_FOR_IDLE );
+
+            // Inform the hardware to start using the new buffer
+            ExecuteGPUCommand( FLIP );
+        }
+    }
+}
+
+
+
+//------------------------------------------------------------------------------
+// Name: SwapCopyBlt()
+// Desc: Does a minification filtered blt. Draws the entire screen with a single
+//       triangle that is 4*ScreenWidth wide and 4*ScreenHeight high.
+//------------------------------------------------------------------------------
+static VOID SwapCopyBlt()
+{
+    FLOAT xScale  = g_pDevice-&gt;m_AntiAliasScaleX;
+    FLOAT yScale  = g_pDevice-&gt;m_AntiAliasScaleY;
+    FLOAT fLeft   = 0.0f;
+    FLOAT fTop    = 0.0f;
+    FLOAT fRight  = 4.0f * g_pDevice-&gt;m_pRenderTargetWidth;
+    FLOAT fBottom = 4.0f * g_pDevice-&gt;m_pRenderTargetHeight;
+    FLOAT uAdjust = 0.0f;
+    FLOAT vAdjust = 0.0f;
+
+    // For the convolution kernels, when the scaling is 2x we always
+    // contrive to center the kernel around every second pixel.
+    DWORD dwFilter = D3D__TextureState[0][D3DTSS_MINFILTER];
+    if( dwFilter == D3DTEXF_QUINCUNX || dwFilter == D3DTEXF_GAUSSIANCUBIC )
+    {
+        if( xScale == 2.0f ) uAdjust = 0.5f;
+        if( yScale == 2.0f ) vAdjust = 0.5f;
+    }
+
+    // Use Begin/End to render one triangle
+    D3DDevice_Begin( D3DPT_TRIANGLELIST );
+    // Vertex 0
+    D3DDevice_SetVertexData2f( D3DVSDE_TEXCOORD0, uAdjust, vAdjust );
+    D3DDevice_SetVertexData2f( D3DVSDE_POSITION,  fLeft, fTop );
+    // Vertex 1
+    D3DDevice_SetVertexData2f( D3DVSDE_TEXCOORD0, uAdjust + fRight*xScale, vAdjust );
+    D3DDevice_SetVertexData2f( D3DVSDE_POSITION,  fRight, fTop );
+    // Vertex 2
+    D3DDevice_SetVertexData2f( D3DVSDE_TEXCOORD0, uAdjust, vAdjust + fBottom*yScale );
+    D3DDevice_SetVertexData2f( D3DVSDE_POSITION,  fLeft, fBottom );
+    D3DDevice_End();
+}
+
+
+
+//------------------------------------------------------------------------------
+// Saved state
+//------------------------------------------------------------------------------
+static BOOL        g_bRestoringState;  // TRUE if in restoring pass
+
+static VOID*       g_SavePixelShader;
+static VOID*       g_SaveVertexShader;
+static DWORD       g_SaveStage1ColorOp;
+static DWORD       g_SavePSTextureModes;
+static DWORD       g_SaveRenderState[20];
+static DWORD       g_SaveTextureState[11];
+static DWORD       g_SavePixelShaderState[D3DRS_PS_MAX - D3DRS_PS_MIN];
+static D3DSurface* g_pSaveRenderTarget;
+static D3DSurface* g_pSaveZBuffer;
+static D3DViewport g_SaveViewport;
+static D3DTexture* g_pSaveTextures[4];
+
+
+
+//------------------------------------------------------------------------------
+// Name: SwapSetRenderState()
+// Desc: Internal helper function to set one render state.
+//------------------------------------------------------------------------------
+inline VOID SwapSetRenderState( D3DRENDERSTATETYPE dwState, DWORD dwValue )
+{
+    BOOL bIsSimpleState = dwState &lt; D3DRS_SIMPLE_MAX ? TRUE : FALSE;
+    BOOL bIsPureDevice  = g_pDevice-&gt;m_dwBehaviorFlags &amp; D3DCREATE_PUREDEVICE;
+
+    if( bIsSimpleState &amp;&amp; bIsPureDevice )
+    {
+        // Can't restore simple states when running on a pure device
+        if( g_bRestoringState )
+            return;
+    }
+    else
+    {
+        // Don't bother setting the render state if it's already correct:
+        if( Value == D3D__RenderState[State] )
+            return;
+    }
+
+    D3DDevice_SetRenderState( dwState, dwValue );
+}
+
+
+
+//------------------------------------------------------------------------------
+// Name: SwapSetTextureState()
+// Desc: Internal helper function to set one texture state.
+//------------------------------------------------------------------------------
+inline VOID SwapSetTextureState( DWORD dwStage, D3DTEXTURESTAGESTATETYPE dwType,
+                                 DWORD dwValue )
+{
+    // Don't bother setting the render state if it's already correct:
+    if( dwValue == D3D__TextureState[dwStage][dwType] )
+        return;
+
+    D3DDevice_SetTextureStageState( dwStage, dwType, dwValue );
+}
+
+
+
+//------------------------------------------------------------------------------
+// Name: SwapSetState()
+// Desc: Internal function that sets all the state needed for SwapCopyBlt()
+//------------------------------------------------------------------------------
+static VOID SwapSetState()
+{
+    g_bRestoringState = FALSE;
+    
+    // Set anti-aliased render states
+    SwapSetRenderState( D3DRS_FILLMODE,           D3DFILL_SOLID );
+    SwapSetRenderState( D3DRS_BACKFILLMODE,       D3DFILL_SOLID );
+    SwapSetRenderState( D3DRS_CULLMODE,           D3DCULL_NONE );
+    SwapSetRenderState( D3DRS_DITHERENABLE,       TRUE );
+    SwapSetRenderState( D3DRS_ALPHATESTENABLE,    FALSE );
+    SwapSetRenderState( D3DRS_ALPHABLENDENABLE,   FALSE );
+    SwapSetRenderState( D3DRS_FOGENABLE,          FALSE );
+    SwapSetRenderState( D3DRS_EDGEANTIALIAS,      FALSE );
+    SwapSetRenderState( D3DRS_STENCILENABLE,      FALSE );
+    SwapSetRenderState( D3DRS_LIGHTING,           FALSE );
+    SwapSetRenderState( D3DRS_MULTISAMPLEMASK,    0xffffffff );
+    SwapSetRenderState( D3DRS_LOGICOP,            D3DLOGICOP_NONE );
+    SwapSetRenderState( D3DRS_COLORWRITEENABLE,   D3DCOLORWRITEENABLE_ALL );
+    SwapSetRenderState( D3DRS_YUVENABLE,          FALSE );
+    SwapSetRenderState( D3DRS_SPECULARENABLE,     FALSE );
+    SwapSetRenderState( D3DRS_ZBIAS,              0 );
+    SwapSetRenderState( D3DRS_MULTISAMPLERENDERTARGETMODE,  D3DMULTISAMPLEMODE_1X );
+    SwapSetRenderState( D3DRS_STIPPLEENABLE,      FALSE );
+    SwapSetRenderState( D3DRS_SOLIDOFFSETENABLE,  FALSE );
+    SwapSetRenderState( D3DRS_SWATHWIDTH,         D3DSWATH_OFF );
+
+    // Set anti-aliased texture states
+    SwapSetTextureState( 0, D3DTSS_COLOROP,       D3DTOP_SELECTARG1 );
+    SwapSetTextureState( 0, D3DTSS_COLORARG1,     D3DTA_TEXTURE );
+    SwapSetTextureState( 0, D3DTSS_ALPHAOP,       D3DTOP_DISABLE );
+    SwapSetTextureState( 0, D3DTSS_TEXCOORDINDEX, 0 );
+    SwapSetTextureState( 0, D3DTSS_ADDRESSU,      D3DTADDRESS_CLAMP );
+    SwapSetTextureState( 0, D3DTSS_ADDRESSV,      D3DTADDRESS_CLAMP );
+    SwapSetTextureState( 0, D3DTSS_COLORKEYOP,    D3DTCOLORKEYOP_DISABLE );
+    SwapSetTextureState( 0, D3DTSS_COLORSIGN,     0 );
+    SwapSetTextureState( 0, D3DTSS_ALPHAKILL,     D3DTALPHAKILL_DISABLE );
+    SwapSetTextureState( 0, D3DTSS_MINFILTER,     D3DTEXF_LINEAR );
+    SwapSetTextureState( 0, D3DTSS_MAGFILTER,     D3DTEXF_LINEAR );
+
+    D3DDevice_SetPixelShader( NULL );
+
+    DWORD dwFilter = D3D__RenderState[D3DRS_SWAPFILTER];
+    SwapSetTextureState( 0, D3DTSS_MINFILTER, dwFilter );
+    SwapSetTextureState( 0, D3DTSS_MAGFILTER, dwFilter );
+    SwapSetTextureState( 1, D3DTSS_COLOROP,   D3DTOP_DISABLE );
+
+    // Whack the hardware with the new state so that we're all set to go
+    // when we enter SwapCopyBlt:
+    LazySetState();
+
+
+    // Load a simple vertex shader to passthru position and texcoords
+    g_pDevice-&gt;SetVertexShader( " xvs.1.1 "
+                                " #pragma screenspace "
+                                " mov oPos, v0 "
+                                " mov oT0,  v9 " );
+
+    g_pDevice-&gt;SaveViewport();
+}
+
+
+
+//------------------------------------------------------------------------------
+// Name: SwapSaveState()
+// Desc: Save all states that the swap process may overwrite. Note that
+//       antialiasing trashes a lot more states
+//------------------------------------------------------------------------------
+static VOID SwapSaveState()
+{
+    g_SavePixelShader  = g_pDevice-&gt;PixelShader;
+    g_SaveertexShader  = g_pDevice-&gt;VertexShader;
+    g_SaveStage1ColorOp = D3D__TextureState[1][D3DTSS_COLOROP];
+
+    // Save anti-aliased render states
+    g_SaveRenderState[ 0] = D3D__RenderState[D3DRS_FILLMODE];
+    g_SaveRenderState[ 1] = D3D__RenderState[D3DRS_BACKFILLMODE];
+    g_SaveRenderState[ 2] = D3D__RenderState[D3DRS_CULLMODE];
+    g_SaveRenderState[ 3] = D3D__RenderState[D3DRS_DITHERENABLE];
+    g_SaveRenderState[ 4] = D3D__RenderState[D3DRS_ALPHATESTENABLE];
+    g_SaveRenderState[ 5] = D3D__RenderState[D3DRS_ALPHABLENDENABLE];
+    g_SaveRenderState[ 6] = D3D__RenderState[D3DRS_FOGENABLE];
+    g_SaveRenderState[ 7] = D3D__RenderState[D3DRS_EDGEANTIALIAS];
+    g_SaveRenderState[ 8] = D3D__RenderState[D3DRS_STENCILENABLE];
+    g_SaveRenderState[ 9] = D3D__RenderState[D3DRS_LIGHTING];
+    g_SaveRenderState[10] = D3D__RenderState[D3DRS_MULTISAMPLEMASK];
+    g_SaveRenderState[11] = D3D__RenderState[D3DRS_LOGICOP];
+    g_SaveRenderState[12] = D3D__RenderState[D3DRS_COLORWRITEENABLE];
+    g_SaveRenderState[13] = D3D__RenderState[D3DRS_YUVENABLE];
+    g_SaveRenderState[14] = D3D__RenderState[D3DRS_SPECULARENABLE];
+    g_SaveRenderState[15] = D3D__RenderState[D3DRS_ZBIAS];
+    g_SaveRenderState[16] = D3D__RenderState[D3DRS_MULTISAMPLERENDERTARGETMODE];
+    g_SaveRenderState[17] = D3D__RenderState[D3DRS_STIPPLEENABLE];
+    g_SaveRenderState[18] = D3D__RenderState[D3DRS_SOLIDOFFSETENABLE];
+    g_SaveRenderState[19] = D3D__RenderState[D3DRS_SWATHWIDTH];
+
+    // Save anti-aliased texture states
+    g_SaveTextureState[ 0] = D3D__TextureState[0][ D3DTSS_COLOROP ];
+    g_SaveTextureState[ 1] = D3D__TextureState[0][ D3DTSS_COLORARG1 ];
+    g_SaveTextureState[ 2] = D3D__TextureState[0][ D3DTSS_ALPHAOP ];
+    g_SaveTextureState[ 3] = D3D__TextureState[0][ D3DTSS_TEXCOORDINDEX ];
+    g_SaveTextureState[ 4] = D3D__TextureState[0][ D3DTSS_ADDRESSU ];
+    g_SaveTextureState[ 5] = D3D__TextureState[0][ D3DTSS_ADDRESSV ];
+    g_SaveTextureState[ 6] = D3D__TextureState[0][ D3DTSS_COLORKEYOP ];
+    g_SaveTextureState[ 7] = D3D__TextureState[0][ D3DTSS_COLORSIGN ];
+    g_SaveTextureState[ 8] = D3D__TextureState[0][ D3DTSS_ALPHAKILL ];
+    g_SaveTextureState[ 9] = D3D__TextureState[0][ D3DTSS_MINFILTER ];
+    g_SaveTextureState[10] = D3D__TextureState[0][ D3DTSS_MAGFILTER ];
+
+    if( g_SavePixelShader )
+    {
+        for( DWORD i = D3DRS_PS_MIN; i &lt; D3DRS_PS_MAX; i++ )
+        {
+            g_SavePixelShaderState[i - D3DRS_PS_MIN] = D3D__RenderState[i];
+        }
+
+        g_SavePSTextureModes = D3D__RenderState[D3DRS_PSTEXTUREMODES];
+    }
+}
+
+
+
+
+//------------------------------------------------------------------------------
+// Name: SwapRestoreState()
+// Desc: Tries to restore state obliterated by the SwapSetState() function
+//------------------------------------------------------------------------------
+static VOID SwapRestoreState()
+{
+    g_bRestoringState = TRUE;
+    
+    D3DDevice_SetPixelShader( g_SavePixelShader );
+
+    SwapSetTextureState( 1, D3DTSS_COLOROP, g_SaveStage1ColorOp );
+
+    // Restore antialiased render states. Note that on pure devices, we can't
+    // restore "simple" states, since they were never saved
+    SwapSetRenderState( D3DRS_FILLMODE,           g_SaveRenderState[ 0] );
+    SwapSetRenderState( D3DRS_BACKFILLMODE,       g_SaveRenderState[ 1] );
+    SwapSetRenderState( D3DRS_CULLMODE,           g_SaveRenderState[ 2] );
+    SwapSetRenderState( D3DRS_DITHERENABLE,       g_SaveRenderState[ 3] );
+    SwapSetRenderState( D3DRS_ALPHATESTENABLE,    g_SaveRenderState[ 4] );
+    SwapSetRenderState( D3DRS_ALPHABLENDENABLE,   g_SaveRenderState[ 5] );
+    SwapSetRenderState( D3DRS_FOGENABLE,          g_SaveRenderState[ 6] );
+    SwapSetRenderState( D3DRS_EDGEANTIALIAS,      g_SaveRenderState[ 7] );
+    SwapSetRenderState( D3DRS_STENCILENABLE,      g_SaveRenderState[ 8] );
+    SwapSetRenderState( D3DRS_LIGHTING,           g_SaveRenderState[ 9] );
+    SwapSetRenderState( D3DRS_MULTISAMPLEMASK,    g_SaveRenderState[10] );
+    SwapSetRenderState( D3DRS_LOGICOP,            g_SaveRenderState[11] );
+    SwapSetRenderState( D3DRS_COLORWRITEENABLE,   g_SaveRenderState[12] );
+    SwapSetRenderState( D3DRS_YUVENABLE,          g_SaveRenderState[13] );
+    SwapSetRenderState( D3DRS_SPECULARENABLE,     g_SaveRenderState[14] );
+    SwapSetRenderState( D3DRS_ZBIAS,              g_SaveRenderState[15] );
+    SwapSetRenderState( D3DRS_MULTISAMPLERENDERTARGETMODE, g_SaveRenderState[16] );
+    SwapSetRenderState( D3DRS_STIPPLEENABLE,      g_SaveRenderState[17] );
+    SwapSetRenderState( D3DRS_SOLIDOFFSETENABLE,  g_SaveRenderState[18] );
+    SwapSetRenderState( D3DRS_SWATHWIDTH,         g_SaveRenderState[19] );
+
+    // Restore anti-aliased texture states
+    SwapSetTextureState( 0, D3DTSS_COLOROP,       g_SaveTextureState[ 0] );
+    SwapSetTextureState( 0, D3DTSS_COLORARG1,     g_SaveTextureState[ 1] );
+    SwapSetTextureState( 0, D3DTSS_ALPHAOP,       g_SaveTextureState[ 2] );
+    SwapSetTextureState( 0, D3DTSS_TEXCOORDINDEX, g_SaveTextureState[ 3] );
+    SwapSetTextureState( 0, D3DTSS_ADDRESSU,      g_SaveTextureState[ 4] );
+    SwapSetTextureState( 0, D3DTSS_ADDRESSV,      g_SaveTextureState[ 5] );
+    SwapSetTextureState( 0, D3DTSS_COLORKEYOP,    g_SaveTextureState[ 6] );
+    SwapSetTextureState( 0, D3DTSS_COLORSIGN,     g_SaveTextureState[ 7] );
+    SwapSetTextureState( 0, D3DTSS_ALPHAKILL,     g_SaveTextureState[ 8] );
+    SwapSetTextureState( 0, D3DTSS_MINFILTER,     g_SaveTextureState[ 9] );
+    SwapSetTextureState( 0, D3DTSS_MAGFILTER,     g_SaveTextureState[10] );
+
+    // Restore pixel shader states. Note that on pure devices, we can't
+    // restore these "simple" states, since they were never saved
+    if( 0 == ( g_pDevice-&gt;m_dwBehaviorFlags &amp; D3DCREATE_PUREDEVICE ) )
+    {
+        if( g_SavePixelShader )
+        {
+            for( DWORD i = D3DRS_PS_MIN; i &lt; D3DRS_PS_MAX; i++ )
+            {
+                D3DDevice_SetRenderState( (D3DRENDERSTATETYPE) i,
+                                          g_SavePixelShaderState[i - D3DRS_PS_MIN]);
+            }
+
+            D3DDevice_SetRenderState( D3DRS_PSTEXTUREMODES, g_SavePSTextureModes );
+        }
+
+        // Restore the first two instructions in vertex shader program memory
+        RestoreVertexShaderInstructionSlots( g_SaveVertexShader );
+    }
+}
+
+
+
+
+//------------------------------------------------------------------------------
+// Name: SwapSetSurfaces()
+// Desc: Sets surfaces (render target and texture) needed for the swap copy.
+//------------------------------------------------------------------------------
+static VOID SwapSetSurfaces()
+{
+    // Set the front buffer as the render target
+    D3DDevice_SetRenderTarget( g_pDevice-&gt;m_pFrameBuffer[1], NULL );
+    
+    // Set the back buffer as a texture
+    D3DDevice_SetTexture( 0, (D3DTexture*)g_pDevice-&gt;m_pFrameBuffer[0] );
+    D3DDevice_SetTexture( 1, NULL );
+    D3DDevice_SetTexture( 2, NULL );
+    D3DDevice_SetTexture( 3, NULL );
+}
+
+
+
+//------------------------------------------------------------------------------
+// Name: SwapSaveSurfaces()
+// Desc: Save surface states that are about to get obliterated.
+//------------------------------------------------------------------------------
+static VOID SwapSaveSurfaces()
+{
+    g_pSaveRenderTarget = g_pDevice-&gt;m_pRenderTarget;
+    g_pSaveZBuffer      = g_pDevice-&gt;m_pZBuffer;
+    g_SaveViewport      = g_pDevice-&gt;m_Viewport;
+
+    g_pSaveTextures[0]  = g_pDevice-&gt;m_Textures[0];
+    g_pSaveTextures[1]  = g_pDevice-&gt;m_Textures[1];
+    g_pSaveTextures[2]  = g_pDevice-&gt;m_Textures[2];
+    g_pSaveTextures[3]  = g_pDevice-&gt;m_Textures[3];
+}
+
+
+
+//------------------------------------------------------------------------------
+// Name: SwapRestoreSurfaces()
+// Desc: Restore surface states that were modified by the swap copy operation.
+//------------------------------------------------------------------------------
+static VOID SwapRestoreSurfaces()
+{
+    D3DDevice_SetRenderTarget( g_pSaveRenderTarget, g_pSaveZBuffer );
+    D3DDevice_SetViewport( &amp;g_SaveViewport );
+
+    D3DDevice_SetTexture( 0, g_pSaveTextures[0] );
+    D3DDevice_SetTexture( 1, g_pSaveTextures[1] );
+    D3DDevice_SetTexture( 2, g_pSaveTextures[2] );
+    D3DDevice_SetTexture( 3, g_pSaveTextures[3] );
+}
+
+
+</pre>
+    <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

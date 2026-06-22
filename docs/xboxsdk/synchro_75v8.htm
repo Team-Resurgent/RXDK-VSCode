@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>GetOverlappedResult</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="GetOverlappedResult">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="GetOverlappedResult"/>
+<MSHelp:Keyword Index="F" Term="GetOverlappedResult"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_getoverlappedresult"></A>GetOverlappedResult</H1>
+
+<P>The <B>GetOverlappedResult</B> function retrieves the results of an overlapped operation on the specified file. </P>
+
+<PRE class=syntax><B>BOOL GetOverlappedResult(
+  HANDLE</B><I> hFile</I><B>,                       </B>// handle to file, pipe, or device
+<B>  LPOVERLAPPED</B><I> lpOverlapped</I><B>, </B>         // overlapped structure
+<B>  LPDWORD</B><I> lpNumberOfBytesTransferred</I><B>, </B>// bytes transferred
+<B>  BOOL</B><I> bWait</I>                          // wait option
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>hFile</I></DT>
+
+<DD>[in] Handle to a file. This is the same handle that was specified when the overlapped operation was started by a call to the <A HREF="filesio_39id.htm">ReadFile</a>, <A HREF="filesio_3kkl.htm">WriteFile</a>, or <A HREF="devio_9quk.htm">DeviceIoControl</a> function. </DD>
+
+<DT><I>lpOverlapped</I></DT>
+
+<DD>[in] Pointer to an <A HREF="synchro_8tf6.htm">OVERLAPPED</a> structure that was specified when the overlapped operation was started. </DD>
+
+<DT><I>lpNumberOfBytesTransferred</I></DT>
+
+<DD>[out] Pointer to a variable that receives the number of bytes that were transferred by a read or write operation. For a <B>DeviceIoControl</B> operation, this is the number of bytes of output data returned by the device driver.  This parameter cannot be NULL.
+</DD>
+
+<DT><I>bWait</I></DT>
+
+<DD>[in] Specifies whether the function should wait for the pending overlapped operation to be completed. If TRUE, the function does not return until the operation has been completed. If FALSE and the operation is still pending, the function returns FALSE and the <A HREF="errors_3uwi.htm">GetLastError</a> function returns ERROR_IO_INCOMPLETE. 
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is nonzero.</P>
+
+<P>If the function fails, the return value is zero. To get extended error information, call <B>GetLastError</B>. </P>
+
+<H4>Remarks</H4>
+
+<P>The results reported by the <B>GetOverlappedResult</B> function are those of the specified handle's last overlapped operation to which the specified <B>OVERLAPPED</B> structure was provided, and for which the operation's results were pending. A pending operation is indicated when the function that started the operation returns FALSE and the <B>GetLastError</B> function returns ERROR_IO_PENDING. When an I/O operation is pending, the function that started the operation resets the <B>hEvent</B> member of the <B>OVERLAPPED</B> structure to the nonsignaled state. Then when the pending operation has been completed, the system sets the event object to the signaled state. </P>
+
+<P>Specify a manual-reset event object in the <B>OVERLAPPED</B> structure. If an auto-reset event object is used, the event handle must not be specified in any other wait operation in the interval between starting the overlapped operation and the call to <B>GetOverlappedResult</B>. For example, the event object is sometimes specified in one of the wait functions to wait for the operation's completion. When the wait function returns, the system sets an auto-reset event's state to nonsignaled, and a subsequent call to <B>GetOverlappedResult</B> with the <I>bWait</I> parameter set to TRUE causes the function to be blocked indefinitely. </P>
+
+<P>If the <I>bWait</I> parameter is TRUE, <B>GetOverlappedResult</B> determines whether the pending operation has been completed by waiting for the event object to be in the signaled state. </P>
+
+<P>If the <B>hEvent</B> member of the <B>OVERLAPPED</B> structure is NULL, the system uses the state of the <I>hFile</I> handle to signal when the operation has been completed. Use of file handles for this purpose is discouraged. It is safer to use an event object because of the confusion that can occur when multiple simultaneous overlapped operations are performed on the same file. In this situation, there is no way to know which operation caused the object's state to be signaled. </P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p>
+
+<H4>See Also</H4>
+<P> 
+
+<a href="xbox_mt_xtl_sll_synchronization_functions.htm">Synchronization Functions</a> | 
+<A HREF="synchro_8ub8.htm">CreateEvent</a>,
+<A HREF="errors_3uwi.htm">GetLastError</a>,
+<A HREF="synchro_8tf6.htm">OVERLAPPED</a>,
+<A HREF="filesio_39id.htm">ReadFile</a>,
+<A HREF="filesio_3kkl.htm">WriteFile</a>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

@@ -1,0 +1,203 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>XGetDevices</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="XGetDevices">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XGetDevices"/>
+<MSHelp:Keyword Index="F" Term="XGetDevices"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_xbox_xgetdevices"></A>XGetDevices</H1>
+
+<P>The <B>XGetDevices</B> function queries the peripheral connectivity state for a specified device type. 
+
+<PRE class=syntax><B>DWORD XGetDevices(</B>
+  <b>PXPP_DEVICE_TYPE</b><I> DeviceType</I><b></b>
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>DeviceType</I></DT>
+<DD>[in] Specifies the device type to query.  <i>DeviceType</i> must be of one the following values:
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH>Value</TH><TH>Description</th>
+</TR>
+
+<TR VALIGN="top">
+<TD>XDEVICE_TYPE_GAMEPAD</TD><td>An Xbox Controller.</td>
+</TR>
+
+<TR VALIGN="top">
+<TD>XDEVICE_TYPE_MEMORY_UNIT</TD><td>An Xbox Memory Unit.</td>
+</TR>
+
+<TR VALIGN="top">
+<TD>XDEVICE_TYPE_VOICE_MICROPHONE</TD><td>Xbox Communicator microphone.</td>
+</TR>
+
+<TR VALIGN="top">
+<TD>XDEVICE_TYPE_VOICE_HEADPHONE</TD><td>Xbox Communicator headphone.</td>
+</TR>
+
+<TR VALIGN="top">
+<TD>XDEVICE_TYPE_DEBUG_KEYBOARD</TD><td>A debug keyboard.  Do not use in shipping titles.  See <a href="#remarks">Remarks</a> below.</td>
+</TR>
+
+<TR VALIGN="top">
+<TD>XDEVICE_TYPE_DEBUG_MOUSE</TD><td>A debug mouse.  Do not use in shipping titles.  See <a href="#remarks">Remarks</a> below.</td>
+</TR>
+
+</TABLE><BR>
+
+<P class=note><B><I>Note</I></B>&nbsp;&nbsp;&nbsp;All game controllers (wheels, joysticks, lightguns, and game pads, for example) use <B>XDEVICE_TYPE_GAMEPAD</B>. </P>
+</DD>
+ 
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is a <B>DWORD</B> bitmask that indicates the port or slot locations of connected devices of the specified device type.</P>
+
+<p>The return value is a bitwise OR of masks representing each of the ports (or slots) to which a device of the specified type is connected.  The tables below provide the names and values of the masks. The values are provided so that code may check the bits in a loop without using the mask names.  Depending on whether the device plugs directly into an Xbox port (controllers, for example), or into a slot on a controller (memory units, for example), the returned bits are interpreted differently.</P>
+
+<TABLE>
+<TR>
+<TH colspan=2><CENTER>Direct Port Connection Devices</CENTER></TH>
+</TR>
+
+<TR>
+<TH><CENTER>Mask Name:</CENTER></TH>
+<TH><CENTER>Value:</CENTER></TH>
+</TR>
+
+<TR  ALIGN="center" VALIGN="top">
+<TD width=50%>XDEVICE_PORT0_MASK</TD>
+<TD width=50%>(1&lt;&lt;0)</TD>
+
+</TR>
+
+<TR ALIGN="center" VALIGN="top">
+<TD width=50%>XDEVICE_PORT1_MASK</TD>
+<TD width=50%>(1&lt;&lt;1)</TD>
+</TR>
+
+<TR  ALIGN="center" VALIGN="top">
+<TD width=50%>XDEVICE_PORT2_MASK</TD>
+<TD width=50%>(1&lt;&lt;2)</TD>
+</TR>
+
+<TR  ALIGN="center" VALIGN="top">
+<TD width=50%>XDEVICE_PORT3_MASK</TD>
+<TD width=50%>(1&lt;&lt;3)</TD>
+</TR>
+
+</TABLE><BR>
+
+<TABLE>
+<TR>
+<TH colspan=2><CENTER>Slot Connection Devices</CENTER></TH>
+</TR>
+
+<TR>
+<TH><CENTER>Mask Name:</CENTER></TH>
+<TH><CENTER>Value:</CENTER></TH>
+</TR>
+
+<TR ALIGN="center" VALIGN="top">
+<TD width=50%>XDEVICE_PORT0_TOP_MASK</TD>
+<TD width=50%>(1&lt;&lt;0)</TD>
+</TR>
+
+<TR ALIGN="center" VALIGN="top">
+<TD width=50%>XDEVICE_PORT1_TOP_MASK</TD>
+<TD width=50%>(1&lt;&lt;1)</TD>
+</TR>
+
+<TR  ALIGN="center" VALIGN="top">
+<TD width=50%>XDEVICE_PORT2_TOP_MASK</TD>
+<TD width=50%>(1&lt;&lt;2)</TD>
+</TR>
+
+<TR  ALIGN="center" VALIGN="top">
+<TD width=50%>XDEVICE_PORT3_TOP_MASK</TD>
+<TD width=50%>(1&lt;&lt;3)</TD>
+</TR>
+
+<TR ALIGN="center" VALIGN="top">
+<TD width=50%>XDEVICE_PORT0_BOTTOM_MASK</TD>
+<TD width=50%>(1&lt;&lt;16)</TD>
+</TR>
+
+<TR ALIGN="center" VALIGN="top">
+<TD width=50%>XDEVICE_PORT1_BOTTOM_MASK</TD>
+<TD width=50%>(1&lt;&lt;17)</TD>
+</TR>
+
+<TR  ALIGN="center" VALIGN="top">
+<TD width=50%>XDEVICE_PORT2_BOTTOM_MASK</TD>
+<TD width=50%>(1&lt;&lt;18)</TD>
+</TR>
+
+<TR  ALIGN="center" VALIGN="top">
+<TD width=50%>XDEVICE_PORT3_BOTTOM_MASK</TD>
+<TD width=50%>(1&lt;&lt;19)</TD>
+</TR>
+
+</TABLE><BR>
+<P>If no devices were found, the return value is 0.</P>
+
+<a name="remarks"></a>
+<H4>Remarks</H4>
+
+<P>Before calling <B>XGetDevices</B>, a title must call <A HREF="x_mt_xinitdevices.htm">XInitDevices</A> to initialize the Xbox peripherals.</P>
+
+<P>The <B>XGetDevices</B> function gets the complete peripheral connectivity state for a given device type. The function returns a bitmap of the devices of that type that are currently connected. The interpretation of the bitmap depends on whether the devices of the requested type plug directly into the console or if they plug into an Xbox controller expansion slot.</P>
+
+<P>In general, titles call this function to receive a snapshot of the system and then call <A HREF="x_jsk_xgetdevicechanges.htm">XGetDeviceChanges</A> periodically to get dynamic insertions and removals.</P>
+
+<P>Device enumeration is an asynchronous process.  Users may insert or remove devices at any time.  Enumeration is done in the background in response to interrupts.  While it uses few CPU cycles, in some cases, enumeration takes approximately a second to complete.  The peripheral drivers are part of the XTL and are initialized late in the boot cycle. Therefore, it is common that the first call to <B>XGetDevices</B> reports only a subset of the devices connected at boot.  These devices will be reported via <B>XGetDevices</B> or <B>XGetDeviceChanges</B> as they are enumerated.  Keep this in mind when writing code for your games.</P>
+
+<P>To use XDEVICE_TYPE_DEBUG_KEYBOARD, #define DEBUG_KEYBOARD before including Xtl.h. Do not use XDEVICE_TYPE_DEBUG_KEYBOARD in shipping retail game titles.</P>
+<P>To use XDEVICE_TYPE_DEBUG_MOUSE, #define DEBUG_MOUSE before including Xtl.h. Do not use XDEVICE_TYPE_DEBUG_MOUSE in shipping retail game titles.</P>
+
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Xbox.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+
+<H4>See Also</H4>
+<P>
+<A HREF="x_jsk_xid_functions.htm">Input Device Functions</A>,
+<A HREF="x_mt_input_ov_connected.htm">Determining Connected Devices</a> |
+<A HREF="x_mt_xinitdevices.htm">XInitDevices</A>,
+<A HREF="x_jsk_xgetdevicechanges.htm">XGetDeviceChanges</A>,  
+<A HREF="x_jsk_xinputopen.htm">XInputOpen</A>,
+<A HREF="x_jsk_xmountmu.htm">XMountMU</A>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

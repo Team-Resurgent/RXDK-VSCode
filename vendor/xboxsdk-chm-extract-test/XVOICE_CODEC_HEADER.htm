@@ -1,0 +1,71 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XVOICE_CODEC_HEADER</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XVOICE_CODEC_HEADER"/>
+<MSHelp:Keyword Index="F" Term="XVOICE_CODEC_HEADER"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+    <body topmargin="0">
+        <table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+        <h1>XVOICE_CODEC_HEADER</h1>
+
+        
+        
+<p>Exposes internal Voice API statistics.</p>
+
+	
+		
+
+<pre class="syntax">typedef struct{
+    WORD bMsgNo : 4;
+    WORD wSeqNo : 12;
+} XVOICE_CODEC_HEADER, *LPXVOICE_CODEC_HEADER;</pre>
+                    
+                
+            
+            
+                <h4><a name="members"></a>Members</h4>
+<dl>
+<dt><b>bMsgNo</b></dt>
+<dd>Value between 0 and 15 that represents the current talkspurt for a particular voice. When this value reaches 15 and is incremented, it rolls back to 0.</dd>
+
+<dt><b>wSeqNo</b></dt>
+<dd>Value between 0 and 4095 that represents the current frame for a particular voice. When this value is 4095 and is incremented, it rolls back to 0.</dd>
+
+</dl>
+                <h4><a name="remarks"></a>Remarks</h4>
+<p>The <b>XVOICE_CODEC_HEADER</b> structure exposes internal Voice API statistics about where a voice packet lies in the context of a conversation (<i>bMsgNo</i>) and also provides information about which frame the packet is a member of (<i>wSeqNo</i>). <i>bMsgNo</i> is incremented whenever a passage of speech is ended and silence occurs. <i>wSeqNo</i> is incremented with every encoding frame call to <a href="xbox_IXVoiceEncoder_ProcessMultiple_xmo.htm">IXVoiceEncoder::ProcessMultiple</a>.</p>
+<p>Both variables roll back to zero whenever they are incremented past their maximum values (15 for <i>bMsgNo</i> and 4095 for <i>wSeqNo</i>).</p>
+
+				
+            
+                <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xvoice.h.</p>
+            
+                <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="x_mt_xonline_structures.htm">Xbox Live Structures</a>
+</p>
+
+        <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+    </body>
+    </html>

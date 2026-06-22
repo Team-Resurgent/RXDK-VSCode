@@ -1,0 +1,75 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirect3DDevice8::SetVerticalBlankCallback</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="SetVerticalBlankCallback (IDirect3DDevice8)"/>
+<MSHelp:Keyword Index="K" Term="IDirect3DDevice8::SetVerticalBlankCallback"/>
+<MSHelp:Keyword Index="F" Term="SetVerticalBlankCallback"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_idirect3ddevice8_setverticalblankcallback_graphics"></A>IDirect3DDevice8::SetVerticalBlankCallback</H1>
+
+<P>Sets the function that will be called on each vertical blank.</P>
+
+<PRE class=syntax><B>void SetVerticalBlankCallback(
+  D3DVBLANKCALLBACK</B><I> pCallback</I>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>pCallback</I></DT>
+
+<DD>[in] Specifies the address of a callback function of type <b>D3DVBLANKCALLBACK</b> that will be called during each vertical blank. Set this to NULL to disable the vertical blank callback.</DD>
+
+</DL>
+
+<h4>Remarks</h4>
+
+<p>The callback is defined as:</p>
+
+<pre>typedef void (__cdecl * D3DVBLANKCALLBACK)(D3DVBLANKDATA *pData);</pre>
+
+<p>The value passed as the <i>pData</i> parameter of the callback function is a <a href="_dx_d3dvblankdata_graphics.htm"><b>D3DVBLANKDATA</b></a> structure containing information about the current vertical blank.</p>
+
+<p>The earliest that a title will be notified that the present or swap missed a frame is through <b>SetVerticalBlankCallback</b>.</p>
+
+<p>This method is called at the time of deferred procedure calls (DPC) and should do little processing.  Only a few XTL functions are safe to call at DPC level: The <B>Interlocked</B> functions are safe to use, as are the following XTL functions, if given a valid object handle:</P>
+<UL>
+<LI><B>SetEvent</B></LI>
+<LI><B>ResetEvent</B></LI>
+<LI><B>PulseEvent</B></LI>
+<LI><B>ReleaseSemaphore</B></LI>
+<LI><B>ReleaseMutex</B></LI>
+</UL>
+
+<P>When these functions are called at DPC with an invalid handle, their behavior is undefined.</P>
+
+<p>Do not perform floating_point math, SSE instructions, and MMX instructions during DPC unless the <a href="XSaveFloatingPointStateForDpc.htm">XSaveFloatingPointStateForDpc</a> and <a href="XRestoreFloatingPointStateForDpc.htm">XRestoreFloatingPointStateForDpc</a> functions are used.</p>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in D3d8.h.<BR>
+<B>&nbsp;&nbsp;Import Library:</B> Use D3d8.lib.</P>
+
+<H4>See Also</H4>
+
+<P><a href="_dx_d3dvblankdata_graphics.htm"><b>D3DVBLANKDATA</b></a>, <a href="_dx_idirect3ddevice8_blockuntilverticalblank_graphics.htm"><b>IDirect3DDevice8::BlockUntilVerticalBlank</b></a>, <a href="_dx_idirect3ddevice8_insertfence_graphics.htm"><b>IDirect3DDevice8::InsertFence</b></a>, <a href="_dx_idirect3ddevice8_isfencepending_graphics.htm"><b>IDirect3DDevice8::IsFencePending</b></a>, <a href="_dx_idirect3ddevice8_blockonfence_graphics.htm"><b>IDirect3DDevice8::BlockOnFence</b></a>, <a href="_dx_idirect3ddevice8_insertcallback_graphics.htm"><b>IDirect3DDevice8::InsertCallback</b></a>, <a href="_dx_idirect3ddevice8_setswapcallback_graphics.htm"><b>SetSwapCallback</b></a></p>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

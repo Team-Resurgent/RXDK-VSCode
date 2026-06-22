@@ -1,0 +1,150 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>DXTex Tool</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="DXTex Tool"/>
+<MSHelp:Keyword Index="K" Term="XDXTex Tool"/>
+<MSHelp:Keyword Index="F" Term="DXTex Tool"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<H1>DXTex Tool</H1>
+
+<H4>Description</H4>
+
+<P>The DXTex tool enables DirectX SDK users to create texture maps that use the new DXTn compression formats. Creating a DXTn-compressed texture is not difficult. However, Direct3D can do the conversion for you when using the <B>IDirect3DTexture8</B> interface. Advanced developers will probably want to write their own tools that meet their specific needs, but the DXTex tool provides useful basic functionality.</P>
+
+<H4>Functionality</H4>
+
+<UL>
+	<LI>Opens .bmp and DirectDrawSurface (DDS) files. For more information, see <a href="#dds_file_format">DDS File Format</a>, below.</LI>
+
+	<LI>Opens .bmp files as alpha channel, either explicitly or implicitly, using a <I>filename</I>_a.bmp naming convention.</LI>
+
+	<LI>Saves textures in DDS format.</LI>
+
+	<LI>Supports conversion to all five DXTn compression formats.</LI>
+
+	<LI>Supports generation of mipmaps, using a box filter.</LI>
+
+	<LI>Supports visualization of alpha channel as a grayscale image or through a user-selectable background color.</LI>
+
+	<LI>Supports easy visual comparison of image quality between formats.</LI>
+</UL>
+
+<H4>Requirements</H4>
+
+<p>The DXTex tool may show only a black texture when used on Microsoft&#174; Windows&#174; XP. DXTex requires the Microsoft Direct3D reference rasterizer, which is not included in Windows XP. To obtain the rasterizer, download the Microsoft DirectX 8.1 SDK from <a href="http://www.microsoft.com/isapi/gomsdn.asp?TARGET=/directx">http://www.microsoft.com/isapi/gomsdn.asp?TARGET=/directx</a>.</p>
+
+
+<H4>Source Code</H4>
+
+<P>The source code for this tool is available with the DirectX 8.0 SDK.</P>
+
+<H4>User Interface</H4>
+
+<P>DxTex uses a fairly traditional user interface (UI) in that each texture map is a document, and several documents can be open at a time. However, each document can hold the texture in either one or two formats at once while the document is open in DxTex. For example, you can import a .bmp file, which automatically creates a 32-bit ARGB texture. You can then choose to convert the texture to DXT1 format. The document now has the image open in both formats, and you can switch between the formats by clicking the window or by clicking <B>Original View</B> or <B>New View</B> on the <B>View</B> menu. This makes it easy to observe any artifacts introduced by image compression, and to try different compression formats without progressive degradation of the image. For example, if this technique is not used and you convert an image from ARGB to DXT1, all but one bit of alpha is lost.</P>
+
+<P>If the you then decide to convert to DXT2, there are still only two alpha levels. Using the DxTex system, the second conversion is done from the original ARGB format, and the DXT2 image will contain all 16 levels of alpha supported by DXT2. When the image is saved, the original format is discarded, and only the new format is stored.</P>
+
+<P>Keep in mind the following when using the DxTex interface.</p>
+
+<UL>
+	<LI>If no format conversion has been requested since the document was opened, the one format is the original format&mdash;that is, the format in which the image will be written when the document is saved.</LI>
+
+	<LI>If format conversion has been requested since the document was opened, the converted format is the new format&mdash;that is, the format in which the image will be written when the document is saved.</LI>
+
+	<LI>If a second format conversion is requested, the new format from the first conversion is replaced with the second format. The original format will be unchanged.</LI>
+
+	<LI>Generating mipmaps applies to both formats simultaneously.</LI>
+
+	<LI>If the original format has multiple mipmaps, and conversion to a new format is requested, the new format will automatically have multiple mipmaps as well.</LI>
+</UL>
+
+<H4>Performance</H4>
+
+<P>DxTex uses the Microsoft Direct3D&#174; Reference Rasterizer to draw the textures, regardless of what 3D hardware is available. So with larger textures (greater than 256&#215;256 pixels), the application may be somewhat slow, depending on your CPU speed.</P>
+
+<H4><a name="dds_file_format"></a>DDS File Format</H4>
+
+<P>The DxTex native file format is called the DDS file format because it encapsulates the information in a DirectDrawSurface. It has the following format:</P>
+
+<PRE>DWORD dwMagic (0x20534444, or "DDS")
+DDSURFACEDESC2 ddsd (provides information about the surface format)
+BYTE bData1[] (surface data for the main surface)
+[BYTE bData2[]...] (surface data for attached surfaces follows)</PRE>
+
+<P>This format is easy to read and write to, and it supports features such as alpha and multiple mip levels, as well as DXTn compression. The Compress sample application in the DirectX SDK demonstrates how to properly import a DDS file.</P>
+
+<P>It is not necessary to use the DDS format in order to use DXTn-compressed textures, or vice-versa, but the two work well together.</P>
+
+<H4>Mipmaps</H4>
+
+<P>Mipmapping is a technique that improves image quality and reduces texture memory bandwidth by providing prefiltered versions of the texture image at multiple resolutions.</P>
+
+<P>To generate mipmaps in DxTex, the width and height of the source image must both be powers of 2. To do this, go to the <B>Format</B> menu, click <B>Generate Mip Maps</B>. Filtering is done through a simple box filter. That is, the four nearest pixels are averaged to produce each destination pixel.</P>
+
+<H4>Alpha</H4>
+
+<P>Many texture formats include an alpha channel, which provides opacity information at each pixel. DxTex fully supports alpha in textures. When you import a .bmp file, if there is a file of the same size with a name that ends in _a&mdash;for example, Sample.bmp and Sample_a.bmp&mdash;the second file is loaded as an alpha channel. The blue channel of the second .bmp is stored in the alpha channel. Once a document is open, you can explicitly load a .bmp file as the alpha channel by clicking <B>Open As Alpha Channel</B> on the <B>File</B> menu.</P>
+
+<P>To view the alpha channel directly without the RGB channels, on the <B>View</B> menu, click <B>Alpha Channel Only</B>. The alpha channel appears as a gray-scale image. If no alpha channel has been loaded, every pixel has a full alpha channel and the image appears solid white when viewing "Alpha Channel Only". To turn off alpha channel viewing, click the <B>Alpha Channel Only</B> command a second time.</P>
+
+<P>In the usual view, the effect of the alpha channel is visible because the window has a solid background color that shows through the texture where the alpha channel is less than 100 percent. You can change this background color by clicking <B>Change Background Color</B> on the <B>View</B> menu. This choice does not affect the texture itself or the data that is written when the file is saved.</P>
+
+<P>The DXT2 and DXT4 formats use premultiplied alpha. This means that the red, green, and blue values stored in the surface are already multiplied by the corresponding alpha value. Direct3D cannot copy from a surface that contains premultiplied alpha to one that contains non-premultiplied alpha, so some DxTex operations (Open as Alpha Channel, conversion to DXT3, and conversion to DXT5) are not possible on DXT2 and DXT4 formats. Supporting textures using these formats is difficult on Direct3D devices that do not support DXTn textures. This is because Direct3D cannot copy them to a traditional ARGB surface either, unless that ARGB surface uses premultiplied alpha as well, which is rare. For this reason, you might find it easier to use DXT3 rather than DXT2, and DXT5 rather than DXT4 when possible.</P>
+
+<H4>Command-Line Options</H4>
+
+<P>You can use command-line options to pass input files, an output file name, and processing options to DxTex. If an output file name is specified, the application exits automatically after writing the output file, and no user interface is presented.</P>
+
+<PRE>xdxtex [infilename] [-a alphaname] [-m] [DXT1|DXT2|DXT3|DXT4|DXT5] [outfilename]
+
+infilename:               Name of the file to load.  This can be a
+                          .bmp or DDS file.
+
+-a alphaname:             The next parameter is the name of a .bmp 
+                          file to load as the alpha channel. If no 
+                          alpha filename is specified, DxTex still
+                          looks for a file named Infilename_a.bmp. If 
+                          it exists, use that file as the alpha 
+                          channel.
+
+-m:                       Mipmaps are generated.
+
+DXT1|DXT2|DXT3|DXT4|DXT5: Compression format. If no format is 
+                          specified, the image will be in ARGB-8888.
+
+outfilename:              Name of the destination file.  If this 
+                          option is not specified, the user interface 
+                          shows the current file and all requested 
+                          operations.  If an outfilename is specified, 
+                          the application exits after saving the 
+                          processed file without presenting a user 
+                          interface.</PRE>
+
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

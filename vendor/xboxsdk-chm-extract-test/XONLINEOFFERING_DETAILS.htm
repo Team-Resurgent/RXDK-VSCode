@@ -1,0 +1,94 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XONLINEOFFERING_DETAILS</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XONLINEOFFERING_DETAILS"/>
+<MSHelp:Keyword Index="F" Term="XONLINEOFFERING_DETAILS"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+    <body topmargin="0">
+        <table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+        <h1>XONLINEOFFERING_DETAILS</h1>
+
+        
+        
+<p>Contains details about an online offering.  This structure is returned by the <a href="XOnlineOfferingDetailsGetResults.htm">XOnlineOfferingDetailsGetResults</a> function.</p>
+
+	
+		
+
+<pre class="syntax">typedef struct{
+    PBYTE pbDetailsBuffer;<span class="clsSyntaxComment">  // Pointer to buffer of details BLOB</span>
+    DWORD dwDetailsBuffer;<span class="clsSyntaxComment">  // Length of details BLOB</span>
+    DWORD dwInstances;<span class="clsSyntaxComment">  // Count of currently owned instances</span>
+    XONLINE_PRICE Price;<span class="clsSyntaxComment">  // price structure</span>
+    DWORD dwFreeMonthsBeforeCharge;<span class="clsSyntaxComment">  // free months before charge begins</span>
+    DWORD dwDuration;<span class="clsSyntaxComment">  // duration of the recurring charge (months)</span>
+    XONLINE_OFFERING_FREQUENCY Frequency;<span class="clsSyntaxComment">  // how often charges are made</span>
+} XONLINEOFFERING_DETAILS, *PXONLINEOFFERING_DETAILS;</pre>
+                    
+                
+            
+            
+                <h4><a name="members"></a>Members</h4>
+<dl>
+            <dt><b>pbDetailsBuffer</b></dt>
+<dd>Pointer to the details BLOB buffer.</dd>
+            <dt><b>dwDetailsBuffer</b></dt>
+<dd>Size, in bytes, of the buffer pointed to by <b>pbDetailsBuffer</b>.  The maximum size of the details BLOB is 64000 bytes.</dd>
+            <dt><b>dwInstances</b></dt>
+<dd>Number of currently owned instances of this offering.  See <b>Remarks</b> below for more information.</dd>
+            <dt><b>Price</b></dt>
+<dd> <a href="XONLINE_PRICE.htm">XONLINE_PRICE</a> structure that specifies the price of the offering.</dd>
+            <dt><b>dwFreeMonthsBeforeCharge</b></dt>
+<dd>Number of months for which the offering is free before a charge begins to occur.</dd>
+            <dt><b>dwDuration</b></dt>
+<dd>Duration of the recurring charge, in months.</dd>
+            <dt><b>Frequency</b></dt>
+<dd>An <a href="XONLINE_OFFERING_FREQUENCY.htm">XONLINE_OFFERING_FREQUENCY</a> value that specifies how often charges are made for the offering.</dd>
+        </dl>
+                <h4><a name="remarks"></a>Remarks</h4>
+            <p>The <b>dwInstances</b> member specifies the number of instances of this offering that are currently owned either by the player or by the Xbox console.  For a subscription, this member indicates the number of times the player has purchased the subscription (from any Xbox, not necessarily the current one).  For content, it indicates the number of times that <i>any</i> player has purchased the offering while logged in from the current Xbox console.  Titles can choose to use this instance count however they choose (for example, by only allowing a single purchase of a given piece of content).  The <a href="XOnlineOfferingPurchase.htm">XOnlineOfferingPurchase</a> function will allow a title to make multiple purchases of the same offering, with no restrictions.</p>
+
+            <p>In the case of a free offer, <b>dwInstances</b> will always be zero.</p>
+
+            <p>When the details task is closed with <a href="XOnlineTaskClose.htm">XOnlineTaskClose</a>, the details buffer returned in <b>pbDetailsBuffer</b> will be deallocated and become invalid if the buffer was allocated by <a href="XOnlineOfferingDetails.htm">XOnlineOfferingDetails</a> rather than passed in by the title.</p>
+
+            <p>Use <a href="XOnlineOfferingPriceFormat.htm">XOnlineOfferingPriceFormat</a> to convert an <b>XONLINE_PRICE</b> structure to a formatted text string.</p>
+        
+				
+            
+                <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+                <h4><a name="seealso"></a>See Also</h4>
+<p>
+                <a href="x_mt_xonline_structures.htm">Xbox Live Structures</a> |
+                <a href="XOnlineOfferingDetailsGetResults.htm">XOnlineOfferingDetailsGetResults</a>,
+                <a href="XOnlineOfferingDetails.htm">XOnlineOfferingDetails</a>,
+                <a href="XOnlineOfferingPurchase.htm">XOnlineOfferingPurchase</a>,
+                <a href="XONLINE_PRICE.htm">XONLINE_PRICE</a>,
+				<a href="XONLINE_OFFERING_FREQUENCY.htm">XONLINE_OFFERING_FREQUENCY</a>
+        </p>
+
+        <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+    </body>
+    </html>

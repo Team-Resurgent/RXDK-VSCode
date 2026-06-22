@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>XMountAlternateTitle</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="XMountAlternateTitle">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XMountAlternateTitle"/>
+<MSHelp:Keyword Index="F" Term="XMountAlternateTitle"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_xbox_xmountalternatetitle"></A>XMountAlternateTitle</H1>
+
+<P>Mounts the persistent data and user data storage regions of other titles, as well as the publisher common data storage region.  <B>XMountAlternateTitle</B> enables titles to share data with other, related titles.</P>
+
+<PRE class=syntax><B>DWORD XMountAlternateTitle(</B>
+  <b>LPCSTR</b><I> lpRootPath</I><b>,  </b>             
+  <b>DWORD</b><I> dwAltTitleId</I><b>,  </b>             
+  <b>PCHAR</b><I> pchDrive</I><b>  </b>             
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>lpRootPath</I></DT>
+<DD>[in] Pointer to a null-terminated string that specifies the root directory of the alternate title's data storage region to be mounted.  The parameter must contain only a drive letter, colon, and trailing backslash; a subdirectory cannot be specified.
+</DD>
+
+<DT><I>dwAltTitleId</I></DT>
+<DD>[in] Title identifier of the desired alternate title.
+</DD>
+
+<DT><I>pchDrive</I></DT>
+<DD>[out] Pointer to a variable that receives the drive letter of the newly mounted data region.
+</DD>
+
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is ERROR_SUCCESS.</P>
+
+<P>If the function fails, the return value is an error code defined in winerror.h.  The function does not use <B>SetLastError</B> to set the calling thread's last-error code.</P>
+
+<H4>Remarks</H4>
+
+<P>This function is used to mount data in another title's persistent data or user data storage region.  After the other title's data region is mounted, the calling title can access the data through the drive returned in the <I>pchDrive</I> parameter.</P>
+
+<P>The data region to be mounted is determined by the value specified for <I>lpRootPath</I>.  If T:\ is specified, the other title's persistent data region on the hard disk is mounted as the W:\ drive.  If U:\ is specified, the other title's user data region on the hard disk is mounted as the X:\ drive.  If a memory unit (F:\ through M:\) is specified, the other title's user data region on the specified memory unit is mounted as the X:\ drive.</P>
+
+<P>This function allows a title to share data with another, related title.  For example, a sequel title could use saved characters from the original game, or a group of titles could share custom user settings rather than have the user set them in each game.</P>
+
+<P>Access to a title's data by other games is restricted and cannot occur if the game publisher does not desire it.  A title can access only the data of games listed in the title's certificate as valid alternate titles.</P>
+
+<P>Only one alternate title's persistent data region can be mounted at a time. Additionally, only one alternate title's user data region can be mounted at a time. Thus a title that wants to find all potential user data of another title must mount and dismount, in turn, the alternate title's user data region on every connected memory unit.</P>
+
+<P>To mount the <a href="x_mt_storage_ov_region_common.htm">Publisher Common Data Storage Region</a>, specify "T:\" for <i>lpRootPath</i>, and the publisher common data region alternate title ID for <i>dwAltTitleId</i>.</P>
+
+<P>When a title is done with the mounted data region, it should call <a href="x_mt_xunmountalternatetitle.htm">XUnmountAlternateTitle</a> to dismount the data region and to prepare to subsequently mount other regions.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Xbox.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p>
+
+<H4>See Also</H4>
+<P><A HREF="x_jsk_storage_ov.htm">Xbox Storage Reference</A>,
+<A HREF="x_mt_storage_ov_using_alternate.htm">Alternate Title Data</A>,
+<A HREF="x_mt_storage_ov_region_common.htm">Publisher Common Data Storage Region</A> |
+<a href="x_mt_xunmountalternatetitle.htm">XUnmountAlternateTitle</a>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

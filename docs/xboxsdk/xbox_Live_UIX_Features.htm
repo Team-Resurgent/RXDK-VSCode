@@ -1,0 +1,69 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Introduction to UIX</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Introduction to UIX"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+  <MSHelp:Keyword Index="K" Term="Drop-in UI, overview"/>
+  <MSHelp:Keyword Index="K" Term="user interface, Drop-in"/>
+  <MSHelp:Keyword Index="K" Term="plug-ins, for Drop-in UI"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Introduction to UIX</h1>
+<p>The Xbox Drop-in UI provides an easy-to-use drop-in Xbox <i>Live</i> user interface.  UIX is pluggable, customizable, and completely skinnable. Titles can optionally use the UIX as an alternative to direct <a href="xbox_Live_References.htm">Xbox Live Library</a> calls, saving developers significant amounts of coding time. Because it is so customizable, UIX enables game creators to rapidly develop an Xbox <i>Live</i> user interface without hindering game innovation or disrupting the game's overall look and feel. </p><p>UIX meets all applicable Technical Certification Requirements (TCRs) and complies with the recommended user interface guidelines. As a result, it can ease the title's burden of verifying TCRs and passing game certification.</p><p>UIX consists of the following components:</p><dl>
+		<dt><b>Features</b></dt>
+		<dd>UIX features provide clearly defined, partitioned functionality for major Xbox <i>Live</i> areas such as friends lists, logon, and matchmaking.  Individual features can be used as needed by the title.</dd>
+
+		<dt><b>Engine</b></dt>
+		<dd>The UIX engine controls the user interface flow and performs the work necessary to make the interface functional and responsive.  The engine calls the underlying Xbox <i>Live</i> functions, "pumps" online task handles, and ensures that interface flow and error handling fulfill the TCRs.</dd>
+
+		<dt><b>Plug-ins</b></dt>
+		<dd>The engine accepts pluggable interfaces for displaying the interface, playing audio, and rendering fonts.  Although default plug-ins that provide full functionality are available for user interface tasks and playing audio, title developers should feel free to implement their own plug-in interfaces. Whether or not you use the default plug-ins depends entirely on the customization needs of your title.</dd>
+
+		<dt><b>Artwork, Sound, and Fonts</b></dt>
+		<dd>UIX provides default artwork, sound, and fonts that are immediately usable by titles.  You can easily replace or customize these default content resources through skinning and plug-in implementation. The following illustration shows the default artwork for UIX.</dd>
+	</dl>
+<p>&nbsp;</p><img src="images/uix_logon1.jpg"><p><i><b>Illustration</b>&nbsp;&nbsp;The Xbox Drop-in UI Logon Feature in action.</i></p>
+<p>&nbsp;</p><p>UIX <i>does</i>:</p><ul>
+	<li>Simplify the tasks involved in creating full-featured Xbox <i>Live</i> user interface screens and implementing their functionality.</li>
+	<li>Enable a title to use some UIX features while implementing other functionality using direct calls to Xbox <i>Live</i> functions.</li>
+	<li>Provide simple, high-level access to necessary Xbox <i>Live</i> data (such as the friends list), even when the title is not displaying any user interface.</li>
+	<li>Support localizable content.</li>
+	<li>Enable large degrees of customization.  Titles can use the default user interface or provide customizations ranging from simple skinning, font, and background changes to full customization through the rendering, user interface, and audio plug-ins.  For more information, see <a href="xbox_Live_UIX_Customizing.htm">Customizing UIX</a>.</li>
+	<li>Provide smooth and easy integration with the title's existing rendering code and render loop.</li>
+	</ul>
+<p>UIX <i>does not</i>:</p><ul>
+	<li>Implement a general-purpose user interface solution for tasks not associated with Xbox <i>Live</i>.  The user interface provided by UIX is used only by the engine while Xbox <i>Live</i> features are active. The user interface is not exposed or intended for use by other parts of the title, and is not a general-purpose UI library.</li>  
+	<li>Replace the Xbox <i>Live</i> library or functions. UIX provides a simplification layer on top of the Xbox <i>Live</i> library.  Online titles continue to call Xbox <i>Live</i> functions to some extent, using UIX as a solution for some, but not all, of the online features within the title.</li>
+	</ul>
+<p>The essentials of UIX are presented in the following topics.</p><ul>
+<li><a href="#dropin_ui_features">Features</a></li><li><a href="#IDA1WEV">ILiveEngine</a></li><li><a href="#IDACAFV">Plug-ins</a></li></ul>
+<h2><a name="dropin_ui_features"></a>Features</h2>
+<p>A UIX feature implements a set of related Xbox <i>Live</i> functionality.  Features map closely to major Xbox <i>Live</i> areas such as friends lists, logon, and matchmaking.  Individual features are enabled with <a href="ILiveEngine_EnableFeature.htm">ILiveEngine::EnableFeature</a> and invoked with <a href="ILiveEngine_StartFeature.htm">ILiveEngine::StartFeature</a>. Features are partitioned so that titles can choose to use UIX for some areas while still implementing other Xbox <i>Live</i> functionality directly.</p><p>Currently, the primary features of UIX are:</p><ul>
+<li><a href="#IDAUUEV">Logon Feature</a></li><li><a href="#IDAGVEV">Friends Feature</a></li><li><a href="#IDAUWEV">Players Feature</a></li></ul>
+<h3><a name="IDAUUEV"></a>Logon Feature</h3>
+<p>&nbsp;</p><img src="images/uix_logon2.jpg"><p><i><b>Illustration</b>&nbsp;&nbsp;Logon feature waiting for input.</i></p>
+<p>&nbsp;</p><p>The logon feature provides a drop-in user interface solution that implements the best practices (including applicable TCRs and recommended UI) for displaying a logon screen and logging players onto the Xbox <i>Live</i> service.  The feature performs all logon functions, including selecting user accounts, entering pass codes when needed, and finally logging on to the service.  The feature handles logon errors and displays appropriate error messages to the players.  In addition, it exits with an exit code indicating whether the logon was successful, an error occurred, or a player exited the logon screen.</p><h3><a name="IDAGVEV"></a>Friends Feature</h3>
+<p>&nbsp;</p><img src="images/uix_friends1.jpg"><p><i><b>Illustration</b>&nbsp;&nbsp;Friends feature showing accepted and pending friends.</i></p>
+<p>&nbsp;</p><p>The friends feature provides a drop-in solution that implements the best practices (including applicable TCRs and recommended UI) for displaying an in-game friends list.  The title starts the friends feature when a player selects "Friends" from either the start menu or main menu of the game.  While the friends feature is active, the title does not need to perform any additional friends work or checks (other than updating the engine in the render loop, as explained in the <a href="xbox_Live_UIX_Using_Render.htm">UIX Render Loop</a> topic).</p><p>While the friends feature is not being displayed (or has not been started), the title can access methods provided in <a href="ILiveFriendsList.htm">ILiveFriendsList</a> in order to obtain friends list data.  Titles can use this friends data while displaying a list that indicates which players are friends.  Titles obtain the <b>ILiveFriendsList</b> interface by calling <a href="ILiveEngine_GetFriendsForUser.htm">ILiveEngine::GetFriendsForUser</a>.  While the friends feature is active (being displayed), however, the title should not access <b>ILiveFriendsList</b> or any Xbox <i>Live</i> friends functions.</p><p>The friends feature requires that the <a href="xbox_Live_Matchmaking.htm">matchmaking service</a> was requested when the logon feature was started.</p><h3><a name="IDAUWEV"></a>Players Feature</h3>
+<p>The players feature provides a drop-in UI solution that implements best practices (including applicable TCRs and recommended UI) for displaying an in-game players List.  While the players feature is active, the title does not need to perform any additional players list work or checks other than updating the engine in the render loop.</p><h2><a name="IDA1WEV"></a>ILiveEngine</h2>
+<p><a href="ILiveEngine.htm">ILiveEngine</a> is the main interface to UIX.  Titles call <b>ILiveEngine</b> methods to perform tasks such as engine initialization, enabling and starting features, and rendering to the display surface.  The engine is active and running even when the title is not currently displaying Xbox <i>features</i>. </p><p>To set the current online state information for users, titles must call <a href="ILiveEngine_NotificationSetState.htm">ILiveEngine::NotificationSetState</a> instead of <a href="XOnlineNotificationSetState.htm">XOnlineNotificationSetState</a>.  A user's online state includes information such as whether the user is playing, has voice capability, or is in a joinable session.  <a href="ILiveEngine_SetProperty.htm">ILiveEngine::SetProperty</a> modifies the engine's behavior by changing the value of its global properties.</p><p>Call <a href="UIXCreateLiveEngine.htm">UIXCreateLiveEngine</a> to obtain the <b>ILiveEngine</b> interface.</p><h2><a name="IDACAFV"></a>Plug-ins</h2>
+<p>Plug-ins are the interface between the Xbox Drop-in UI engine and the actual tasks of the user interface such as rendering and sound.  The engine accepts pluggable interfaces for performing user interface rendering, font rendering, and audio tasks. The default plug-ins implement full functionality, but titles can implement their own plug-in interfaces in order to gain finer control of rendering and sound for the Xbox <i>Live</i> screens.</p><p>If a title uses the default plug-ins, it need not be concerned with plug-in details. The exception to this is <a href="ITitleFontRenderer.htm">ITitleFontRenderer</a>, which the title must implement.  Other than that, the title can simply create and register the default plug-ins. It does not interact with the plug-ins from that point on.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Titles are encouraged, where possible, to move to higher levels of game performance by using the plug-in interface to take control of the entire rendering process. For example, titles that are short on memory can use this technique to optimize away a number of the large screen bitmaps. This is advanced work and not needed for all titles.</p><p>The <a href="ITitleUIPlugin.htm">ITitleUIPlugin</a> plug-in is responsible for user interface objects.  The UIX engine itself does not perform any user interface rendering; it calls the <b>ITitleUIPlugin</b> interface to perform all rendering functionality.  The engine manages the information required to build the user interface, the actions initiated by the interface, and the interface flow. It relies on the UI plug-in for the interface's look and feel.  This enables the rendered user interface to be, for example, 2D or 3D. It can also use any font engine, custom icons, custom input, and so on, as desired.  The default UI plug-in implementation provides a simple 2D interface.</p><p><a href="ITitleFontRenderer.htm">ITitleFontRenderer</a>, implemented by the title, is responsible for rendering text to the display surface. Titles must implement this plug-in. An example implementation using the <a href="xgraphics_xfont_interface.htm">XFONT</a> library is shown in <a href="xbox_Live_UIX_Using_Init.htm">Initializing UIX</a>.</p><p>The <a href="ITitleAudioPlugin.htm">ITitleAudioPlugin</a> plug-in provides basic audio support for actions within the UI.  The default audio plug-in uses an <a href="xbox_xact_dxaudio.htm">XACT</a> sound bank containing sounds associated with each UI action.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

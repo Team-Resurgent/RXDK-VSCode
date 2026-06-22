@@ -1,0 +1,1137 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Preparing for Xbox Submission</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Preparing for Xbox Submission"/>
+<MSHelp:Keyword Index="F" Term="Preparing for Xbox Submission"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Preparing for Xbox Submission</H1>
+
+<!--***********************************************************-->
+
+<!--****Intro paragraph. Should be a three or four sentence summary of the topic.****-->
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Arial'>&nbsp;</span></p>
+
+<p class=MsoBodyText>The last few miles of the march toward retail shelves are
+always busy and stressful. Sim-shipping with a brand new console just adds to
+the headaches. This paper pulls together a few issues that are easy to overlook
+or that have been poorly explained up to this point. It is focused mainly on
+the programming side of things and only briefly touches on the actual title
+submission process. &nbsp;</p>
+
+<h1>Working with the System</h1>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Arial'>L</span><span
+style='font-size:10.0pt;font-family:Verdana'>aunch titles for the Xbox&#174; video
+game system from Microsoft&#174; will have had a relatively short period of time with
+final hardware compared with the length of development time of those titles.
+That time will be used mostly for ensuring the title actually runs on the
+hardware, tweaking to final performance, and other mission-critical steps.
+There are a couple of points worth noting</span>. </p>
+
+<h2>Using the Startup Animation</h2>
+
+<p class=MsoBodyText><span style='font-family:Arial'>Games</span> will always
+be preceded by a startup animation, of which there are two variants. The first
+is a long version, played when the console is first turned on, that lasts six
+to eight seconds while the system is initialized, drives are spun up, and media
+is detected. The second is a shorter simple Xbox Logo screen. Both screens end
+with the same image: the Xbox slash logo and the Microsoft logo. When your
+title's <b>main()</b> is called, you can initialize Microsoft&#174; Direct3D&#174; and
+display your first animation, or you can take over the contents of the frame
+buffer to do more advanced transitions (wipes, fades, and so on).&nbsp;</p>
+
+<p class=MsoBodyText>The last screen of the animation is always preserved by a
+call to <b><a href="_dx_idirect3ddevice8_persistdisplay_graphics.htm">
+PersistDisplay()</a></b>.&nbsp; This means that this screen will
+continue to be displayed until the first time your application calls<b>
+<a href = "_dx_idirect3ddevice8_present_graphics.htm">Present()</a></b>. 
+If you want to do a transition from that screen, you can retrieve the bits for 
+that surface using the <b>
+<a href="_dx_idirect3ddevice8_getpersistedsurface_graphics.htm">GetPersistedSurface()</a>
+</b> method. As the name implies, 
+this method returns a pointer to the surface that 
+holds the current video memory bits. If <b>Present()</b> has been called since <b>PersistDisplay()</b>,
+the pointer returned will be NULL.<span style='font-family:Arial'>&nbsp;</span></p>
+
+<p class=MsoBodyText>The surface that holds the persisted bits is not
+reference-counted. The interface should not be released after you are finished
+using it. The surface remains in memory only until the next <b>Present()</b>
+call. At that point, the pointer you hold to the surface becomes invalid.&nbsp;</p>
+
+<p class=MsoBodyText>The only thing you need to do to this surface is copy the
+bits from the surface into your own buffer. The video signal is being scanned
+from this surface, so any attempt to lock this surface and modify the bits can
+result in tearing or other visual problems.</p>
+
+<p class=MsoBodyText style='margin-left:.5in'><b><i>Note</i></b> In the
+August 2001 Preview Release, a problem with the implementation of the persisted
+display memory causes that memory (approximately 1.25 MB) to be allocated in a
+random location in memory. Beginning with the August 2001 Final Release, this
+memory will always be allocated at the lowest virtual address.</p>
+
+<p class=MsoBodyText style='margin-left:.5in'><b><i>Note</i></b> New
+requirements regarding the specific handling of the logos on this screen will
+be included in an upcoming version of the Xbox Guide.&nbsp;</p>
+
+<p class=MsoBodyText><br>
+<br>
+The following sample code shows how to retrieve the bits from the persisted
+surface:</p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Arial'>&nbsp;</span></p>
+
+<p class=MsoNormal><span style='font-size:9.0pt;font-family:"Courier New"'>BOOL&nbsp;g_bDoTransition
+= TRUE;</span></p>
+
+<p class=MsoNormal><span style='font-size:9.0pt;font-family:"Courier New"'>IDirect3DTexture8&nbsp;&nbsp;*m_pPT;</span></p>
+
+<p class=MsoNormal><span style='font-size:9.0pt;font-family:"Courier New"'>IDirect3DSurface8&nbsp;&nbsp;*m_pPS;</span></p>
+
+<p class=MsoNormal><span style='font-size:9.0pt;font-family:"Courier New"'>IDirect3DSurface8&nbsp;&nbsp;*m_pD3DPS;</span></p>
+
+<p class=MsoNormal><span style='font-size:9.0pt;font-family:"Courier New"'>&nbsp;</span></p>
+
+<p class=MsoNormal><span style='font-size:9.0pt;font-family:"Courier New"'>//
+Create an empty surface to hold the persistent screen.</span></p>
+
+<p class=MsoNormal><span style='font-size:9.0pt;font-family:"Courier New"'>//
+Should be the same format as your application's back buffer.</span></p>
+
+<p class=Code>m_pd3dDevice-&gt;CreateTexture(640, 480, 1, 0,
+D3DFMT_LIN_A8R8G8B8, 0, m_pPT);</p>
+
+<p class=MsoNormal><span style='font-size:9.0pt;font-family:"Courier New"'>m_pPT-&gt;GetSurfaceLevel(0,
+&amp;m_pPS);</span></p>
+
+<p class=MsoNormal><span style='font-size:9.0pt;font-family:"Courier New"'>&nbsp;</span></p>
+
+<p class=MsoNormal><span style='font-size:9.0pt;font-family:"Courier New"'>// Get
+the persisted bits, if possible.</span></p>
+
+<p class=MsoNormal><span style='font-size:9.0pt;font-family:"Courier New"'>GetPersistedSurface(&amp;m_pD3DPS);</span></p>
+
+<p class=MsoNormal><span style='font-size:9.0pt;font-family:"Courier New"'>if(m_pD3DPS)</span></p>
+
+<p class=MsoNormal><span style='font-size:9.0pt;font-family:"Courier New"'>{</span></p>
+
+<p class=MsoNormal><span style='font-size:9.0pt;font-family:"Courier New"'>&nbsp;&nbsp;&nbsp;
+// Got the bits, change resolution and format, if necessary.</span></p>
+
+<p class=MsoNormal><span style='font-size:9.0pt;font-family:"Courier New"'>&nbsp;&nbsp;&nbsp;
+D3DXLoadSurfaceFromSurface(m_pPS, NULL, NULL, </span></p>
+
+<p class=MsoNormal><span style='font-size:9.0pt;font-family:"Courier New"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+m_pD3DPS, NULL, NULL, </span></p>
+
+<p class=MsoNormal><span style='font-size:9.0pt;font-family:"Courier New"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+D3DX_FILTER_TRIANGLE, 0);</span></p>
+
+<p class=MsoNormal><span style='font-size:9.0pt;font-family:"Courier New"'>}</span></p>
+
+<p class=MsoNormal><span style='font-size:9.0pt;font-family:"Courier New"'>else</span></p>
+
+<p class=MsoNormal><span style='font-size:9.0pt;font-family:"Courier New"'>{</span></p>
+
+<p class=MsoNormal><span style='font-size:9.0pt;font-family:"Courier New"'>&nbsp;&nbsp;&nbsp;
+// Couldn't get the persisted bits, don't do transition.</span></p>
+
+<p class=MsoNormal><span style='font-size:9.0pt;font-family:"Courier New"'>&nbsp;
+&nbsp;&nbsp;g_bDoTransition = FALSE;</span></p>
+
+<p class=MsoNormal><span style='font-size:9.0pt;font-family:"Courier New"'>}</span></p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=Code>// At this point, the persisted bits can be used to do a wipe or
+fade </p>
+
+<p class=MsoNormal><span style='font-size:9.0pt;font-family:"Courier New"'>// transition
+(or something more creative) to the game splash screen.</span></p>
+
+<h2>Launching Your Game&nbsp;</h2>
+
+<p class=MsoBodyText>Your game will be launched through one of the following
+mechanisms:</p>
+
+<p class=MsoBodyText style='margin-left:36.75pt;text-indent:-36.75pt'>(1)<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp; </span>By the user turning on
+the console with the game disc already in the disc tray. </p>
+
+<p class=MsoBodyText style='margin-left:36.75pt;text-indent:-36.75pt'>(2)<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp; </span>By the user inserting
+the game disc while in the Xbox Dashboard. </p>
+
+<p class=MsoBodyText style='margin-left:36.75pt;text-indent:-36.75pt'>(3)<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp; </span>By the Xbox Dashboard
+returning control to the game after the game launched the Xbox Dashboard for a
+specific reason.&nbsp;</p>
+
+<p class=MsoBodyText>The third mechanism is the only special case. The Xbox
+Dashboard will return the dwContext information originally passed to the
+Dashboard through the call to <b><a href="x_jsk_xlaunchnewtitle.htm">
+XLaunchNewImage</a></b>. This context information
+can be used by the title to &quot;remember&quot; the reason and circumstance
+behind the original launch to the Xbox Dashboard. For instance, you could use
+the context to remember the last save game used by the user before launching
+the Xbox Dashboard to clean up space on a particular memory device. For more
+details on launching the Xbox Dashboard from your game, see the later section 
+<b><a href ="#Launching the Xbox Dashboard from a Game">Launching the Xbox 
+Dashboard from a Game</a></b>.<span style='font-family:Arial'>&nbsp;</span></p>
+
+<h1>Testing For Final Hardware&nbsp;</h1>
+
+<p class=MsoBodyText>Several tools are available to help you develop and test
+your game against a platform that behaves as closely as possible to the
+behavior of the final retail console.<span style='font-family:Arial'>&nbsp;</span></p>
+
+<h2>The Xbox Game Disc Emulator&nbsp;</h2>
+
+<p class=MsoBodyText>Throughout most of the development cycle of games up to
+this point, there has been little choice but to use the Xbox console hard disk
+as the source for running your game. The XDK provided the XDK Launcher and the
+xE:\ drive semantics to make this as painless as possible. Although this method
+will continue to be supported, it has a number of significant drawbacks:&nbsp;</p>
+
+<p class=MsoBodyText style='margin-left:.5in;text-indent:-.5in'><span
+style='font-family:Symbol'>&#8226;<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>It does not behave like the Xbox disc drive. Because it is just
+the hard disk, its seek, access, and streaming times are all much faster than
+will be achieved by your Xbox game disc in a retail console. </p>
+
+<p class=MsoBodyText style='margin-left:.5in;text-indent:-.5in'><span
+style='font-family:Symbol'>&#8226;<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>It interferes with your game's other uses of the hard disk.
+Because the development kit E:\ drive is physically part of the same device
+(and logical FATX partition) as your game's T:\, U:\, and Z:\ drives, it is
+difficult to optimize your use of those areas. </p>
+
+<p class=MsoBodyText style='margin-left:.5in;text-indent:-.5in'><span
+style='font-family:Symbol'>&#8226;<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>It is too small. Less space is available on the Xbox hard disk
+than on one Xbox game disc. Although a game build in itself may not take up
+that much comparative space, you may run into issues when you start using the
+hard disk for in-game caching and saves, with multiple builds on the machine,
+and, in some development houses, with multiple games on the same device. &nbsp;</p>
+
+<p class=MsoBodyText>While you could use CD-RW or DVD-R media in your
+development kit to circumvent some of these issues, these media will not get
+you to final performance. Because game discs are multi-layered, neither format
+will take into account layer switches, and even the DVD-R media will not behave
+identically. Additionally, especially during heavy development, burning discs
+to test is not a particularly appealing option.&nbsp;</p>
+
+<p class=MsoBodyText>With your Xbox Development Kit and host machine you have a
+better option, however. You can use the Xbox Game Disc Emulation software to
+mimic the behavior of the disc drive that will be available in the Xbox at
+launch. Although it requires adding additional hardware (shipped with your Xbox
+Development Kit) to your host machine, once set up, the emulator is simple to
+operate during development. In addition to alleviating the concerns mentioned
+above, the Game Disc Layout Tool can optimize the file layout of your game's
+build to take advantage of the nature of the Xbox disc drive. For example, you
+can push the most critical files to the outer (fastest) portions of the media,
+create duplicate copies of files to keep together files that are often read at
+the same point, and so on. &nbsp;</p>
+
+<p class=MsoBodyText>For more details on using the Game Disc Emulation
+software, see the Xbox Game Disc Emulation System Setup and Upgrade section
+in the XDK Help.</p>
+
+<h2>Retail Mode&nbsp;</h2>
+
+<p class=MsoBodyText>Starting with the August release of the Xbox Development
+Kit (XDK), the recovery disk will have a new option that will allow you to
+&quot;recover&quot; your Xbox console into retail mode. The purpose of this
+mode is to allow you to test your game on a console that behaves exactly like a
+retail machine. When in retail mode, your XDK will:<span style='font-family:Arial'>&nbsp;</span></p>
+
+<p class=MsoBodyText style='margin-left:.5in;text-indent:-.5in'><span
+style='font-family:Symbol'>&#8226;<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>No longer have the E:\ drive or the XDK Launcher. </p>
+
+<p class=MsoBodyText style='margin-left:.5in;text-indent:-.5in'><span
+style='font-family:Symbol'>&#8226;<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>Use the Xbox Dashboard as the default title. </p>
+
+<p class=MsoBodyText style='margin-left:.5in;text-indent:-.5in'><span
+style='font-family:Symbol'>&#8226;<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>Fully enforce Xbox executable (XBE) certificate options (for
+additional details, see the later section <b>Setting Executable Options</b>). </p>
+
+<p class=MsoBodyText style='margin-left:.5in;text-indent:-.5in'><span
+style='font-family:Symbol'>&#8226;<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>Limit the amount of available memory to 64 MB. </p>
+
+<p class=MsoBodyText style='margin-left:.5in;text-indent:-.5in'><span
+style='font-family:Symbol'>&#8226;<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>No longer have debugger/developer support (including command-line
+tools, shader debuggers, and xbwatson). </p>
+
+<p class=MsoBodyText>Clearly, retail mode has significant limitations that will
+make it unsuitable at times during the development cycle. You can use the
+recovery disk to switch between development and retail modes as often as
+necessary.&nbsp;</p>
+
+<p class=MsoNormal style='margin-top:12.0pt'><b><span style='font-family:Arial'>64-MB
+Mode</span></b><b><span style='font-size:10.0pt;font-family:Arial'>&nbsp;</span></b></p>
+
+<p class=MsoBodyText>Although not as close as retail mode above, the 64-MB
+mode, configurable on an XBE-by-XBE basis, is extremely useful in performance
+tuning your game for release. While the 128-MB footprint of the XDKs is useful
+for early development, it is good practice to start running your game with only
+64 MB available as soon (and as often!) as possible. The 64-MB mode on Xbox is
+smart about allocations and actually allocates some memory above the 64-MB line
+to move debug and other non-retail code and data out of the way of your game.
+As a result, you game will run as close as possible to the actual memory
+configuration of the final retail box.&nbsp;</p>
+
+<p class=MsoBodyText>For details on setting the 64-MB mode, see the 
+<a href="xbox_jbh_tool_imagebld.htm">XBE Image Builder Tool (ImageBld)</a> 
+topic in the Xbox Tools section of the XDK documentation.</p>
+
+<h2>Toggling the Default Title&nbsp;</h2>
+
+<p class=MsoBodyText>During development you will need to test the various
+scenarios that your game supports for launching to the Xbox Dashboard. By
+default, the Xbox development console always displays the XDK Launcher when no
+media are in the disc tray. The API to launch the Dashboard simply launches the
+default title of the console. On a retail Xbox, the default title is the Xbox
+Dashboard. However, on a development console, the default title is usually the
+XDK Launcher. As a result, you will need to change the consoles default title
+before doing scenario testing of these features. The <b>
+<a href="xbox_jbh_tool_remote_xbsetcfg.htm">xbsetcfg</a></b> command-line tool 
+allows you to switch between the XDK Launcher and the Xbox
+Dashboard for the default title. To set the Xbox Dashboard as the default
+title, use <b>xbsetcfg -d</b>. To set the XDK Launcher as the default title,
+use <b>xbsetcfg -l</b>. Note that while the development console is set to the
+Xbox Dashboard, you will be unable to use the XDK Launcher to run titles from the
+hard disk. </p>
+
+<p class=MsoNormal style='margin-top:12.0pt'><b><span style='font-family:Arial'>Setting
+Executable Options</span></b><b><span style='font-size:10.0pt;font-family:Arial'>&nbsp;</span></b></p>
+
+<p class=MsoBodyText>The Xbox development console is more lenient than the
+retail Xbox will be when determining whether or not to load a particular XBE.
+For the most part, this does not affect certification. If your game's ESRB
+rating is too high for the current console, the game is not supposed to run on
+its current media, or the game is meant to run only in a particular region, the
+retail Xbox will launch the Xbox Dashboard instead of your game and provide an
+appropriate error message to the end user. Your development console, on the
+other hand, will either pass you (because it defaults to signing your game for
+all regions, for instance) or just issue a debugger warning. In some cases, for
+instance, when testing locales or displaying sensitive game areas, it may make
+sense to directly manipulate and test these executable options.&nbsp;</p>
+
+<p class=MsoBodyText>You can set specific ImageBld flags to manipulate these
+values from within your Microsoft&#174; Visual C++&#174; development environment. From
+within Microsoft&#174; Visual Studio&#174;, click on <b>Projects</b> in the menu bar,
+click <b>Settings</b>, click <b>Xbox Image</b>, and then add the following
+options in the <b>Project Options</b> dialog box: &nbsp;</p>
+
+<p class=MsoBodyText><b><a href="xbox_image_testid_prop.htm">/TestId</a>: 
+&lt;title id&gt; </b>The title identifier for this image. All executables with 
+the same title identifier are considered part
+of the same game and are assigned the same storage areas when running on the
+Xbox. For instance, if you have a mainmenu.xbe and an engine.xbe, both will be
+able to write and read from the same data in T:\, U:\, or Z:\. A second game
+would not. Note that this option can also be set by clicking on the <b>Title
+Info</b> category from this page and setting it directly. You will be assigned
+an actual title ID for your retail game.</p>
+
+<p class=MsoBodyText><b>/<a href="xbox_image_titlename_prop.htm">TitleName</a>: 
+Name</b> The name of the executable. The
+title name is used to create the friendly name of your game that is displayed to
+the user whenever they are looking at storage associated with your game. This
+switch allows only one entry. If you want text that is localized into different
+languages based on the current global console language setting, use the <b>/TitleInfo
+</b>switch instead. You can set this name from the <b>Title Info</b> category
+on this page directly.&nbsp;</p>
+
+<p class=MsoBodyText><b><a href="xbox_image_titleinfo_prop.htm">/TitleInfo</a>: 
+&lt;Path&gt;</b> Specifies the path to the
+file containing the title information localized into as many of the six
+supported languages as the title supports. Note that you must have a [default]
+section in this file to pass title certification. You can set this path name
+from the <b>Title Info</b> category on this page directly. &nbsp;</p>
+
+<p class=MsoBodyText><b><a href="xbox_image_titleimage_prop.htm">/TitleImage</a>: 
+&lt;Path to XPR File&gt; </b>The path to
+your title representative image, displayed in the large orb from within the
+Xbox Dashboard. You can also set this from within the <b>Title Info</b>
+category on this page. For details on creating this image, see "Dashboard Metadata"
+under "Working with Xbox Executable Models" in the "Developing for Xbox"
+section of the XDK Help.</p>
+
+<p class=MsoBodyText><b>/DefaultSaveGame: &lt;Path to XPR File&gt; </b>As
+above, this is the path to your titles default save game image. This image is
+displayed whenever you create a save game (by using the <b>XCreateSaveGame</b>
+function) and do not copy a specific save game image to the resulting save game
+directory. In general, your title will look better from within the Xbox
+Dashboard if each save game has a unique image (such as a screen shot). This
+image can be set from the <b>Title Info</b> category on this page. For details
+on creating this image, see "Dashboard Metadata" under "Working with Xbox Executable Models" in the "Developing for Xbox" section of the XDK Help.</p>
+
+<p class=MsoBodyText>Note that both the title image and the save game image are
+displayed inside a circular mask. The circular mask will be scaled to 128 &times; 128
+in the case of the title image and to 64 &times; 64 in the case of the default save
+image. An example mask at 256 &times; 256 follows:</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<img src="images/submission.jpg">
+
+<p class=MsoBodyText><b>An example of the save game image mask</b></p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoBodyText><b><a href="xbox_image_testratings_prop.htm">/TestRatings</a>:
+ &lt;number&gt; </b>The ESRB rating of the
+image. This setting is enforced only on consoles set to the North American game
+region. The ESRB setting of the console must be less than or equal to this
+setting to run the game. Any of the following values must be used:</p>
+
+<p class=MsoBodyText>XC_PC_ESRB_ALL 0</p>
+
+<p class=MsoBodyText>XC_PC_ESRB_ADULT 1</p>
+
+<p class=MsoBodyText>XC_PC_ESRB_MATURE 2</p>
+
+<p class=MsoBodyText>XC_PC_ESRB_TEEN 3</p>
+
+<p class=MsoBodyText>XC_PC_ESRB_EVERYONE 4</p>
+
+<p class=MsoBodyText>XC_PC_ESRB_KIDS_TO_ADULTS 5</p>
+
+<p class=MsoBodyText>XC_PC_ESRB_EARLY_CHILDHOOD 6</p>
+
+<p class=MsoBodyText><b><a href="xbox_image_testratings_prop.htm">/TestRegion</a>:
+ &lt;number&gt;</b> Specifies the gameregion of the XBE. Multiple regions can be 
+ specified. (By default, the XDK
+version of <b>ImageBld</b> will sign your title for all regions.) Use the
+following masks to construct the test region for your title:</p>
+
+<p class=MsoBodyText>XC_GAME_REGION_NA 0x00000001</p>
+
+<p class=MsoBodyText>XC_GAME_REGION_JAPAN 0x00000002</p>
+
+<p class=MsoBodyText>XC_GAME_REGION_RESTOFWORLD 0x00000004</p>
+
+<p class=MsoBodyText><b><a href="xbox_image_testsignkey_prop.htm">/TestSignKey</a>:
+ &lt;key&gt; </b>Specifies the signature
+key used by the <b>XCalculateSignature</b> functions when constructing digests
+for save games and other protected data. Note that by default the XDK version
+of <b>ImageBld</b> signs all images with the same test key. This may cause
+problems if you incorrectly assume that your title will be able to use the <b>XCalculateSignature</b>
+functions on protected files from a different title. This switch expects a
+32-digit hexadecimal key sequence. For example, <b>ImageBld /TestSignKey:</b> <b>FEDCBA0987654321FEDCBA0987654321</b>.&nbsp;</p>
+
+<p class=MsoBodyText><b><a href="xbox_image_testmediatypes_prop.htm">
+/TestMediaTypes</a>: &lt;number&gt; </b>Controls what media
+types your executable is allowed to run from. The default during development is
+to sign your code to run from all media (hard disk, CD-RW, DVD-R, and so on).
+At retail, your executables will be signed to run only from Xbox game discs. If
+you need to modify this, the value is a 32-bit mask of the following values:&nbsp;</p>
+
+<p class=MsoBodyText>XBEIMAGE_MEDIA_TYPE_HARD_DISK 0x00000001</p>
+
+<p class=MsoBodyText>XBEIMAGE_MEDIA_TYPE_DVD_X2 0x00000002</p>
+
+<p class=MsoBodyText>XBEIMAGE_MEDIA_TYPE_DVD_CD 0x00000004</p>
+
+<p class=MsoBodyText>XBEIMAGE_MEDIA_TYPE_CD 0x00000008</p>
+
+<p class=MsoBodyText>XBEIMAGE_MEDIA_TYPE_DVD_5_RO 0x00000010</p>
+
+<p class=MsoBodyText>XBEIMAGE_MEDIA_TYPE_DVD_9_RO 0x00000020</p>
+
+<p class=MsoBodyText>XBEIMAGE_MEDIA_TYPE_DVD_5_RW 0x00000040</p>
+
+<p class=MsoBodyText>XBEIMAGE_MEDIA_TYPE_DVD_9_RW 0x00000080&nbsp;</p>
+
+<p class=MsoBodyText>For instance, <b>ImageBld /testmediatypes: 0x00000005</b>
+would create an XBE that can be run from either the hard disk, CD, or DVD
+media.&nbsp;</p>
+
+<h1>Approved Versus Unapproved Libraries&nbsp;</h1>
+
+<p class=MsoBodyText>At certification, your game must link only with approved
+libraries. Approved libraries are defined on a month-by-month basis and will be
+documented in each month's XDK. In general, release versions of the Xbox Title
+Libraries are approved. Debug versions, special debug libraries, and beta or
+preview libraries of new functionality are unapproved.&nbsp;</p>
+
+<p class=MsoBodyText>Starting with the August 2001 release of the Xbox
+Development Kit, ImageBld will warn you if you attempt to link with unapproved
+libraries. In the build window of Visual C++, if you link with the debug
+keyboard library, you will see the following output:&nbsp;</p>
+
+<p class=MsoBodyText>IMAGEBLD : warning IM1029: library xkbdd.lib is
+unapproved.<b>&nbsp;</b></p>
+
+<p class=MsoBodyText>Additionally, if you use certain libraries that require
+additional approval (for instance, the networking support), you will receive this
+message:&nbsp;</p>
+
+<p class=MsoBodyText>IMAGEBLD : warning IM1028: library xnets.lib may not be
+approved.<span style='font-family:Arial'>&nbsp;</span>&nbsp;</p>
+
+<h1>Testing for Certification</h1>
+
+<p class=MsoBodyText>Several tools are available to help you test your game
+against many of the Technical Certification Requirements (TCRs). As time and feedback
+permits, we intend to make more such tools available. When preparing your test
+plan, use the Xbox Guide as your main resource. The Guide is the overriding
+source for Technical Certification Requirements. In addition to the actual
+requirement text, many entries also provide comments and explanations to help
+clarify the objective. To stay on top of any changes in requirements,
+refresh your copy of the Xbox Guide every month.  </p>
+
+<p class=MsoBodyText>Additionally, the Technical Certification Game is a (not
+very fun) game designed to provide a code sample of many of the certification
+requirements. The sample is explained in detail in the XDK Help topic
+"Xbox Game Certification" under the "Developing for Xbox" section. Of
+particular interest from a development point of view are the source code
+comments describing what certification requirement is being solved by a
+particular snippet of code. For example, the following code snippet (from
+loadsave.cpp) is designed to meet three different certification requirements
+(1-10, 3-11, and 3-12). </p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp; // TCR 1-10 Memory Unit Maximum
+Capacity&nbsp;&nbsp;&nbsp; </p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp; // Get the total and used bytes.</p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp; ULONGLONG qwTotalBytes;</p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp; ULONGLONG qwUsedBytes;</p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp; ULONGLONG qwFreeBytes;</p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp; if( GetSize( qwTotalBytes, qwUsedBytes,
+qwFreeBytes ) )</p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp; {</p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Convert to blocks.</p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // TCR 3-11 Space
+Display</p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; DWORD
+dwBlockSize&nbsp;&nbsp; = CXBStorageDevice::GetBlockSize();</p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; DWORD dwTotalBlocks =
+DWORD( qwTotalBytes / dwBlockSize );</p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; DWORD
+dwUsedBlocks&nbsp; = DWORD( qwUsedBytes / dwBlockSize );</p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; DWORD dwFreeBlocks&nbsp;
+= dwTotalBlocks - dwUsedBlocks;</p>
+
+<p class=Code>&nbsp;</p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;// Format with
+thousands separators.</p>
+
+<p class=Code>&nbsp;</p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // TCR 3-12 Maximum
+Number of Blocks</p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Any amount over
+50,000 blocks is formatted &quot;50,000+&quot;.</p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if( dwTotalBlocks &gt;
+MAX_BLOCKS )</p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+lstrcpyA( strTotalBlocks, strMAX_BLOCKS[ CXBConfig::GetLanguage() ] );</p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; else</p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+CXBConfig::FormatInt( dwTotalBlocks, strTotalBlocks );</p>
+
+<p class=Code>&nbsp;</p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if( dwFreeBlocks &gt;
+MAX_BLOCKS )&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+lstrcpyA( strFreeBlocks, strMAX_BLOCKS[ CXBConfig::GetLanguage() ] );</p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; else</p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+CXBConfig::FormatInt( dwFreeBlocks,&nbsp; strFreeBlocks );</p>
+
+<p class=Code>&nbsp;</p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // TCR 3-11 Space
+Display</p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Graphical
+representation must only account for the high 50,000</p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // block range. If the
+device has more than 50,000 blocks, adjust</p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // total to 50,000,
+and scale &quot;used&quot; into the 50,000 section.</p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if( dwTotalBlocks &gt;
+MAX_BLOCKS )</p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+dwTotalBlocks = MAX_BLOCKS;</p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+dwUsedBlocks = ( dwFreeBlocks &gt; MAX_BLOCKS ) ? 0 : </p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+MAX_BLOCKS - dwFreeBlocks;</p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+
+<p class=Code>&nbsp;</p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; fPercentUsed = FLOAT(
+dwUsedBlocks ) / FLOAT( dwTotalBlocks );</p>
+
+<p class=Code>&nbsp;&nbsp;&nbsp; }&nbsp;</p>
+
+<h2>XDK Launcher Tools<span style='font-weight:normal'>&nbsp;</span></h2>
+
+<p class=MsoBodyText>Starting with the July 2001 release, the XDK Launcher
+contains a set of tools designed to interact with the Xbox console to help you
+test your title in various situations. These tools can be accessed by pressing
+the <b>X</b> button while in the main menu.<b><span style='font-family:Arial'>&nbsp;</span></b><span
+style='font-family:Arial'>&nbsp;</span></p>
+
+<a name="Launching the Xbox Dashboard from a Game">
+<h3>Launching the Xbox Dashboard from a Game<span style='font-weight:normal'>&nbsp;</span></h3>
+</a>
+
+<p class=MsoBodyText>When a game runs, it has complete control of the Xbox
+console.&nbsp;However, a game still needs to provide the functionality to use
+the Xbox Dashboard for certain tasks (for instance, to free other games' data
+from the hard disk).</p>
+
+<p class=MsoBodyText>To launch the Dashboard from a game, simply create an <b>LD_LAUNCH_DASHBOARD</b>
+structure (defined in xbox.h) and fill out the parameters as described below.
+At that point, simply call <b>XLaunchNewImage</b> (NULL).</p>
+
+<p class=MsoBodyText>For instance, the technical certification sample game uses
+the following code snippet to boot to the Xbox Dashboard to clean up space on a
+device:</p>
+
+<p class=Code style='text-indent:.5in'>// TCR 3-4 Cleanup Support</p>
+
+<p class=Code style='text-indent:.5in'>// Launch to the Dashboard Memory Area
+to clean up.</p>
+
+<p class=Code style='margin-left:.5in;text-indent:.5in'>if(
+pGamepad-&gt;bPressedAnalogButtons[ XINPUT_GAMEPAD_B ] )</p>
+
+<p class=Code style='margin-left:.5in;text-indent:.5in'>{</p>
+
+<p class=Code style='margin-left:1.0in;text-indent:.5in'>DWORD dwBlocksNeeded =
+dwBytesRequired /</p>
+
+<p class=Code style='margin-left:1.5in;text-indent:.5in'>CXBStorageDevice::GetBlockSize();</p>
+
+<p class=Code>&nbsp;</p>
+
+<p class=Code style='margin-left:1.0in;text-indent:.5in'>// Reboot to Dashboard.</p>
+
+<p class=Code style='margin-left:1.0in;text-indent:.5in'>LD_LAUNCH_DASHBOARD
+LaunchDash;</p>
+
+<p class=Code style='margin-left:1.0in;text-indent:.5in'>LaunchDash.dwReason =
+XLD_LAUNCH_DASHBOARD_MEMORY;</p>
+
+<p class=Code style='margin-left:1.0in;text-indent:.5in'>LaunchDash.dwContext =
+0;</p>
+
+<p class=Code style='margin-left:1.0in;text-indent:.5in'>LaunchDash.dwParameter1
+= DWORD( HardDisk.GetDrive() );</p>
+
+<p class=Code style='margin-left:1.0in;text-indent:.5in'>LaunchDash.dwParameter2
+= dwBlocksNeeded;</p>
+
+<p class=Code>&nbsp;</p>
+
+<p class=Code style='margin-left:1.0in;text-indent:.5in'>XLaunchNewImage( NULL,
+(PLAUNCH_DATA)(&amp;LaunchDash) );</p>
+
+<p class=Code>&nbsp;</p>
+
+<p class=Code style='margin-left:1.0in;text-indent:.5in'>// We never get here.</p>
+
+<p class=MsoNormal style='margin-left:.5in;text-indent:.5in'><span
+style='font-size:10.0pt;font-family:Arial'>}</span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Arial'>&nbsp;</span></p>
+
+<p class=MsoBodyText>You can boot to the Xbox Dashboard using the following
+parameters:</p>
+
+<p class=MsoBodyText>Memory: <i>User is launched to the memory details screen
+for the device specified.</i></p>
+
+<p class=MsoBodyText style='margin-left:.5in;text-indent:-.5in'><span
+style='font-family:Symbol'>&#8226;<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><b>dwReason</b> = <b>XLD_LAUNCH_DASHBOARD_MEMORY</b></p>
+
+<p class=MsoBodyText style='margin-left:.5in;text-indent:-.5in'><span
+style='font-family:Symbol'>&#8226;<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><b>dwParameter1</b> = Drive letter to clean space on. (Either T
+or U for the hard disk or any mounted memory unit drive letter.)</p>
+
+<p class=MsoBodyText style='margin-left:.5in;text-indent:-.5in'><span
+style='font-family:Symbol'>&#8226;<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><b>dwParameter2</b> = Number of blocks to free on the device.</p>
+
+<p class=MsoBodyText>Settings: <i>User is launched to the Settings Area.</i> </p>
+
+<p class=MsoBodyText style='margin-left:.5in;text-indent:-.5in'><span
+style='font-family:Symbol'>&#8226;<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><b>dwReason</b> = <b>XLD_LAUNCH_DASHBOARD_SETTINGS</b></p>
+
+<p class=MsoBodyText style='margin-left:.5in;text-indent:-.5in'><span
+style='font-family:Symbol'>&#8226;<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><b>dwParameter1</b> = Specific setting screen to launch.</p>
+
+<p class=MsoBodyText style='margin-left:1.0in;text-indent:-1.0in'><span
+style='font-family:"Courier New"'>o<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>XLD_SETTINGS_CLOCK 0x01</p>
+
+<p class=MsoBodyText style='margin-left:1.0in;text-indent:-1.0in'><span
+style='font-family:"Courier New"'>o<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>XLD_SETTINGS_TIMEZONE 0x02</p>
+
+<p class=MsoBodyText style='margin-left:1.0in;text-indent:-1.0in'><span
+style='font-family:"Courier New"'>o<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>XLD_SETTINGS_LANGUAGE 0x04</p>
+
+<p class=MsoBodyText style='margin-left:1.0in;text-indent:-1.0in'><span
+style='font-family:"Courier New"'>o<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>XLD_SETTINGS_VIDEO 0x08</p>
+
+<p class=MsoBodyText style='margin-left:1.0in;text-indent:-1.0in'><span
+style='font-family:"Courier New"'>o<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>XLD_SETTINGS_AUDIO 0x10</p>
+
+<p class=MsoBodyText>Music: <i>User is launched to the Music Area.</i></p>
+
+<p class=MsoBodyText style='margin-left:.5in;text-indent:-.5in'><span
+style='font-family:Symbol'>&#8226;<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><b>dwReason</b> = <b>XLD_LAUNCH_DASHBOARD_MUSIC</b></p>
+
+<p class=MsoBodyText>Main Menu: <i>User is launched to the initial Xbox
+Dashboard screen.</i></p>
+
+<p class=MsoBodyText style='margin-left:.5in;text-indent:-.5in'><span
+style='font-family:Symbol'>&#8226;<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><b>dwReason</b> = <b>XLD_LAUNCH_DASHBOARD_MAIN_MENU</b></p>
+
+<p class=MsoBodyText style='margin-top:12.0pt'>When the user is finished with
+the task in the Xbox Dashboard and is returned to the game, you can retrieve
+the <b>dwContext</b> field stored in the <b>LD_LAUNCH_DASHBOARD</b> structure
+by calling <b>XGetLaunchInfo</b>. When returning from the Dashboard, the
+dwLaunchDataType will be set to <b>LDT_FROM_DASHBOARD</b>, and the context can
+be retrieved from the <b>LD_FROM_DASHBOARD </b>structure.</p>
+
+<h3>Note on Testing Launching to the Dashboard</h3>
+
+<p class=MsoBodyText>Due to the nature of the launch process, the Xbox
+Dashboard will attempt to launch your title from the disc drive. During
+development, if you launch your title from the XDK hard disk, the Dashboard
+will not find your title when rebooting. To circumvent this limitation, always
+use the game disc emulator or hard media when testing. Additionally, before
+testing this feature, see the earlier section <b>Toggling the Default Title</b>
+on setting the Dashboard to be the default title.</p>
+
+<h1>Global Xbox Settings</h1>
+
+<p class=MsoBodyText>The Xbox console has a variety of global settings usable
+by your game to determine the connected state of the console (which AV packs,
+for instance), the environment of the user (Dolby&#174; Surround sound, HDTV, and so
+on) and any user preferences. Your game should use these settings to make
+intelligent decisions when determining how to play on a particular system. See
+the settings certification requirements in the Xbox Guide for specific details
+on how these settings and your game will be tested in certification.</p>
+
+<h2>How Do the Dashboard Video Settings Affect My Game?&nbsp;</h2>
+
+<p class=MsoBodyText>The user has the option to set a number of video settings
+in the Xbox Dashboard.&nbsp;These video settings influence the set of video
+modes that your game can select. The user can set the following settings:&nbsp;</p>
+
+<p class=MsoBodyText>For all AV packs:</p>
+
+<p class=MsoBodyText style='text-indent:.5in'><b>Normal</b>/<b>Letterbox</b>/<b>Widescreen</b>
+(mutually exclusive)&nbsp;</p>
+
+<p class=MsoBodyText>If the Xbox HDTV AV Pack is installed:</p>
+
+<p class=MsoBodyText style='text-indent:.5in'><b>Enable 480p</b></p>
+
+<p class=MsoBodyText style='text-indent:.5in'><b>Enable 720p</b></p>
+
+<p class=MsoBodyText style='text-indent:.5in'><b>Enable 1080i</b>&nbsp;</p>
+
+<p class=MsoBodyText>If the console AV region is XC_GAME_REGION_RESTOFWORLD:</p>
+
+<p class=MsoBodyText style='text-indent:.5in'><b>Enable PAL-60</b>&nbsp;</p>
+
+<p class=MsoBodyText>The <b>Normal</b>/<b>Letterbox</b>/<b>Widescreen</b>
+setting is used to specify whether the user's TV is a widescreen display. If
+either <b>Normal</b> or <b>Letterbox</b> is selected, a game should not attempt
+to select a widescreen display mode. If <b>Widescreen</b> is selected, a game
+may choose to select a widescreen video mode, but it is not required to do
+this. A game selects a widescreen video mode by setting the
+D3DPRESENTFLAG_WIDESCREEN flag in the flags field of the <b>D3DPRESENT_PARAMETERS</b>
+structure that is specified when the Direct3D device is created. If widescreen
+is not enabled by the user, attempting to create the device with this display
+mode will fail.&nbsp;</p>
+
+<p class=MsoBodyText>A widescreen video mode activates a special signal to tell
+the TV to switch into widescreen mode. Some TVs do not recognize this signal,
+and the user will be required to manually switch the TV. If your game selects a
+widescreen mode, it will also have to adjust its transform matrix to provide a
+16:9 display aspect ratio rather than the more common 4:3 aspect ratio.</p>
+
+<p class=MsoBodyText>The HDTV settings are enables and they are not mutually
+exclusive. A user enables the 480p setting to indicate that his TV supports
+480p (progressive scan). This does not require a game to support 480p. The same
+holds true for 720p and 1080i. If the user has enabled 480p and the game is not
+doing field-rendering, the game should select 480p rather than 480i
+(interlaced) because the picture quality is better. A game selects a the 480p
+rendering mode by specifying the D3DPRESENTFLAG_PROGRESSIVE flag in the flags
+field of the <b>D3DPRESENT_PARAMETERS</b> structure that is specified when the
+device is created. The back buffer height must be 480, and the back buffer
+width must be either 640, 704, or 720. If the back buffer height is 720, the
+720p mode is selected (if enabled).</p>
+
+<p class=MsoBodyText>If the console supports PAL (AV region is
+XC_GAME_REGION_RESTOFWORLD), the user has the option of enabling PAL-60,
+indicating that his TV supports this display mode. If this option has been set,
+the game can select a video mode with a refresh rate of 60 Hz. This is done by
+specifying the FullScreen_RefreshRateInHz field to be 60 in the <b>D3DPRESENT_PARAMETERS</b>
+structure that is specified when the device is created. Normally this field is
+50 Hz for PAL modes. The Xbox video hardware will set up the proper output
+signal for PAL-60. The only difference that the game will notice is that the
+vertical blank will occur 60 times per second rather than 50. A game that runs
+well at 60 Hz will not likely have performance problems running at 50 Hz.
+However, some content is authored with a specific playback frame rate in mind.
+For example, video for cut scenes may be authored to be decompressed and
+displayed at 60 Hz. Or motion capture sequences may be authored for 60 samples
+per second.</p>
+
+<p class=MsoBodyText>There are several approaches for dealing with this type of
+content. The best solution is to author two versions of this content. One
+should be ideal for playback at 50 Hz, and the other should be ideal for
+playback at 60 Hz. The game can choose the appropriate version at startup time
+when it determines the type of display. There will likely be ample room on the
+game disc to hold both versions of the content. This solution offers the best
+performance and quality. Another solution is to interpolate the content at run
+time based on the time between frames. The system time is read at the start of
+each frame, and the animation or video is interpolated based on that time. This
+solution may be more difficult with some types of content than with others, and
+it does cost some run-time performance. It does have the added advantage that
+it properly handles cases in which the frame rate is changing due to system
+overload. The third solution is to drop frames of video or motion capture
+samples. If one frame in every six is dropped on content authored for 60 Hz, it
+will play back at the proper rate for 50 Hz. This solution doesn't cost much
+performance but can result in noticeable quality degradation.&nbsp;</p>
+
+<p class=MsoBodyText>It is easy to retrieve the settings described above using
+the <b>XGetVideoFlags()</b> function, which returns a DWORD that contains the
+flags listed below. If the bit is set, that flag is enabled. The flags are as
+follows:</p>
+
+<p class=MsoBodyText>#define XC_VIDEO_FLAGS_WIDESCREEN  0x00000001</p>
+
+<p class=MsoBodyText>#define XC_VIDEO_FLAGS_HDTV_720p 0x00000002</p>
+
+<p class=MsoBodyText>#define XC_VIDEO_FLAGS_HDTV_1080i 0x00000004</p>
+
+<p class=MsoBodyText>#define XC_VIDEO_FLAGS_HDTV_480p 0x00000008</p>
+
+<p class=MsoBodyText>#define XC_VIDEO_FLAGS_LETTERBOX  0x00000010</p>
+
+<p class=MsoBodyText>#define XC_VIDEO_FLAGS_PAL_60Hz 0x00000040&nbsp;</p>
+
+<p class=MsoBodyText>Because the valid video modes are also influenced by these
+flags, a game can simply ask for all of the valid video modes using the <b>EnumAdapterModes()</b>
+method. The number of valid modes can be retrieved with the <b>GetAdapterModeCount()</b>
+method. As long as the game selects one of the video modes enumerated in this
+manner, the device creation will not fail due to an invalid video mode.<span
+style='font-family:Arial'>&nbsp;</span></p>
+
+<h3>Back Buffer Resolution and Video Modes</h3>
+
+<p class=MsoBodyText>Your game can always select a back buffer resolution of
+640 &times; 480, which will work with NTSC, PAL, and HDTV display modes. The native
+resolution for NTSC is either 640 &times; 480 or 720 &times; 480. The native resolution for
+PAL is either 640 &times; 576 or 720 &times; 576. The native resolution for 480p is 720 
+480p. The native resolution for 720p is 1280 &times; 720. Finally, the native
+resolution for 1080i is 1920 &times; 1080i.</p>
+
+<p class=MsoBodyText>If your back buffer size is specified to be 640 &times; 480, the
+front buffer will be scaled to match the native resolution for the selected
+display mode listed above. To prevent this scaling, simply allocate a back
+buffer that is the same size as the native display mode. For example, for PAL
+output, allocate a frame buffer that is 640 &times; 576 pixels, and no scaling will
+occur.<span style='font-family:Arial'>&nbsp;</span></p>
+
+<h3>Special Video Modes</h3>
+
+<p class=MsoBodyText>Two special video mode attributes may be applied to the
+modes described above. If the D3DPRESENTFLAG_FIELD flag is specified, the back
+buffer size is assumed to be half the vertical height of the output display.
+The output format is also defined to be interlaced. In this mode, the even
+lines of the display are rendered during one field and odd lines are rendered
+during the next field. The flicker filter is disabled.&nbsp; Field rendering
+can reduce the fill-rate and bandwidth requirements of a game substantially, but
+because there is no flicker filter, display quality can also be significantly
+degraded. Note that field rendering is supported when the Xbox HDTV AV Pack is
+installed because 480i is allowed.&nbsp;</p>
+
+<h2><span style='font-size:10.0pt;font-family:Verdana;font-weight:normal'>The
+second video mode attribute that may be specified is D3DPRESENTFLAG_10X11PIXELASPECTRATIO.
+This mode increases the black space on the right and left sides of the screen
+so that more of the rendered pixels are squeezed into the active portion of the
+screen. If you choose to use this mode, you will need to adjust the transform
+matrix for your game to accommodate the non-square pixels in the display
+(slightly taller and thinner 1:1.1).</span></h2>
+
+<h2>How Do the Dashboard&nbsp;Audio Settings Affect My Game?&nbsp;</h2>
+
+<p class=MsoBodyText>The user has the option to set a number of&nbsp;audio
+settings in the Xbox Dashboard.&nbsp;These audio settings determine both how
+audio data for gameplay and DVD movie playback is output from the Xbox.&nbsp;</p>
+
+<p class=MsoBodyText>For all AV packs:</p>
+
+<p class=MsoBodyText style='text-indent:.5in'><b>Mono</b>/<b>Stereo</b>/<b>Dolby
+Surround</b>.&nbsp; (Mutually exclusive settings)&nbsp;</p>
+
+<p class=MsoBodyText>If HDTV AV Pack, Advanced AV Pack, or Advanced SCART
+Connector is installed:</p>
+
+<p class=MsoBodyText style='text-indent:.5in'><b>Enable Dolby Digital (y/n)</b></p>
+
+<p class=MsoBodyText style='text-indent:.5in'><b>Enable DTS (y/n)</b>&nbsp;</p>
+
+<p class=MsoBodyText>The <b>Mono</b>/<b>Stereo</b>/<b>Dolby Surround</b>
+setting is used to configure how two-channel data is output from the box
+through the analog left and right audio outputs and the digital audio output if
+Dolby Digital is not enabled. The three options are mutually exclusive.</p>
+
+<h3>Mono</h3>
+
+<p class=MsoBodyText><b>Mono</b> should be set if only one of the two output
+channels is physically connected to an audio source. The most common scenario
+for this would be a television that has only a single analog audio input. In <b>Mono</b>
+mode, Microsoft&#174; DirectSound&#174; mixes all the speaker sources to a single mono
+stream and outputs over both analog and digital outputs.</p>
+
+<h3>Stereo (Default)</h3>
+
+<p class=MsoBodyText><b>Stereo</b> should be set if the Xbox console is
+connected to a system with only two speakers (left and right) whether digital
+or analog. In <b>Stereo</b> mode, data sent to the left rear mixbin is mixed
+into the left front channel, data from the right rear mixbin is mixed into the
+right front speaker, and data from the center channel mixbin is mixed into both
+left and right speakers, as is the LFE mixbin.</p>
+
+<h3>Dolby Surround</h3>
+
+<p class=MsoBodyText><b>Dolby Surround</b> should be set if the users Xbox
+console is connected to a Dolby Pro Logic sound system with surround
+speakers. In <b>Dolby Surround</b> mode, data from the six speaker mixbins are
+sent through the Dolby Surround encoder.</p>
+
+<h3><span style='font-size:10.0pt'>The Difference Between &quot;Stereo&quot;
+and &quot;Dolby Surround&quot;</span></h3>
+
+<p class=MsoBodyText>Because Dolby Surround is in fact a stereo format, the
+question might come up, &quot;How is this different from stereo?&quot; There
+are several reasons for this distinction.&nbsp; </p>
+
+<p class=MsoBodyText style='margin-left:.5in;text-indent:-.5in'><span
+style='font-family:Symbol'>&#8226;<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>The Dolby Surround encoder takes&nbsp;the inputs from left,
+right, center, left surround and right surround to make a stereo signal. To
+make this five-channel input (the Dolby Surround encoder drops the LFE channel)
+into a two-channel signal, it takes the left and right surround channels, mixes
+them together, low-pass filters&nbsp;the result, and encodes the signal&nbsp;to
+come out of the&nbsp;surround channel on a Dolby Pro Logic system. It then
+mixes this signal into the left and right outputs. If the user has a Pro
+Logic&nbsp;Surround system with&nbsp;surround speakers, this is
+ok,&nbsp;because it causes the sounds&nbsp;routed to the rears to actually
+emanate from the surround speakers. However, when listening over only two
+speakers, the sounds placed in surround mixbins or <br>
+3D sounds behind the listener&nbsp;are unnaturally low pass filtered. So
+having a separate &quot;stereo&quot; setting allows these rear-channel sounds
+to be played at full bandwidth and fidelity.&nbsp; </p>
+
+<p class=MsoBodyText style='margin-left:.5in;text-indent:-.5in'><span
+style='font-family:Symbol'>&#8226;<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>A second reason has to do with the 3D Head Relative Transfer
+Function (HRTF) processing. When in Surround mode, the 3D processor uses a
+separate panning algorithm, placing some sounds in the surround channels (so
+people with surround systems hear&nbsp;3D sounds&nbsp;from the surrounds when
+the source is behind the listener). If there are only two speakers,&nbsp;the
+HRTF processor only places data in the front speakers. This provides a much
+better 3D effect when listening over just two speakers.&nbsp; </p>
+
+<p class=MsoBodyText style='margin-left:.5in;text-indent:-.5in'><span
+style='font-family:Symbol'>&#8226;<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>A third reason is that, as noted, the Surround processor combines
+the left and right rear sounds together. So, if there were a stereo ambience
+placed in the rears, it would come out of the rears (as a mono signal) when in
+Dolby Surround mode. But in &quot;stereo&quot; mode, the sounds will maintain
+their stereo separation and merely be mapped to the left and right fronts. So
+for those reasons (filtering of rear speaker data when going through surround
+encoder,&nbsp; optimized 3D HRTF processing, and the ability to keep stereo
+separation) there is a distinction made between &quot;Stereo&quot; and
+&quot;Surround.&quot;</p>
+
+<h3><span style='font-size:10.0pt'>Dolby Digital</span></h3>
+
+<p class=MsoBodyText>The <b>Dolby Digital Enable (y/n)</b>&nbsp;setting is used
+for two things:&nbsp;First, it sets the&nbsp;format of the digital output
+during gameplay to Dolby Digital; that is, the real-time Dolby Digital encoder
+is used to process all the sounds, and the output of the encoder is played out
+through the Digital output.&nbsp;</p>
+
+<p class=MsoBodyText style='margin-left:.5in'><b><i>Note</i></b> If Dolby
+Digital is set to <b>Enable</b>,&nbsp;the <b>Mono</b>/<b>Stereo</b>/<b>Dolby
+Surround</b> setting is automatically set to <b>Dolby Surround</b>. </p>
+
+<p class=MsoBodyText>Second, the setting sets the DVD movie player to output
+raw Dolby Digital data via the digital out.&nbsp; </p>
+
+<h3><span style='font-size:10.0pt'>DTS</span></h3>
+
+<p class=MsoBodyText>The <b>DTS Enable (y/n)</b> setting is used <i>only</i> for
+DVD movie playback. It has no effect on game audio.&nbsp;</p>
+
+<h3>Headphones</h3>
+
+<p class=MsoBodyText>There is no Xbox Dashboard setting for headphones. Because
+headphones is not considered a permanent configuration, it was not included
+as part of the Xbox Dashboard. There is a DirectSound interface, <b>IDirectSound::EnableHeadphones(bool)</b>,
+that can allow a game to put Xbox into headphone mode. <b>EnableHeadphones()</b>
+was added to DirectSound because the <br>
+3D HRTF processes perform slightly different work depending on whether the
+user is listening over headphones or speakers. Note that if you are not using
+the 3D libraries (<i>DirectSound3D</i> parameters or Microsoft DirectMusic
+3D audiopaths), there is no point in using this call.</p>
+
+<p class=MsoBodyText>Headphones mode does the following:</p>
+
+<p class=MsoBodyText style='margin-left:.5in;text-indent:-.5in'><span
+style='font-family:Symbol'><span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>Forces output to be stereo and disables crosstalk cancellation for
+optimal headphone listening. This does disable multichannel output; all sounds
+will come through only the front left and right speakers, even with Dolby
+Digital enabled.</p>
+
+<p class=MsoBodyText style='margin-left:.5in;text-indent:-.5in'><span
+style='font-family:Symbol'><span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>Turns off &quot;crosstalk cancellation&quot; from front speakers.
+This optimizes HRTF for headphone listening.</p>
+
+<p class=MsoBodyText>Ideally, the ability to select headphone or speaker
+listening (<b>EnableHeadphones(</b>TRUE<b>)</b> or <b>(</b>FALSE<b>)</b>) would
+be set via an in-game audio options screen, though this is not a requirement.
+The DirectSound sample, <b>Play3DSound</b>, shows how to use this function.</p>
+
+<h3>Other Particulars</h3>
+
+<p class=MsoBodyText>When an RF adapter (which can only output monaural audio)
+is connected to the Xbox, the control panel setting is overridden and forced
+into mono mode.</p>
+
+<h3>Tailoring Audio</h3>
+
+<p class=MsoBodyText>By default, DirectSound (and DirectMusic) will try to do
+the &quot;right thing&quot; when placing 3D sounds and sounds placed in
+specific mixbins according to the Xbox Dashboard setting. However, a game can
+query the Dashboard audio settings directly by using <b>XAudioGetSpeakerConfig()</b>.
+The game can then change how audio data is routed to individual mixbins, if
+desired.&nbsp;</p>
+
+<h3>User Education</h3>
+
+<p class=MsoBodyText>It is a good idea to place some basic information about
+audio system configuration in your game manual to remind the user of the
+importance of setting their audio settings. Example text is included below:</p>
+
+<p class=MsoBodyText style='margin-left:.5in'>The Xbox provides real-time
+interactive multi-channel game audio supporting Dolby Digital, Dolby Surround
+and 3D HRTF processing. For the best audio experience, it is important that
+your Xbox be configured to match your particular sound system's capabilities.
+To do this,&nbsp;in the Settings<b> </b>Area, select <b>AUDIO</b>. If your Xbox
+is connected to two speakers, select <b>Stereo</b>. If you have a Dolby Pro
+Logic receiver <span style='font-family:Arial'>with</span> surround speakers,
+select <b>Dolby Surround</b>. If you have an Xbox AV connector that provides
+digital audio out and you have a Dolby Digital receiver <span style='font-family:Arial'>with 5.1 </span>speakers, enable <b>Dolby Digital</b>. Following these
+simple steps will help you get the best audio experience possible for Xbox
+gameplay. Note that an AV pack that supports digital audio out, such as the
+HDTV Pack, Advanced AV Pack, or Advanced SCART Connector, is required for Dolby
+Digital.</p>
+
+<h1>Differences Between Retail and Pre-Certification Games</h1>
+
+<p class=MsoBodyText>In the process of certifying and preparing your game for
+duplication, some minor changes will have been made.</p>
+
+<p class=MsoBodyText>All certification fields (rating, region, and so on) will
+have been stamped with their final values.The key used to do save game
+verification will be final. Save games created by the pre-certification version
+will not pass the <b>XCalculateSignature</b> functions.</p>
+
+<p class=MsoBodyText>Your game will now run on a retail console and will not
+run on a development console.</p>
+
+<p class=MsoBodyText>If your game supports system link play, it will no longer
+communicate with the pre-certification version.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<!--*******************************************************************************-->
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>
+

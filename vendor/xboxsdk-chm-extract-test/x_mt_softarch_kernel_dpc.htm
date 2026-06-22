@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Kernel DPC Callbacks</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Kernel DPC Callbacks"/>
+<MSHelp:Keyword Index="F" Term="Kernel DPC Callbacks"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Kernel DPC Callbacks</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<P>In contrast to a game title's normal strategy of polling for input, output, completion, or status, there are cases where a callback to signal immediately that an event has occurred is valuable.  For example, the title may need to closely monitor vertical blanks or other graphics processing events.  Many notification methods (such as thread messages or alertable waits) have too much overhead or are not fast enough to be valuable to game titles that are operating with narrow timing tolerances.  So to provide the fastest, simplest callbacks possible, DPCs (deferred procedure calls) were chosen as the callback mechanism when extremely fast notifications are required.  Unless you are a device driver programmer, you've probably never dealt with DPCs before.</P>
+
+<P>DPCs are high-priority kernel callbacks that are queued by ISRs (interrupt service routines).  ISRs are called at interrupt time when hardware interrupts occur.  Hardware interrupts have a priority level, so while one interrupt is being handled by an ISR another interrupt can fire, in which case the current ISR is interrupted and the new ISR is called.  This results in the possibility of having nested, interrupted ISRs, which causes programming difficulties and makes writing an ISR that much more difficult.  DPCs solve this interruption and nesting problem.  During an ISR, that ISR can queue a DPC.  The DPC is not initially called, but, as the name implies, is deferred.  When all ISRs have completed their processing and have returned (including the unwinding of any nested ISRs), the queued DPCs are then executed in a synchronous, serial fashion&mdash;each DPC is executed, in turn, to completion.</P>
+
+<P>DPCs are executed by the kernel at a higher priority than any currently running threads (excluding ISRs), so at any time a title's thread could be interrupted to perform a DPC.  Code executing a DPC is said to be executing at DPC level or DPC time.  DPC level is asynchronous to the normal execution flow of the title's threads.  When a title has registered to receive a callback notification at DPC time, that callback can occur at any time, with the title's threads executing at potentially any location within the game code.  The running thread is temporarily suspended and the DPC executed on that thread.</P>
+
+<P>A callback routine called by a DPC should execute very little code, should do so quickly, and most importantly should not block for any reason.  Most XTL functions cannot be called at DPC level, including those that perform memory management, or that have critical sections or other wait conditions.  The XTL functions that can be safely called at DPC level are the <B>Interlocked<I>xxx</I></B> functions (such as <a href="synchro_1k38.htm">InterlockedIncrement</a>), and, given a valid object handle, the following synchronization functions: <a href="synchro_8ut0.htm">SetEvent</a>, <a href="synchro_4f78.htm">ResetEvent</a>, <a href="synchro_1ylw.htm">PulseEvent</a>, <a href="synchro_1vqd.htm">ReleaseSemaphore</a>, and <a href="synchro_59o8.htm">ReleaseMutex</a>.  Additionally, floating point operations cannot be performed in a DPC callback unless the <a href="XSaveFloatingPointStateForDpc.htm">XSaveFloatingPointStateForDpc</a> and <a href="XRestoreFloatingPointStateForDpc.htm">XRestoreFloatingPointStateForDpc</a> functions are used.  The floating point processor state is not automatically saved and restored across a DPC call, so modifying the floating point state while at DPC level will cause crashes in a title unless the title explicitly saves and restores the state.</P>
+
+<P>Typically, a DPC callback routine sets an event (or global variable) that another thread is waiting on (or polling), indicating to the other thread that some interesting condition, such as a vertical blank callback, has occurred.  When the other thread is next scheduled, and either checks the variable or wakes up from the event, it can perform the processing required to respond to the event or condition that has occurred.  Since DPCs are non-reentrant and serialized it is critical that the callback routine not block, use a critical section, allocate memory, or otherwise delay or stall execution.  Correct, careful use of DPCs gives the title an excellent tool for notifications that can occur within microseconds of the occurrence of the event being monitored.</P>
+
+<P>It is important to remember that DPC time execution is asynchronous to the normal flow of the title's code. Here's the sequence of execution: </P>
+
+<ol>
+ <li>A hardware interrupt occurs and takes control of the currently executing thread, 
+ wherever in code it may be executing.</li>
+ <li>The ISR for that interrupt is called and executed.</li>
+ <li>The ISR queues the DPC(s).</li>
+ <li>The ISR finishes executing and returns.</li>
+ <li>The DPC runs and calls the notification callback in the title's code.</li>
+ <li>The title's notification code returns.</li>
+ <li>Finally, the DPC returns and the thread resumes execution in the game title's
+ code wherever it was at the time the interrupt first occurred.</li>
+</ol>
+
+<!--*******************************************************************************-->
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

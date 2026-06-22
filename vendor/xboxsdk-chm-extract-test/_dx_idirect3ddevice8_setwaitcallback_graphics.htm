@@ -1,0 +1,120 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>IDirect3DDevice8::SetWaitCallback</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="F" Term="SetWaitCallback"/>
+<MSHelp:Keyword Index="K" Term="SetWaitCallback (IDirect3DDevice8)"/>
+<MSHelp:Keyword Index="K" Term="IDirect3DDevice8::SetWaitCallback"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>IDirect3DDevice8::SetWaitCallback</h1>
+<p>Sets a callback that allows the title to use the CPU while Direct3D is waiting for the GPU to free a resource.</p>
+<pre class="syntax" xml:space="preserve"><b>void</b> <b>SetWaitCallback(</b>
+    <b>D3DWAITCALLBACK</b> <i>pCallback</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+			<dt><i>pCallback</i></dt>
+<dd>[in]  Specifies the address of a callback function of type D3DWAITCALLBACK. Setting <i>pCallback</i> to NULL will disable the callback, causing Direct3D to revert back to its normal waiting behavior. </dd>
+		</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>None.</p>
+<h4><a name="remarks"></a>Remarks</h4>
+<p>When Direct3D has to wait for the GPU, such as when Direct3D is asked to lock an object that is still in use by the GPU, Direct3D will try to yield in order to allow a waiting thread to run while the GPU catches up.  If the GPU is very close to being done with the requested object, however, Direct3D will simply busy-wait to avoid the overhead of two context switches and an interrupt. <b>SetWaitCallback</b> allows a title to hook the wait, and in the busy-wait case potentially make use of otherwise wasted CPU cycles. It can also be used to avoid multi-threading and the associated synchronization requirements, by being entirely single-threaded and yet still have efficient parallelization between the CPU and the GPU.</p>
+
+<p>The callback is done in the same context of the thread whose Direct3D call generated the wait. It is not called at DPC time (unlike other callbacks such as <a href="_dx_idirect3ddevice8_setverticalblankcallback_graphics.htm">SetVerticalBlankCallback</a>).</p>
+
+<p>There are several restrictions on the use of <b>SetWaitCallback</b>:</p>
+<ul>
+	<li>The caller cannot call any Direct3D rendering or lock functions while it's in its callback routine.</li>
+	<li>It is permissible for the caller to take longer in its callback than is minimally required for the wait.  However, the caller should not take so long in the callback that it causes the GPU to finish all pending commands and go idle.  The GPU may go idle even if the callback returns while the GPU is still busy, because it may subsequently starve for command data which would have otherwise been supplied in time by following rendering functions.  In general, it's safer to go over if the GPU is a long ways away from going idle.</li>
+	<li>The caller should not assume that its wait callback is called at predictable or regular intervals.  For this reason, the wait callback should be used only as a supplement to a game loop, and should not be the primary loop.</li>
+	<li>Since almost all Direct3D calls need to add to the push-buffer, and because the GPU can be backed-up and the push-buffer full at any time, the wait callback may be called while in the middle of any D3D call.  This may impose a stack crunch, since the callback will be called with the original stack of the caller who made the blocking D3D call, as well as the Direct3D stack, already taking up room (recall that there is a 64K total limit on a thread's stack by default.)</li>
+</ul>
+
+<p>Direct3D will always call the callback function anytime it has to wait, except during vertical blanks (which always cause Direct3D to yield its thread.)</p>
+
+<p>The callback is defined as:</p>
+		
+
+<pre class="clsCode">
+typedef void (__cdecl * D3DWAITCALLBACK)(DWORD Flags);
+</pre>
+    
+
+<p>The <i>Flags</i> value passed to the callback indicates the type of request that caused Direct3D to wait. It will be one of the following values, ORed together:</p>
+
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td>D3DWAIT_PRESENT</td>
+<td>Set when Direct3D needs to wait during a <a href="_dx_idirect3ddevice8_present_graphics.htm">Present</a>/<a href="_dx_idirect3ddevice8_swap_graphics.htm">Swap</a> call because the CPU is more than two completed frames ahead of the GPU. This generally happens when the push-buffer is set to a large size.</td>
+</tr>
+
+<tr>
+<td>D3DWAIT_BLOCKUNTILIDLE</td>
+<td>Set when the waiting for the GPU to go idle. This could happen when <a href="xbox_dxg_IDirect3DDevice8_BlockUntilIdle.htm">IDirect3DDevice8::BlockUntilIdle</a> is called or when an object lock is done on an object that is currently active, such as a texture which is currently set in one of the texture stages.</td>
+</tr>
+
+<tr>
+<td>D3DWAIT_BLOCKONFENCE</td>
+<td>Set when <a href="_dx_idirect3ddevice8_blockonfence_graphics.htm">IDirect3DDevice8::BlockOnFence</a> is called.</td>
+</tr>
+
+<tr>
+<td>D3DWAIT_PUSHBUFFER</td>
+<td>Set when the GPU is is falling behind and the push-buffer get full. The wait will be until the push-buffer gets half empty.</td>
+</tr>
+
+<tr>
+<td>D3DWAIT_OBJECTLOCK</td>
+<td>Set when an object lock is done (such as on a vertex buffer) and the object is still in use by the GPU.</td>
+</tr>
+
+<tr>
+<td>D3DWAIT_BUSYWAIT_FLAG</td>
+<td>Set when the wait is so short that Direct3D would simply busy-loop. If D3DWAIT_BUSYWAIT_FLAG is not set, Direct3D would try to yield its thread.</td>
+</tr>
+</table>
+
+<p>The callback routine can call <a href="_dx_idirect3ddevice8_getpushdistance_graphics.htm">IDirect3DDevice8::GetPushDistance</a>( D3DDISTANCE_FENCES_TOWAIT ) to determine when it should allow Direct3D to resume by returning from the callback. <b>GetPushDistance</b> will count down over time. Once it reaches zero, control should be returned to Direct3D. If control is not returned to Direct3D in a timely manner, the GPU may starve for data and go idle.</p>
+
+<p>Note that the wait is typically not for the GPU to go idle. So in general, the farther the GPU is from going idle, as measured with <b>GetPushDistance</b>( D3DDISTANCE_FENCES_TOIDLE ), the safer it is to overshoot the requested time in the wait callback function.</p>
+
+<p>It is permissible for the callback function to return to Direct3D before <b>IDirect3DDevice8::GetPushDistance</b>( D3DDISTANCE_FENCES_TOWAIT ) hits zero &#8212; in that case, Direct3D will attempt to do the yield if it can, otherwise it will busy-wait.</p>
+
+
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in D3d8.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use D3d8.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p><a href="_dx_idirect3ddevice8_getpushdistance_graphics.htm">IDirect3DDevice8::GetPushDistance</a></p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

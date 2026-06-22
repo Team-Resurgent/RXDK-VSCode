@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Querying Gamepads</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Querying Gamepads"/>
+<MSHelp:Keyword Index="F" Term="Querying Gamepads"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Querying Gamepads</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<P>The Xbox gamepads (controllers) will be the most important input device for most titles.  The XTL provides for fast, easy, and efficient querying of the gamepads.</P>
+ 
+<P>The <A HREF="x_jsk_xinputgetstate.htm">XInputGetState</A> function retrieves the latest state of a gamepad.  The state it returns represents the cached state the device reported when last polled.  If your code requested automatic polling (the default) when opening the gamepad, the device will be polled (by default) at eight-millisecond intervals.  When the code opens the gamepad using <A HREF="x_jsk_xinputopen.htm">XInputOpen</A>, it can specify different polling intervals or manual polling.  In either case, <B>XInputGetState</B> simply returns the values the device last reported.  Note that <B>XInputGetState</B> acquires input from other Xbox peripherals as well but is being discussed here in the context of gamepads.</P>
+
+<P><B>XInputGetState</B> fills in an <A HREF="x_jsk_xinput_state.htm">XINPUT_STATE</A> structure with information about the state of the gamepad.  The <B>Gamepad</B> member of <B>XINPUT_STATE</B> contains an <A HREF="x_jsk_xinput_gamepad.htm">XINPUT_GAMEPAD</A> structure with information specific to gamepads.</P>
+
+<P>There are eight analog buttons that can have values ranging from zero (not pressed) to 255 (maximum pressure).  They are <B>A</B> (green), <B>B</B> (red), <B>X</B> (blue), <B>Y</B> (yellow), <B>Black</B>, <B>White</B>, and the left and right triggers.  The current values of these buttons are returned in the <B>Gamepad</B> member <B>bAnalogButtons</B> as an array of eight-byte values, one for each button.</P>
+
+<P>There are eight "digital" buttons that are either pressed or unpressed: directional pad up, directional pad down, directional pad left, directional pad right, back, start, left thumb, and right thumb.  The current states of these buttons are returned in the <B>Gamepad</B> member <B>wButtons</B> as a single WORD value, with each button represented by one bit.  The code example below demonstrates checking the bit that corresponds to a particular button.</P>
+
+<P>The two thumbsticks each have X and Y positions, reported as &#8211;32768 to 32767 across the range of the thumbstick.  The current values of the thumbstick positions are returned in the <B>Gamepad</B> members <B>sThumbLX</B>, <B>sThumbLY</B>, <B>sThumbRX</B>, and <B>sThumbRY</B>.  Those members are of type SHORT.</P>
+
+<P>The example shown here calls <B>XInputGetState</B> to get the latest state, and then checks to see if the start button has changed state:</P>
+
+<PRE>
+//
+// Get latest gamepad state.
+//
+void ReadGamepad( void )
+{
+    static DWORD dwStartLast = 0;
+    DWORD dwStartDown;
+    XINPUT_STATE xis;
+    HANDLE hPad;
+
+
+    // Find first connected controller.
+    if( !(hPad = GetFirstController()) )
+    {
+        return;
+    }
+
+    // Query latest state.
+    XInputGetState( hPad, &amp;xis );
+
+    // Has the start button changed state?
+    dwStartDown = xis.Gamepad.wButtons &amp; XINPUT_GAMEPAD_START;
+    if( dwStartDown != dwStartLast )
+    {
+        DbgPrintf( "Start %s.\r\n", dwStartDown ? "DOWN" : "UP" );
+        dwStartLast = dwStartDown;
+    }
+}
+</PRE>
+
+<P>The code stores the last state of the start button and compares it with the current state.  When the state changes, the code sends a string describing the new state to the debugger for display.  Titles that use more than a single (or more than a few) button would probably want to save the last state of the entire XINPUT_STATE structure and check for button state changes in a loop, rather than use the simplified code shown above.</P>
+
+
+<P>The GetFirstController() function used by the code above is defined by the example and simply uses the global device state information for the gamepads to find the first connected gamepad with a valid handle:</P>
+
+
+<PRE>
+// The index of the gamepad info in the device states array.
+#define DS_GAMEPAD  0
+
+//
+// Find the first connected controller.
+// This could be cached and then checked only when a device change
+// is detected.
+//
+HANDLE GetFirstController( void )
+{
+    HANDLE hPad = 0;
+    int i;
+    
+
+    // Check the global gamepad state for a connected device.
+    for( i = 0; i &lt; NUM_PORTS; i++ )
+    {
+        if( g_dsDevices[DS_GAMEPAD].dwState &amp; 1 &lt;&lt; i &amp;&amp; g_hPads[i] ) {
+            hPad = g_hPads[i];
+            break;
+        }
+    }
+
+    return hPad;
+}
+</PRE>
+
+<P>The mechanism used to store or cache valid controller handles is entirely up to the title.  Keep in mind, however, that controllers may be plugged into any of the available ports, not necessarily starting with port zero.</P>
+
+<P>That's all there is to querying the gamepad.  One caveat is that the values returned represent the current state of the gamepad, not changes or discrete button-press events.  In order to detect changes, a previous state has to be stored and compared against, as demonstrated in the ReadGamepad() function above.  Another caveat is that some gamepads suffer from cross-talk between analog buttons (excluding the left and right triggers).  That is, while pressing one analog button, small values may be reported for other non-pressed analog buttons.  For this reason, any analog button value reported as less than or equal to XINPUT_GAMEPAD_MAX_CROSSTALK (defined in xbox.h) should be ignored and not considered a button press.  This does not apply to the left and right triggers, because they do not exhibit this behavior.</P>
+
+<P>There are controller types other than the standard Xbox controller.  The <a href="x_jsk_xinputgetcapabilities.htm">XInputGetCapabilities</a> function returns an <a href="x_jsk_xinput_capabilities.htm">XINPUT_CAPABILITIES</a> structure that indicates the type of controller being used as well as the specific capabilities of that controller.  There are technical certification requirements related to the proper handling of the controller subtypes and to the mapping of the controls on various controller types (such as wheels, snowboards, and skateboards, flight sticks, arcade sticks, and so on) to specific game functionality.  See the <B>Xbox Controller Default Button Mapping</B> appendix in the <i>Xbox Guide</i> for more information.</P>
+
+<!--*******************************************************************************-->
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

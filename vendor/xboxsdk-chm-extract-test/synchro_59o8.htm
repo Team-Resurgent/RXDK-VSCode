@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>ReleaseMutex</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="ReleaseMutex">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="ReleaseMutex"/>
+<MSHelp:Keyword Index="F" Term="ReleaseMutex"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_releasemutex"></A>ReleaseMutex</H1>
+
+<P>The <B>ReleaseMutex</B> function releases ownership of the specified mutex object. </P>
+
+<PRE class=syntax><B>BOOL ReleaseMutex(
+  HANDLE</B><I> hMutex</I>   // handle to mutex
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>hMutex</I></DT>
+
+<DD>[in] Handle to the mutex object. The <A HREF="synchro_1a2g.htm">CreateMutex</a> or <A HREF="synchro_82pk.htm">OpenMutex</a> function returns this handle. 
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is nonzero.</P>
+
+<P>If the function fails, the return value is zero. To get extended error information, call <A HREF="errors_3uwi.htm">GetLastError</a>. </P>
+
+<H4>Remarks</H4>
+
+<P>The <B>ReleaseMutex</B> function fails if the calling thread does not own the mutex object. </P>
+
+<P>A thread gets ownership of a mutex by specifying a handle to the mutex in one of the <a href="unresolved.htm">wait functions</a>. The thread that creates a mutex object can also get immediate ownership without using one of the wait functions. When the owning thread no longer needs to own the mutex object, it calls the <B>ReleaseMutex</B> function. </P>
+
+<P>While a thread has ownership of a mutex, it can specify the same mutex in additional wait-function calls without blocking its execution. This prevents a thread from deadlocking itself while waiting for a mutex that it already owns. However, to release its ownership, the thread must call <B>ReleaseMutex</B> once for each time that the mutex satisfied a wait. </P>
+
+<H4>Example</H4>
+
+<P>For an example that uses <B>ReleaseMutex</B>, see <a href="unresolved.htm">Using Mutex Objects</a>. </P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p><H4>See Also</H4>
+<P> 
+
+<a href="xbox_mt_xtl_sll_synchronization_functions.htm">Synchronization Functions</a> | 
+<A HREF="synchro_1a2g.htm">CreateMutex</a> </P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

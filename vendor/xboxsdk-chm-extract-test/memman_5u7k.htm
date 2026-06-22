@@ -1,0 +1,77 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>GetProcessHeap</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="GetProcessHeap">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="GetProcessHeap"/>
+<MSHelp:Keyword Index="F" Term="GetProcessHeap"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_getprocessheap"></A>GetProcessHeap</H1>
+
+<P>The <B>GetProcessHeap</B> function obtains a handle to the default heap of the title. This handle can then be used in subsequent calls to the <A HREF="memman_6krn.htm">HeapAlloc</a>, <A HREF="memman_6ahv.htm">HeapReAlloc</a>, <A HREF="memman_7b1h.htm">HeapFree</a>, and <A HREF="memman_9l5x.htm">HeapSize</a> functions. </P>
+
+<PRE class=syntax><B>HANDLE GetProcessHeap(VOID);</B></PRE>
+
+<H4>Parameters</H4>
+
+<P>This function has no parameters. </P>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is a handle to the title's default heap. </P>
+
+<P>If the function fails, the return value is NULL. To get extended error information, call <A HREF="errors_3uwi.htm">GetLastError</a>.</P>
+
+<H4>Remarks</H4>
+
+<P>The <B>GetProcessHeap</B> function provides a handle to the default heap, created automatically during initialization.  You can use <A HREF="memman_5z6t.htm">HeapCreate</a> to create additional heaps.</P>
+
+<P>Here is a short example demonstrating the use of <B>GetProcessHeap</B> with the heap functions:
+
+<PRE>PVOID pvMem;
+
+// Allocate the memory.
+pvMem = HeapAlloc( GetProcessHeap(), 0, dwBytes );
+
+if( pvMem != NULL )
+{
+    // Use memory here.
+
+    // Free the memory.
+    HeapFree( GetProcessHeap(), 0, pvMem );
+}
+</PRE>
+
+<P>The handle obtained by calling this function should not be used in calls to the <A HREF="memman_862h.htm">HeapDestroy</a> function.</P>
+
+<P>To guard against an access violation, you can use structured exception handling to protect code that writes to or reads from a heap. For more information on structured exception handling with memory accesses, see <a href="unresolved.htm">Reading and Writing</a> and <A HREF="unresolved.htm">Structured Exception Handling</a>.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p><H4>See Also</H4>
+<P> 
+
+<a href="xbox_mt_xtl_sll_memory_management_functions.htm">Memory Management Functions</a> | 
+<A HREF="memman_6krn.htm">HeapAlloc</a>,  <A HREF="memman_5z6t.htm">HeapCreate</a>,  <A HREF="memman_862h.htm">HeapDestroy</a>,  <A HREF="memman_7b1h.htm">HeapFree</a>,  <A HREF="memman_6ahv.htm">HeapReAlloc</a>,  <A HREF="memman_9l5x.htm">HeapSize</a> </P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

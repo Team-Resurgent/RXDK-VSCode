@@ -1,0 +1,173 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XONLINE_COMP_SINGLE_ELIMINATION_ATTRIBUTES</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XONLINE_COMP_SINGLE_ELIMINATION_ATTRIBUTES"/>
+<MSHelp:Keyword Index="F" Term="XONLINE_COMP_SINGLE_ELIMINATION_ATTRIBUTES"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+    <body topmargin="0">
+        <table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+        <h1>XONLINE_COMP_SINGLE_ELIMINATION_ATTRIBUTES</h1>
+
+        
+        
+<p>Contains information describing a single-elimination competition.</p>
+
+	
+		
+
+<pre class="syntax">typedef struct{
+    DWORD dwPrivateSlots;
+    DWORD dwPublicSlots;
+    DWORD dwMinimumPlayers;
+    FILETIME ftRegistrationOpen;
+    FILETIME ftRegistrationClose;
+    FILETIME ftCompetitionStart;
+    FILETIME ftRoundOneStart;
+    FILETIME ftRoundOneEnd;
+    DWORD dwMatchReminderAdvanceMinutes;
+    XONLINE_COMP_INTERVAL_UNIT Interval;
+    XONLINE_COMP_UNITS_OR_MASK UnitOrMask;
+    BOOL fTeamCompetition;
+    DWORD dwTeamSize;
+} XONLINE_COMP_SINGLE_ELIMINATION_ATTRIBUTES, *PXONLINE_COMP_SINGLE_ELIMINATION_ATTRIBUTES;</pre>
+                    
+                
+            
+            
+                <h4><a name="members"></a>Members</h4>
+<dl>
+			<dt><b>dwPrivateSlots</b></dt>
+				<dd>Number of private slots in the competition.</dd>
+			
+			
+			<dt><b>dwPublicSlots</b></dt>
+				<dd>Number of public slots in the competition.</dd>
+			
+			
+			<dt><b>dwMinimumPlayers</b></dt>
+				<dd>Minimum number of players required for the competition.</dd>
+			
+			
+			<dt><b>ftRegistrationOpen</b></dt>
+				<dd>Time and date when registration for the competition begins.</dd>
+			
+
+			<dt><b>ftRegistrationClose</b></dt>
+				<dd>Time and date when registration for the competition ends.</dd>
+			
+			
+			<dt><b>ftCompetitionStart</b></dt>
+				<p><dd>Time and date when the competition begins. Initial slotting takes place and matches start at this time. </dd>
+					<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;This time must occur <i>after</i> the time specified in <b>ftRegistrationClose</b>.</p>
+				</p>
+			
+			
+			<dt><b>ftRoundOneStart</b></dt>
+				<dd>This time and date designates the official starting of matches in the first round. All 
+				future rounds are scheduled as offsets from this time and date.</dd>
+			
+			
+			<dt><b>ftRoundOneEnd</b></dt>
+				<dd>Time and date when round one of the competition ends. All round one match scores should be 
+				submitted before this time. </dd>
+			
+
+			<dt><b>dwMatchReminderAdvanceMinutes</b></dt>
+				<dd>Number of minutes before the start of each round when a reminder is sent to all 
+				participants. Set to 0 if no reminders should be sent.</dd>
+			
+
+			<dt><b>Interval</b></dt>
+				<dd>Value from the <a href="XONLINE_COMP_INTERVAL_UNIT.htm">XONLINE_COMP_INTERVAL_UNIT</a> enumeration that sets the time 
+				units used for the round interval.</dd>
+			
+
+			<dt><b>UnitOrMask</b></dt>
+				<p><dd>Amount of time between competition rounds. Can be a literal numeric value or a constant from 
+				the following table. To use one of the following constants, set the <b>Interval</b> 
+				member to XONLINE_COMP_INTERVAL_DAILY.</dd>
+				
+					<table>
+						<tr>
+							<th>Constant</th>
+							<th>Description</th>
+						</tr>
+						<tr>
+							<td>XONLINE_COMP_DAY_MASK_ALL</td>
+							<td>Competition rounds are scheduled at the same time every day of the week.</td>
+						</tr>
+						<tr>
+							<td>XONLINE_COMP_DAY_MASK_SUNDAY</td>
+							<td>Competition rounds are scheduled at the same time every Sunday.</td>
+						</tr>
+						<tr>
+							<td>XONLINE_COMP_DAY_MASK_MONDAY</td>
+							<td>Competition rounds are scheduled at the same time Monday.</td>
+						</tr>
+						<tr>
+							<td>XONLINE_COMP_DAY_MASK_TUESDAY</td>
+							<td>Competition rounds are scheduled at the same time Tuesday.</td>
+						</tr>
+						<tr>
+							<td>XONLINE_COMP_DAY_MASK_WEDNESDAY</td>
+							<td>Competition rounds are scheduled at the same time Wednesday.</td>
+						</tr>
+						<tr>
+							<td>XONLINE_COMP_DAY_MASK_THURSDAY</td>
+							<td>Competition rounds are scheduled at the same time Thursday.</td>
+						</tr>
+						<tr>
+							<td>XONLINE_COMP_DAY_MASK_FRIDAY</td>
+							<td>Competition rounds are scheduled at the same time Friday.</td>
+						</tr>
+						<tr>
+							<td>XONLINE_COMP_DAY_MASK_SATURDAY</td>
+							<td>Competition rounds are scheduled at the same time Saturday.</td>
+						</tr>
+					</table>
+				</p>
+			
+
+			<dt><b>fTeamCompetition</b></dt>
+				<dd>Set to TRUE if the participants in the competition are teams; FALSE if not.</dd>
+			
+
+			<dt><b>dwTeamSize</b></dt>
+				<dd>Number of players per team. Ignored if <i>fTeamCompetition</i> is FALSE.</dd>
+			
+
+		</dl>
+                
+				
+            
+                <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+                <h4><a name="seealso"></a>See Also</h4>
+<p>
+			<a href="XOnlineCompetitionCreateSingleElimination.htm">XOnlineCompetitionCreateSingleElimination</a>
+		</p>
+
+        <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+    </body>
+    </html>

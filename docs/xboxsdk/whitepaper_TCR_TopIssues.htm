@@ -1,0 +1,1027 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<TITLE>Xbox Core TCR Top Issues</TITLE>
+
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Xbox Core TCR Top Issues"/>
+<MSHelp:Keyword Index="F" Term="Xbox Core TCR Top Issues"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+
+</TABLE>
+
+<H1><A NAME="">Xbox Core TCR Top Issues</A></H1>
+
+<p><i>By Pete Isensee, Development Lead, Xbox Advanced Technology Group</i></p>
+
+<p>There are dozens of TCRs. While most TCRs don't require any work on the part of the developer, certain TCRs 
+require that you add code to your game or think about how your game will handle 
+a particular issue. This document identifies the top 20 certification issues to 
+date, and includes recommendations and best practices for handling these issues. 
+It also calls out other area where games have consistently failed. If your game 
+<I>does</I> meet the TCRs mentioned here, you are well on 
+your way toward passing Xbox Game Quality Certification.</p>
+
+<p>The TCRs covered in this white 
+paper are only a subset of Xbox Technical Certification Requirements. For a 
+complete list of Xbox TCRs, consult the latest version of the Xbox Guide. The 
+Guide is updated on a regular basis and is always the final word on any 
+requirement. If there is any inconsistency between the Xbox Guide and other data 
+(including this white paper), defer to the Xbox Guide.</p>
+
+<p>A list of certification tools, 
+resources and general recommendations are published in the Xbox TCR Resources 
+and Recommendations white paper available on Xbox Central.</p>
+
+<h2>The Top 20</h2>
+
+<p>At the time of this writing, over 200 game titles have been through Xbox Game Quality Certification. The 
+following list shows the 20 technical certification requirements that titles 
+have failed most often, in order by TCR number.</p>
+
+<TABLE class="preferred">
+  
+  <TR>
+    <TH class="preferred">TCR</TH>
+    <TH class="preferred">Name</TH></TR>
+  <TR>
+    <TD class="preferred">C1-1</TD>
+    <TD class="preferred">Game Stability</TD></TR>
+  <TR>
+    <TD class="preferred">C1-7</TD>
+    <TD class="preferred">Non-Interactive Pause</TD></TR>
+  <TR>
+    <TD class="preferred">C3-1</TD>
+    <TD class="preferred">XTL Version</TD></TR>
+  <TR>
+    <TD class="preferred">C4-3</TD>
+    <TD class="preferred">Cleanup Support</TD></TR>
+  <TR>
+    <TD class="preferred">C4-10</TD>
+    <TD class="preferred">Game Loading Time Limit</TD></TR>
+  <TR>
+    <TD class="preferred">C4-15</TD>
+    <TD class="preferred">Saved Game Data Structure</TD></TR>
+  <TR>
+    <TD class="preferred">C5-6</TD>
+    <TD class="preferred">Unusable MUs</TD></TR>
+  <TR>
+    <TD class="preferred">C6-6</TD>
+    <TD class="preferred">Controller Selection</TD></TR>
+  <TR>
+    <TD class="preferred">C6-7</TD>
+    <TD class="preferred">Controller Discovery</TD></TR>
+  <TR>
+    <TD class="preferred">C6-8</TD>
+    <TD class="preferred">In-game Loss of Controller</TD></TR>
+  <TR>
+    <TD class="preferred">C6-9</TD>
+    <TD class="preferred">In-menu Loss of Controller</TD></TR>
+  <TR>
+	<TD class="preferred">C6-10</TD>
+    <TD class="preferred">Startup Without Controller</TD></TR>
+  <TR>
+    <TD class="preferred">C8-7</TD>
+    <TD class="preferred">Master Volume Control</TD></TR>
+  <TR>
+    <TD class="preferred">C9-5</TD>
+    <TD class="preferred">Selection User Interface</TD></TR>
+  <TR>
+    <TD class="preferred">C9-6</TD>
+    <TD class="preferred">Xbox Official Naming Standards</TD></TR>
+  <TR>
+    <TD class="preferred">C9-11</TD>
+    <TD class="preferred">Descriptive Terms</TD></TR>
+  <TR>
+    <TD class="preferred">C9-13</TD>
+    <TD class="preferred">Saved Game Appearance Consistency</TD></TR>
+  <TR>
+    <TD class="preferred">C11-8</TD>
+    <TD class="preferred">Saved Game Content Protection</TD></TR>
+  <TR>
+    <TD class="preferred">C11-10</TD>
+    <TD class="preferred">Debug Output</TD></TR>
+  <TR>
+    <TD class="preferred">C12-1</TD>
+    <TD class="preferred">Memory Unit</TD></TR>
+	</TABLE>
+<p class="caption"><span class="label">Figure 1.</span>&nbsp;&nbsp; Top 20 Failed Certification Requirements</p>
+
+<p>Be aware that this list doesn't show the complete certification picture. Some failure cases are more significant 
+than others, and other failure cases are context dependent. For instance, a consistent crash in level 1 
+is much more critical than an inconsistent crash in an obscure area of level 100. Building with approved Xbox libraries is more 
+important than a misspelled word in an infrequent error message. Each of these issues are technically considered 
+certification failures, but whether they require resubmission involves a dialogue with your game producer, Xbox AM, TGM and 
+the Xbox Game Quality team.</p>
+
+<p>The next sections go into detail about the major failure cases and techniques for avoiding these 
+issues.</p>
+
+<h2>Game Stability (C1-1)</h2>
+
+<p>Game instability is the number one cause of TCR failure. Errors typically fall into the following 
+categories:  </p>
+
+<UL>
+<LI>Random crashes</LI>
+<LI>Memory leaks found under stress or soak test </LI>
+<LI>Controller insertion/removal issues </LI>
+<LI>Memory Unit (MU) insertion/removal issues</LI>
+<LI>Game save/load issues </LI>
+</UL>
+
+<p>As broad recommendations to improve game stability, we suggest that you:</p>
+
+<ul>
+<LI>Compile your game code at warning level 4. The compiler is your friend; take advantage of the messages 
+  it provides. Use #pragmas to ignore those warning messages that are truly 
+  informational in nature. </li>
+
+<li><pre>#pragma warning( disable: 4514 ) // ignore unref'd inline func</pre></li>
+
+<li>Use any and all code checking tools at your disposal. Use a syntax checker, e.g. lint tool, to 
+  validate your source code. </LI>
+
+<li>Use extensive error logging and error reporting functions. Use assertions liberally. Consider logging 
+  warnings and errors to the hard disk so that your QA team can easily extract 
+  those errors. Consider using the Xbox debug channel for error logging. </LI>
+
+<li>Consider using the CRT debug 
+  heap to monitor potential memory corruption. Consider using an XMemAlloc 
+  replacement allocator to debug all game memory usage. </LI>
+
+<li>Handle controller insertions 
+  and removals without crashing in all areas of the game, including menus and 
+  message boxes. From a QA perspective, test controller insertion and removal in 
+  all areas of the game. </LI>
+
+<li>Handle all MU insertions and 
+  removals without crashing. Xbox MUs can be inserted and removed at any 
+  time&#8212;even if the screen specifically says they should not be removed. A saved 
+  game that is not fully saved due to an MU removal should be detected as 
+  invalid when your game attempts to load it. Your QA team should thoroughly 
+  test MU insertion and removal in the save and load portions of the game. 
+  </LI>
+
+<li>Monitor game memory. Run 
+  your game for hours to make sure that memory use isn't increasing. If memory 
+  use does increase, it often indicates a memory leak. For similar reasons, 
+  ensure that your demo/attract mode can run for extended periods without 
+  crashing or leaking. </LI>
+
+<li>Test the game under unusual 
+  circumstances. Use the XDK Launcher Certification Tools to fragment the hard 
+  disk, and then run your game under those conditions. Test the game with a full 
+  hard disk. Test the game with damaged hard disk content. </LI>
+
+<li>Check API return values for 
+  functions that could conceivably fail at run time in a retail environment. This 
+  is critical for file I/O and online functions where unusual errors can and do 
+  occur. DVD read errors can happen due to thumbprints and damaged discs. Hard 
+  disk and MU I/O errors can also occur. MUs can be removed during API calls. 
+  Online functions can fail if a connection is lost. Make sure to handle those 
+  error conditions appropriately. You can use the XbGameDisc emulation to verify 
+  that your title correctly handles I/O errors. </LI>
+
+<li>Use the XbWatson tool to 
+  help identify crash errors during development. Encourage anybody who's not 
+  running the game from the Visual Studio debugger, particularly the QA team, to 
+  run XbWatson when they are testing the game so that when crashes occur they 
+  can report the essential details about the crash the to development team. 
+  </LI>
+
+<li>Build all versions of your 
+  games with symbols (PDB files). Symbols do not add any overhead, even for 
+  retail builds, because they're stored in PDB files rather than the game 
+  executable. PDB files are critical to developers when it comes time to track 
+  down crash bugs. Archive symbols for important builds of your game, including 
+  all builds you submit to certification. If a crash is found during 
+  certification, you can proactively debug the problem if you have the symbols. 
+  </LI>
+
+<li>Test the release builds of 
+  the title. For general testing, running the debug builds is perfectly fine. 
+  But remember that your final customer will be running the release build, so 
+  it's important that it get sufficient coverage too. As long as you have the 
+  symbols for the release build, developers can track down crashes in the 
+  release build. </LI>
+
+<li>Test on a debug or 
+  development kit that has been recovered to retail mode. The vast majority of 
+  testing can take place on a normal debug or development kit that is running in 
+  development kit mode. However, testing a retail build on a retail-recovered 
+  kit is as close as you can get to the configuration that your customers will 
+  be using, so it's important that you try this mode before you submit. You 
+  cannot use the Remote Recovery Tool to set up a development kit to retail 
+  mode. You must burn a recovery disc using the recovery ISO image in the Xbox 
+  SDK, and then use that disc to recover to retail mode.</li>
+  </ul>
+
+<h2>Controllers (section C6)</h2>
+
+<p>Of the top 20 failure cases, 
+  5 are controller issues. Managing Xbox controllers can be particularly 
+  difficult when porting games from other consoles that have less stringent 
+  requirements.</p>
+
+<p>Games must allow players to start up a game with <i>any</i> controller on <i>any</i> port. The rule of thumb is that a player should be 
+  able to pick up a random controller and play. The game can't dictate which 
+  port must be used. Controller cables are long  the player shouldn't have to 
+  untangle controller cables in order to figure out which controller goes where, 
+  and a controller should work just as well in port 4 as it does in port 1.</p>
+  
+<p>Furthermore, in any area of 
+  the game where a player can select a controller, the game must detect when a 
+  controller is inserted or removed, and then update the UI 
+  accordingly.</p>
+  
+<pre>
+DWORD dwInsertions;
+DWORD dwRemovals;
+if( XGetDeviceChanges( XDEVICE_TYPE_GAMEPAD, &amp;dwInsertions, &amp;dwRemovals ))
+{
+&nbsp;&nbsp; // Process removals before insertions
+&nbsp;&nbsp; if( dwRemovals != 0 )
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Handle controller removal
+&nbsp;&nbsp; if( dwInsertions != 0 )
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Handle controller insertion
+}
+</pre>
+
+<p>Game controllers can be inadvertently disconnected at any time during a game. Titles must detect in-use 
+controller removal throughout the duration of a game, including any and all game 
+menus and informational screens. If an in-use controller is removed, the title 
+must suspend the game and alert the player that the controller is disconnected. 
+One recommendation: after a controller is inserted, wait for the player to press 
+<b>START</b> to indicate the active controller. This allows the player to specify exactly which controller will be 
+the new active controller, and also allows the player to choose a different controller or different port if they wish.</p>
+
+<p>From a testing standpoint, ensure 
+  that your QA team disconnects and reconnects controllers on every screen in 
+  the game.</p>
+
+<h2>Memory Units (section C5)</h2>
+
+<p>Make no mistake&#8212;correctly handling Xbox Memory Units is complicated. If your game supports MUs, take a close look 
+at the dozen or so Memory Unit TCRs in the Xbox Guide. Don't delay writing 
+memory unit code in your game&#8212;it will almost certainly require more work than 
+you expect and it will require heavy testing to verify behavior. We recommend 
+scheduling a developer-month to add MU support to a game. Be aware that there is 
+no TCR requirement that games <I>must</I> support MUs; however, games that dont 
+support MUs cannot have the Memory Unit icon on the packaging.</p>
+
+<p>If your game supports MUs, players must be able to save and load 
+user data (saved games, profiles, etc.) from <I>any</I> inserted MU on <I>any</I> controller, 
+regardless of whether the controller is being used. In any area of your game where Xbox Memory Units 
+are displayed or accessed, you must account for MUs being inserted and removed at any time, and game UI must update to 
+reflect the current state. To detect MU changes, use the <b>XGetDeviceChanges</b> function. 
+To ensure that replaced MUs are properly detected, be sure to process removals before processing insertions.</p>
+
+<pre>
+DWORD dwInsertions;
+DWORD dwRemovals;
+if( XGetDeviceChanges( XDEVICE_TYPE_MEMORY_UNIT,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&amp;dwInsertions, &amp;dwRemovals ))
+{
+&nbsp;&nbsp; for( DWORD i = 0; i &lt; (XGetPortCount() * 2); ++i )
+&nbsp;&nbsp; {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Process removals
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Process insertions
+&nbsp;&nbsp; }
+}
+</pre>
+
+<p>MUs can be removed in the middle of 
+  system calls. All Xbox APIs correctly handle MU removal and return the error 
+  code <b>ERROR_DEVICE_NOT_CONNECTED </b>if the MU is removed. </p>      
+
+<p>Check for failure conditions from 
+  any function that mounts, reads, or writes to the MU and handle those errors 
+  appropriately. Use the standard UI message defined in TCR C13-1 if the 
+  function was in the middle of reading or writing a saved game.
+</p>
+
+<p>In certain situations, MUs may be unusable by games. For instance, the root directory may be unreadable due to a 
+  flash memory failure, or the MU may be filled with saved games from other 
+  titles. Unusable MUs must be visually distinct and non-selectable as read or 
+  write targets. The <b>XMountMU</b> call returns various failure codes indicating an unusable MU, including full (<B>ERROR_DISK_FULL</B>) and unusable 
+  (<B>ERROR_UNRECOGNIZED_VOLUME</B>). Be sure to handle these errors appropriately. You can create an unusable MU by using the XDK Launcher 
+  memory unit tools and choosing to unformat a particular MU.</P>
+
+<pre>
+DWORD dwError = XMountMU( dwPort, dwSlot, &amp;chDrive );
+switch( dwError )
+{
+&nbsp;&nbsp; case ERROR_SUCCESS:
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Ready for reading and writing.
+&nbsp;&nbsp; case ERROR_DISK_FULL:
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // MU full of other title data.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Display as visually distinct; non-selectable
+&nbsp;&nbsp; case ERROR_ALREADY_ASSIGNED:
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // XMountMU called twice without intervening XUnmountMU.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; assert( FALSE ); // programmer error
+&nbsp;&nbsp; case ERROR_DEVICE_NOT_CONNECTED:
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // MU is not available (probably removed during mounting)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Removal will be detected during next XGetDeviceChanges
+&nbsp;&nbsp; case ERROR_OUTOFMEMORY:
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // No memory available for mounting.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // May indicate that XInitDevices didn't specify
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // enough devices.
+&nbsp;&nbsp; case ERROR_UNRECOGNIZED_VOLUME:
+&nbsp;&nbsp; default:
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // MU is unusable.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Display as visually distinct; non-selectable.
+}
+</pre>
+
+
+<p>At best, memory unit I/O is an 
+  order of magnitude slower than Xbox hard disk I/O. Under certain conditions 
+  (for example, writing small chunks of data), performance degrades even more 
+  drastically. Use the following recommendations to meet MU performance 
+  requirements: 
+</p>
+<ul>
+<li>Read data in chunks of at least 64 KB. </li>
+  
+<li>Write data in chunks of at least 16 KB. </li>
+  
+<li>Use a single file for saved game 
+    data. </li>
+</ul>
+
+<p>One point concerning MU performance 
+  requirements is the word "perceived." In this context, perceived means the 
+  certification team will measure MU performance based on when MU read and 
+  writes seem to be occurring from the players perspective. This is typically 
+  the time during which a progress indicator or MU status UI is 
+  displayed.</p>
+
+<p class="note"><span class="label">Note</span>&nbsp;&nbsp; Information and details about 
+  Xbox Memory Units is provided in the Xbox Memory Unit white paper. See the 
+  LoadSave and TechCertGame samples for code showing the proper MU management 
+  techniques.</p>
+
+<H2>Saved Games (C4-14, C4-15, C9-13)</H2>
+
+<p>Titles that support saved games (including profiles or other user-generated data) must ensure that save game 
+management is consistent not only within the game itself but also consistent 
+with how saved games are displayed in the Xbox Dashboard. This requirement 
+typically rules out the use of multiple save game slots in a single file. A 
+game player should not find any discrepancy between save games shown in the 
+Dashboard and save games shown in-game. For example, deleting a save game from 
+the Dashboard should produce the same results as if the save had been removed 
+from within the title itself. The save game names should be the same, and the 
+save game sizes should be the same as well.</p>
+
+<p>In addition, saved games 
+(including profiles or other user-generated data) must be signed to prevent 
+tampered saves from compromising the security of the Xbox. See the <b>Content Signing</b> section 
+below.</p>
+
+<H2>Hard Disk Space (C4-2, C4-3)</H2>
+
+<p>The Xbox hard disk is a finite resource. Players can rip hundreds of CDs, and they can download dozens of new 
+levels from Xbox <I>Live</I>. It's up to games to detect and handle low-space (or no-space) conditions. The rule of thumb 
+is that games must detect out-of-space conditions <I>before</I> the player is in a state where 
+they'd lose data. For instance, a player should never be able to get into a 
+situation where they want to save their current game progress and they can't 
+because there's not enough space on the hard disk. In general, it makes sense to 
+check for space immediately before a player begins a level, track or 
+mission.</p>
+
+<p>The easiest way to test conformance with this requirement is to fill up the hard disk and play the game. 
+The XDK Launcher includes a tool that allows you to fill (or almost fill) the 
+hard disk. The following code shows an example of a title checking the hard disk 
+for sufficient hard disk space for saved games:</p>
+
+<pre>ULARGE_INTEGER ulFreeAvail;
+if( !GetDiskFreeSpaceEx( U:\\, &amp;ulFreeAvail, NULL, NULL ) )
+&nbsp;&nbsp; return FALSE;
+if( ulFreeAvail.QuadPart &lt; qwMaxSaveGameBytes )
+{
+&nbsp;&nbsp; // Display standard UI message C13-8
+}
+</pre>
+
+<p>If the title detects that there's not enough space for a saved game or profile or other data on the hard disk, 
+including data on the persistent data region (T: drive), the game must allow the 
+player to clean up hard disk space via the Xbox Dashboard. Not only must this 
+option be available, but the player must be informed of exactly how many blocks 
+(16-KB chunks of disk space) to free. When accounting for the maximum save game 
+blocks, be sure to include the size of each of the following: (1) the save game 
+directory (1 cluster), (2) the save game meta file (1 cluster), and (3) the 
+optional save game image file (1 cluster). The cluster size of a device is given 
+by <B>XGetDiskClusterSize</B>. The <b>LoadSave</b> sample shows how to accurately 
+determine save game size. It's OK to ask for more blocks than you actually need. 
+As a general rule, you may find it useful to simply pad the computed save game 
+size by 5 blocks or so. It's better to overestimate by a few blocks then 
+underestimate and have the player get the same error when they return to the 
+game.</p>
+
+<p>To launch the Dashboard to a specific memory area with a specific size request, do the 
+following:</p>
+
+<pre>
+// If the player chose to go to the Dash, go to memory area
+LD_LAUNCH_DASHBOARD LaunchDash;
+LaunchDash.dwReason = XLD_LAUNCH_DASHBOARD_MEMORY;<br>
+// This value will be returned to the title via XGetLaunchInfo
+// in the LD_FROM_DASHBOARD struct when the Dashboard reboots
+// into the title. If not required, set to zero.
+LaunchDash.dwContext = 0;<br>
+// Specify the logical drive letter of the region where
+// data needs to be removed; either T or U.
+LaunchDash.dwParameter1 = DWORD( U );<br>
+// Specify the number of 16-KB blocks that need to be freed
+LaunchDash.dwParameter2 = dwBlocksNeeded;<br>
+// Launch the Xbox Dashboard
+XLaunchNewImage( NULL, (PLAUNCH_DATA)(&amp;LaunchDash) );
+</pre>
+
+
+<H2>Game Load Time (C4-10) and Game Pauses (C1-7)</H2>
+
+<p>In surveys of console game players, one criticism that consistently rises to the top is game load times. 
+Players hate to wait. They want to play, and anything that gets in the way of 
+game play is annoying.</p>
+
+<p>To put it in perspective, it's useful to examine the actual hardware. The Xbox console has 64 MB of RAM. The 
+Xbox disc can stream data at a rate of 3  7 MB/sec, depending on the location 
+of the data (reads from the outer edge are faster). The Xbox hard disk can 
+stream data at a rate of 12 MB/sec. Assume a game has 60 MB of level data that 
+must all be in memory before the level can begin. Assume that the game places 
+critical data near the outer edge, obtaining at least a 5 MB/sec throughput, a 
+reasonable assumption, since most games don't even use the full capacity of the 
+disc. In this scenario, it would take 60 MB / 5 MB / sec = 12 seconds to load 60 
+MB of data.</p>
+
+<p>Now take the assumptions one step 
+further. Assume the game caches that 60 MB to the Xbox hard disk utility region 
+(Z: drive) during the first load of the title. The initial load will still 
+require 12 seconds, since the speed of the DVD is the gating factor, but future 
+loads of the game will load in only 60 MB / 12 MB / sec = 5 seconds. Requirement 
+C4-10 says the game cannot spend more than 15 seconds loading. Given the 
+assumptions above, games should not be spending any more than 12 seconds 
+loading, and only half that for every load after the 
+first.</p>
+
+<p>There are other reasons beside level loading when a 
+  game can pause. Reading, writing or searching for saved 
+games and profiles can take time. Reading and writing files to the utility 
+or persistent data region can take time. Launching other XBEs can take a couple 
+seconds. The important thing is that the player understands what's happening 
+during the pause and is given a visual indication that the game is doing 
+something important. Requirement C1-7 says any pause longer than 5 seconds 
+requires a description and visual activity, but we recommend that anything 
+longer than 2-3 seconds have a player indication.</p>
+
+<p>Suggestions for improving load times:</p>
+
+<ul>
+<li>Optimize content so it can be loaded and used without any massaging once it's in memory. 
+The Xbox <B>Bundler</B> tool creates resource files optimized for 
+  fast loading on Xbox. The full source code to Bundler is available for 
+  developers who want to integrate the techniques into their own asset build 
+  process.</li> 
+  
+
+<li>Optimize data so it can be loaded and used without 
+  any post-processing step. Consider doing the processing during the media build 
+  time rather than at run-time. </li>
+  
+
+<li>Consider streaming data from the hard disk during 
+  game-play. Some games have successfully implemented streaming textures, for 
+  instance. Audio data is also a good candidate for streaming. </li>
+  
+
+<li>Take advantage of the layout capabilities of <B>XbGameDisc</B>. Put common and bandwidth-sensitive data 
+  on the outer tracks of the disc. If two pieces of data will be loaded near 
+  each other at run-time, locate them near each other physically on disc. Review 
+  emulation log files to understand what files should reside next to each other. </li>
+
+  
+
+<li>The <B>FastLoad</B> sample shows 
+  multiple techniques for loading data quickly, as well as caching the data to 
+  the hard disk for future loads. It also demonstrates how you can efficiently 
+  do other processing, including animations and audio processing, during load 
+  times. </li>
+  
+
+<li>Disguise load times. Use 
+animation, progress bars, spinning wheels or other methods to keep the player 
+engaged. Show game tips. Play music. Allow the player to change game options or 
+interact with their <I>Live</I> friends list. Allow voice chat. Keep the player 
+  informed about what's happening. Perception is everything  if the player 
+  thinks that they can actively participate in the game, then the load time will 
+  not be perceived as an excessive delay. </li>
+  
+
+<li>Test load times in real-world scenarios. Use the 
+  XbGameDisc emulation feature to evaluate actual load times. Test with 
+  as-close-to-real media as possible (DVD-R) to get a feel for how the game will 
+  play from disc. </li>
+  
+
+<li>Test load times in worst case scenarios. Fragment the 
+  hard disk using the Certification Tools in the XDK Launcher. Test with the 
+  largest possible size of data files, including save games, profiles, and other 
+  game-generated data. Test with hundreds of save games. </li>
+  </ul>
+  
+
+<H2>Content Signing (C11-8, C11-9, L2-1-1)</H2>
+
+<p>The Xbox hard disk is one of the primary entry points for Xbox hackers. To protect against hacking as well as 
+detect unusable data, any and all files written to the user or persistent data 
+regions of the Xbox hard disk (or memory units) must be signed using Xbox 
+signing functions. This includes save games, profiles, settings, game persistent 
+data (T: drive), downloaded content or installed content of any sort. The only 
+region of the hard disk that does not require data signing is the utility region 
+(Z: drive).</p>
+
+<p>Files must be signed when they are first written, and the signature must be verified whenever the file is loaded by 
+the title. For user data (U: drive, MUs) and persistent data created in-game, 
+sign files using the <B>XCalculateSignature</B> family of 
+functions. These functions are secure, fast and flexible. They can process 
+roughly 35 MB per second. We recommend that the header of every user data file 
+(e.g. save game) be the <B>XCALCSIG_SIGNATURE</B> structure. Here's one method for 
+writing saved games:</p>
+
+<pre>// Write out zeros in the signature portion
+XCALCSIG_SIGNATURE Sig = { 0 };
+if( !WriteFile( hSaveGame, &amp;Sig, ... ) )
+&nbsp;&nbsp; return FALSE;<br>
+// Start the signature hash
+HANDLE hSig = XCalculateSignatureBegin( 0 );
+if( hSig == INVALID_HANDLE_VALUE )
+&nbsp;&nbsp; return FALSE;<br>
+// Write out saved game, hashing as we go
+for( ... ; ... ; pData += SAVE_GAME_CHUNK_SIZE )
+{
+&nbsp;&nbsp; if( !WriteFile( hSaveGame, pData, SAVE_GAME_CHUNK_SIZE, ... ) )
+&nbsp;&nbsp; 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; XCalculateSignatureEnd( hSig, NULL );
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return FALSE;
+&nbsp;&nbsp; 
+&nbsp;&nbsp; // Keep a running signature hash
+&nbsp;&nbsp; XCalculateSignatureUpdate( hSig, pData, SAVE_GAME_CHUNK_SIZE );
+}<br>
+// Determine the final signature and close sig handle
+XCalculateSignatureEnd( hSig, &amp;Sig );<br>
+// Write the signature at the beginning of the file
+SetFilePointer( hSaveGame, 0, NULL, FILE_BEGIN );
+WriteFile( hSaveGame, &amp;Sig, sizeof( Sig ), ... );
+</pre>
+
+<p>When you read the file, calculate the signature and then compare it with the stored signature. If the signatures 
+don't match, the file is damaged. The added benefit of this method is that it 
+also detects files that were incompletely written during the save process (for example, 
+the MU was pulled out).</p>
+
+<pre>
+// Read the signature
+XCALCSIG_SIGNATURE FileSig;
+if( !ReadFile( hSaveGame, &amp;FileSig, sizeof( FileSig ), ... ) )
+&nbsp;&nbsp; return FALSE;<br>
+// Start the signature hash
+HANDLE hSig = XCalculateSignatureBegin( 0 );
+if( hSig == INVALID_HANDLE_VALUE )
+&nbsp;&nbsp; return FALSE;<br>
+// Read in saved game, hashing as we go
+for( ... ; ... ; pData += SAVE_GAME_CHUNK_SIZE )
+{
+&nbsp;&nbsp; if( !ReadFile( hSaveGame, pData, SAVE_GAME_CHUNK_SIZE, ... ) )
+&nbsp;&nbsp; {
+&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;XCalculateSignatureEnd( hSig, NULL );
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return FALSE;
+&nbsp;&nbsp; }
+&nbsp;&nbsp; // Keep a running signature
+&nbsp;&nbsp; XCalculateSignatureUpdate( hSig, pData, SAVE_GAME_CHUNK_SIZE );
+}<br>
+// Determine the final signature and close sig handle
+XCALCSIG_SIGNATURE Sig;
+XCalculateSignatureEnd( hSig, &amp;Sig );<br>
+// Compare signatures
+if( memcmp( &amp;Sig, &amp;FileSig, sizeof( Sig ) ) != 0 )
+{
+&nbsp;&nbsp; // Saved game is damaged
+}</pre>
+
+<p>See the <B>LoadSave</B> and <B>TechCertGame</B> samples for additional examples of signing user data. </p>
+
+<p>Downloaded content is automatically signed when it is first generated via the <B>BuildOffer</B> tool. The content is 
+verified and resigned when it is installed on the Xbox hard disk by the <B>XOnlineContentInstall</B> function or Xbox 
+Content Download Manager. Verification of downloaded content requires that games 
+use of the <B>XLoadContentSignatures</B> and the <B>XLocateSignature</B> family of functions. Files must be 
+verified whenever they are read.</p>
+
+<pre>
+// Load signature information for installed content
+HANDLE hSig = XLoadContentSignatures( szContentDir );
+if( hSig == NULL )
+&nbsp;&nbsp; return FALSE;<br>
+// Find the signature for the file we wish to verify
+  BYTE* pSignature = NULL;
+  DWORD dwSignatureSize = XCALCSIG_SIGNATURE_SIZE;
+  BOOL bFound = XLocateSignatureByName( hSig, szFileName, 0, dwFileSize, &amp;pSignature, &amp;dwSignatureSize );
+  if( !bFound )
+  &nbsp;&nbsp; return FALSE;<br>
+  // Read the file (or section of file) into memory
+  if( !ReadFile( hFile, pFileData, dwFileSize, ... ) )
+  &nbsp;&nbsp; return FALSE;<br>
+  // Calculate the signature
+  DWORD dwSizeVerify = XCALCSIG_SIGNATURE_SIZE;
+  BYTE pSignatureVerify[ XCALCSIG_SIGNATURE_SIZE ];
+  BOOL bSuccess = XCalculateContentSignature( pFileData, dwFileSize, &amp;pSignatureVerify, &amp;dwSizeVerify );
+  if( !bSuccess )
+  &nbsp;&nbsp; return FALSE;<br>
+  // Verify the signature
+  if( dwSignatureSize != dwSizeVerify ||
+  &nbsp;&nbsp;&nbsp; memcmp( pSignature, pSignatureVerify, dwSizeVerify ) != 0 )
+  {
+  &nbsp;&nbsp; // Content is damaged
+  }
+  </pre>
+  
+  <p>Note that the downloaded content signature functions are <i>not</I> interchangeable with the <b>XCalculateSignature</B> 
+  functions. Use <B>XCalculateSignature</B> with dynamic content generated by the game (save games, persistent data). 
+  Use <B>XCalculateContentSignature</B> with content installed via <i>Live</I> download and the Xbox Content Download Manager.</P>
+  
+  <p>Note also that titles must not <i>automatically</I> delete damaged player-created files. 
+  You may allow a bad file to be deleted, but only after asking the player if they wish to delete it. 
+  Alternatively, you may let the player remove bad user data via the Xbox Dashboard. 
+  Downloaded content packages are not considered player-created files, so they may be silently repaired (re-downloaded) if they 
+  are damaged.</P>
+  
+  <p>To test that content signing is working correctly, use the XbSGCorrupt tool.</P>
+  
+  <H2>Naming and Terminology (C9-6, C9-11)</H2>
+  
+  <p>For consistency across games, titles are required to follow standard naming conventions when referring to Xbox hardware, common 
+  game actions, and other common game terms. To ensure that youre using the proper naming in your game text, consult the 
+  Terminology section of the Xbox Guide. Correct names and phrases are given for all supported languages, 
+  including Japanese. The following table lists the most common errors. </P>
+  
+  <TABLE class="preferred">
+    <TR>
+      <th class="preferred">Use This</TH>
+      <th class="preferred">NOT this</TH>
+      <th class="preferred">Notes</TH>
+	  </TR>
+    <TR>
+      <td class="preferred">disc drive</TD>
+      <td class="preferred">DVD drive</TD>
+      <td class="preferred"></TD>
+	  </TR>
+    <TR>
+      <td class="preferred">hard disk</TD>
+      <td class="preferred">hard drive, HD</TD>
+      <td class="preferred"></TD>
+	  </TR>
+    <TR>
+      <td class="preferred">System Link Play</TD>
+      <td class="preferred">LAN play</TD>
+      <td class="preferred">System Link refers to Xbox consoles physically linked together </TD>
+	  </TR>
+    <TR>
+      <td class="preferred">START</TD>
+      <td class="preferred">Start button</TD>
+      <td class="preferred">START and BACK are capitalized</TD>
+	  </TR>
+    <TR>
+      <td class="preferred">blocks</TD>
+      <td class="preferred">bytes</TD>
+      <td class="preferred">A block is 16 KB</TD></TR>
+    <TR>
+      <td class="preferred">unusable</TD>
+      <td class="preferred">corrupt</TD>
+      <td class="preferred">damaged is also acceptable</TD></TR>
+    <TR>
+      <td class="preferred">memory unit</TD>
+      <td class="preferred">memory card</TD>
+      <td class="preferred"></TD></TR>
+    <TR>
+      <td class="preferred">erase</TD>
+      <td class="preferred">format</TD>
+      <td class="preferred">One especially does <I>not</I> format the hard disk!</TD></TR>
+    <TR>
+      <td class="preferred">insert</TD>
+      <td class="preferred">attach</TD>
+      <td class="preferred">One "inserts" controllers and MUs</TD></TR>
+    <TR>
+      <td class="preferred">controller</TD>
+      <td class="preferred">gamepad</TD>
+      <td class="preferred"></TD></TR>
+    <TR>
+      <td class="preferred">controller vibration</TD>
+      <td class="preferred">controller rumble</TD>
+      <td class="preferred"></TD></TR>
+    <TR>
+      <td class="preferred">controller button</TD>
+      <td class="preferred">controller key</TD>
+      <td class="preferred"></TD></TR>
+    <TR>
+      <td class="preferred">controller port</TD>
+      <td class="preferred">controller jack, plug, socket</TD>
+      <td class="preferred"></TD></TR>
+    <TR>
+      <td class="preferred">pull trigger</TD>
+      <td class="preferred">push trigger</TD>
+      <td class="preferred">Unlike other consoles, Xbox triggers are pulled</TD></TR>
+    <TR>
+      <td class="preferred">click thumbstick</TD>
+      <td class="preferred">push thumbstick</TD>
+      <td class="preferred">Thumbsticks make a clicking sound</TD></TR>
+    <TR>
+      <td class="preferred">Xbox <I>Live</I></TD>
+      <td class="preferred">Xbox Online</TD>
+      <td class="preferred"></TD></TR>
+    <TR>
+      <td class="preferred">Xbox Dashboard</TD>
+      <td class="preferred">Dash, Dashboard</TD>
+      <td class="preferred"></TD>
+	  </TR>
+	  </TABLE>
+<p class="caption"><span class="label">Figure 2.</span>&nbsp;&nbsp; Most Common Errors in Xbox Terminology</p>
+
+  <p>Common warnings and errors should produce standard messages. Consult the Xbox Guide for the exact text. 
+  All games must use standard message text or text that is very similar to the standard messages. 
+  The following are examples of standard UI messages: </P>
+  
+  <ul>
+  <li>Press <B>START</B> to begin</li>
+  <li>MU read/write warnings</li>
+  <li>Hard disk write warning</li>
+  <li>Unexpected MU removal error</li>
+  <li>Controller removal error</li>
+  <li>Unusable save game error</li>
+  </ul>
+  
+  <p>Check the spelling of your text. Many games fail simply because they didn't run a spell 
+  checker. Avoid technical jargon unless the jargon is appropriate for the game. 
+  For example, a spy game that required the player to intercept the IJM 
+  telemetry to accomplish a game objective would be perfectly acceptable. The 
+  following table lists typical jargon issues.
+  </p>
+  
+  <TABLE class="preferred">
+    <TR>
+      <th class="preferred">Use This</TH>
+      <th class="preferred">NOT this</TH>
+      <th class="preferred">Notes</TH>
+	  </TR>
+    <TR>
+      <td class="preferred">mission, track, car, character, image, profile, settings, game data, player data, etc.</TD>
+      <td class="preferred">data</TD>
+      <td class="preferred">Refer to data in terms that the average player will recognize. Use the vocabulary of the game world rather than abstract 
+	  terms. Although the term player data may be acceptable, player profile or player history might be more 
+	  descriptive.</TD>
+	  </TR>
+    <TR>
+      <td class="preferred">empty</TD>
+      <td class="preferred">no data</TD>
+      <td class="preferred">If theres no data, consider whether you should even be displaying the item at all</TD>
+	  </TR>
+    <TR>
+      <td class="preferred">unusable, damaged</TD>
+      <td class="preferred">corrupt</TD>
+      <td class="preferred"></TD>
+	  </TR>
+    <TR>
+      <td class="preferred">blocks</TD>
+      <td class="preferred">bytes</TD>
+      <td class="preferred">A block is 16 KB</TD>
+	  </TR>
+    <TR>
+      <td class="preferred">game host, Xbox <I>Live</I>, and so on.</TD>
+      <td class="preferred">server</TD>
+      <td class="preferred"></TD>
+	  </TR>
+    <TR>
+      <td class="preferred">game player, Xbox console, and so on.</TD>
+      <td class="preferred">client</TD>
+      <td class="preferred"></TD>
+	  </TR>
+    <TR>
+      <td class="preferred">mission, track, car, character, image, profile, settings, replay, and so on.</TD>
+      <td class="preferred">file</TD>
+      <td class="preferred">Refer to the file in terms that the average player will recognize.</TD>
+	  </TR>
+    <TR>
+      <td class="preferred">mission, level, session, campaign</TD>
+      <td class="preferred">level01.dat</TD>
+      <td class="preferred"></TD>
+	  </TR>
+    <TR>
+      <td class="preferred">connection quality</TD>
+      <td class="preferred">ping</TD>
+      <td class="preferred"></TD></TR>
+    <TR>
+      <td class="preferred">unusable, damaged, and so on.</TD>
+      <td class="preferred">error</TD>
+      <td class="preferred">Tell the player what happened and what their options are. For instance, replace Error loading data to "Mission is unusable. Erase mission?"</TD>
+	  </TR>
+    <TR>
+      <td class="preferred">hard disk, memory unit, controller, location</TD>
+      <td class="preferred">device</TD>
+      <td class="preferred">Specify the device. If you're referring to potential storage devices, including both the hard disk and memory 
+	  units, use the word "location"</TD>
+	  </TR>
+    <TR>
+      <td class="preferred">start, restart</TD>
+      <td class="preferred">boot, reboot</TD>
+      <td class="preferred"></TD>
+	  </TR>
+    <TR>
+      <td class="preferred">clear, resume, reset, begin again</TD>
+      <td class="preferred">reinitialize</TD>
+      <td class="preferred"></TD>
+	  </TR>
+	  </TABLE>
+<p class="caption"><span class="label">Figure 3.</span>&nbsp;&nbsp; Common Issues with Jargon</p>
+
+<p>Avoid the following text and images in your game, unless the proper permission has been obtained and documented in the game submission forms:</P>
+
+  <ul>
+  <li>Trademarked terms</li>
+  <li>Telephone numbers, with the exception of 555-01xx numbers</li>
+  <li>Web addresses</li>
+  <li>Email aliases</li>
+  <li>Images of non-Xbox consoles</li>
+  <li>Images of non-Xbox controllers or controller buttons</li>
+  <li>Company logos</li>
+  <li>Xbox logo (can be used with permission from your Account Manager)</li>
+  </ul>
+  
+  <p>There are only a handful of strings that are outside your control as a game developer:</p>
+  
+  <ul>
+  <li>Memory unit personalized names (<b>XMUNameFromDriveLetter</B>)</li>
+  <li>Nicknames (<B>XFindFirstNickname</B>)</li>
+  <li>Soundtrack names (<B>XFindFirstSoundtrack</B>)</li>
+  <li>Song names (<B>XGetSoundtrackSongInfo</B>)</li>
+  </ul>  
+  
+  <p>All of the above functions return Unicode strings. If you display any of these strings in 
+  your game, you must handle the case where your game font cannot display a particular character. 
+  If your game doesn't recognize a character, it must display the NULL character "<code>&empty;</code>". 
+  The best way to do this is by providing a mapping function that replaces any unsupported 
+  character with the game font character "<code>&empty;</code>". After calling any of the four functions listed 
+  above, run the mapping function on the resulting string. You can test compliance with this 
+  TCR by using the Certification Tools in the XDK Launcher. </p>
+  
+  <p>For example, the following mapping function converts any character not in the range 0x0020 
+  (space) to 0x007E (tilde) to the non-zero value <b>chUNKNOWN</b>, which is the game-dependent 
+  value that maps to the game font character "<code>&empty;</code>". You would call this function immediately 
+  after calling any of the functions listed above.</p>
+  
+  <pre>
+  const WCHAR chUNKNOWN = 0x01; // game font char for "&empty;"<BR>
+  VOID ReplaceUnsupportedChars( WCHAR* str )
+  {
+  &nbsp;&nbsp; for( ; *str; ++str )
+  &nbsp;&nbsp; {
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if( *str &lt; 0x0020 || *str &gt; 0x007E )
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; *str = chUNKNOWN;
+  &nbsp;&nbsp; }
+  }
+  </pre>
+  
+  <p>Xbox <I>Live</I> titles have a small required character set for Gamertags and game names: the letters a-z 
+  or A-Z, digits 0-9 and the space character. If your title is <I>Live</I>-enabled, it must support this character set.</P>
+
+  <ul>
+  <li>Gamertags (<b>XONLINE_FRIEND.szGamertag</b>, <b>XONLINE_STAT_USER.szGamertag</b>, <b>XONLINE_USER.szGamertag</B>)</li>
+  <li>Title names (<B>XOnlineFriendGetTitleName</B>)</li>
+  </ul>
+  
+  <H2>User Interfaces (C8-7, C9-5)</H2>
+  
+  <p>There are very few requirements on game user interfaces, with the exception of some <I>Live</I> 
+  functionality like friends. However, two common UI issues tend to surface frequently. The first is how 
+  games display the currently selected menu item, particularly when there are only two menu items available. 
+  The rule of thumb is that somebody who has never played the game should be able to walk into the 
+  room and know beyond the shadow of a doubt which menu item is selected. That means that the selected 
+  item should have one or more distinguishing features. It's not enough for the selected item to simply 
+  be another color. The most intuitive UIs do one or more of the following:</p>
+    
+  <ul>
+  <li>Pulse the selected item</li>
+  <li>Put a bullet or other indicator near the selected item</li>
+  <li>Animate the selected item</li>
+  <li>Enlarge the selected item</li>
+  </ul>
+ 
+  <p>The other UI issue is volume control. Games must not allow the player to change the overall volume. 
+  The player already has a remote control. The drawback to allowing volume control in-game is that one 
+  player could minimize in-game volume, the next player could turn up the volume with the TV remote, then 
+  switch from gameplay to the TV and blow out their speakers. It's OK to offer volume control for individual 
+  sound components like sound effects and music. Just don't offer UI for total volume control.</p>
+  
+  <H2>Game Submission (C3-1, C11-10, C12-1)</H2>
+  
+  <p>One of the most important parts of the entire certification process is making the final build of the 
+  game and submitting it to the Xbox Game Quality team. All too often, planning for the final build is left 
+  to the last minute, and testing the final build does not get the time that it deserves.</p>
+  
+  <p>First of all, ensure that your game is linking with the proper libraries and hotfixes. 
+  The current approved libraries and any hotfixes are always listed on <A href="https://xds.xbox.com/BPProgInfo.asp?Page=content/xdk/prog_xdk_lib.htm" >Xbox 
+  Central.</A> Use the ImageBld tool to get information about your XBEs. 
+  For example, to determine what Xbox Title Libraries (XTLs) your game is linked 
+  with, run ImageBld /dump default.xbe. If the output indicates that any 
+  libraries are debug or unapproved, your game will immediately fail compliance 
+  testing. If the output indicates that any libraries are conditional, you must 
+  verify with your Xbox Account Manager that your game is conditionally approved 
+  for those libraries. Ensure youre using the latest version of ImageBld. You 
+  can get a current copy by installing the most recent XDK from 
+  <A href="https://xds.xbox.com/BPProgInfo.asp?page=content/xdk/prog_xdk.htm" >Xbox Central</A>.</p>
+
+  <p>Make sure to check all XBEs that you are submitting. For instance, if your game includes 
+  different XBEs for different parts of the game, check each XBE separately. 
+  Verify all the redistributable images that will be included, like 
+  downloader.XBE, dashupdate.XBE and update.XBE.</P>
+  
+  <p>At the time of this writing, the last <I>four</I> XDK releases are always approved for use. Your 
+  game can link with any of those four versions. All the XTL libraries that you 
+  link with must have the same major version number. When you first submit your 
+  game for pre-certification you are locked to the state of the world at the 
+  time you submit. For instance, suppose you submit for pre-certification when 
+  the releases A, B, C and D are approved and the most current Xbox Guide is X. 
+  Between pre-certification and final certification, a new release E becomes 
+  available and A is retired. A new Guide Y comes out. Your game will still be 
+  held to the requirements of Guide X, and your game may still link with A (or 
+  B, C, D, and even E).</p>
+  
+  <p>Final builds of games must not output debug information on the debug channel or to 
+  the Xbox hard disk. <B>OutputDebugString</B> must not be called in retail builds 
+  of the game, since it outputs strings to the debug channel. You can detect if 
+  the function is called by using the VerifierX Analyzer (VXA) tool. We 
+  recommend you create your own debugging function or macro that disables debug 
+  output in release builds:</P>
+  
+  <pre>
+  void DebugStr( LPCTSTR szOutputString )
+  {
+  #if defined(_DEBUG)
+  &nbsp;&nbsp; OutputDebugString( szOutputString );
+  #else
+  &nbsp;&nbsp; (VOID)szOutputString; // avoid compiler warnings
+  #endif
+  }<BR>
+  #if defined(_DEBUG)
+  &nbsp;&nbsp; #define DEBUGSTR(x) OutputDebugString(x)
+  #else
+  &nbsp;&nbsp; #define DEBUGSTR(x) 
+  #endif
+  </pre>
+ 
+  <p>Debug information also includes log files written to the Xbox hard disk or memory 
+  units. Testers should verify that after running the retail game on a clean 
+  box, no logging files have been generated on the hard disk or memory units.</P>
+  
+  <H2>Attract Mode (C6-10)</H2>
+  
+  <p>Making attract mode (or demo mode) work correctly is harder than it sounds. A game 
+  must enter attract mode normally under all of the following scenarios:</p>
+  
+  <ul>
+  <li>No controllers are inserted</li>
+  <li>All controllers are inserted</li>
+  <li>The Xbox hard disk is empty (no soundtracks, nicknames or saved games)</li>
+  <li>The Xbox hard disk is full</li>
+  <li>Any files read by the game from the user or persistent 
+  data regions are damaged (particularly save games and profiles)</li>
+  <li>Any language is selected in the Xbox Dashboard</li>
+  <li>Any video or audio setting is selected in the Xbox Dashboard</li>
+  </ul>  
+  
+  <p>What these restrictions imply is that you shouldn't examine the state of the Xbox until 
+  a player has pressed a button on a controller. Games that fail this 
+  requirement tend to read from or write data to the Xbox hard disk immediately 
+  upon startup, or change behavior based on system settings or controller state. 
+  The rule of thumb: don't check state until after a player presses <B>START</B>. 
+  Avoid reading from the hard disk (or MUs) until the player has selected a controller.</p>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+
+</HTML>
+

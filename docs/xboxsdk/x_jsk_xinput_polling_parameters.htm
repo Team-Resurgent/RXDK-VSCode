@@ -1,0 +1,98 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>XINPUT_POLLING_PARAMETERS</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="XINPUT_POLLING_PARAMETERS">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XINPUT_POLLING_PARAMETERS"/>
+<MSHelp:Keyword Index="F" Term="XINPUT_POLLING_PARAMETERS"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="xinput_polling_parameters"></A>XINPUT_POLLING_PARAMETERS</H1>
+
+<P>The <B>XINPUT_POLLING_PARAMETERS</B> structure contains arguments that enable fine control of the polling method <A HREF="x_jsk_xinputopen.htm">XInputOpen</A>.</P>
+
+<PRE class=syntax>typedef struct _XINPUT_POLLING_PARAMETERS
+{
+    BYTE       fAutoPoll:1;
+    BYTE       fInterruptOut:1;
+    BYTE       ReservedMBZ1:6;
+    BYTE       bInputInterval;  
+    BYTE       bOutputInterval;
+    BYTE       ReservedMBZ2;
+} XINPUT_POLLING_PARAMETERS, *PXINPUT_POLLING_PARAMETERS;</PRE>
+
+<H4>Members</H4>
+
+<DL>
+<DT><B>fAutoPoll</B></DT>
+
+<DD>Chooses automatic or manual polling of input devices.  If FALSE, the title must call <A HREF="x_jsk_xinputpoll.htm">XInputPoll</A> to initiate poll requests before calling <A HREF="x_jsk_xinputgetstate.htm">XInputGetState</A>.  The default is TRUE.</DD>  
+
+<DT><B>fInterruptOut</B></DT>
+
+<DD>Determines whether output uses reserved bandwidth.  If TRUE, a device reserves a time slot to send a packet every <b>bOutputInterval</b> milliseconds.  Thus the maximum output latency is <b>bOutputInterval</b>.  If <b>fInterruptOut</b> is FALSE, no bandwidth is reserved, and data is sent as soon as possible.  In most cases, setting <b>fInterruptOut</b> to FALSE results in lower latency, but there is no guarantee.  The default is FALSE.</DD>
+
+<DT><B>ReservedMBZ1</B></DT>
+
+<DD>Reserved for future use. This should be initialized to 0.</DD>
+
+<DT><B>bInputInterval</B></DT>
+
+<DD>Determines the hardware polling interval for input in milliseconds.  The value will be rounded down to the nearest power of two.  The default is 8 milliseconds for gamepads, and 16 milliseconds for the debug keyboard.</DD>
+
+<DT><B>bOutputInterval</B></DT>
+
+<DD>Determines the hardware polling interval for output.  The value will be rounded down to the nearest power of two.  This field applies only if <B>fInterruptOut</B> is TRUE.  The default is 0 milliseconds (a value similar to <B>bInputInterval</B> is recommended when setting <B>fInterruptOut</B> to TRUE).</DD>
+
+<DT><B>ReservedMBZ2</B></DT>
+
+<DD>Reserved for future use. This should be initialized to 0.</DD>
+</DL>
+
+<H4>Remarks</H4>
+
+<P><B>XINPUT_POLLING_PARAMETERS</B> exposes advanced features.  Some understanding of the hardware is required for effective use.  This discussion considers input and output separately.</P>
+
+<P>Input is received via a hardware polling mechanism.  Polling is initiated through a software request.  At each polling interval, the hardware has an opportunity to respond with new data.  Xbox devices will send new data only when their state changes.  (A different mechanism is used to get the initial state of the device when the device is opened.)  When a device sends data, an interrupt is generated and the driver updates the device state.  <B>XInputGetState</B> always retrieves the cached state of the device.  After receiving data, the hardware ceases to poll until an additional software request is submitted.  When a device is opened with <B>fAutoPoll</B> set to TRUE, the driver automatically submits a new request every time data is received.  When <B>fAutoPoll</B> is FALSE, the title must submit the request by calling <B>XInputPoll</B>.  In either case, <B>bInputInterval</B> determines the fixed hardware polling interval in milliseconds.</P>
+
+<P>The clock used to time the polling interval is independent of the video frame clock.  To avoid near resonance effects, the default polling rate is set at 8 milliseconds for game controllers.  A slightly more efficient method is to synchronize data acquisition with the video frame clock.  Assuming a title's render loop is synchronized with the video blanking interval, a game could call <B>XInputPoll</B> at a fixed point in the render loop at least <B>bInputInterval</B> plus a millisecond prior to calling <B>XInputGetState</B>.  <B>bInputInterval</B> would then be set to a small value, such as 2 milliseconds.  The net effect is that data acquisition is synchronized to occur from 1 to 3 milliseconds before the call to <B>XInputGetState</B>, which occurs at a fixed point in the render loop.  Furthermore, the maximum number of interrupts is reduced by about half.  It should be noted that in this scenario, the device will not respond if the data has not changed; the request will remain outstanding. This causes no harm, as the driver ensures that only one request is pending at a time.</P>
+
+<P>Output is slightly different.  If <B>fInterruptOut</B> is TRUE, a similar polling schedule is used, but there is nothing to poll.  When the title submits data with <B>XInputSetState</B>, the hardware waits until the next appointed interval, determined by <B>bOutputInterval</B>, before sending it.  The advantage is that the device has reserved that interval and can thus guarantee maximum latency.  The disadvantages include: an additional 60 bytes or so of memory are allocated during <B>XInputOpen</B>, the data cannot be sent until that interval occurs(even if the bus is not busy), and in the future reserved bandwidth may become a limited resource.  With the initial mix of available devices, it is expected that setting <B>fInterruptOut</B> to FALSE will achieve better performance.</P>
+
+<P>If NULL is passed as the <I>pPollingParameters</I> argument to <B>XInputOpen</b>, the default values will be selected.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Xbox.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib</p>
+
+<H4>See Also</H4>
+<P>
+<A HREF="x_jsk_xid_structures.htm">Input Device Structures</A> |
+<A HREF="x_jsk_xinputopen.htm">XInputOpen</A>,
+<A HREF="x_jsk_xinputclose.htm">XInputClose</A>,
+<A HREF="x_jsk_xinputpoll.htm">XInputPoll</A>,
+<A HREF="x_jsk_xinputgetstate.htm">XInputGetState</A>
+</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

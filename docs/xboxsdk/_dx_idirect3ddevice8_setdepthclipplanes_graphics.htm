@@ -1,0 +1,123 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>IDirect3DDevice8::SetDepthClipPlanes</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="F" Term="SetDepthClipPlanes"/>
+<MSHelp:Keyword Index="K" Term="SetDepthClipPlanes (IDirect3DDevice8)"/>
+<MSHelp:Keyword Index="K" Term="IDirect3DDevice8::SetDepthClipPlanes"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>IDirect3DDevice8::SetDepthClipPlanes</h1>
+<p>Sets the near and far clip-plane depths used for both the fixed function and programmable pipelines without having to use <a href="_dx_idirect3ddevice8_settransform_graphics.htm">IDirect3DDevice8::SetTransform</a>.</p>
+<pre class="syntax" xml:space="preserve"><b>void</b> <b>SetDepthClipPlanes(</b>
+    <b>float</b> <i>Near</i><b>,</b>
+    <b>float</b> <i>Far</i><b>,</b>
+    <b>DWORD</b> <i>Flags</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+			<dt><i>Near</i></dt>
+<dd>[in]  Value that specifies the near clipping plane.</dd>
+			<dt><i>Far</i></dt>
+<dd>[in]  Value that specifies the far clipping plane.</dd>
+			<dt><i>Flags</i></dt>
+<p><dd>[in]  Member of the <a href="_dx_d3dset_depth_clip_planes_flags_graphics.htm">D3DSET_DEPTH_CLIP_PLANES_FLAGS</a> enumerated type. Direct3D keeps track of one set of depth-clipping planes for use when the fixed-function pipeline is active and another set of depth-clipping planes that are used when a vertex shader program is active. <i>Flags</i> is used to determine which set of clipping planes will get set by <b>SetDepthClipPlanes</b>.</dd>
+
+<p>Values passed in to <i>Near</i> and <i>Far</i> will be ignored if <i>Flags</i> is either D3DSDCP_USE_DEFAULT_VERTEXPROGRAM_PLANES or D3DSDCP_USE_DEFAULT_FIXEDFUNCTION_PLANES.</p></p>
+		</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>None.</p>
+<h4><a name="remarks"></a>Remarks</h4>
+<p>Using code similar to the code below, Direct3D normally sets the values of near and far depth-clipping planes when a projection matrix is set (by calling <b>IDirect3DDevice8::SetTransform</b>).</p>
+
+
+<pre class="clsCode">
+FLOAT fAspectRatio = 4.0f / 3.0f;
+FLOAT fNear = 1.0f;      // Value of near depth-clipping plane.
+FLOAT fFar  = 1000.0f;   // Value of far depth-clipping plane.
+XGMATRIX matProj;
+
+XGMatrixPerspectiveFovLH( &amp;matProj, XG_PI/4, fAspectRatio, fNear, fFar );
+pDevice-&gt;SetTransform( D3DTS_PROJECTION, &amp;matProj );
+</pre>
+    
+
+<p>Programmable vertex shaders may want to take advantage of the near and far depth-clipping planes without having to call <b>IDirect3DDevice8::SetTransform</b>. Those titles should call <b>SetDepthClipPlanes</b>.</p>
+
+<p>If this function is not used to set up the default depth-clipping planes, Direct3D will calculate those planes according to the code below:</p>
+
+
+<pre class="clsCode">
+// If the application is using a 24-bit depth buffer then m_ZScale 
+// is 2^24 and is 2^16 for 16-bit depth buffers.
+//
+// Assuming that pMat points to the projection matrix, then
+//    m_WNear = pMat-&gt;_44 - pMat-&gt;_43 / pMat-&gt;_33 * pMat-&gt;_34;
+//    m_WFar = ( pMat-&gt;_44 - pMat-&gt;_43 ) / ( pMat-&gt;_33 - pMat-&gt;_34 ) * pMat-&gt;_34 + pMat-&gt;_44;
+//    m_InverseWFar = 1.0f / m_WFar;
+
+if (bVertexShaderProgramActive)
+{
+   if ( D3D__RenderState[D3DRS_ZENABLE] == D3DZB_USEW )
+   {
+      // w-buffering
+      pDevice-&gt;fNear = pDevice-&gt;m_ZScale * pDevice-&gt;m_WNear * pDevice-&gt;m_InverseWFar;
+      pDevice-&gt;fFar = pDevice-&gt;m_ZScale;
+   }
+   else
+   {
+      // z-buffering
+      pDevice-&gt;fNear = 0.0f;
+      pDevice-&gt;fFar = pDevice-&gt;m_ZScale;
+   }
+}
+else
+{
+   // Fixed-function-pipeline case:
+   if ( D3D__RenderState[D3DRS_ZENABLE] == D3DZB_USEW )
+   {
+      pDevice-&gt;fNear = pDevice-&gt;m_ZScale * pDevice-&gt;m_WNear * pDevice-&gt;m_InverseWFar;
+      pDevice-&gt;fFar = pDevice-&gt;m_ZScale;
+   }
+   else
+   {
+      pDevice-&gt;fNear = pDevice-&gt;m_ZScale * pDevice-&gt;m_Viewport.MinZ;
+      pDevice-&gt;fFar = pDevice-&gt;m_ZScale * pDevice-&gt;m_Viewport.MaxZ;
+   }
+}
+</pre>
+    
+
+
+
+
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in D3d8.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use D3d8.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p><a href="_dx_d3dset_depth_clip_planes_flags_graphics.htm">D3DSET_DEPTH_CLIP_PLANES_FLAGS</a></p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

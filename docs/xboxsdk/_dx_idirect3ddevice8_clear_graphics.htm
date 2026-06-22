@@ -1,0 +1,118 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirect3DDevice8::Clear</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="IDirect3DDevice8::Clear [C++]">
+<META NAME="MS-HKWD" CONTENT="Clear (IDirect3DDevice8) [C++]">
+<META NAME="MS-HKWD" CONTENT="Clear [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Clear (IDirect3DDevice8)"/>
+<MSHelp:Keyword Index="K" Term="IDirect3DDevice8::Clear"/>
+<MSHelp:Keyword Index="F" Term="Clear"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_idirect3ddevice8_clear_graphics"></A>IDirect3DDevice8::Clear</H1>
+
+<P>Clears the viewport, or a set of rectangles in the viewport, to a specified RGBA color, clears the depth buffer, and erases the stencil buffer. </P>
+
+<PRE class=syntax><B>HRESULT Clear(
+  DWORD</B><I> Count</I><B>,</B>
+<B>  CONST</B> <B>D3DRECT*</B> <I>pRects</I><B>,</B>
+<B>  DWORD</B><I> Flags</I>,
+<B>  D3DCOLOR</B><I> Color</I><B>,</B>
+<B>  float</B><I> Z</I><B>,</B>
+<B>  DWORD</B><I> Stencil</I>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>Count</I></DT>
+
+<DD>[in] Number of rectangles in the array at <I>pRects</I>. If you set <I>pRects</I> to NULL, this parameter must be set to 0. </DD>
+
+<DT><I>pRects</I></DT>
+
+<DD>[in] Pointer to an array of <A HREF="_dx_d3drect_graphics.htm">D3DRECT</A> structures that describe the rectangles to clear. Set a rectangle to the dimensions of the rendering target to clear the entire surface. Each rectangle uses screen coordinates that correspond to points on the render target surface. Coordinates are clipped to the bounds of the viewport rectangle. This parameter can be set to NULL to indicate that the entire viewport rectangle is to be cleared. </DD>
+
+<DT><I>Flags</I></DT>
+
+<DD>[in] Flags that indicate which surfaces should be cleared. This parameter can be any combination of the following flags, but at least one flag must be used.
+
+<DL>
+<DT>D3DCLEAR_STENCIL</DT>
+
+<DD>Clear the stencil buffer to the value in the <I>Stencil</I> parameter. </DD>
+
+<DT>D3DCLEAR_TARGET</DT>
+
+<DD>Clear the render target to the color in the <I>Color</I> parameter. </DD>
+
+<DT>D3DCLEAR_ZBUFFER </DT>
+
+<DD>Clear the depth buffer to the value in the <I>Z</I> parameter. </DD>
+
+<DT>D3DCLEAR_TARGET_R</DT>
+
+<DD>Clear the target surface R component.</DD>
+
+<DT>D3DCLEAR_TARGET_G</DT>
+
+<DD>Clear the target surface G component.</DD>
+
+<DT>D3DCLEAR_TARGET_B</DT>
+
+<DD>Clear the target surface B component.</DD>
+<DT>D3DCLEAR_TARGET_A</DT>
+
+<DD>Clear the target surface A component.</DD>
+
+
+
+</DL>
+</DD>
+
+<DT><I>Color</I></DT>
+
+<DD>[in] A 32-bit ARGB color value to which the render target surface is cleared. </DD>
+
+<DT><I>Z</I></DT>
+
+<DD>[in] New z value that this method stores in the depth buffer. This parameter can be in the range from 0.0 through 1.0 (for z-based or w-based depth buffers). A value of 0.0 represents the nearest distance to the viewer, and 1.0 the farthest distance. </DD>
+
+<DT><I>Stencil</I></DT>
+
+<DD>[in] Integer value to store in each stencil-buffer entry. This parameter can be in the range from 0 through 2<SUP>n</SUP>&#8211;1, where <I>n</I> is the bit depth of the stencil buffer. 
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the method succeeds, the return value is <A HREF="_dx_return_values_graphics.htm#_dx_d3d_ok_graphics">D3D_OK</A>.</P>
+
+<P>If the method fails, the return value can be <A HREF="_dx_return_values_graphics.htm#_dx_d3derr_invalidcall_graphics">D3DERR_INVALIDCALL</A>.</P>
+
+<H4>Remarks</H4>
+
+<P>This method fails if you specify the D3DCLEAR_ZBUFFER or D3DCLEAR_STENCIL flags when the render target does not have an attached depth buffer. Similarly, if you specify the D3DCLEAR_STENCIL flag when the depth-buffer format does not contain stencil buffer information, this method fails.</P>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in D3d8.h.<BR>
+<B>&nbsp;&nbsp;Import Library:</B> Use D3d8.lib.</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

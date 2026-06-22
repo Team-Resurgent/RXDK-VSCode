@@ -1,0 +1,29 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Creating a Competition Instance</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Creating a Competition Instance"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+		<MSHelp:Keyword Index="K" Term="competitions, creating an instance"/>
+	</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Creating a Competition Instance</h1>
+<p>With a competition configuration on Xbox <i>Live</i>, you (or your users) can create a competition instance based on the template in the configuration. This can be done via the client (your title) by calling the <a href="XOnlineCompetitionCreateSingleElimination.htm">XOnlineCompetitionCreateSingleElimination</a> function. </p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Competition instances can also be instantiated via the Web.</p><p>The <b>XOnlineCompetitionCreateSingleElimination</b> function begins the asynchronous task of instantiating a competition. <b>XOnlineCompetitionCreateSingleElimination</b> gives your title a handle that is signaled when there is work to be performed on the task. To get work done on the task, you use a technique called "pumping the task handle." Specifically, your title calls <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> to let the Xbox <i>Live</i> service know that the client is still connected and waiting for results, and to see if results are ready. To obtain the results of this task, your title must call the <a href="XOnlineCompetitionCreateGetResults.htm">XOnlineCompetitionCreateGetResults</a> function. After it obtains the results, your title calls <a href="XOnlineTaskClose.htm">XOnlineTaskClose</a>.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Before players can instantiate or participate in a competition, your game must log them in to Xbox <i>Live</i> with the <a href="XOnlineLogon.htm">XOnlineLogon</a> function.</p><p>When you create a competition instance, you must  specify certain attributes. These include the registration start time, the registration end time, the competition start time, the time at which reminders are sent, the round intervals, and whether this is a team competition.</p><p>You can create competitions with either public or private slots. Typically, a title uses private slots for those players who are explicitly invited to join.  Public slots are accessible to anyone.</p><p>By default, competitions are removed from the server seven days after they are completed or canceled. However, to change this setting, your title must create the competition using the <a href="XOnlineCompetitionCreate.htm">XOnlineCompetitionCreate</a> function rather than <b>XOnlineCompetitionCreateSingleElimination</b>. Pass the new time limit (in days) as the value for the XONLINE_COMP_ATTR_COMP_CLEANUP attribute in the <i>pCompetitionAttributes</i> parameter. When the competition is removed from the server, its associcated leaderboards (also called scoreboards) are removed as well.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

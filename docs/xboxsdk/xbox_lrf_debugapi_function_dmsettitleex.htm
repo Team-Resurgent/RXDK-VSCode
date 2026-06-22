@@ -1,0 +1,101 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>DmSetTitleEx</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="DmSetTitleEx"/>
+<MSHelp:Keyword Index="F" Term="DmSetTitleEx"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>DmSetTitleEx</h1>
+<p>Tells the system software which title
+to launch after the Xbox console is rebooted with the DMBOOT_WAIT flag.
+<b>DmSetTitleEx</b> may also be used to clear the launch title, restoring the
+Xbox console to its default status of booting to the XDK Launcher or the disc drive.</p><pre class="syntax" xml:space="preserve"><b>DMHRAPI</b> <b>DmSetTitleEx(</b>
+    <b>LPCSTR</b> <i>szDir</i><b>,</b>
+    <b>LPCSTR</b> <i>szTitle</i><b>,</b>
+    <b>LPCSTR</b> <i>szCmdLine</i><b>,</b>
+    <b>DWORD</b> <i>dwFlags</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+
+<dt><i>szDir</i></dt>
+<dd>Path that contains the title.</dd>
+
+
+<dt><i>szTitle</i></dt>
+<dd>File name of the title. The file name muse be relative to the <i>szDir</i>
+parameter; absolute paths are not allowed.)</dd>
+
+
+<dt><i>szCmdLine</i></dt>
+<dd>Command line to pass to the title. See <a href="x_jc_xgetlaunchinfo.htm">XGetLaunchInfo</a> for more information.</dd>
+
+
+<dt><i>dwFlags</i></dt>
+<dd>
+Flags that control how reboots occur. Choose from the following two flags:
+
+<table>
+  <tr>
+<th>Flag</th>          <th>Description</th>
+</tr>
+  <tr>
+<td>DMTITLE_PERSIST</td>    <td>Makes the directory and title name supplied in the
+      <i>szDir</i> and <i>szTitle</i> parameters persistent across reboots. This causes
+      the indicated title to be launched each time the console
+      reboots.</td>
+  </tr>
+  <tr>
+<td>DMTITLE_UNPERSIST</td>  <td>Clears the persistent directory and title name,
+      which causes the Xbox console to boot to either the XDK Launcher or
+      to the disc drive on subsequent reboots. The <i>szDir</i> and <i>szTitle</i> parameters
+      should be set to NULL when using this flag.</td>
+</tr>
+</table>
+
+</dd>
+
+
+</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>Returns XBDM_NOERR if successful, an error value otherwise.</p>
+<h4><a name="remarks"></a>Remarks</h4>
+<p>This function is meaningful only if the Xbox console was rebooted with the DMBOOT_WAIT
+flag. When the Xbox console is rebooted with DMBOOT_WAIT, it will wait 15 seconds
+after rebooting before launching a title. During this 15-second period (and
+only during this period), calling <b>DmSetTitleEx</b> will set the title to
+launch, or it will reset the Xbox console to its default state of starting either the XDK Launcher
+or the game disc drive.</p>
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in XbDm.h and XboxDbg.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use XbDm.lib for target system code; and XboxDbg.lib for development system code..</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="xbox_jbh_debugapi_function_DmSetTitle.htm">DmSetTitle</a>
+</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

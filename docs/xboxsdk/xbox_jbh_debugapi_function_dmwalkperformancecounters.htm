@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>DmWalkPerformanceCounters</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="CreateFile">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="DmWalkPerformanceCounters"/>
+<MSHelp:Keyword Index="F" Term="DmWalkPerformanceCounters"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<DIV STYLE="display:none;">
+
+</DIV>
+
+
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_createfile"></A>DmWalkPerformanceCounters</H1>
+
+<P class="content">Provides a way
+to examine information about each performance counter. Call
+<b>DmWalkPerformance Counters</b> repeatedly to iterate over the list of
+performance counters.</P>
+
+<PRE class="syntax"><b>DMHRAPI DmWalkPerformanceCounters(</b>
+  <B>PDM_WALK_COUNTERS</B> <I>*ppWalkCounter</I><B>,</B> 
+  <B>PDM_COUNTINFO</B>     <I>pCounterInfo</I>
+  <b>);</b></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+
+<DT><I>ppWalkCounter</I></DT>
+
+<DD>Pointer to a structure that <b>DmWalkPerformanceCounters</b> uses internally to
+    iterate over the list of <a
+    href="xbox_jbh_debugapi_struct_DM_COUNTINFO.htm">DM_COUNTINFO</a> structures.
+    Set <i>ppWalkCounter</i> to NULL on the first call to
+    <B>DmWalkPerformanceCounters</B>; the function allocates memory to store a list
+    of performance counters and sets the <i>ppWalkCounter</i> pointer to the address of
+    beginning of that list.</DD>
+
+<DT><I>pCounterInfo</I></DT>
+
+<DD>Pointer to a <a
+    href="xbox_jbh_debugapi_struct_DM_COUNTINFO.htm">DM_COUNTINFO</a> structure
+    that contains information about the next performance counter.</DD>
+
+</DL>
+
+<H4>Return Values</H4>
+
+<P class="content">XBDM_NOERR is returned if the call to <B>DmWalkPerformanceCounters</B> is successful and the end of the list has not been reached. XBDM_ENDOFLIST is returned when the walk is complete. Otherwise, an error value is returned.</P>
+
+
+<H4>Remarks</H4>
+
+<P class="content">If the return is not XBDM_NOERR or XBDM_ENDOFLIST, then an
+error has occurred and the walk should be discontinued. After using
+<b>DmWalkPerformanceCounters</b>, you must free the memory allocated to store the
+list of performance counters by calling <A
+HREF="xbox_jbh_debugapi_function_dmclosecounters.htm"><B>DmCloseCounters</B></A>,
+passing it the value stored in the <i>ppWalkCounter</i> pointer.</P>
+
+<p class="content">The following example illustrates how to use
+<b>DmWalkPerformanceCounters</b> and <b>DmCloseCounters</b> to iterate over the
+list of performance counters.</p>
+
+
+<pre>
+DMHRAPI error;
+PDM_WALK_COUNTERS *ppWalkCounter = NULL;
+DM_COUNTINFO counter;
+
+do
+{
+    error = DmWalkPerformanceCounters(ppWalkCounter, &amp;counter);
+
+    // Examine the contents of counter here.
+}
+while (error == XBDM_NOERR);
+
+if (error != XBDM_ENDOFLIST)
+{
+    // Handle error.
+}
+
+DmCloseCounters(*ppWalkCounter);
+</pre>
+
+
+<h4>Requirements</h4>
+
+
+<p class="content">
+<b>Header:</b> Declared in XbDm.h and XboxDbg.h
+<br><b>Import Library:</b> Use XbDm.lib for target system code; and XboxDbg.lib for development system code.
+</p>
+
+
+<H4>See Also</H4>
+<p class="content">
+<A HREF="xbox_jbh_debugapi_function_dmclosecounters.htm">DmCloseCounters</a>,
+<a href="xbox_jbh_debugapi_struct_DM_COUNTINFO.htm">DM_COUNTINFO</a>
+</p>
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

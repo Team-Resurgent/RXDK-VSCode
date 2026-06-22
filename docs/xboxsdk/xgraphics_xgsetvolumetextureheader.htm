@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>XGSetVolumeTextureHeader</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XGSetVolumeTextureHeader"/>
+<MSHelp:Keyword Index="F" Term="XGSetVolumeTextureHeader"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="xgraphics_xgcreatevolumetextureheader"></A>XGSetVolumeTextureHeader</H1>
+
+<P>Manually creates a volume texture resource.</P>
+
+<PRE class=syntax><B>DWORD WINAPI XGSetVolumeTextureHeader(
+  UINT</B><I> Width</I><B>,</B>
+<B>  UINT</B><I> Height</I><B>,</B>
+<B>  UINT</B><I> Depth</I>,
+<B>  UINT</B><I> Levels</I><B>,</B>
+<B>  DWORD</B> <I>Usage</I><B>,</B>
+<B>  D3DFORMAT</B><I> Format</I>,
+<B>  D3DPOOL</B> <I>Pool</I><B>,</B>
+<B>  IDirect3DVolumeTexture8</B><I> *pVolumeTexture</I>,
+  <b>UINT</b> <i>Data</i>,
+  <b>UINT</b> <i>Pitch</i>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>Width</I></DT>
+
+<DD>[in] Width of the top-level of the volume texture, in pixels. This value must be a power of two. The pixel dimensions of subsequent levels will be the truncated value of half of the previous level's pixel dimension (independently). Each dimension clamps at a size of 1 pixel. Thus, if the division by two results in 0 (zero), 1 will be taken instead.</DD>
+
+<DT><I>Height</I></DT>
+
+<DD>[in] Height of the top-level of the volume texture, in pixels. This value must be a power of two. The pixel dimensions of subsequent levels will be the truncated value of half of the previous level's pixel dimension (independently). Each dimension clamps at a size of 1 pixel. Thus, if the division by 2 results in 0 (zero), 1 will be taken instead.</DD>
+
+<DT><I>Depth</I></DT>
+
+<DD>[in] Depth of the top-level of the volume texture, in pixels. This value must be a power of two. The pixel dimensions of subsequent levels will be the truncated value of half of the previous level's pixel dimension (independently). Each dimension clamps at a size of 1 pixel. Thus, if the division by 2 results in 0 (zero), 1 will be taken instead.</DD>
+
+<DT><I>Levels</I></DT>
+
+<DD>[in] The number of levels in the volume texture. If this is zero, Microsoft&#174; Direct3D&#174; will generate all texture sub-levels down to 1&times;1&times;1 pixels. </DD>
+
+<DT><I>Usage</I></DT>
+
+<DD>[in] Currently not used, set to 0. </DD>
+
+<DT><I>Format</I></DT>
+
+<DD>[in] Member of the <A HREF="_dx_d3dformat_graphics.htm">D3DFORMAT</A> enumerated type, describing the format of all levels in the volume texture.</DD>
+
+<DT><I>Pool</I></DT>
+
+<DD>[in] Ignored.</DD> 
+
+<DT><I>pVolumeTexture</I></DT>
+
+<DD>[in, out] Address of the <A HREF="_dx_idirect3dvolumetexture8_graphics.htm">IDirect3DVolumeTexture8</A> interface, representing the volume texture resource which is to be filled.
+</DD>
+
+<dt><i>Data</i></dt>
+
+<dd>[in] Offset to the data held by this resource.
+</dd>
+
+<dt><i>Pitch</i></dt>
+<dd>[in] Specifies the pitch of the texture.
+</dd>
+
+</DL>
+
+<H4>Return Values</H4>
+
+<P>Returns the number of bytes required by the resource, not counting the header.</P>
+
+<h4>Remarks</h4>
+
+<p>All resources, including volume texures, include a header that contains all of the information needed by the driver to process the resource and a data allocation that contains information used by the GPU. The resource headers are used only by the driver and so should be allocated from normal cached memory. The header contains all of the information needed by the driver to set up the hardware so it can use the information stored in the data allocation.</p>
+
+<p>Unless the title is manually creating a resource, it is recommended that the title use <a href="_dx_idirect3ddevice8_createvolumetexture_graphics.htm">IDirect3DDevice8::CreateVolumeTexture</A>.</p>
+
+<p>After calling <b>XGSetVolumeTextureHeader</b>, it is necessary to call <a href="xbox_dxg_IDirect3DResource8_Register.htm">IDirect3DResource8::Register</A> in order to register the memory address of the resource.</p>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in xgraphics.h.<BR>
+<B>&nbsp;&nbsp;Import Library:</B> Use xgraphics.lib.</P>
+
+<h4>See Also</h4>
+<p><a href="xbox_dxg_3D_compressed_texture_format.htm">3D Compressed Texture Format</A></p>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

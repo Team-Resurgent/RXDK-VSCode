@@ -1,0 +1,60 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="texbrdft/html; charset=Windows-1252">
+<TITLE>texbrdf</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="texbrdf">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="texbrdf"/>
+<MSHelp:Keyword Index="F" Term="texbrdf"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_texbrdf_graphics"></A>texbrdf</H1>
+
+<P>The texbrdf texture mode can be used to calculate a bi-directional reflectance distribution function. This function returns the surface color based on the angles of the vector from the fragment to the eye point and the angles of the vector from the fragment to the light.</P>
+
+<PRE class=syntax>texbrdf   tDest
+</PRE>
+
+<H4>Registers</H4>
+
+<DL>
+<DT><B>tDest</B></DT>
+
+<DD>Destination register, holding the result of the operation.
+</DD>
+</DL>
+
+<H4>Remarks</H4>
+
+<p>This mode is typically used as follows:</p>
+
+<pre>tex t0	     // Convert eye vector to spherical coordinates.
+tex t1	     // Convert light vector to spherical coordinates.
+texbrdf t2   // Do 3D texture lookup to find fragment color value.
+</pre>
+
+<p>This mode uses a texture that can convert a three-component normal vector to spherical coordinates (phi, sigma). Each of these coordinates is 16 bits. This texture map is used in the first two stages to calculate the spherical coordinates for the eye and light vectors. This texture map should be set to use nearest-neighbor filtering on each stage. If linear filtering were used instead, adjacent spherical coordinates of 0 and 2*pi would be incorrectly blended together. The texbrdf stage performs the following calculation:</p>
+
+<blockquote>dPhi = eyePhi - lightPhi (dPhi ranges from -1.0 to 1.0)</blockquote>
+
+<p>It then performs a 3D texture lookup using the following texture coordinates:</p>
+
+<blockquote>(eyeSigma, lightSigma, dPhi)</blockquote>
+
+<p>The texbrdf stage requires a volume texture that holds the brdf transfer function for the current material. This texture should be set to wrap mode because angular values that are off by 2*pi are equivalent.</p>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

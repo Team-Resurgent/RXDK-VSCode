@@ -1,0 +1,58 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Performance Investigator for Xbox (PIX)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Performance Investigator for Xbox (PIX)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+	  <MSHelp:Keyword Index="K" Term="game performance data, capturing with PIX"/>
+	  <MSHelp:Keyword Index="K" Term="capture game performance data with PIX"/>
+	</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Performance Investigator for Xbox (PIX)</h1>
+<p>The Performance Investigator for Xbox (PIX) tool captures detailed performance information from a running game compiled with either a debug or profile version of the Direct3D library. PIX can display the data graphically and provide hints on how to improve the performance of the graphics pipeline to aid in the tuning and debugging of the game. In addition, PIX can display all Direct3D and GPU states, including shader programs for each point in the captured data. It works as well with data submitted by means of <a href="_dx_idirect3ddevice8_beginpush_graphics.htm">BeginPush</a>/<a href="_dx_idirect3ddevice8_endpush_graphics.htm">EndPush</a> as it does with data provided through the standard Direct3D functions.</p><p>The information in this section is divided into the following sections:</p><ul>
+<li><a href="pix_timing_capture.htm">PIX Timing Capture</a></li>
+<li><a href="pix_synchronizing_pushbuffer_timing_data.htm">Synchronizing Push-buffer and Timing Data</a></li>
+<li><a href="pix_adding_user_defined_events_markers.htm">Adding User-Defined Events and Markers</a></li>
+<li><a href="pix_graphical_user_interface.htm">PIX Graphical User Interface</a></li>
+<li><a href="pix_using_pix.htm">Using PIX</a></li>
+
+</ul>
+<h2><a name="IDA0BN2"></a>Known Issues</h2>
+<p>The following are known issues with PIX.</p><ul>
+<li>The PIX analysis application on the Xbox console may crash if the <a href="xbox_jbh_tool_xbperfmon.htm">XbPerfMon</a> tool is running at the same time. PIX files may be recorded or opened while XbPerfMon is running, but XbPerfMon should be closed before the <b>Begin Analysis</b> command is used.</li>
+<li>If the title uses <a href="_dx_idirect3ddevice8_settile_graphics.htm">IDirect3DDevice8::SetTile</a> to assign more than six of the eight available tiled regions, the PIX analysis application on the Xbox console will crash when the <b>Begin Analysis</b> command is used.</li>
+<li>The <a href="pix_pixel_history.htm">Pixel History</a> window cannot be used with D3DFMT_R5G6B5 surfaces. Attempting to debug a pixel from a render target texture of the D3DFMT_R5G6B5 format will crash the PIX analysis application on the Xbox console. A workaround requires a clear devkit with the kernel debugger connected. To work around the problem:</li>
+<ul>
+<li>Start PIX and record data as normal.</li>
+<li>Start the PIX analysis tool.</li>
+<li>Start a kernel debugger (kd) session with i386kd.exe.</li>
+<li>Break into the kd with CTRL+C.</li>
+<li>Issue the "go" kd command by pressing the 'g' key followed by ENTER.</li>
+<li>Debug a pixel from the D3DFMT_R5G6B5 render target. This should produce a debug error in kd.</li>
+<li>Issue the "go" kd command by pressing the 'g' key followed by ENTER. PIX should display the correct color values (before and after) at this point.</li>
+<li>Click on "Debug this pixel shader" from the Pixel History window. This should produce another debug error in kd.</li>
+<li>Issue the "go" kd command by pressing the 'g' key followed by ENTER. PIX should display the correct shader.</li>
+<li>Refer to <a href="prog_wp_secretsdebugger.htm">Secrets of the Kernel Debugger</a> for further information with kd setup and usage.</li>
+</ul>
+<li>The <a href="pix_mesh_debugger.htm">Mesh Debugger</a> displays vertex attributes of the format D3DVSDT_NORMPACKED3 with incorrect values in the list of vertex data.  Correct values for a vertex can be seen in the <a href="pix_vertex_shader_debugger.htm">Vertex Shader Debugger</a> by clicking on the index of a vertex.</li>
+<li>The render states D3DRS_DXT1NOISEENABLE, D3DRS_LIGHTING, D3DRS_LOCALVIEWER, and D3DRS_MULTISAMPLEANTIALIAS are not shown correctly, always appearing with the value FALSE in the <a href="pix_renderstates_window.htm">Renderstates</a> window.</li>
+</ul>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

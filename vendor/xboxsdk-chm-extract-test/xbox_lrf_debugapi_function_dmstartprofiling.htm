@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>DmStartProfiling</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="DmStartProfiling"/>
+<MSHelp:Keyword Index="F" Term="DmStartProfiling"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1><A NAME=""></A>DmStartProfiling</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<!--****Intro paragraph. Should be a three or four sentence summary of the topic.****-->
+<P class="intro">Begins collecting profiling data. This data may later be analyzed by using the <a
+href="xbox_lrf_tool_xbperf.htm">Call-Attributed Profiler (XbPerf)</a> or <a href="xbox_lrf_tool_xbperfview.htm">XbPerfView</a>.</P>
+<!--*********************************************************************************-->
+
+<PRE class=syntax><b>HRESULT DmStartProfiling(</b>
+  <B>LPCSTR</B> <I>szFileName</I><B>,</B> 
+  <B>DWORD</B>  <I>dwDataBufferSize</I>
+  <b>);</b></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+
+<DT><I>szFileName</I></DT>
+<DD>Pointer to a null-terminated string that specifies the path and file name
+    where the profiling log data is written.</DD>
+
+<DT><I>dwDataBufferSize</I></DT>
+<DD>Size, in bytes, of the data buffer that is allocated to hold profiling data. Passing a value of 0 for <i>dwDataBufferSize</i> causes
+    <b>DmStartProfiling</b> to use its default buffer size of 32 MB.</DD>
+
+</DL>
+
+<H4>Return Values</H4>
+
+<P class="content">If <B>DmStartProfiling</B> begins profiling successfully, 
+XBDM_NOERR is returned. If profiling is already in progress, the function returns 
+XBDM_PROFILEALREADYSTARTED. Otherwise, an XBDM error value is returned 
+(see <a href="xbox_jbh_debugapi_errorcodes.htm">Debugger API Error Codes</a> for 
+possible values).</P>
+
+<h4>Remarks</h4>
+
+
+
+<p>If profiling is already in progress, a second call to <b>DmStartProfiling</b> will restart profiling. Opening the file specified in <i>szFileName</i> is deferred until <a href="xbox_lrf_debugapi_function_dmstopprofiling.htm">DmStopProfiling</a> is called, making it faster to call <b>DmStartProfiling</b> every frame. This feature allows the title to call <b>DmStartProfiling</b> every frame (with different or same parameters) and call <b>DmStopProfling</b> to write out the data for slow frames. For frames where <b>DmStopProfling</b> is not called, the profiling data is discarded automatically.</p>
+
+<p class="content">Do not confuse the <b>DmStartProfiling</b> function with <a
+href="xbox_jbh_debugapi_function_dmstopprofile.htm"><b>DmStartProfile</b></a>.
+<b>DmStartProfiling</b> is used to begin gathering profiling information; <b>DmStartProfile</b> is used to register a profiler interrupt handler.</p>
+
+<h4>Requirements</h4>
+
+<p class="content">
+<b>Header:</b> Declared in XbDm.h
+<br><b>Import Library:</b> XbDm.lib
+</p>
+
+<h4>See Also</h4>
+
+<p class="content">
+<a href="xbox_lrf_tool_xbperf.htm"><b>Call-Attributed Profiler (xbperf)</b></a>
+|
+<a href="xbox_lrf_debugapi_function_dmstopprofiling.htm"><b>DmStopProfiling</b></a>
+</p>
+
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2002 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

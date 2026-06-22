@@ -1,0 +1,363 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Xbox Call-Attributed Profiler (XbPerf)</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Xbox Call-Attributed Profiler (XbPerf)"/>
+<MSHelp:Keyword Index="K" Term="XbPerf tool"/>
+<MSHelp:Keyword Index="F" Term="Xbox Call-Attributed Profiler (XbPerf)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1><A NAME=""></A>Xbox Call-Attributed Profiler (XbPerf)</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<!--****Intro paragraph. Should be a three or four sentence summary of the topic.****-->
+<P class="intro">The Xbox Call-Attributed Profiler (XbPerf) allows you to analyze a title's
+CPU performance. The title must be compiled with specific switches so that it will
+produce profiling information. After running the title and collecting profiling
+information, you can transfer the profiling log to your development machine,
+where XbPerf can produce useful reports based on the information in the log file.</P>
+<!--*********************************************************************************-->
+
+<PRE>USAGE: xbperf [log-file [-run | -summary] [options] ] | [-collect [start [size] | stop] ]</PRE>
+
+<TABLE class="tblcontrols">
+<!--**Stock Text. Do not change.****-->
+<TR VALIGN="top"><TH align=left width=25%>Option</TH><TH align=left width=75%>Description</TH></TR>
+<!--**Use this set of tags for a row. Copy and paste for additional rows.**-->
+
+<tr><td><i>log-file</i></td>       <td>File name of the log file that XbPerf
+                                should analyze. Remote files, specified with
+                                the <i>xe:\...</i> syntax, are copied to a
+                                temporary local location for processing. The local copies are deleted when XbPerf
+                                exits.</td></tr>
+
+<TR><td><b>-run</b></td>           <td>Specifies that XbPerf should operate in
+                                Run mode.</td></tr>
+<tr><td><b>-summary</b></td>       <td>Specifies that XbPerf should operate in
+                                Summary mode.</td></tr>
+<tr><td><b>-collect start</b> [<i>size</i>]</td> <td>Starts collection of profiling data, saving
+                                profiling information in the file specified by
+                                <i>log-file</i>. Without the optional
+                                <i>size</i> parameter, this option is equivalent to
+                                calling <pre>DmStartProfiling(log-file, 0)</pre> from
+                                a title's actual code. The <i>size</i>
+                                parameter specifies the size of the memory
+                                buffer to use for collecting profiling
+                                data, expressed in megabytes. With the <i>size</i> parameter included,
+                                this option is equivalent to calling
+                                <pre>DmStartProfiling(log-file, size*1024*1024)</pre>
+                                from a title's actual code.</td></tr>
+<tr><td><b>-collect stop</b></td>  <td>Stops collection of profiling data. If <b>-collect
+                                stop</b> is specified, then <i>log-file</i> must
+                                not be specified on the command line. This
+                                option is equivalent to calling
+                                <pre>DmStopProfiling()</pre> from a title's actual
+                                code.</td></tr>
+
+<TR><td><b>-maxdepth</b> <i>n</i></td>    <td>Specifies that function pruning should occur
+                                after <i>n</i> levels. Functions deeper than <i>n</i> levels
+                                in the stack are collapsed to an entry of "..."
+                                in the output. This option is valid only in
+                                Run mode.</td></TR>
+<TR><td><b>-threaded</b></td>      <td>Separate call trees are shown for each
+                                thread. If this option is not specified, one
+                                call tree is shown, and thread switches are
+                                shown inline at the points at which they
+                                occur. This option is valid only in Run mode.</td></TR>
+<!-- Commented out for April 2002 XDK; DPCs require March or later kernel.  See bug #12623.
+<TR><td>-dpc</td>           <td>DPCs, APCs, and other similar code is presented
+                                in the call tree. This option valid only in
+                                Run mode.</td></TR>
+-->
+				
+<TR><td><b>-sort</b> <i>column</i></td>   <td>Sorts the specified column in decreasing
+                                order. Valid values for <i>column</i> are "callsin,"
+                                "callsout," "incltime," or "excltime." If no
+                                sort field is specified, the output is sorted
+                                in decreasing order of exclusive time. This
+                                option is valid only in Summary mode.</td></tr>
+<TR><td><b>-thread</b> <i>id</i></td>     <td>Only functions called in the thread specified
+                                by <i>id</i> are shown. If <i>id</i> is not
+                                specified, each function entry includes all
+                                time in all threads. This option is valid only
+                                in Summary mode.</td></TR>
+<tr><td><b>-pct</b></td>           <td>Time values are shown as percentages of the
+                                total time attributed. In single-thread mode,
+                                this is a percentage of the total time spent in
+                                that thread. If <b>-pct</b> is not specified, all time
+                                values are shown in microseconds. This option
+                                is valid only in Summary mode.</td></tr>
+<tr><td><b>-top</b> <i>n</i></td>         <td>Only the top <i>n</i> function entries are
+                                displayed. This option is valid only in Summary
+                                mode.</td></tr>
+
+<tr><td><b>-idle</b></td>          <td>Time spent in the idle thread is attributed to
+                                the idle thread. If <b>-idle</b> is not specified,
+                                time spent in the idle thread is attributed to
+                                the last function to run prior to the idle
+                                thread (that is, the function that caused the
+                                wait).</td></tr>
+<tr><td><b>-s</b> <i>path</i></td>        <td>Tells XbPerf to use <i>path</i> as the
+                                path that contains the .pdb symbol file.</td></tr>
+
+</TABLE>
+
+
+<H3 class="overview">Preparing a Title for Profiling</H3>
+
+<p class="content">In order to use XbPerf, you must first create an
+instrumented version of your game title. All object files to be profiled must
+be compiled with the <b>/fastcap</b> compiler option. Instrumented executables must
+also link with xbdm.lib to import required hooks and control functions.</p>
+
+<p class="content">Within the title's code, a call to <b>DmStartProfiling</b>
+begins collecting profiling data, and a call to <b>DmStopProfiling</b> ends
+data collection and flushes profiling data to a log file. Time spent performing
+data collection, including time spent flushing data to the log file, is not
+attributed to any function.</p>
+
+<p class="content">See the documentation for <a href="xbox_lrf_debugapi_function_dmstartprofiling.htm">DmStartProfiling</a> and
+<a href="xbox_lrf_debugapi_function_dmstopprofiling.htm">DmStopProfiling</a> for more details about how profiling data is actually written to the log file.</p>
+
+
+<H4 class="subheading2">Profiling Without Adding Code</H4>
+
+<p class="content">You may also generate profiling data without adding
+<b>DmStartProfiling</b> and <b>DmStopProfiling</b> calls to your title's
+code. The <b>-collect start</b> and <b>-collect stop</b> options allow you to start and stop
+logging while an instrumented title is running. Keep in mind that
+<b>DmStartProfiling</b> and <b>DmStopProfiling</b> allow you to restrict
+profiling to certain sections of your title's code, whereas the <b>-collect</b>
+options profile everything from the time you run XbPerf with the
+<b>-collect start</b> option until the time you run XbPerf with the <b>-collect
+stop</b> option.</p>
+
+
+<H3 class="overview">Analyzing Profile Data</H3>
+
+<p class="content">To analyze a log file with XbPerf, follow the steps below:</p>
+
+<ol>
+  <li>Run an instrumented game title, and then exit it cleanly by using the
+      <a href="xbox_jbh_tool_remote_xbreboot.htm">Remote
+      Reboot Tool (XbReboot)</a> to terminate the title.</li>
+  <li>Using the <a href="xbox_jbh_tool_remote_xbcp.htm">File Transfer Tool (XbCp)</a>, transfer the log file generated by the instrumented title to your
+      development system.</li>
+  <li>Run XbPerf with the appropriate options, specifying the log file
+      as the first command line argument to XbPerf.</li>
+</ol>
+
+<p class="content">As an alternative to step 2, you may also use the <i>xe:/...</i>
+remote syntax to directly specify
+the log file's location on the Xbox Development Kit. If you plan to analyze the same log file more than once (for
+example, using XbPerf in both Run and Summary modes), it will save time
+to copy the log file to your development system manually. This is because running
+XbPerf on a remote log file copies the file to a temporary directory
+each time XbPerf is run, and deletes the file after XbPerf is
+finished.</p>
+
+<p class="content">The XbPerf tool has two different reporting modes:
+Run and Summary. When run in either mode, XbPerf writes its output to
+stdout.</p>
+
+<H4 class="subheading2">Run Mode</H4>
+
+<p class="content">Run mode produces a sequential list of every function call,
+showing the nesting hierarchy of the call stack from the point at which
+profiling begins until profiling ends. Because it mentions every single
+function call, Run mode can produce very large reports. Run mode is
+particularly useful for boot-up performance testing, because it shows where
+critical performance lags occur and offers clues for fixing them.</p>
+
+<p class="content">The following example shows XbPerf output in Run
+mode:</p>
+
+<pre>
+ThreadID   start time     duration   function
+    0x14          284          322   thread-switch [IDLE]
+    0x00          606          238   thread-switch 0x14
+    0x14          844       453185   thread-switch [IDLE]
+    0x00         2267         1444   thread-switch 0x1C
+    0x1C         2390            2   main =&gt; ProcessKeySequences
+    0x1C         2391            1   0  USBManager::IsButtonPressed
+    0x1C         2393            1   main =&gt; CheckMUs
+    0x1C         2394            1   0  XGetDeviceChanges
+    0x1C         2396            4   main =&gt; D3DDevice_Clear
+    0x1C         2400            1   main =&gt; D3DDevice_SetVertexShader
+    0x1C         2401            0   main =&gt; D3DDevice_SetRenderState_ParameterCheck
+    0x1C         2402            0   main =&gt; D3DDevice_SetRenderState_EdgeAntiAlias
+    0x1C         2402          122   main =&gt; GouraudGroup::renderStrip
+    0x1C         2403          121   0  GouraudObject::renderStrip
+    0x1C         2403            2   0  1  D3DDevice_SetTransform
+    0x1C         2406            2   0  1  D3DDevice_SetStreamSource
+    0x1C         2409            1   0  1  D3DDevice_SetIndices
+    0x1C         2411          113   0  1  D3DDevice_DrawIndexedVertices
+</pre>
+
+<p class="content">The <i>ThreadID</i> column identifies the thread to which
+the function call belongs. The <i>start time</i> column indicates the number of
+microseconds since the start of profiling when the function on that line of the
+log started execution. The <i>duration</i> column represents the amount of time (in microseconds)
+spent in the function. The final column,
+<i>function</i>, identifies the function call and shows its hierarchy level in
+the call stack.</p>
+
+<p class="content">If your title is multithreaded, it may also be useful to
+run XbPerf in Run mode with the <b>-thread</b> option, which separates the
+report into separate sections by thread. The following example shows Run mode
+XbPerf output with the <b>-thread</b> option active:</p>
+
+<pre>
+Thread [IDLE] : time = 4102750
+  start time     duration   function
+         606          238   thread-switch 0x14
+        2267         1444   thread-switch 0x1C
+       31627         1125   thread-switch 0x1C
+       65000         1029   thread-switch 0x1C
+       98389         1312   thread-switch 0x1C
+      131778         1105   thread-switch 0x1C
+      165160         1099   thread-switch 0x1C
+      198526         1012   thread-switch 0x1C
+      231906         1120   thread-switch 0x1C
+      265302         2590   thread-switch 0x1C
+
+Thread 0x1C : time = 924194
+  start time     duration   function
+        2390            2   main =&gt; ProcessKeySequences
+        2391            1   0  USBManager::IsButtonPressed
+        2393            1   main =&gt; CheckMUs
+        2394            1   0  XGetDeviceChanges
+        2396            4   main =&gt; D3DDevice_Clear
+        2400            1   main =&gt; D3DDevice_SetVertexShader
+        2401            0   main =&gt; D3DDevice_SetRenderState_ParameterCheck
+        2402            0   main =&gt; D3DDevice_SetRenderState_EdgeAntiAlias
+        2402          122   main =&gt; GouraudGroup::renderStrip
+        2403          121   0  GouraudObject::renderStrip
+        2403            2   0  1  D3DDevice_SetTransform
+        2406            2   0  1  D3DDevice_SetStreamSource
+        2409            1   0  1  D3DDevice_SetIndices
+        2411          113   0  1  D3DDevice_DrawIndexedVertices
+</pre>
+
+<p class="content">The <i>time</i> value in the heading for each thread in
+<b>-thread</b> output specifies the total time (in microseconds) spent in that particular thread.</p>
+
+<H4 class="subheading2">Summary Mode</H4>
+
+<p class="content">Summary mode produces an aggregate report, showing the total
+time spent in specific functions. By default, Summary mode lists functions in
+decreasing order of time spent exclusively in each function. Summary mode is
+useful when you want to determine how much time is spent in certain sections of
+your title's code. For example, you could use Summary mode to determine if your
+game's AI code is wasting CPU time, or to test the efficiency of a specific
+search algorithm in relation to other code in your title.</p>
+
+<p class="content">The following example illustrates the output from
+XbPerf in Summary mode:</p>
+
+<pre>
+CallsIn CallsOut  InclTime  ExclTime Function Name
+    200        0    338563    338563 XFONT_TextOut
+    134        0    239099    239099 D3DDevice_Swap
+   3216        0    104966    104966 D3DDevice_DrawIndexedVertices
+     20   450660    143439     86351 AlphaTexture
+    118        0     65903     65903 XFONT_SetTextHeight
+  11212        0     59505     59505 FindNextFileA
+ 225280        0     45949     45949 D3DXCOLOR::operator unsigned long
+    230        0     11541     11541 FindFirstFileA
+ 225300        0     10544     10544 D3DXCOLOR::D3DXCOLOR
+    690        0      8837      8837 D3DDevice_DrawVertices
+  10984        0      3533      3533 _strupr
+    489        0      3491      3491 _snprintf
+   3886        0      2299      2299 D3DDevice_SetTransform
+    230        0      2252      2252 CloseHandle
+    215        0      2155      2155 _snwprintf
+  10984    11059      8837      1890 CXBEList::ProcessFile
+</pre>
+
+<p class="content">The <i>CallsIn</i> column specifies the total number of calls made
+into that particular function. <i>CallsOut</i> specifies the total number
+of calls made by the function. <i>InclTime</i> represents inclusive time, or
+the total number of microseconds spent in the function and all of its child function
+calls. The <i>ExclTime</i> column lists exclusive time, or the total number of
+microseconds spent in a function, exclusive of its child function
+calls. <i>Function Name</i> is the name of the function call.</p>
+
+<p class="content">Instead of actual time values in microseconds, Summary mode
+can also produce percentages of total time for each function. Use the <b>-pct</b>
+option with Summary mode to generate percentage information. The
+<i>InclTime</i> and <i>ExclTime</i> columns specify percentages (rather than time
+in microseconds) when you include the <b>-pct</b> option on the <b>xbperf</b> command
+line. The following example shows Summary output from the same profile log as
+the previous example, but with the <b>-pct</b> option turned on:</p>
+
+<pre>
+CallsIn CallsOut  InclTime  ExclTime Function Name
+    200        0     6.51%     6.51% XFONT_TextOut
+    134        0     4.60%     4.60% D3DDevice_Swap
+   3216        0     2.02%     2.02% D3DDevice_DrawIndexedVertices
+     20   450660     2.76%     1.66% AlphaTexture
+    118        0     1.27%     1.27% XFONT_SetTextHeight
+  11212        0     1.14%     1.14% FindNextFileA
+ 225280        0     0.88%     0.88% D3DXCOLOR::operator unsigned long
+    230        0     0.22%     0.22% FindFirstFileA
+ 225300        0     0.20%     0.20% D3DXCOLOR::D3DXCOLOR
+    690        0     0.17%     0.17% D3DDevice_DrawVertices
+  10984        0     0.07%     0.07% _strupr
+    489        0     0.07%     0.07% _snprintf
+   3886        0     0.04%     0.04% D3DDevice_SetTransform
+    230        0     0.04%     0.04% CloseHandle
+    215        0     0.04%     0.04% _snwprintf
+  10984    11059     0.17%     0.04% CXBEList::ProcessFile
+</pre>
+
+
+<H3 class="overview">Remarks</H3>
+
+<p class="content">Currently, XbPerf cannot profile DPCs (Deferred Procedure Calls).</p>
+
+<p class="content">For an easy way to view the profiling information produced by XbPerf, use the
+<a href="xbox_lrf_tool_xbperfview.htm">Xbox Call-Attributed Profile Viewer (XbPerfView)</a>.</p>
+
+
+
+<H3 class="overview">See Also</H3>
+
+<p class="content">
+<a href="xbox_lrf_tool_xbperfview.htm">Xbox Call-Attributed Profile Viewer (XbPerfView)</a> |
+<a href="xbox_lrf_debugapi_function_dmstartprofiling.htm">DmStartProfiling</a>,
+<a href="xbox_lrf_debugapi_function_dmstopprofiling.htm">DmStopProfiling</a>
+</p>
+
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2002 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

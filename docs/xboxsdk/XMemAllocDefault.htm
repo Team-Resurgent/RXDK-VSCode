@@ -1,0 +1,57 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XMemAllocDefault</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XMemAllocDefault"/>
+<MSHelp:Keyword Index="F" Term="XMemAllocDefault"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XMemAllocDefault</h1>
+<p>Default memory replacement function that allocates memory.</p><pre class="syntax" xml:space="preserve"><b>LPVOID WINAPI</b> <b>XMemAllocDefault(</b>
+    <b>SIZE_T</b> <i>dwSize</i><b>,</b>
+    <b>DWORD</b> <i>dwAllocAttributes</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+<dt><i>dwSize</i></dt>
+<dd>[in]  Desired size, in bytes, of the memory to be allocated.</dd>
+<dt><i>dwAllocAttributes</i></dt>
+<dd>[in]  An <a href="XALLOC_ATTRIBUTES.htm">XALLOC_ATTRIBUTES</a> value that specifies the desired attributes of the memory to allocate.</dd>
+</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>If the function succeeds, the return value is the base address of the allocated memory.</p><p>If the function fails, the return value is NULL.</p><h4><a name="remarks"></a>Remarks</h4>
+<p><b>XMemAllocDefault</b> is the default memory callback function used by the XTL libraries for allocations.  All memory allocations performed by the XTL libraries call <a href="XMemAlloc.htm">XMemAlloc</a>.  If the title does not provide an overriden <b>XMemAlloc</b>,  <b>XMemAllocDefault</b> is used.  A title can provide an overriden <b>XMemAlloc</b>, and within its implementation, call <b>XMemAllocDefault</b> in order to perform the appropriate actions.  Thus the title can track calls without needing to fully implement <b>XMemAlloc</b> functionality.</p>
+
+<p>The <b>CustomMemoryAllocator</b> sample in the XDK demonstrates overriding the memory callback funtions while calling the default functions to perform some allocation tasks.</p>
+
+<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;<b>XMemAlloc</b>, <a href="XMemFree.htm">XMemFree</a>, and <a href="XMemSize.htm">XMemSize</a> can be reliably overridden only by functions defined in the main executable project, <i>not</i> in a library (.lib file).  Otherwise, XDK libraries may pull in the default implementations before the application-defined functions are detected.  The application-defined functions must be in an .obj file used to generate the title's .xbe, rather than in a .lib that is linked in with the title.  Alternatively, adding the .lib in <b>Additional Dependencies</b> in <b>Linker/Input</b> may resolve the issue.</p>
+
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xbox.h; for include use xtl.h.</p>
+            <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="XMemFreeDefault.htm">XMemFreeDefault</a>, <a href="XMemSizeDefault.htm">XMemSizeDefault</a>, <a href="XMemAlloc.htm">XMemAlloc</a>, <a href="XMemFree.htm">XMemFree</a>, <a href="XMemSize.htm">XMemSize</a>, <a href="XALLOC_ATTRIBUTES.htm">XALLOC_ATTRIBUTES</a></p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

@@ -1,0 +1,184 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XACT Overview</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XACT Overview"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+        <MSHelp:Keyword Index="K" Term="XACT, known issues"/>
+        <MSHelp:Keyword Index="K" Term="XACT, Japanese version"/>
+    </xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XACT Overview</h1>
+<p>
+            This section offers a general overview of the versions, benefits, and 
+            constraints of the Xbox Audio Creation Tool (XACT). The information here is 
+            somewhat oriented toward a programming audience. If you are a composer or sound 
+            designer, you may want to proceed to the <a href="xbox_xact_authoring_dxaudio.htm">XACT 
+            Authoring Guide</a>.
+        </p>
+<ul>
+<li><a href="#IDA1QYK">XACT Executables</a></li><li><a href="#IDAMRYK">Notes on the Japanese Version of XACT</a></li><li><a href="#IDA4RYK">Benefits</a></li><li><a href="#IDAJTYK">Constraints</a></li><li><a href="#IDABUYK">Known Issues</a></li><li><a href="#IDAHWYK">Related Topics</a></li></ul>
+<h2><a name="IDA1QYK"></a>XACT Executables</h2>
+<p>
+                There are two different executables for XACT (Xactbld.exe and Xact.exe).
+				 They differ as follows:
+            </p><ul>
+                <li>Xactbld.exe can be run from the command line, making it easier to integrate 
+                into a build process.</li>
+                <li>Unlike Xactbld.exe, Xact.exe provides a graphical user interface, which 
+                makes it easier for audio engineers to create and manage wave banks.</li>
+                <li>Xact.exe enables you to preview audio content using the Audio Console 
+                Application on either the Xbox Development Kit (XDK) or Xbox Debug Kit.</li>
+            </ul>
+<h2><a name="IDAMRYK"></a>Notes on the Japanese Version of XACT</h2>
+<p>
+                The following information applies to the Japanese version of XACT.
+            </p><ul>
+                <li>The XDK setup program installs both the English and Japanese versions of 
+                XACT on Japanese versions of Windows. In this case, XDK Setup creates two 
+                shortcuts on the Windows Start Menu, one Japanese and the other English. The 
+                Japanese shortcut points to the Japanese version of XACT (XACT-JP.exe). The English
+				shortcut points to the English version of XACT (XACT.exe). In previous versions of
+				the XDK, only the English version of XACT was installed, and Setup created a
+				<i>Japanese</i> shortcut that pointed to the English version.</li>
+				<li>Running the English version of XACT after running the Japanese version will
+				map the .xap file association to use the English version. Therefore, it is
+				important <i>not</i> run XACT.exe if you wish to maintain the original
+				file association with XACT-JP.exe.</li>
+                <li>The Japanese version of XACT supports only 8-bit characters for the names of 
+                files, XACT sounds, and wave banks. In general, non-ANSI text is not supported in
+				either version of XACT. This includes Unicode Kana.</li>
+            </ul>
+<h2><a name="IDA4RYK"></a>Benefits</h2>
+<p>
+                Following are some of the benefits provided by XACT.
+            </p><ul>
+                <li>XACT handles WMA, WAV, and AIFF files and properly parses loop points in WAV 
+                and AIFF files.</li>
+                <li>XACT can combine several audio files into a single wave bank (.xwb) file.</li>
+                <li>XACT supports real-time conversion of 16-bit PCM data to 8-bit PCM data in 
+                addition to real-time compression of 16-bit PCM data using the Xbox ADPCM CODEC.</li>
+                <li>XACT provides a way to preview audio content on the Xbox hardware when the 
+                Audio Console Application is running on an Xbox Development Kit or Xbox Debug 
+                Kit (Xact.exe only).</li>
+                <li>The <a href="xbox_jc_idirectsoundbuffer8_setbufferdata_dxaudio.htm">IDirectSoundBuffer8::SetBufferData</a> 
+                method can be applied directly to XACT wave banks.</li>
+                <li>XACT's individual audio files within a wave bank can be accessed and played 
+                using the <a href="xbox_idirectsoundbuffer8_setplayregion_dxaudio.htm">IDirectSoundBuffer8::SetPlayRegion</a> 
+                and <a href="xbox_jc_idirectsoundbuffer8_setloopregion_dxaudio.htm">IDirectSoundBuffer8::SetLoopRegion</a> 
+                methods.</li>
+                <li>XACT simplifies audio data management. Rather than being required to 
+                download several different audio files, titles can now create a single wave bank 
+                (or a set of wave banks) that holds the audio data necessary for a particular 
+                part of the game, and then simply download that single file.</li>
+                <li>XACT provides a powerful feature called <i>zero-latency streaming</i> 
+                that solves the problem of fitting sounds within allocated memory. This feature 
+                is discussed in more detail in <a href="xbox_xact_concepts_dxaudio.htm#XACT_zero_latency_streaming">XACT 
+                Concepts</a>.</li>
+            </ul>
+<h2><a name="IDAJTYK"></a>Constraints</h2>
+<p>
+                When using the XACT tool, keep the following points in mind.
+            </p><ul>
+                <li>XACT's output files are stamped with version information based on the 
+                version of the XACT GUI being used by the sound designer. As new versions of 
+                XACT are released, older versions of XACT projects can be loaded, but will be 
+                converted to the new version. Developers <i>must</i> link to the 
+                XACT library files that match the version of the files being generated by the 
+                sound designer.</li>
+                <li>Only in-memory wave banks are limited to 8 MB (only 8 MB of Xbox memory can 
+                be used for sounds.) Streamed wave banks, because they don't reside in memory, 
+                can include up to 1.8 GB of data.</li>
+                <li>XACT does not handle wave files compressed using ACM (Audio Compression 
+                Manager) CODECs other than the Microsoft ADPCM CODEC, but it does handle WMA 
+                files (which are compressed with a CODEC other than the ADPCM CODEC.)</li>
+                <li>When looping WMA files, the XACT engine flushes the internal WMA decoder 
+                between loops. This is an asynchronous operation that may take several 
+                milliseconds and will generate a stream starvation message. Silence will be 
+                played between loops.</li>
+                <li>Version 8 WMA files are not currently supported by the Xbox WMA decoder.</li>
+                <li>Stereo and other multichannel sound sources must be played on the default 
+                sound source.</li>
+                <li>The Audio Console Application limits the number of concurrent streams coming 
+                from the hard disk to 50.  The actual resource limit depends on disk layout, the 
+                sound format, and other disk activity, but is set to a fixed number for 
+                consistency.</li>
+            </ul>
+<h2><a name="IDABUYK"></a>Known Issues</h2>
+<p>
+                The following are known issues with XACT.
+            </p><ul>
+                <li>Auditioning an ADPCM wave with a length 1 loop region at its end causes XACT 
+                to fault.</li>
+                <li>Looping very small streaming waves does not work properly; do not loop waves 
+                in a streaming wave bank smaller than two packets, as set by the <b>dwPacketSizeInMilliSecs</b> 
+                member of the <a href="xbox_xactwavebankstreamingparameters_dxaudio.htm">XACT_WAVEBANK_STREAMING_PARAMETERS</a> structure.</li>
+                <li>Sound banks with parameter-controlled variation playlists must have at least 
+                one variation with a maximum weight of 100.00.  Otherwise, auditioning the sound 
+                causes XACT to disconnect from AudConsole.</li>
+                <li>If a new sound is added to a sound group in the XACT GUI, the volume of the 
+                sound group is not immediately added to the volume of the new sound. To work 
+                around this issue, adjust the volume of the sound group slightly after adding 
+                the new sound.</li>
+                <li>The XACT GUI does not correctly display the default value for the max 
+                distance 3D sound property. The XACT GUI displays a value of 100,000, but the 
+                actual default value is 1,000,000,000. However, if the user changes
+				<i>any</i> of the values on the 3D sound properties page, the 
+				XACT GUI adjusts the actual 
+                value down to 100,000, thereby making the displayed value correct.</li>
+				<li><p>The following actions should not be performed during in-game auditioning.
+				Performing them may cause undefined behavior or crashes:</p>
+					<ul>
+					<li>Deleting sounds or cues</li>
+					<li>Deleting wave banks</li>
+					<li>Renaming sound banks or wave banks</li>
+					<li>Deleting waves in wave banks</li>
+					<li>Changing wave bank types (for example, from streaming to in-memory)</li>
+					<li>Setting the Parameter Control slider for a game-initiated
+					slider-controlled sound</li>
+					</ul>
+					<p>Over time, the XACT GUI may be updated to specifically prohibit 
+					these actions.</p>
+				</li>
+				<li>In the June 2003 and later XDK releases, if the <a href="xbox_ixactwmaplaylist_add_dxaudio.htm">IXACTWmaPlayList::Add</a> method is used with the XACTWmaPlayListAdd_Directory value to add a directory that contains only one WMA soundtrack, the cue for the WMA playlist does not loop. However, if the directory contains more than one soundtrack, the cue loops correctly.</li>
+				<li>In the June 2003 and later XDK releases, if a wave variation's run-time parameter control (RPC) is set to a value that is outside the ranges specified for that wave variation, the system leaks 64 bytes of memory. The memory leak occurs only with wave variations, and only if the sound cue is primed using the Prepare method before playing it.</li>
+				<li>If a track uses marker events inside of a loop defined by a loop start event, the time stamps for the marker events must be less than the duration of the wave associated with that track. The marker events may not occur at or after the wave has stopped. If these conditions are not met, XACT may hang when the wave is played.</li>
+				<li><p>Copying a sound with a 3D preset from its current sound bank to a new sound bank will cause the project file to become unusable. To work around this problem, follow these steps:</p>
+					<ol>
+						<li>Open the .XAP file in a text editor.</li>
+						<li>Go to the line of the error.</li>
+						<li>Within the sound definition where the error occurred, delete the line beginning with "3D Preset".</li>
+					</ol>
+					<p>The project should then be able loaded as expected.  The sound will have default 3D settings without a preset.</p>
+				</li>
+				<li>Wave variations added to a sound while the sound is playing will cause a crash when the sound is stopped. To avoid this situation, only add wave variations to sounds that are not currently playing.</li>
+            </ul>
+<h2><a name="IDAHWYK"></a>Related Topics</h2>
+<p>
+                For more information about XACT, see the following topics.
+            </p><ul>
+                <li> <a href="xbox_xact_concepts_dxaudio.htm">XACT Concepts</a></li>
+                <li> <a href="xbox_xact_authoring_dxaudio.htm">XACT Authoring Guide</a></li>
+                <li> <a href="xbox_xact_programmerguide_dxaudio.htm">XACT Programming Guide</a></li>
+                <li> <a href="xbox_xact_xact_dxaudio.htm">XACT Graphical User Interface Commands</a></li>
+                <li> <a href="xbox_xact_xactbld_dxaudio.htm">XACT (XACTBld) Command-Line Commands</a></li>
+            </ul>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

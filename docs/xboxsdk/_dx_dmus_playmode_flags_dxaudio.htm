@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>DMUS_PLAYMODE_FLAGS</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="DMUS_PLAYMODE_FLAGS  [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="DMUS_PLAYMODE_FLAGS"/>
+<MSHelp:Keyword Index="F" Term="DMUS_PLAYMODE_FLAGS"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_dmus_playmode_flags_dxaudio"></A>DMUS_PLAYMODE_FLAGS</H1>
+
+<P>Used in various structures for the basic play modes. The play mode determines how a music value is transposed to a MIDI note.  </P>
+
+<PRE class=syntax>typedef enum enumDMUS_PLAYMODE_FLAGS {
+    DMUS_PLAYMODE_KEY_ROOT          = 1,
+    DMUS_PLAYMODE_CHORD_ROOT        = 2,
+    DMUS_PLAYMODE_SCALE_INTERVALS   = 4,
+    DMUS_PLAYMODE_CHORD_INTERVALS   = 8,
+    DMUS_PLAYMODE_NONE              = 16,
+} DMUS_PLAYMODE_FLAGS;
+</PRE>
+
+<H4>Constants</H4>
+
+<DL>
+<DT>DMUS_PLAYMODE_KEY_ROOT</DT>
+
+<DD>Transpose over the key root.</DD>
+
+<DT>DMUS_PLAYMODE_CHORD_ROOT</DT>
+
+<DD>Transpose over the chord root.</DD>
+
+<DT>DMUS_PLAYMODE_SCALE_INTERVALS</DT>
+
+<DD>Use scale intervals from a scale pattern.</DD>
+
+<DT>DMUS_PLAYMODE_CHORD_INTERVALS</DT>
+
+<DD>Use chord intervals from a chord pattern.</DD>
+
+<DT>DMUS_PLAYMODE_NONE</DT>
+
+<DD>No mode. Indicates that the parent part's mode should be used.
+</DD>
+</DL>
+
+<H4>Remarks</H4>
+
+<P>The following defined values represent combinations of play mode flags:
+
+<DL>
+<DT>DMUS_PLAYMODE_ALWAYSPLAY</DT>
+
+<DD>Combination of DMUS_PLAYMODE_SCALE_INTERVALS, DMUS_PLAYMODE_CHORD_INTERVALS, and DMUS_PLAYMODE_CHORD_ROOT. If it is desirable to play a note that is above the top of the chord, this mode finds a position for the note by using intervals from the scale. Essentially, this mode is a combination of the normal and melodic playback modes, in which a failure in normal mode causes a second try in melodic mode.</DD>
+
+<DT>DMUS_PLAYMODE_FIXED</DT>
+
+<DD>Interpret the music value as a MIDI value. This is defined as 0 and signifies the absence of other flags. This flag is used for drums, sound effects, and sequenced notes that should not be transposed by the chord or scale.</DD>
+
+<DT>DMUS_PLAYMODE_FIXEDTOCHORD</DT>
+
+<DD>Same as DMUS_PLAYMODE_CHORD_ROOT. The music value is a fixed MIDI value, but it is transposed over the chord root. </DD>
+
+<DT>DMUS_PLAYMODE_FIXEDTOKEY</DT>
+
+<DD>Same as DMUS_PLAYMODE_KEY_ROOT. The music value is a fixed MIDI value, but it is transposed over the key root. </DD>
+
+<DT>DMUS_PLAYMODE_MELODIC</DT>
+
+<DD>Combination of DMUS_PLAYMODE_CHORD_ROOT and DMUS_PLAYMODE_SCALE_INTERVALS. The chord root is used, but the notes track only the intervals in the scale. The key root and chord intervals are ignored. This is useful for melodic lines that play relative to the chord root.</DD>
+
+<DT>DMUS_PLAYMODE_NORMALCHORD</DT>
+
+<DD>Combination of DMUS_PLAYMODE_CHORD_ROOT and DMUS_PLAYMODE_CHORD_INTERVALS. This is the prevalent playback mode. The notes track the intervals in the chord, which is based on the chord root. If the music value has a scale component, the additional intervals are pulled from the scale and added. If the chord does not have an interval to match the chord component of the music value, the note is silent.</DD>
+
+<DT>DMUS_PLAYMODE_PEDALPOINT</DT>
+
+<DD>Combination of DMUS_PLAYMODE_KEY_ROOT and DMUS_PLAYMODE_SCALE_INTERVALS. The key root is used, and the notes track only the intervals in the scale. The chord root and intervals are ignored. This is useful for melodic lines that play relative to the key root.</DD>
+
+<DT>DMUS_PLAYMODE_PEDALPOINTALWAYS</DT>
+
+<DD>Combination of DMUS_PLAYMODE_PEDALPOINT and DMUS_PLAYMODE_PEDALPOINTCHORD. Chord intervals are used if possible; otherwise scale intervals are used.</DD>
+
+<DT>DMUS_PLAYMODE_PEDALPOINTCHORD</DT>
+
+<DD>Combination of DMUS_PLAYMODE_MELODIC and DMUS_PLAYMODE_NORMALCHORD. The key root is used and the notes track only the intervals in the chord. The chord root and scale intervals are completely ignored. This is useful for chordal lines that play relative to the key root.
+</DD>
+</DL>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in dmusici.h.</P>
+
+<H4>See Also</H4>
+
+<P><A HREF="_dx_dmus_note_pmsg_dxaudio.htm"><B>DMUS_NOTE_PMSG</B></A>, <A HREF="_dx_music_values_and_midi_notes_dxaudio.htm"><B>Music Values and MIDI Notes</B></A></P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

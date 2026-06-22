@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>GetVolumeInformation</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="GetVolumeInformation">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="GetVolumeInformation"/>
+<MSHelp:Keyword Index="F" Term="GetVolumeInformation"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_getvolumeinformation"></A>GetVolumeInformation</H1>
+
+<P>The <B>GetVolumeInformation</B> function retrieves information about a file system and volume whose root directory is specified. </P>
+
+<PRE class=syntax><B>BOOL GetVolumeInformation(
+  LPCSTR</B><I> lpRootPathName</I><B>,           </B> // root directory
+<B>  LPSTR</B><I> lpVolumeNameBuffer</I><B>,        </B> // volume name buffer
+<B>  DWORD</B><I> nVolumeNameSize</I><B>,            </B>// length of name buffer
+<B>  LPDWORD</B><I> lpVolumeSerialNumber</I><B>,     </B>// volume serial number
+<B>  LPDWORD</B><I> lpMaximumComponentLength</I><B>, </B>// maximum file name length
+<B>  LPDWORD</B><I> lpFileSystemFlags</I><B>,        </B>// file system options
+<B>  LPSTR</B><I> lpFileSystemNameBuffer</I><B>,    </B> // file system name buffer
+<B>  DWORD</B><I> nFileSystemNameSize</I>   <B>   </B>   // length of file system name buffer
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>lpRootPathName</I></DT>
+
+<DD>[in] Pointer to a string that contains the root directory of the volume to be described. A trailing backslash is required. For example, you would specify the T drive as "T:\".</DD>
+
+<DT><I>lpVolumeNameBuffer</I></DT>
+
+<DD>[out] Pointer to a buffer that receives the name of the specified volume. </DD>
+
+<DT><I>nVolumeNameSize</I></DT>
+
+<DD>[in] Specifies the length, in <B>CHAR</B>s, of the volume name buffer. This parameter is ignored if the volume name buffer is not supplied. </DD>
+
+<DT><I>lpVolumeSerialNumber</I></DT>
+
+<DD>[out] Pointer to a variable that receives the volume serial number. This parameter can be NULL if the serial number is not required. 
+</DD>
+
+<DT><I>lpMaximumComponentLength</I></DT>
+
+<DD>[out] Pointer to a variable that receives the maximum length, in <B>CHAR</B>s, of a file name component supported by the specified file system. A file name component is that portion of a file name between backslashes. 
+
+<P>The value stored in variable pointed to by <B>*</B><I>lpMaximumComponentLength</I> is used to indicate that long names are supported by the specified file system. For example, for a FATX file system, the function stores the value 42, rather than the previous 8.3 indicator. Long names can also be supported on other file systems.</P>
+</DD>
+
+<DT><I>lpFileSystemFlags</I></DT>
+
+<DD>[out] Pointer to a variable that receives flags associated with the specified file system.  The flags will always be zero, as there are no flags defined.</DD>
+
+<DT><I>lpFileSystemNameBuffer</I></DT>
+
+<DD>[out] Pointer to a buffer that receives the name of the file system (such as FATX or UDFX). </DD>
+
+<DT><I>nFileSystemNameSize</I></DT>
+
+<DD>[in] Specifies the length, in <B>CHAR</B>s, of the file system name buffer. This parameter is ignored if the file system name buffer is not supplied. 
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If all the requested information is retrieved, the return value is nonzero.</P>
+
+<P>If not all the requested information is retrieved, the return value is zero. To get extended error information, call <A HREF="errors_3uwi.htm">GetLastError</A>. </P>
+
+<H4>Remarks</H4>
+
+<P>The maximum component length value, stored in <I>lpMaximumComponentLength</I>, is the only indicator that a volume supports longer-than-normal FAT (or other file system) file names. The file system name is not altered to indicate support for long file names.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p>
+
+<H4>See Also</H4>
+<P>
+<A HREF="xbox_mt_xtl_sll_file_io_functions.htm">File I/O Functions</A> | 
+<A HREF="filesio_9pgz.htm">GetFileAttributes</A>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

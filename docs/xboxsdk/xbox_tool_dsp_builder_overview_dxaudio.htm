@@ -1,0 +1,169 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>DSP Builder Overview</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="DSP Builder Overview">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="DSP Builder Overview"/>
+<MSHelp:Keyword Index="F" Term="DSP Builder Overview"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="xbox_tool_dsp_builder_overview_dxaudio"></A>DSP Builder Overview</H1>
+
+
+
+<P>The DSP Builder tool (DSPBuilder) enables users to quickly assemble a DSP effects image using a graphical user interface.  It creates the DSP effects image, the .ini file (which could be used with <A HREF="xbox_jbh_tool_xgpimage.htm">XGPImage</A> later), and the .h file, without the user having to manually create and/or edit the .ini file used by XGPImage.</P>
+
+<P>While XGPImage provides equal or greater flexibility than DSPBuilder, DSPBbuilder is much easier to use and should allow you to start developing your own images more quickly.</P>
+
+<UL>
+	<LI><A HREF="#xbox_tool_dsp_builder_overview_dxaudio_features">Features</A></LI>
+    <LI><A HREF="#xbox_tool_dsp_builder_overview_dxaudio_differences">Differences with XGPImage</A></LI>
+    <LI><A HREF="#xbox_tool_dsp_builder_overview_dxaudio_interface">DSP Builder Interface</A></LI>
+	<LI><A HREF="#xbox_tool_dsp_builder_overview_dxaudio_server">Auditioning DSP Builder Effects Images: DSP Server</A></LI>
+	<LI><A HREF="#xbox_tool_dsp_builder_overview_dxaudio_header">DSP Builder Generated Header File</A></LI>
+    <LI><A HREF="#xbox_tool_dsp_builder_overview_dxaudio_related">Related Topics</A></LI>
+</UL>
+
+<H2><A NAME="xbox_tool_dsp_builder_overview_dxaudio_features"></A>Features</H2>
+
+<P>The following list contains the features provided by DSPBuilder:</P>
+
+<UL>
+    <LI>Provides a graphical interface to the information needed to build a DSP effects image.</LI>
+    <LI>Generates the DSP effects image (.bin), .h file for the image, and an .ini file that can be used with XGPImage.</LI>
+    <LI>Indicates bad mixbin assignments (red for invalid routings).</LI>
+	<LI>Allows you to easily insert the Crosstalk cancellation effect needed by DirectSound.</LI>
+	<LI>Allows you to easily insert the I3DL2 reverberation effect needed by DirectSound, and lets you select a default environment for it.</LI>
+	<li>When a DSP Builder image is generated, the header file contains fixed names for I3DL2 and crosstalk-effect indices. These are referenced as <code>GraphI3DL2_I3DL2Reverb</code> and <code>GraphXTalk_XTalk</code> respectively, and are used with the <a href="xbox_dseffectimageloc_dxaudio.htm">DSEFFECTIMAGELOC</a> structure.</li>
+    <LI>Provides an optional mix to be sent to the LFE.</LI>
+    <LI>Automatically manages the temporary mixbins needed for your DSP effects image.</LI>
+    <LI>Abstracts many of the complexities in the .ini file used by the XGPImage tool (such as outputs to temporary mixbins needed by some effects (the I3DL2 reverb, for instance)).</LI>
+    <li>Allows you to adjust the parameters of certain effects.</li>
+    <li>Allows you to preview changes using the Audio Console application.</li>
+    <li>Allows real-time updates of high-level parameters (so you can listen to the results of your changes on Xbox in real time).</li>
+	<li>Allows you to choose whether an effect overwrites or mixes its output.</li>
+	<li>Allows you to add voice on FX send channels 16 through 19.</li>
+</UL>
+
+<H2><A NAME="xbox_tool_dsp_builder_overview_dxaudio_differences"></A>Differences with XGPImage</H2>
+
+<P>The following list contains differences between XGPImage and DSPBuilder:</P>
+
+<UL>
+    <li>DSPBuilder allows you to adjust the parameters of some effects.</li>
+</UL>
+
+<H2><A NAME="xbox_tool_dsp_builder_overview_dxaudio_interface"></A>DSP Builder Interface</H2>
+
+<P>The following image is the screen shot of the DSP Builder tool:</P>
+
+<P><img src="images/xbox_tool_dsp_builder_tutorial_echo_inout_dxaudio.jpg"  border="0" alt="DSPBuilder display with one effect"></P>
+
+<P>The main window starts out blank. By right clicking on the mouse and selecting one of the insert commands, you can add mixbins and effects to your DSP effects image.</P>
+
+<UL>
+	<LI>Fixed mixbins route audio data to each of the speakers.  The fixed mixbins are represented in DSPBuilder as red rectangles. The following image is the representation of the mixbin for the front left speaker:
+
+    <P><IMG src="images/xbox_tool_dsp_builder_tutorial_frontleft_dxaudio.jpg"  BORDER="0" ALT="Front left mixbin"></P></LI>
+
+    <LI>User-definable send mixbins allow developers to route audio data for effects processing. The user-definable mixbins are represented in DSPBuilder as orange rectangles. The following image is a representation of the DSMIXBIN_FXSEND_2 mixbin:
+
+    <P><IMG src="images/xbox_tool_dsp_builder_tutorial_fxsend2_dxaudio.jpg" WIDTH="124" HEIGHT="46" BORDER="0" ALT="FXSEND2"></P></LI>   
+    
+</UL>
+
+<P>Effects are represented in DSPBuilder with a blue rectangle. The following image is the representation of an echo effect:</P>
+
+<P><IMG src="images/xbox_tool_dsp_builder_tutorial_echo_dxaudio.jpg" WIDTH="217" HEIGHT="48" BORDER="0" ALT="Echo Effect"></P>
+
+<P>Patch cords are used to connect mixbins and effects. They are represented by lines in DSPBuilder. Patch cords can be in two different states: connected and incorrect.</P>
+
+<UL>
+	<LI>A connected patch cord is properly connected. It is represented in DSPBuilder by a black line. The following image shows part of a connected patch cord:
+
+    <P><IMG src="images/xbox_tool_dsp_builder_tutorial_patch_black_dxaudio.gif" WIDTH="141" HEIGHT="44" BORDER="0" ALT="Connected Patch Cord"></P></LI>
+
+    <LI>An incorrect patch cord is connected incorrectly at one or both ends. It is represented in DSPBuilder by a red line. The following image shows part of an incorrectly connected patch cord:
+
+    <P><IMG src="images/xbox_tool_dsp_builder_tutorial_patch_red_dxaudio.gif" WIDTH="144" HEIGHT="41" BORDER="0" ALT="Incorrect Patch Cord"></P></LI>
+</UL>
+
+<H2><A NAME="xbox_tool_dsp_builder_overview_dxaudio_server"></A>Auditioning DSP Builder Effects Images: DSP Server</H2>
+
+<P>Rather than having to generate and save the DSP image, giving it to the audio developer, and waiting for a rebuild of the game with the new image, there is an alternative for rapid auditioning of the content: <B>DSP Server</B>. DSP Server source code is provided with the XDK and can be integrated into a title with minimal coding. It is also used by the Audio Console Application (audconsole.xbe), an Xbox audio audition tool provided on XDK recovery discs and available for separate download from Xbox Central.</P>
+
+<P>DSP Server allows the application to accept updated effects images in real time as transmitted from DSP Builder. So, while playing the title, the current effects program can be swapped out, effect parameters altered, and so on.</P>
+
+<P>Developers only need to do the following:</P>
+
+<UL>
+	<LI>Add DSPServer.cpp and DSPServer.h to the project tree. These files can be found in the source\DSound\DSPServer subdirectory of the XDK installation.</LI>
+	<LI>Include DSPServer.h in the application source file.</LI>
+	<LI>Start the DSP Server thread somewhere in the vicinity of the game's initialization routines by calling <B>CDSPServer::Run</B>. This is a static method. There are several optional parameters to this call, described in both DSPServer.cpp and DSPServer.h.</LI>
+	<LI>To stop the DSP Server thread before the game exits, call <B>CDSPServer::Stop</B>. This is also a static method.</LI>
+</UL>
+
+<P>An Xbox application that uses DSP Server can take advantage of DSP Builder's transmit option, accessible from both the Xbox menu as <b>Transmit Image</b> and the Transmit Image icon on the toolbar. When applied, the current effects program is downloaded to the Xbox from the PC.</P>
+
+<H2><A NAME="xbox_tool_dsp_builder_overview_dxaudio_header"></A>DSP Builder Generated Header File</H2>
+
+<P>The DSP Builder generated header file contains a unique set of names for the effect constants (as long as the effects' names are not changed to be identical). Effects that you add will appear in the header in the following formats:</p>
+
+<UL>
+	<LI>For effect indices, the format is <i>&lt;UserEffectName&gt;_&lt;EffectName&gt;</i>.</LI>
+	<LI>For state structures, the format is <i>&lt;UserEffectName&gt;_FX0_&lt;EffectName&gt;_STATE</i>.</LI>
+</UL>
+
+<P>In the examples above, <i>&lt;UserEffectName&gt;</i> will be replaced by the name you enter for the effect. <i>&lt;EffectName&gt;</i> is the actual name of the effect (for example, IIR2), or if there are duplicate effects (with the same default names), the name will be appended with a unique integer, or the user-specified name.</P>
+
+<P class="note"><B><I>Note</I></B>&nbsp;&nbsp;&nbsp;Supported characters for user names include [<i>A&#8211;Z</i>, <i>a&#8211;z</i>, <i>0&#8211;9</i>, <i>_</i>]. All other characters are deleted.</P>
+
+<P>DSP Builder added effects (that is, those selected for the <B>Build Options</B> menu under <B>Tools</B>), will be named the following:</P>
+
+<PRE>// Effect Indices (the names will never change):
+GraphI3DL2_I3DL2Reverb                 // The default reverb in the image - even if added by and/or renamed by the user
+GraphXTalk_XTalk                       // The default XTalk in the image
+GraphXTalkToLFE_XTalkToLFE_A           // XTalk to LFE send A
+GraphXTalkToLFE_XTalkToLFE_B           // XTalk to LFE send B
+GraphXTalkToLFE_XTalkToLFE_C           // XTalk to LFE send C
+GraphVoice_Voice_0                     // Voice on mixbin 16
+GraphVoice_Voice_1                     // Voice on mixbin 17
+GraphVoice_Voice_2                     // Voice on mixbin 18
+GraphVoice_Voice_3                     // Voice on mixbin 19
+
+// State Structures (the names will never change):
+GraphI3DL2_FX0_I3DL2Reverb_STATE
+GraphXTalk_FX0_XTalk_STATE
+GraphXTalkToLFE_FX0_XTalkToLFE_A_STATE
+GraphXTalkToLFE_FX1_XTalkToLFE_B_STATE
+GraphXTalkToLFE_FX2_XTalkToLFE_C_STATE
+GraphVoice_FX0_Voice_0_STATE
+GraphVoice_FX1_Voice_1_STATE
+GraphVoice_FX2_Voice_2_STATE
+GraphVoice_FX3_Voice_3_STATE</PRE>
+
+<H2><A NAME="xbox_tool_dsp_builder_overview_dxaudio_related"></A>Related Topics</H2>
+
+<P>The following topics are related to the DSP builder tool:</P>
+
+<UL>
+    <LI><A HREF="xbox_tools_using_dsp_builder_dxaudio.htm">Using DSP Builder</A></LI>
+	<LI><A HREF="xbox_dsp_effects_dxaudio.htm">DSP Effects</A></LI>
+    <LI><A HREF="xbox_dsp_effects_processing_dxaudio.htm">DSP Effects Processing</A></LI>
+    <LI><A HREF="xbox_available_dsp_effect_images_dxaudio.htm">Available DSP Effect Images</A></LI>
+    <LI><A HREF="xbox_downloading_images_to_the_global_processor_dxaudio.htm">Downloading Effects to the Global Processor</A></LI>
+</UL>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

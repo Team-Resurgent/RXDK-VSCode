@@ -1,0 +1,78 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<TITLE>Private Pool Allocations</TITLE>
+
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Private Pool Allocations"/>
+<MSHelp:Keyword Index="F" Term="Private Pool Allocations"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR></TR>
+</TABLE>
+
+<H1 class="heading"><A NAME="xbox_mt_xtl_winsock_mem_pool_xnet"></A>Private Pool Allocations</H1>
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<P>Here are the asynchronous network events that result in data being allocated from the Xbox network subsystem's private pool:</P>
+
+<TABLE>
+<TR>
+<TH>Asynchronous event</TH><TH>Private pool memory allocation estimate</TH>
+</TR>
+
+<TR>
+<TD>Data copied from Ethernet DMA buffers to socket receive buffer in network subsystem pool memory.</TD>
+<TD>The number of bytes of data present in the packet.  This is limited to a maximum of 1500 bytes of data per received Ethernet frame but will typically be much smaller.  This is freed when the game calls <B>recv</B>, <B>recvfrom</B>, <B>WSARecv</B>, or <B>WSARecvFrom</B> to copy the packet into a game allocated buffer.</TD>
+</TR>
+
+<TR>
+<TD>Incoming TCP connection accepted.  Child socket created asynchronously.</TD>
+<TD>Unlike when a socket is created via the <B>socket</B> call, sockets created from incoming connections on listening sockets can happen at any time.  So the Xbox network subsystem allocates these sockets from the private Xbox network subsystem pool instead of the system pool.  A little over 200 bytes are allocated.  This is freed when <B>closesocket</B> is called on the socket.</TD>
+</TR>
+
+<TR>
+<TD>ARP packets sent/received.</TD>
+<TD>A nominal amount of memory is used to handle the sending and receiving of ARP packets.  The memory is freed after the incoming packet has been processed or after the outgoing packet is on the wire.</TD>
+</TR>
+
+<TR>
+<TD>DHCP packets sent/received.</TD>
+<TD>A nominal amount of memory is used to handle the sending and receiving of DHCP packets.  The memory is freed after the incoming packet has been processed or after the outgoing packet is on the wire.  These allocations are typically only encountered around <A HREF="xbox_xnetstartup_xsnl.htm"><B>XNetStartup</B></A> time.</TD>
+</TR>
+
+<TR>
+<TD>ICMP packets sent/received.</TD>
+<TD>A nominal amount of memory is used to handle the sending and receiving of ICMP packets.  The memory is freed after the incoming packet has been processed or after the outgoing packet is on the wire.</TD>
+</TR>
+
+<TR>
+<TD>TCP SYN-ACK, ACK, or RST sent in response to a network event.</TD>
+<TD>Certain incoming TCP events require immediate action by the Xbox network subsystem.  A nominal amount of memory is used to handle the sending of packets that the network subsystem generates to deal with these events.  The memory is freed after the outgoing packet is on the wire.</TD>
+</TR>
+
+<TR>
+<TD>Routing table entry added (for example, when a DHCP address changes).</TD>
+<TD>The Xbox network subsystem's routing table is allocated from the Xbox network subsystem private pool memory.</TD>
+</TR>
+</TABLE>
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

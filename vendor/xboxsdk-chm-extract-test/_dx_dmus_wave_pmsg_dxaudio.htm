@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>DMUS_WAVE_PMSG</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="DMUS_WAVE_PMSG  [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="DMUS_WAVE_PMSG"/>
+<MSHelp:Keyword Index="F" Term="DMUS_WAVE_PMSG"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_dmus_wave_pmsg_dxaudio"></A>DMUS_WAVE_PMSG</H1>
+
+<P>Contains message data for a wave sound.</P>
+
+<PRE class="syntax">typedef struct _DMUS_WAVE_PMSG {
+    DMUS_PMSG_PART
+    REFERENCE_TIME rtDuration;
+    long lOffset;
+    long lVolume;
+    long lPitch;
+    DWORD dwStartOffset;
+    DWORD dwLoopStart;
+    DWORD dwLoopEnd;
+    BYTE bFlags;
+} DMUS_WAVE_PMSG;
+</PRE>
+
+<DL>
+<DT><B>DMUS_PMSG_PART</B></DT>
+
+<DD>Macro for common message members. See <A HREF="_dx_dmus_pmsg_dxaudio.htm"><B>DMUS_PMSG</B></A>. The <B>punkUser</B> member contains the address of the <B>IUnknown</B> interface of the voice object associated with the wave.</DD>
+
+<DT><B>rtDuration</B></DT>
+
+<DD>Value that specifies the duration of the wave. If DMUS_PMSGF_LOCKTOREFTIME is present in the <B>dwFlags</B> member of <B>DMUS_PMSG_PART</B>, this value is in reference time units. Otherwise it is in music time.</DD>
+
+<DT><B>lOffset</B></DT>
+
+<DD>Value that specifies the offset from actual time to logical time, in either reference or music time.</DD>
+
+<DT><B>lVolume</B></DT>
+
+<DD>Value that specifies the initial volume in hundredths of a decibel.</DD>
+
+<DT><B>lPitch</B></DT>
+
+<DD>Value that specifies the transposition of the pitch in hundredths of a semitone.</DD>
+
+<dt><b>dwStartOffset</b></dt>
+    <dd>Value that specifies how far into the wave to start, in samples.</dd>
+
+<dt><b>dwLoopStart</b></dt>
+    <dd>Value that specifies the starting loop point, in samples.</dd>
+
+<dt><b>dwLoopEnd</b></dt>
+    <dd>Value that specifies the ending loop point, in samples.</dd>
+
+<DT><B>bFlags</B></DT>
+
+<DD>Value that contains any applicable flags. Can be zero or a combination of the following values:</DD>
+
+<DL>
+<DT>DMUS_WAVEF_NOINVALIDATE</DT>
+    <DD>Do not invalidate this wave.</DD>
+
+<DT>DMUS_WAVEF_NOPREROLL</DT>
+    <DD>Do not preroll any wave data.</DD>
+
+<DT>DMUS_WAVEF_OFF</DT>
+    <DD>This message is stopping playback of the wave.</DD>
+
+<DT>DMUS_WAVEF_STREAMING</DT>
+    <DD>Wave is streaming.</DD>
+
+</DL>
+
+</DL>
+
+<H4>Remarks</H4>
+
+<P>Applications cannot send messages of this type by using <A HREF="_dx_idirectmusicperformance8_sendpmsg_dxaudio.htm"><B>IDirectMusicPerformance8::SendPMsg</B></A>, because they have no way of obtaining a pointer to a wave object. However, tools can process wave messages.</P>
+
+<H4>Requirements</H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in DMusici.h.</P>
+
+<P></P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

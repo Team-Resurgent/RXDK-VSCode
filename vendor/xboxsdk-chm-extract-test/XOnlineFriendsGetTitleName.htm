@@ -1,0 +1,115 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineFriendsGetTitleName</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineFriendsGetTitleName"/>
+<MSHelp:Keyword Index="F" Term="XOnlineFriendsGetTitleName"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineFriendsGetTitleName</h1>
+<p>Retrieves the name of the game title that has the specified title ID.</p><pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineFriendsGetTitleName(</b>
+    <b>DWORD</b> <i>dwTitleId</i><b>,</b>
+    <b>DWORD</b> <i>dwLanguage</i><b>,</b>
+    <b>DWORD</b> <i>dwMaxTitleNameChars</i><b>,</b>
+    <b>LPWSTR</b> <i>lpTitleName</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+            <dt><i>dwTitleId</i></dt>
+<dd>[in]  Title ID for which to retrieve the name.</dd>
+            
+            <dt><i>dwLanguage</i></dt>
+<p>
+                    <dd>[in]  Language in which the title name should be returned. This parameter must be one of the following values:</dd>
+                    <table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+						<tr>
+<td>XC_LANGUAGE_ENGLISH</td>
+<td>English</td>
+</tr> 
+						<tr>
+<td>XC_LANGUAGE_FRENCH</td>
+<td>French</td>
+</tr> 
+						<tr>
+<td>XC_LANGUAGE_GERMAN</td>
+<td>German</td>
+</tr> 
+						<tr>
+<td>XC_LANGUAGE_ITALIAN</td>
+<td>Italian</td>
+</tr>
+						<tr>
+<td>XC_LANGUAGE_JAPANESE</td>
+<td>Japanese</td>
+</tr> 
+						<tr>
+<td>XC_LANGUAGE_KOREAN</td>
+<td>Korean</td>
+</tr>
+						<tr>
+<td>XC_LANGUAGE_PORTUGESE</td>
+<td>Portugese</td>
+</tr>
+						<tr>
+<td>XC_LANGUAGE_SPANISH</td>
+<td>Spanish</td>
+</tr> 
+						<tr>
+<td>XC_LANGUAGE_TCHINESE</td>
+<td>Chinese (Traditional)</td>
+</tr>
+					</table>
+                    <p>To specify the language currently in use by the Xbox console (in other words, the language set by the player through the Xbox Dashboard), pass the return value of <a href="x_jg_xgetlanguage.htm">XGetLanguage</a> as <i>dwLanguage</i>.</p>
+                </p>
+            
+            <dt><i>dwMaxTitleNameChars</i></dt>
+<dd>[in]  Number of characters in the buffer pointed to by the <i>wszTitleName</i> parameter, including the trailing null. Must be at least MAX_TITLENAME_LEN.</dd>
+            
+            <dt><i>lpTitleName</i></dt>
+<dd>[out]  Pointer to a Unicode string that receives the name of the title specified by the <i>dwTitleId</i> and <i>dwLanguage</i> parameters. The title allocates the memory for this buffer.</dd>
+            
+
+        </dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>Returns S_OK if successful, an error code otherwise.</p>
+<h4><a name="remarks"></a>Remarks</h4>
+            <p>The <a href="XONLINE_FRIEND.htm">XONLINE_FRIEND.titleID</a> member contains the ID of the title being played by a player on the friends list.</p>
+            <p>The title should call this function for each player on the friends list whose <a href="XONLINE_FRIEND.htm">XONLINE.friendState</a> includes the XONLINE_FRIENDSTATE_FLAG_ONLINE flag.  The title should retrieve and display this title name information whenever it displays the friends list to the player.</p>
+            <p><b>XOnlineFriendsGetTitleName</b> returns an empty string if the title name has not yet been cached locally. Titles should continue to poll the function with the desired title ID until the string is non-empty.</p>
+            <p>The asynchronous task created by the <a href="XOnlineFriendsEnumerate.htm">XOnlineFriendsEnumerate</a> function must be active in order to successfully call <b>XOnlineFriendsGetTitleName</b>.</p>
+        <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="x_mt_xonline_functions.htm">Xbox Live Functions</a> | <a href="XOnlineFriendsEnumerate.htm">XOnlineFriendsEnumerate</a>, <a href="XOnlineFriendsGetLatest.htm">XOnlineFriendsGetLatest</a>, <a href="XOnlineTitleIdIsSamePublisher.htm">XOnlineTitleIdIsSamePublisher</a>, <a href="XOnlineTitleIdIsSameTitle.htm">XOnlineTitleIdIsSameTitle</a>, <a href="XONLINE_FRIEND.htm">XONLINE_FRIEND</a>
+</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>DmDedicateConnection</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="DmDedicateConnection"/>
+<MSHelp:Keyword Index="F" Term="DmDedicateConnection"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>DmDedicateConnection</h1>
+<p>Dedicates a connection to a specific threaded command handler.</p>
+<pre class="syntax" xml:space="preserve"><b>DMHRAPI</b> <b>DmDedicateConnection(</b>
+    <b>PDM_CONNECTION</b> <i>pdcon</i><b>,</b>
+    <b>LPCSTR</b> <i>szHandler</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+
+<dt><i>pdcon</i></dt>
+<dd>Pointer to a <b>DM_CONNECTION</b> structure that contains the connection information.</dd>
+
+
+<dt><i>szHandler</i></dt>
+<dd><b>LPCSTR</b> that identifies the threaded command handler to be dedicated.</dd>
+
+
+</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>Returns XBDM_DEDICATED if successful, an error value otherwise.</p>
+<h4><a name="remarks"></a>Remarks</h4>
+
+<p>When a title first opens a connection with
+<a href="xbox_jbh_debugapi_function_dmopenconnection.htm">DmOpenConnection</a>, the title may
+use that connection only to invoke built-in commands or commands directed at
+non-threaded handlers. Any attempt to invoke a threaded handler results in the
+error XBDM_MUSTBEDEDICATED. To invoke a command directed at a threaded handler,
+the title must first dedicate that connection to a specific handler by calling
+<b>DmDedicateConnection</b>. The call to <b>DmDedicateConnection</b> should
+follow the title's call to
+<b>DmOpenConnection</b>.</p>
+
+<p>Once a connection has been dedicated, the connection may be used only to
+invoke commands directed at the specific dedicated handler. Any attempt to use
+a dedicated connection to invoke built-in commands or commands directed at
+non-threaded handlers results in the error XBDM_MUSTBEDEDICATED. A title may
+re-dedicate a connection to another handler at any time by calling
+<b>DmDedicateConnection</b> again. Passing NULL for the <i>szHandler</i> parameter to
+<b>DmDedicateConnection</b> re-dedicates the connection to the global server
+thread, which allows the connection to once again be used for built-in
+commands.</p>
+
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in XboxDbg.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use XbDm.lib for target system code; use XboxDbg.lib for development system code.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="xbox_jbh_debugapi_function_dmopenconnection.htm">DmOpenConnection</a>,
+<a href="xbox_lrf_debugapi_function_dmregistercommandprocessorex.htm">DmRegisterCommandProcessorEx</a>,
+<a href="xbox_lrf_debugapi_function_dmregisterthreadedcommandprocessor.htm">DmRegisterThreadedCommandProcessor</a>
+</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

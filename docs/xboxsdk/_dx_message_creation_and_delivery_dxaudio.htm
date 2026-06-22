@@ -1,0 +1,61 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Message Creation and Delivery</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Message Creation and Delivery"/>
+<MSHelp:Keyword Index="F" Term="Message Creation and Delivery"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_message_creation_and_delivery_dxaudio"></A>Message Creation and Delivery</H1>
+
+<P>When a segment is played, most of its tracks generate messages containing information about events that are to take place during playback. For more information, see <A HREF="_dx_directmusic_tracks_dxaudio.htm">DirectMusic Tracks</A>.</P>
+
+<P>A few tracks send more than one kind of message. For example, a style track sends note messages and time signature messages. In such cases, an application can disable certain kinds of messages in the track.</P>
+
+<P>The performance engine determines when each message is to be processed in clock time. In the case of channel messages, the performance also determines which performance channel gets the message. This information, along with other data&#8212;including the message type, its source track, and pointers to the first toolgraph and tool that are to receive it&#8212;is stored in the message structure.</P>
+
+<P>Certain messages, such as tempo and time signature changes, are immediately processed and freed by the performance. Other messages, such as notes and patch changes, are placed in a queue and processed in order of time stamp. </P>
+
+<P class=note><B>Notes</B>&nbsp;&nbsp;There is no guarantee that messages with the same time stamp will be processed in any particular order.</P>
+
+<P class=note>Time signature messages are purely informational. The time signature is built into the segment and cannot be changed.</P>
+
+<P>Messages are first sent to any tools in the segment toolgraph, then to the audiopath toolgraph, and finally to the performance toolgraph. </P>
+
+<P>The application is responsible for creating the segment and performance toolgraphs and defining the tools. For more information on creating toolgraphs, see the following topics:
+
+<UL>
+	<LI><A HREF="_dx_idirectmusicgraph8_dxaudio.htm">IDirectMusicGraph8</A></LI>
+</UL>
+
+<P>Audiopath toolgraphs are optional components of audiopath configurations in DirectMusic Producer files. The application doesn't need to do anything to implement an audiopath toolgraph after creating the audiopath.</P>
+
+<P>The first tool in a toolgraph processes the message and then, if it wants to pass it on, has the toolgraph stamp the message with a pointer to the next tool. </P>
+
+<P>At this point the toolgraph also flags the message with a delivery type that determines when the message is delivered to the next tool. This flag is based on what delivery type the tool is expecting, as follows: 
+
+<UL>
+	<LI>If the message is flagged as DMUS_PMSGF_TOOL_IMMEDIATE, it is delivered to the next tool immediately. </LI>
+
+	<LI>If it is flagged as DMUS_PMSGF_TOOL_QUEUE, the message is delivered just before the time at which it is supposed to play, taking latency into account.</LI>
+
+	<LI>If it is flagged as DMUS_PMSGF_TOOL_ATTIME, it is delivered at exactly the time at which it is to be processed. Notification messages are given this flag, because there is little or no latency involved in processing a notification.</LI>
+</UL>
+
+<P>The current tool can change the delivery type after the toolgraph has finished stamping and flagging the message.</P>
+
+<P>Ultimately, unless a message has been discarded, it arrives at the DirectMusic output tool, which converts all the data it receives into standard MIDI messages and delivers these to the Media Communications Processor (MCP).</P>
+
+<P>For an illustration, see <A HREF="_dx_overview_of_audio_data_flow_dxaudio.htm">Overview of Audio Data Flow</A>.</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

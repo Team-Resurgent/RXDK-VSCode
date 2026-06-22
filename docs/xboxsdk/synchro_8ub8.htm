@@ -1,0 +1,106 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>CreateEvent</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="CreateEvent">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="CreateEvent"/>
+<MSHelp:Keyword Index="F" Term="CreateEvent"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_createevent"></A>CreateEvent</H1>
+
+<P>The <B>CreateEvent</B> function creates or opens a named or unnamed event object. </P>
+
+<PRE class=syntax><B>HANDLE CreateEvent(
+  LPSECURITY_ATTRIBUTES</B><I> lpEventAttributes</I><B>, </B>// SD
+<B>  BOOL</B><I> bManualReset</I><B>,                       </B>// reset type
+<B>  BOOL</B><I> bInitialState</I><B>,                      </B>// initial state
+<B>  LPCSTR</B><I> lpName</I>                            // object name
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>lpEventAttributes</I></DT>
+
+<DD>[in] Ignored; use NULL.
+</DD>
+
+<DT><I>bManualReset</I></DT>
+
+<DD>[in] Specifies whether a manual-reset or auto-reset event object is created. If TRUE, you must use the <A HREF="synchro_4f78.htm">ResetEvent</a> function to manually reset the state to nonsignaled. If FALSE, the system automatically resets the state to nonsignaled after a single waiting thread has been released. </DD>
+
+<DT><I>bInitialState</I></DT>
+
+<DD>[in] Specifies the initial state of the event object. If TRUE, the initial state is signaled; otherwise, it is nonsignaled. </DD>
+
+<DT><I>lpName</I></DT>
+
+<DD>[in] Pointer to a null-terminated string specifying the name of the event object.  Name comparison is case insensitive. 
+
+<P>If <I>lpName</I> matches the name of an existing named event object, the <I>bManualReset</I> and <I>bInitialState</I> parameters are ignored because they were set when the event was initially created.</P>
+
+<P>If <I>lpName</I> is NULL, the event object is created without a name.</P> 
+
+<P>If <I>lpName</I> matches the name of an existing semaphore, mutex, or waitable timer, the function fails and the <A HREF="errors_3uwi.htm">GetLastError</a> function returns ERROR_INVALID_HANDLE. This occurs because these objects share the same name space. 
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is a handle to the event object. If the named event object existed before the function call, the function returns a handle to the existing object and <A HREF="errors_3uwi.htm">GetLastError</a> returns ERROR_ALREADY_EXISTS. </P>
+
+<P>If the function fails, the return value is NULL. To get extended error information, call <A HREF="errors_3uwi.htm">GetLastError</a>. </P>
+
+<H4>Remarks</H4>
+
+<P>The handle returned by <B>CreateEvent</B> can be used in any function that requires a handle to an event object. </P>
+
+<P>Any thread can specify the event-object handle in a call to one of the wait functions. The single-object wait functions return when the state of the specified object is signaled. The multiple-object wait functions can be instructed to return either when any one or when all of the specified objects are signaled. When a wait function returns, the waiting thread is released to continue its execution.</P>
+
+<P>The initial state of the event object is specified by the <I>bInitialState</I> parameter. Use the <A HREF="synchro_8ut0.htm">SetEvent</a> function to set the state of an event object to signaled. Use the <A HREF="synchro_4f78.htm">ResetEvent</a> function to reset the state of an event object to nonsignaled. </P>
+
+<P>When the state of a manual-reset event object is signaled, it remains signaled until it is explicitly reset to nonsignaled by the <A HREF="synchro_4f78.htm">ResetEvent</a> function. Any number of waiting threads, or threads that subsequently begin wait operations for the specified event object, can be released while the object's state is signaled. </P>
+
+<P>When the state of an auto-reset event object is signaled, it remains signaled until a single waiting thread is released; the system then automatically resets the state to nonsignaled. If no threads are waiting, the event object's state remains signaled. </P>
+
+<P>Multiple libraries can have handles to the same event object, enabling use of the object for synchronization. The following object-sharing mechanisms are available: 
+
+<UL>
+	<LI>A library can share the handle directly with another library.  However, if one library closes the handle, it will invalidate it for the other library.</LI>
+	
+	<LI>A library can specify the event object handle in a call to the <A HREF="handobj_2pyd.htm">DuplicateHandle</a> function to create a duplicate handle that can be used by another library.</LI>
+
+	<LI>A library can specify the name of an event object in a call to the <A HREF="synchro_5myc.htm">OpenEvent</a> or <B>CreateEvent</B> function. </LI>
+</UL>
+
+<P>Use the <A HREF="handobj_289x.htm">CloseHandle</a> function to close the handle.  The event object is destroyed when its last handle has been closed. </P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p><H4>See Also</H4>
+<P>
+
+<a href="xbox_mt_xtl_sll_synchronization_functions.htm">Synchronization Functions</a> | 
+<A HREF="handobj_289x.htm">CloseHandle</a>,  <A HREF="handobj_2pyd.htm">DuplicateHandle</a>,  <A HREF="synchro_5myc.htm">OpenEvent</a>,  <A HREF="synchro_4f78.htm">ResetEvent</a>,  <A HREF="synchro_8ut0.htm">SetEvent</a> </P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

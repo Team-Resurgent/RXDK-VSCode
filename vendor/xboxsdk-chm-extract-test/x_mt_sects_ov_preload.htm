@@ -1,0 +1,56 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Preloaded XBE Sections</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Preloaded XBE Sections"/>
+<MSHelp:Keyword Index="F" Term="Preloaded XBE Sections"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Preloaded XBE Sections</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<P>By default, all sections in an XBE are loaded when the title is launched.  These preloaded sections have a reference count of one.  Sections can be marked as delayed load with the /NOPRELOAD flag of <a href="xbox_jbh_tool_imagebld.htm">XBE Image Builder Tool (ImageBld)</a>.  Sections marked as delayed load are not automatically loaded when the image is launched; the title must explicitly load them before they can be used.  Marking sections as delayed load enables a title to forego loading of a section until it is needed, thus improving load time and decreasing the title's memory footprint.</P>
+
+<P>Preloaded sections, like delayed load sections, can be freed.  Since preloaded sections have a reference count of one, the first call to <a href="x_jsk_xfreesection.htm">XFreeSection</a> or <a href="x_mt_xfreesectionbyhandle.htm">XFreeSectionByHandle</a> on that section will free the section.  The section can later be loaded again as desired.  The only difference between a preload and delayed-load section is that the preload section is loaded at image launch and has a reference count of one.</P> 
+
+<P>To mark the TESTSEG section (created in the example above) as delayed load, add the following switch to the ImageBld command line for the XBE:
+
+<PRE>/NOPRELOAD:TESTSEG
+</PRE>
+
+<P>Now the TESTSEG section will not be loaded when the title is launched. The title must explicitly load the section before functions and data in that section can be accessed.</P>
+
+<P>While testing your section code, one caveat is that, in some cases, functions and data in a section may be accessible even though the section they are contained in has not been loaded.  This is because portions of an XBE image are loaded into memory at the granularity of one page (4 KB).  Especially for a small example as given above, the code and data at the beginning or end of the TESTSEG section may share a portion of a page with another section that has been loaded.  When a section is loaded, all pages that contain any portion of that section are loaded into memory.  Thus, even though the TESTSEG section itself has not been loaded (and has a reference count of zero), portions of that section may be in memory and appear to be accessible.  Titles should never rely on this behavior; there is no guarantee of where the page boundary may fall.  Always explicitly load a delayed-load section into memory before accessing it.</P>  
+
+<!--*******************************************************************************-->
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

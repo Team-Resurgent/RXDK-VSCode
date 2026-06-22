@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Stock Text. Do not change.****-->
+<TITLE>Compiler Warning (level 2) C4345</TITLE>
+<!--**********************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="C4345"/>
+<MSHelp:Keyword Index="F" Term="C4345"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Stock Text. Do not change.****-->
+<H1 class="heading"><A NAME="c4345"></A>Compiler Warning (level 2) C4345</H1>
+<!--**********************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<P><b>behavior change: an object of POD type constructed with an initializer of the form () will 
+be default-initialized</b></P>
+
+<P>This warning reports a behavior change from the Visual C++ compiler that shipped in 
+Visual Studio .NET when initializing a POD object with (); the compiler will 
+default-initialize the object.</p>
+
+<p>The following example generates C4345.</p>
+
+<pre class = "code">// C4345.cpp
+// compile with: /W2
+#include &lt;stdio.h&gt;
+
+struct S *gpS;
+
+struct S
+{
+   // this class has no user-defined default ctor
+   void *operator new (unsigned int size, void *p, int i)
+   {
+      ((S*)p)-&gt;i = i;   // ordinarily, should not initialize
+                        // memory contents inside placement new
+      return p;
+   }
+   int i;
+};
+
+int main()
+{
+   S s;
+   // Visual C++ .NET 2003 will default-initialize pS-&gt;i
+   // by assigning the value 0 to pS-&gt;i.
+   S *pS2 = new (&amp;s, 10) S();   // C4345
+   // try the following line instead:
+   // S *pS2 = new (&amp;s, 10) S;   // not zero initialized
+   printf("%d\n", pS2->i);
+}</PRE>
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+
+</BODY>
+</HTML>

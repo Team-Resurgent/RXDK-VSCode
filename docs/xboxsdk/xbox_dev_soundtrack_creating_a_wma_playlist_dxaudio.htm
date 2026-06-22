@@ -1,0 +1,59 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Creating and Playing a WMA Playlist</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Creating and Playing a WMA Playlist"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+  <MSHelp:Keyword Index="K" Term="WMA playlist, creating and playing"/>
+  <MSHelp:Keyword Index="K" Term="playlists, creating and playing"/>
+  <MSHelp:Keyword Index="K" Term="soundtracks, playing"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Creating and Playing a WMA Playlist</h1>
+<p>When SetXACTPlayList is called, the previous playlist (if any) is cleared, a new one is created, the playlist is populated based on the soundtrack identifier, and playback is started. By organizing the function this way, we can call SetXACTPlayList several times as needed with the index of the soundtrack we want to play.</p>
+<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;The dwIndex parameter of the SetXACTPlayList function represents the vector index of the soundtrack we wish to play, <i>not</i> the ID of the soundtrack. The ID of the soundtrack is obtained through the enumeration process, and does not correspond to soundtrack's position in the list.</p>
+<pre class="clsCode">
+void SetXACTPlayList( DWORD dwIndex )
+{
+    // Release the previous play list as needed
+    if( g_pWMAPlaylist )
+    {
+        g_pWMAPlaylist-&gt;Release();
+        g_pWMAPlaylist = NULL;
+    }
+
+    // Create the new play list
+    HRESULT hr = g_pSoundBank-&gt;CreateWmaPlayList( g_dwSoundCueIndex,
+                                                  XACT_FLAG_WMAPLAYLIST_PLAYBACK_LOOP,
+                                                  &amp;g_pWMAPlaylist );
+    assert( SUCCEEDED(hr) );
+
+    // Add the new soundtrack songs to the play list
+    XACT_WMA_PLAYLIST_ADD xwpAddInfo = { 0 };
+    xwpAddInfo.dwType = eXACTWmaPlayListAdd_Soundtrack;
+    xwpAddInfo.dwSoundtrackId = g_vSoundtracks[dwIndex].uSoundtrackID;
+    g_pWMAPlaylist-&gt;Add( &amp;xwpAddInfo, NULL );
+
+    // Play
+    g_pSoundBank-&gt;Play( g_dwSoundCueIndex, NULL, XACT_FLAG_SOUNDCUE_AUTORELEASE, NULL );
+}
+</pre>
+    <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

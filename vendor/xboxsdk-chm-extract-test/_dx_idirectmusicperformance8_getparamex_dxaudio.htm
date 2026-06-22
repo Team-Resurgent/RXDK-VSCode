@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirectMusicPerformance8::GetParamEx</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="IDirectMusicPerformance8::GetParamEx [C++]">
+<META NAME="MS-HKWD" CONTENT="GetParamEx (IDirectMusicPerformance8) [C++]">
+<META NAME="MS-HKWD" CONTENT="GetParamEx [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="GetParamEx (IDirectMusicPerformance8)"/>
+<MSHelp:Keyword Index="K" Term="IDirectMusicPerformance8::GetParamEx"/>
+<MSHelp:Keyword Index="F" Term="GetParamEx"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_idirectmusicperformance8_getparamex_dxaudio"></A>IDirectMusicPerformance8::GetParamEx</H1>
+
+<P>Retrieves data from a track.</P>
+
+<PRE class="syntax"><B>HRESULT GetParamEx(</B>
+    <B>REFGUID</B> <I>rguidType</I>,
+    <B>DWORD</B> <I>dwTrackID</I>,
+    <B>DWORD</B> <I>dwGroupBits</I>,
+    <B>DWORD</B> <I>dwIndex</I>,
+    <B>MUSIC_TIME</B> <I>mtTime</I>,
+    <B>MUSIC_TIME*</B> <I>pmtNext</I>,
+    <B>void</B> <I>*pParam</I>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>rguidType</I></DT>
+
+<DD>Reference to (C++) or address of (C) the identifier of the type of data to obtain. See <A HREF="_dx_standard_track_parameters_dxaudio.htm"><B>Standard Track Parameters</B></A>.</DD>
+
+<DT><I>dwTrackID</I></DT>
+
+<DD>Unique identifier of a track within the segment state from which the parameter is to be obtained. Every performance message that originates from a track carries an identifier of the track instance that generated the message. This identifier is kept in the <B>dwVirtualTrackID</B> member of the <A HREF="_dx_dmus_pmsg_dxaudio.htm"><B>DMUS_PMSG</B></A> part of the message structure. When this value is passed to <B>GetParamEx</B>, the method is able to determine whether the track is self-controlling, in which case it gets its data from another track in the same segment rather than in the <A HREF="c.htm#_dx_control_segment_glos"><B>control segment</B></A>. </DD>
+
+<DT><I>dwGroupBits</I></DT>
+
+<DD>Group that the track is in (see Remarks). Set this value to 0xFFFFFFFF for all groups. </DD>
+
+<DT><I>dwIndex</I></DT>
+
+<DD>Index of the track in the group.</DD>
+
+<DT><I>mtTime</I></DT>
+
+<DD>Time from which to obtain the data, in performance time.</DD>
+
+<DT><I>pmtNext</I></DT>
+
+<DD>Address of a variable that receives the time (relative to <I>mtTime</I>) until which the data is valid. If this returns a value of 0, either the data is always valid, or it is not known when it might become invalid. If this information is not needed, <I>pmtNext</I> can be set to NULL. See Remarks.</DD>
+
+<DT><I>pParam</I></DT>
+
+<DD>Address of an allocated structure in which the data is to be returned. The structure must be of the appropriate kind and size for the data type identified by <I>rguidType</I>.
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>Returns S_OK if successful, an error code otherwise. Can return one of the following error values:</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TD width=100%><A HREF="_dx_directmusic_return_values_by_name_dxaudio.htm#_dx_dmus_e_get_unsupported_dxaudio"><B>DMUS_E_GET_UNSUPPORTED</B></A></TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=100%><A HREF="_dx_directmusic_return_values_by_name_dxaudio.htm#_dx_dmus_e_not_found_dxaudio"><B>DMUS_E_NOT_FOUND</B></A></TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=100%><A HREF="_dx_directmusic_return_values_by_name_dxaudio.htm#_dx_e_pointer_dxaudio"><B>E_POINTER</B></A></TD>
+</TR>
+</TABLE>
+
+
+<H4>Requirements</H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in Dmusici.h.</P>
+
+<H4>See Also</H4>
+
+<P><A HREF="_dx_idirectmusicperformance8_setglobalparam_dxaudio.htm"><B>IDirectMusicPerformance8::SetGlobalParam</B></A>, <A HREF="_dx_idirectmusicperformance8_gettime_dxaudio.htm"><B>IDirectMusicPerformance8::GetTime</B></A>, <A HREF="_dx_performance_parameters_dxaudio.htm"><B>Performance Parameters</B></A> </P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

@@ -1,0 +1,166 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineMatchSearch</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineMatchSearch"/>
+<MSHelp:Keyword Index="F" Term="XOnlineMatchSearch"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineMatchSearch</h1>
+<p>Searches for online-game sessions that match the specified attributes.</p><pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineMatchSearch(</b>
+    <b>DWORD</b> <i>dwProcedureIndex</i><b>,</b>
+    <b>DWORD</b> <i>dwNumResults</i><b>,</b>
+    <b>DWORD</b> <i>dwNumAttributes</i><b>,</b>
+    <b>const XONLINE_ATTRIBUTE</b> *<i>pAttributes</i><b>,</b>
+    <b>DWORD</b> <i>dwResultsLen</i><b>,</b>
+    <b>HANDLE</b> <i>hWorkEvent</i><b>,</b>
+    <b>PXONLINETASK_HANDLE</b> <i>phTask</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+<dt><i>dwProcedureIndex</i></dt>
+<p>
+<dd>[in]  Stored procedure in the match-making database.</dd>
+</p>
+
+<dt><i>dwNumResults</i></dt>
+<p>
+<dd>[in]  Number of results to return from the stored procedure. The <b>XOnlineMatchSearch</b> function may return fewer results, but it will never return more than this number.</dd>
+</p>
+
+<dt><i>dwNumAttributes</i></dt>
+<p>
+<dd>[in]  Number of attributes in the attribute array pointed to by the <i>pAttributes</i> parameter.</dd>
+</p>  
+
+<dt><i>pAttributes</i></dt>
+<p>
+<dd>[in]  Address of an array of <a href="XONLINE_ATTRIBUTE.htm">XONLINE_ATTRIBUTE</a> structures. The attributes represented by these structures are the parameters to the stored procedure specified by the <i>dwProcedureIndex</i> parameter.</dd>
+
+</p>
+
+<dt><i>dwResultsLen</i></dt>
+<p>
+<dd>[in]  Size of the buffer that receives the results from the search. For this parameter, pass the return value from the <a href="XOnlineMatchSearchResultsLen.htm">XOnlineMatchSearchResultsLen</a> function. If this buffer is not large enough for the number of results specified by the <i>dwNumResults</i> parameter, the number of results returned is reduced to fit within this size.</dd>
+</p>
+
+<dt><i>hWorkEvent</i></dt>
+<p>
+<dd>[in, optional]  Optional. Handle to a caller-created event object. This object will be signalled when there is work to do by calling <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a>. The caller may pass in NULL instead, indicating that the caller will poll <b>XOnlineTaskContinue</b> itself.</dd>
+</p>
+
+<dt><i>phTask</i></dt>
+<p>
+<dd>[out]  Address of an <b>XONLINETASK_HANDLE</b> that receives the session search task. This handle must be pumped to completion by <b>XOnlineTaskContinue</b>. After the task has completed, call <a href="XOnlineMatchSearchGetResults.htm">XOnlineMatchSearchGetResults</a> to obtain information about the resulting online-game sessions that match the request. After the search results have been obtained, the handle should be closed using <a href="XOnlineTaskClose.htm">XOnlineTaskClose</a>. This task sends the search request to the matchmaking service and receives the response.</dd>
+</p>
+
+</dl>
+<h4><a name="return"></a>Return Values</h4>
+
+<p>If <b>XOnlineMatchSearch</b> succeeds, the return value is S_OK.</p>
+<p>If <b>XOnlineMatchSearch</b> fails, the return value is one of the following error codes.</p>
+
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>E_OUTOFMEMORY</td>
+<td>Insufficient memory. Free some memory.</td>
+</tr>
+<tr>
+<td>WSAEADDRNOTAVAIL</td>
+<td>See <a href="xbox_winsock_error_codes_winsock.htm">Winsock Error Codes</a> for more information. </td>
+</tr>
+<tr>
+<td>WSACONNRESET</td>
+<td>See <b>Winsock Error Codes</b> for more information. </td>
+</tr>
+<tr>
+<td>Other</td>
+<td>See <a href="xbox_online_errors.htm">Online Errors</a> for information about other possible errors.</td>     
+</tr>
+</table>
+<p>The following table lists the possible values that <b>XOnlineTaskContinue</b> may return when called with the handle for the task created by <b>XOnlineMatchSearch</b>.</p>
+
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>XONLINE_E_MATCH_INVALID_SEARCH_REQ</td>
+<td>The request is invalid. The wrong number of attributes was passed to a stored procedure. More detailed error information is returned by <b>XOnlineTaskContinue</b> when the search completes. For debugging purposes, call <b>XOnlineTaskContinue</b> to find out what went wrong.
+</td>
+</tr>
+<tr>
+<td>XONLINE_E_MATCH_STRING_TOO_LONG</td>
+<td>The attribute string for the create, update, or search operation is longer then 400 characters,  or the string wasn't terminated with a null character. Limit string length to 400 wide characters, and ensure that the string is properly terminated.</td>
+</tr>
+<tr>
+<td>XONLINE_E_MATCH_BLOB_TOO_LONG</td>
+<td>The BLOB for the create, update, or search operation is longer then 800 bytes. Limit BLOB length to 800 bytes.</td>
+</tr>
+<tr>
+<td>XONLINE_E_MATCH_INVALID_ATTR_TYPE</td>
+<td>The attribute type for the create, update, or search operation is something other than player or session. </td>
+</tr>
+<tr>
+<td>XONLINE_E_MATCH_INVALID_SESSION_ID</td>
+<td>The specified session ID is not a valid session ID returned by <a href="XOnlineMatchSessionGetInfo.htm">XOnlineMatchSessionGetInfo</a> or <a href="XOnlineMatchSessionFindFromID.htm">XOnlineMatchSessionFindFromID</a>. </td>
+</tr>
+<tr>
+<td>XONLINE_E_MATCH_INVALID_OFFSET</td>
+<td>One of the attribute/parameter offsets in the request was invalid. The attribute ID was OR'd with an invalid data type. Ensure that the attribute ID is OR'd with a valid attribute data type mask (X_ATTRIBUTE_DATATYPE_INTEGER,  X_ATTRIBUTE_DATATYPE_STRING, or X_ATTRIBUTE_DATATYPE_BLOB)</td>
+</tr>
+<tr>
+<td>XONLINE_E_MATCH_INVALID_PARAM</td>
+<td>The data type that was passed to the stored procedure is not valid. Ensure that the data type sent to the stored procedure is the expected type.</td>
+</tr>
+<tr>
+<td>XONLINE_E_MATCH_INVALID_TITLE_ID</td>
+<td>The title is not properly registered on the Matchmaking server. The attribute ID is invalid. Check the XMS file generated by MatchSim to ensure that the correct attribute ID is OR'd with the correct data type mask.</td>
+</tr>
+
+</table>
+
+
+<h4><a name="remarks"></a>Remarks</h4>
+<p>The <b>XOnlineMatchSearch</b> function is called from an Xbox that wishes to join an online-game session that is hosted by a different Xbox.</p>
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="xbox_Live_Matchmaking.htm">Playing Games with Matchmaking</a> |
+<a href="x_mt_xonline_functions.htm">Xbox Live Functions</a> | 
+<a href="XOnlineMatchSessionFindFromID.htm">XOnlineMatchSessionFindFromID</a>, 
+<a href="XOnlineMatchSearchGetResults.htm">XOnlineMatchSearchGetResults</a>, 
+<a href="XOnlineMatchSearchParse.htm">XOnlineMatchSearchParse</a>
+</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

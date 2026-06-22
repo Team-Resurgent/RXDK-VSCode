@@ -1,0 +1,86 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Using UNICODE, LPTSTR, and TCHAR</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Using UNICODE%2c LPTSTR%2c and TCHAR"/>
+<MSHelp:Keyword Index="F" Term="Using UNICODE%2c LPTSTR%2c and TCHAR"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR></TR>
+</TABLE>
+<!--**********************************-->
+
+<H2 class="heading"><A NAME=""></A>Using UNICODE, LPTSTR, and TCHAR</H2>
+
+<P>Although the UNICODE compiler define and the generic data types TCHAR and LPTSTR are supported in the XTL, it can be confusing to use them in code because of the demands of the mixed string model.</P>
+
+<P>Because some functions accept ANSI strings only, and some require mixed parameters, you cannot simply use TCHAR and rely on the UNICODE compile define to correctly resolve those strings to the appropriate type for all function calls.  For example, if you define UNICODE, TCHAR is defined as WCHAR.  The following string would be a Unicode string:</P>
+
+<PRE>#define UNICODE
+TCHAR tszName[MAX_PATH];
+</PRE>
+
+<P>Since <a href="filesio_5n8l.htm"><B>DeleteFile</B></a> is an ANSI-only function, you cannot pass this string to <B>DeleteFile</B> because that function will always resolve to <B>DeleteFileA</B>, even when UNICODE is defined, and <B>DeleteFileA</B> requires an ANSI string parameter.</P>
+
+<P>Thus you will need to be aware of the string types you are using and the string types required by the functions you are calling.</P>
+
+<P>For functions that are implemented as both Unicode and ANSI versions, you can still use TCHAR and LPTSTR arguments to those functions.  The arguments resolve to the correct type to match the version that the function resolves to.  For example:</P>
+
+<PRE>TCHAR tszName[50];
+lstrcpy( tszName, _T("Squad 2") );
+</PRE>
+
+<P>The string arguments and the function itself will all use WCHAR if UNICODE is defined, or CHAR if not.</P>
+
+<P>If you use this method, however, you will need to have strings in your application that are sometimes ANSI or Unicode (depending on the UNICODE define), strings that are always ANSI, and strings that are always Unicode.  This can cause confusion, so care must be taken when doing so.</P>
+
+<P>A simpler solution is to never define UNICODE and never use the TCHAR or LPTSTR macros.  Use ANSI strings exclusively, except for the specific cases in which you know you will need Unicode strings.</P>
+
+For example:</P>
+
+<PRE>#undef UNICODE
+CHAR szName[50], szPath[50];
+WCHAR wszGameName[50];
+
+// These functions have both Unicode and ANSI versions,
+// but since we are not defining UNICODE, we know we
+// will get the ANSI versions.
+lstrcpy( szName, "Squad 2" );
+OutputDebugString( szName );
+
+// The first parameter to XDeleteSaveGame is an ANSI string.
+lstrcpy( szPath, "t:\\saves" );
+
+// The second parameter to XDeleteSaveGame is a Unicode string.
+// When we need to use a Unicode string, we do so explicitly.
+lstrcpyW( wszGameName, L"AtTheBeach" );
+
+// Then call the function with the two different string types.
+XDeleteSaveGame( szPath, wszGameName );
+</PRE>
+
+<P>In the above example we are not setting UNICODE, so we know that all functions will resolve to ANSI except the few that are Unicode-only and those that take both ANSI and Unicode parameters.  We only need worry about Unicode for a few functions, and where Unicode is needed we explicitly create Unicode strings and use Unicode functions with those strings.  We never use TCHAR or LPTSTR, so there is never any confusion as to what type of string we are dealing with.</P>
+
+<P>If you are porting existing code that uses the TCHAR, LPTSTR, and/or TEXT macros, the simplest solution, again, is to not define UNICODE.  All of your strings and function calls will be ANSI by default.  When you need to call some of the new Unicode-only or mixed parameter functions, you can explicitly use WCHAR strings, and use wide char versions of helper functions (for example, <B>wsprintfW</B>) to deal with those Unicode strings.</P>
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

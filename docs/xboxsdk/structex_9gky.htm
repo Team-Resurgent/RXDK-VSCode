@@ -1,0 +1,86 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>UnhandledExceptionFilter</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="UnhandledExceptionFilter">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="UnhandledExceptionFilter"/>
+<MSHelp:Keyword Index="F" Term="UnhandledExceptionFilter"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_unhandledexceptionfilter"></A>UnhandledExceptionFilter</H1>
+
+<P>The <B>UnhandledExceptionFilter</B> function passes unhandled exceptions to the debugger if the title is being debugged. Otherwise, it causes the exception handler to be executed. This function can be called only from within the filter expression of an exception handler. </P>
+
+<PRE class=syntax><B>LONG WINAPI UnhandledExceptionFilter(
+  IN struct _EXCEPTION_POINTERS</B><I> </I><B>*</B><I>ExceptionInfo</I> 
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>ExceptionInfo</I></DT>
+
+<DD>[in] Pointer to an <A HREF="structex_1unm.htm">EXCEPTION_POINTERS</a> structure containing a description of the exception and the processor context at the time of the exception. This pointer is the return value of a call to the <A HREF="structex_50oe.htm">GetExceptionInformation</a> function.
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>The function returns one of the following values. </P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=38%>Value</TH>
+<TH align=left width=62%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=38%>EXCEPTION_CONTINUE_SEARCH</TD>
+<TD width=62%>The title is being debugged, so the exception should be passed (as second chance) to the application's debugger.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=38%>EXCEPTION_EXECUTE_HANDLER</TD>
+<TD width=62%>The function returns control to the exception handler, which is free to take any appropriate action.</TD>
+</TR>
+</TABLE><BR>
+
+<H4>Remarks</H4>
+
+<P>If the title is not being debugged, the function reboots the game console.</P>
+
+<P>The system uses <B>UnhandledExceptionFilter</B> internally to handle exceptions that occur during initialization and thread creation.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p>
+
+<H4>See Also</H4>
+<P> 
+<a href="xbox_mt_xtl_sll_structured_exception_handling_overview.htm">Structured Exception Handling Overview</a>,
+<a href="xbox_mt_xtl_sll_structured_exception_handling_functions.htm">Structured Exception Handling Functions</a> | 
+<A HREF="structex_1unm.htm">EXCEPTION_POINTERS</a>,  <A HREF="structex_6oj6.htm">SetUnhandledExceptionFilter</a>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

@@ -1,0 +1,162 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>socket</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="socket">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="socket"/>
+<MSHelp:Keyword Index="F" Term="socket"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="xbox_socket_winsock"></A>socket</H1>
+
+<P>Creates a socket that is bound to a specific service provider.</P>
+
+<PRE class="syntax"><B>SOCKET socket(</B>
+    <B>int</B> <I>af</I>,
+    <B>int</B> <I>type</I>,
+    <B>int</B> <I>protocol</I>
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>af</I></DT>
+
+<DD>[in] Address family specification.  Must be AF_INET.</DD>
+
+<DT><I>type</I></DT>
+
+<DD>[in] Type specification for the new socket.</DD>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=31%>Type</TH>
+<TH align=left width=69%>Explanation</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%><B>SOCK_STREAM</B></TD>
+<TD width=69%>Provides sequenced, reliable, two-way, connection-based byte streams. Uses TCP as the protocol.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%><B>SOCK_DGRAM</B></TD>
+<TD width=69%>Supports datagrams, which are connectionless, unreliable buffers of a fixed (typically small) maximum length. Uses UDP or <a HREF="xbox_xbox_winsock_implementation_notes_winsock.htm">VDP</a> as the protocol. </TD>
+</TR>
+</TABLE>
+
+
+
+<DT><I>protocol</I></DT>
+
+<DD>[in] Protocol to be used with the socket.</DD>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=31%>Protocol</TH>
+<TH align=left width=69%>Explanation</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%><B>IPPROTO_TCP</B></TD>
+<TD width=69%>Use with SOCK_STREAM.  Provides sequenced, reliable, two-way, connection-based byte streams.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%><B>IPPROTO_UDP</B></TD>
+<TD width=69%>Use with SOCK_DGRAM.  Supports datagrams, which are connectionless, unreliable buffers of a fixed (typically small) maximum length.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%><B>IPPROTO_VDP</B></TD>
+<TD width=69%>Use with SOCK_DGRAM.  Similar to IPPROTO_UDP. Use this protocol to send encrypted game data and unencrypted voice data in the same packet. See <a HREF="xbox_xbox_winsock_implementation_notes_winsock.htm">Winsock Implementation Notes</a> for more information.</TD>
+</TR>
+
+</TABLE>
+
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If no error occurs, <B>socket</B> returns a descriptor referencing the new socket. Otherwise, a value of INVALID_SOCKET is returned, and a specific error code can be retrieved by calling <A HREF="xbox_wsagetlasterror_winsock.htm">WSAGetLastError</A>.</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=46%>Error code</TH>
+<TH align=left width=54%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=46%>WSANOTINITIALISED</TD>
+<TD width=54%>A successful <B>WSAStartup</B> call must occur before using this function.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=46%>WSAENETDOWN</TD>
+<TD width=54%>The network subsystem or the associated service provider has failed.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=46%>WSAEAFNOSUPPORT</TD>
+<TD width=54%>The specified address family is not supported.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=46%>WSAENOBUFS</TD>
+<TD width=54%>No buffer space is available. The socket cannot be created.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=46%>WSAEPROTONOSUPPORT</TD>
+<TD width=54%>The specified protocol is not supported, or does not match the socket type requested.</TD>
+</TR>
+
+</TABLE><BR>
+
+<H4>Remarks</H4>
+
+<P>The <B>socket</B> function causes a socket descriptor and any related resources to be allocated and bound to a specific transport-service provider.  The socket that is created will have the overlapped attribute set.</P>
+
+<P>All functions that allow overlapped operation (<A HREF="xbox_wsasend_winsock.htm">WSASend</A>, <A HREF="xbox_wsarecv_winsock.htm">WSARecv</A>,<A HREF="xbox_wsasendto_winsock.htm">WSASendTo</A>, and <A HREF="xbox_wsarecvfrom_winsock.htm">WSARecvFrom</A>) also support nonoverlapped usage on an overlapped socket if the values for parameters related to overlapped operation are NULL.</P>
+
+<P>Connection-oriented sockets such as <B>SOCK_STREAM</B> provide full-duplex connections, and must be in a connected state before any data can be sent or received on it. A connection to another socket is created with a <A HREF="xbox_connect_winsock.htm">connect</A> call. Once connected, data can be transferred using <A HREF="xbox_send_winsock.htm">send</A> and <A HREF="xbox_recv_winsock.htm">recv</A> calls. When a session has been completed, a <A HREF="xbox_closesocket_winsock.htm">closesocket</A> must be performed.</P>
+
+<P>The communications protocols used to implement a reliable, connection-oriented socket ensure that data is not lost or duplicated. If data for which the peer protocol has buffer space cannot be successfully transmitted within a reasonable length of time, the connection is considered broken and subsequent calls will fail with the error code set to <A HREF="xbox_winsock_error_codes_winsock.htm#_win32_wsaetimedout_2">WSAETIMEDOUT</A>.</P>
+
+<P>Connectionless, message-oriented sockets allow sending and receiving of datagrams to and from arbitrary peers using <B>sendto</B> and <B>recvfrom</B>. If such a socket is connected to a specific peer, datagrams can be sent to that peer using <B>send</B> and can be received only from this peer using <B>recv</B>.</P>
+
+<H4>Requirements</H4>
+<p>
+<b>Header: </b>Declared in winsockx.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xnet.lib for titles that only support system link play, XOnline.lib for titles that support online play. Use the secure versions of the library file (Xnets.lib or XOnlines.lib) for final testing.
+</p>
+
+
+<H4>See Also</H4>
+
+<P>
+<a href="xbox_winsock_overview_winsock.htm">Winsock Overview</A>,
+<a href="xbox_winsock_functions_winsock.htm">Winsock Functions</A> |
+  <A HREF="xbox_accept_winsock.htm">accept</A>, <A HREF="xbox_bind_winsock.htm">bind</A>, <A HREF="xbox_connect_winsock.htm">connect</A>, <A HREF="xbox_getsockname_winsock.htm">getsockname</A>, <A HREF="xbox_getsockopt_winsock.htm">getsockopt</A>, <A HREF="xbox_ioctlsocket_winsock.htm">ioctlsocket</A>, <A HREF="xbox_listen_winsock.htm">listen</A>, <A HREF="xbox_recv_winsock.htm">recv</A>, <A HREF="xbox_recvfrom_winsock.htm">recvfrom</A>, <A HREF="xbox_select_winsock.htm">select</A>, <A HREF="xbox_send_winsock.htm">send</A>, <A HREF="xbox_sendto_winsock.htm">sendto</A>, <A HREF="xbox_setsockopt_winsock.htm">setsockopt</A>, <A HREF="xbox_shutdown_winsock.htm">shutdown</A> </P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

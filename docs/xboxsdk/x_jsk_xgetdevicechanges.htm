@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>XGetDeviceChanges</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="XGetDeviceChanges">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XGetDeviceChanges"/>
+<MSHelp:Keyword Index="F" Term="XGetDeviceChanges"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_xbox_xgetdevicechanges"></A>XGetDeviceChanges</H1>
+
+<P>The <B>XGetDeviceChanges</B> function tracks dynamic insertions and removals of peripheral devices.</P>
+
+<PRE class=syntax><B>BOOL XGetDeviceChanges(</B>
+  <b>PXPP_DEVICE_TYPE</b><I> DeviceType</I><b>,</b>
+  <b>PDWORD</b><I> pdwInsertions</I><b>,</b>
+  <b>PDWORD</b><I> pdwRemovals</I><b></b>
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>DeviceType</I></DT>
+<DD>[in] The device type to query.  <i>DeviceType</i> must be of one the following values:
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH>Value</TH><TH>Description</th>
+</TR>
+
+<TR VALIGN="top">
+<TD>XDEVICE_TYPE_GAMEPAD</TD><td>An Xbox Controller.</td>
+</TR>
+
+<TR VALIGN="top">
+<TD>XDEVICE_TYPE_MEMORY_UNIT</TD><td>An Xbox Memory Unit.</td>
+</TR>
+
+<TR VALIGN="top">
+<TD>XDEVICE_TYPE_VOICE_MICROPHONE</TD><td>Xbox Communicator microphone.</td>
+</TR>
+
+<TR VALIGN="top">
+<TD>XDEVICE_TYPE_VOICE_HEADPHONE</TD><td>Xbox Communicator headphone.</td>
+</TR>
+
+<TR VALIGN="top">
+<TD>XDEVICE_TYPE_DEBUG_KEYBOARD</TD><td>A debug keyboard.  Do not use in shipping titles.  See <a href="#remarks">Remarks</a> below.</td>
+</TR>
+
+<TR VALIGN="top">
+<TD>XDEVICE_TYPE_DEBUG_MOUSE</TD><td>A debug mouse.  Do not use in shipping titles.  See <a href="#remarks">Remarks</a> below.</td>
+</TR>
+
+</TABLE>
+</DD>
+
+<DT><I>pdwInsertions</I></DT>
+<DD>[out] Pointer to <B>DWORD</B> variable that receives a bitmap of insertions since the last call to <B>XGetDeviceChanges</B> or <B>XGetDevices</B>.
+</DD>
+
+<DT><I>pdwRemovals</I></DT>
+<DD>[out] Pointer to <B>DWORD</B> variable that receives a bitmap of removals since the last call to <B>XGetDeviceChanges</B> or <B>XGetDevices</B>. </DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>The return value is TRUE if there were any dynamic insertions or removals since the last successful call to <B>XGetDeviceChanges</B> or <B>XGetDevices</B>.</P>
+
+<P>If there were no changes in status, the return value is FALSE.</P>
+
+<a name="remarks"></a>
+<H4>Remarks</H4>
+
+<P><B>XGetDeviceChanges</B> is used to get dynamic insertions and removals since the last time <B>XGetDevices</B> or <B>XGetDeviceChanges</B> was called. This function reports changes only for the specified device type. Like <B>XGetDevices</B>, the bitmap fields returned must be interpreted based upon the device type parameter. For specifics of the bitmap, please see <A HREF="x_jsk_xgetdevices.htm">XGetDevices</A>.</P>
+
+<P><B>XGetDeviceChanges</B> is more efficient than <B>XGetDevices</B> when called in a frequent loop. Additionally, <B>XGetDeviceChanges</B> will indicate when a device has been removed and reinserted between calls (by setting bits in both <I>pdwInsertions</I> and <I>pdwRemovals</I>), whereas <B>XGetDevices</B> will not indicate a change if a device is inserted and removed between calls.  Detecting the removal and insertion of a device is critical because handles become invalid when devices are removed, so open handles to those devices must be closed and reopened.</P>
+
+<P><B>XGetDeviceChanges</B> may be called without first calling <B>XGetDevices</B>. On the first call, <I>pdwInsertions</I> will indicate all of the devices that have been detected up to that point.</P>
+
+<P>To use XDEVICE_TYPE_DEBUG_KEYBOARD, #define DEBUG_KEYBOARD before including Xtl.h. Do not use XDEVICE_TYPE_DEBUG_KEYBOARD in shipping retail game titles.</P>
+<P>To use XDEVICE_TYPE_DEBUG_MOUSE, #define DEBUG_MOUSE before including Xtl.h. Do not use XDEVICE_TYPE_DEBUG_MOUSE in shipping retail game titles.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Xbox.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+
+<H4>See Also</H4>
+<P>
+<A HREF="x_jsk_xid_functions.htm">Input Device Functions</A>, <A HREF="x_mt_input_oview.htm">Using Xbox Peripherals</A> |
+
+<A HREF="x_jsk_xgetdevices.htm">XGetDevices</A>,  
+<A HREF="x_jsk_xinputopen.htm">XInputOpen</A>,
+<A HREF="x_jsk_xmountmu.htm">XMountMU</A></P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

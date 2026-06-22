@@ -1,0 +1,49 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Notification and Event Handling</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Notification and Event Handling"/>
+<MSHelp:Keyword Index="F" Term="Notification and Event Handling"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_notification_and_event_handling_dxaudio"></A>Notification and Event Handling</H1>
+
+<P>From time to time, your application may need to respond to a performance event. For example, you might need to know when the end of a segment has been reached, or you might want to synchronize graphics with the beat of the music. You get the desired information by asking DirectMusic to notify you when a certain type of event has taken place.</P>
+
+<P class=note><B>Note</B>&nbsp;&nbsp;Performance notifications are not to be confused with DirectSound buffer notifications, which are used only by applications that are streaming wave data directly to or from buffers. See <A HREF="_dx_play_buffer_notification_dxaudio.htm">Play Buffer Notification</A> for more information.</P>
+
+<P>Specify what types of events you want to be notified of by calling the <A HREF="_dx_idirectmusicperformance8_addnotificationtype_dxaudio.htm">IDirectMusicPerformance8::AddNotificationType</A> method once for each desired type of event. The following code example tells DirectMusic to set segment-related events. The actual type of event, such as a segment start or a segment end, will be derived later from the notification message.</P>
+
+<PRE>// pPerformance is a valid IDirectMusicPerformance8 pointer.
+ 
+GUID guid = GUID_NOTIFICATION_SEGMENT;
+ 
+pPerformance-&gt;AddNotificationType(guid);
+</PRE>
+
+<P>Information about notifications is sent in <A HREF="_dx_dmus_notification_pmsg_dxaudio.htm">DMUS_NOTIFICATION_PMSG</A> message structures. You can poll for any pending notification messages within the Windows message loop by calling the <A HREF="_dx_idirectmusicperformance8_getnotificationpmsg_dxaudio.htm">IDirectMusicPerformance8::GetNotificationPMsg</A> method, or you can have DirectMusic signal an event object in a separate thread when a message is pending.</P>
+
+<P>If you want to be alerted of pending DirectMusic notification messages by a Windows event object, you must first obtain an event handle by calling the Microsoft&#174; Win32&#174; <B>CreateEvent</B> function. Typically, you would create an autoreset event with a call such as the following:</P>
+
+<PRE>HANDLE g_hNotify = CreateEvent(NULL, FALSE, FALSE, NULL);
+</PRE>
+
+<P>It isn't necessary to create an event in order to retrieve notification messages in your application's message loop. As long as you have requested notifications by calling one of the <B>AddNotificationType</B> methods, the performance sends messages that can be retrieved by calling <A HREF="_dx_idirectmusicperformance8_getnotificationpmsg_dxaudio.htm">IDirectMusicPerformance8::GetNotificationPMsg</A>. </P>
+
+<P>More than one message might be waiting when an event is signaled or when you call <B>GetNotificationPMsg</B> in the message loop. To be sure of catching all notifications, call <B>GetNotificationPMsg</B> repeatedly until it returns S_FALSE. </P>
+
+<P>Multiple messages with the same time stamp are not queued in any particular order. </P>
+
+<P>It is the application's responsibility to free any messages it retrieves, by calling the <A HREF="_dx_idirectmusicperformance8_freepmsg_dxaudio.htm">IDirectMusicPerformance8::FreePMsg</A> method.</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

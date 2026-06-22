@@ -1,0 +1,134 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>WAVEBANKDATA</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="WAVEBANKDATA"/>
+<MSHelp:Keyword Index="F" Term="WAVEBANKDATA"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+    <body topmargin="0">
+        <table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+        <h1>WAVEBANKDATA</h1>
+
+        
+        
+<p>Contains the data from an XACT wave bank.</p>
+
+	
+		
+
+<pre class="syntax">typedef struct _WAVEBANKDATA{
+    DWORD dwFlags;
+    DWORD dwEntryCount;
+    CHAR szBankName[WAVEBANK_BANKNAME_LENGTH];
+    DWORD dwEntryMetaDataElementSize;
+    DWORD dwEntryNameElementSize;
+    DWORD dwAlignment;
+    WAVEBANKMINIWAVEFORMAT CompactFormat;
+} WAVEBANKDATA, *LPWAVEBANKDATA;
+
+typedef const WAVEBANKDATA *LPCWAVEBANKDATA;</pre>
+                    
+                
+            
+            
+                <h4><a name="members"></a>Members</h4>
+<dl>
+			<dt><b>dwFlags</b></dt>
+				<dd>Wave bank type and data flags.  <b>dwFlags</b> specifies one of the following wave bank types.</dd>
+				<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+					<tr>
+<td>WAVEBANK_TYPE_BUFFER</td>
+<td>Indicates that the data for this wave bank uses an in-memory buffer. When this flag is specified, the WAVEBANK_TYPE_STREAMING flag may not be specified.</td>
+</tr>
+					<tr>
+<td>WAVEBANK_TYPE_STREAMING</td>
+<td>Indicates that the data for this wave bank uses a streaming buffer. When this flag is specified, the WAVEBANK_TYPE_BUFFER flag may not be specified.</td>
+</tr>
+				</table>
+				<p>Additionally, <b>dwFlags</b> may contain a combination of the following wave bank flags.</p>
+				<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+					<tr>
+<td>WAVEBANK_FLAGS_ENTRYNAMES</td>
+<td>Indicates that the wave bank includes entry names. The names will be an array of strings found in the WAVEBANK_SEGIDX_ENTRYNAMES section of the wavebank.</td>
+</tr>
+					<tr>
+<td>WAVEBANK_FLAGS_COMPACT</td>
+<td>Indicates that the wave bank is a compact streaming bank.</td>
+</tr>
+				</table>
+				<p>Use the WAVEBANK_TYPE_MASK mask to isolate the wave bank type, and the WAVEBANK_FLAGS_MASK mask to isolate the wave bank flags.</p>
+			
+			<dt><b>dwEntryCount</b></dt>
+				<dd>Number of elements found in the WAVEBANK_SEGIDX_ENTRYMETADATA section (and if names are included, the number of elements in the WAVEBANK_SEGIDX_ENTRYNAMES section).</dd>
+			
+			<dt><b>szBankName</b></dt>
+				<dd>Name of the wave bank.</dd>
+			
+			<dt><b>dwEntryMetaDataElementSize</b></dt>
+				<dd>Size of each entry metadata element in bytes.</dd>
+			
+			<dt><b>dwEntryNameElementSize</b></dt>
+				<dd>Size of each entry name element in bytes.</dd>
+			
+			<dt><b>dwAlignment</b></dt>
+				<dd>Entry alignment in bytes. Can be one of the following values:</dd>
+				<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+					<tr>
+<td>WAVEBANK_ALIGNMENT_MIN</td>
+<td>Indicates alignment for in-memory wave banks.</td>
+</tr>
+					<tr>
+<td>WAVEBANK_ALIGNMENT_HARDDRIVE</td>
+<td>Indicates alignment for hard disk streamed wave banks.</td>
+</tr>
+					<tr>
+<td>WAVEBANK_ALIGNMENT_DVD</td>
+<td>Indicates alignment for DVD streamed wave banks.</td>
+</tr>
+				</table>
+			
+			<dt><b>CompactFormat</b></dt>
+<dd>A <a href="xbox_xactstruct_wavebankminiwaveformat_dxaudio.htm">WAVEBANKMINIWAVEFORMAT</a> structure containing the mini-wave format for the wave bank.  This member is valid only if <b>dwFlags</b> contains WAVEBANK_FLAGS_COMPACT.</dd>
+		</dl>
+                
+				
+            
+                <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xactwb.h.</p>
+            
+                
+
+        <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+    </body>
+    </html>

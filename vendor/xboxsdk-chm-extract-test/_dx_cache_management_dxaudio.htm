@@ -1,0 +1,31 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Cache Management</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Cache Management"/>
+<MSHelp:Keyword Index="F" Term="Cache Management"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H3><A NAME="_dx_cache_management_dxaudio"></A>Cache Management</H3>
+
+<P>When an object is cached, the same instance of the object is always returned by the <A HREF="_dx_idirectmusicloader8_loadobjectfromfile_dxaudio.htm"><B>IDirectMusicLoader8::LoadObjectFromFile</B></A> and <A HREF="_dx_idirectmusicloader8_getobject_dxaudio.htm"><B>IDirectMusicLoader8::GetObject</B></A> methods.</P>
+
+<P>The cache stores a pointer to the object. The memory for the object itself is managed by the Xbox system software and is not released until the reference count reaches zero. It is important to remember that releasing an object from the cache is not the same as releasing your application's COM reference to it. For information about the Xbox implementation of COM, see <A HREF="_dx_iunknown_interface_dxintro.htm"><B>Using the IUnknown Interface Methods</B></A>.</P>
+
+<P>Caching is used extensively in the file-loading process to resolve links to objects. For example, two segments could reference the same style. When the first segment loads, it calls the loader to get the style. The loader creates a style object, loads the data from disk, caches a pointer to the style object, and returns this pointer to the segment. If caching is enabled, when the second segment loads, it asks for the style, and the loader immediately returns the same pointer. Now both segments point to the same style. If caching is disabled, the second segment's request for the style causes a duplicate style object to be loaded from the file, at a cost in time and memory. By default, caching is enabled for all object classes.</P>
+
+
+<P>For more information on cache management, see <A HREF="_dx_garbage_collection_dxaudio.htm"><B>Garbage Collection</B></A>.</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

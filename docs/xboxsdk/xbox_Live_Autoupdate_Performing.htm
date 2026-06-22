@@ -1,0 +1,92 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Performing an Autoupdate</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Performing an Autoupdate"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Performing an Autoupdate</h1>
+<ul>
+<li><a href="#IDAPAEV">Adding Autoupdate Support to Your Title</a></li><li><a href="#IDAVBEV">Testing Your Title's Autoupdate Support</a></li><li><a href="#IDAIDEV">Autoupdate Internals</a></li></ul>
+<h2><a name="IDAPAEV"></a>Adding Autoupdate Support to Your Title</h2>
+<p>For a title to perform autoupdates, the files Update.xbe and DashUpdate.xbe must be located in the root directory of the original game disk. DashUpdate.xbe updates the Xbox Dashboard to the latest version. Update.xbe updates your title to a newer version, as necessary. </p><p>In addition, your game code must check for a newer version of itself when the player logs on to Xbox <i>Live</i>. When your title calls <a href="XOnlineLogon.htm">XOnlineLogon</a>, the <b>XOnlineLogon</b> function uses its <i>pHandle</i> parameter to pass a task handle back to your title. Your title then calls the <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> function to tell the Xbox <i>Live</i> service that it is still active and waiting for a response. If <b>XOnlineTaskContinue</b> returns the value XONLINE_E_LOGON_UPDATE_REQUIRED, your title must perform an autoupdate.</p><p>Before your title actually begins the autoupdate, it must prompt the player. The recommended message for this is the following: </p>
+<pre class="clsCode">
+A required update is available for the Xbox Live service. 
+Press A to update or B to cancel. You cannot connect to Xbox Live 
+until the update is installed.
+</pre>
+    <p>Until they install the update, players should not be allowed to play online. They can play offline, but online play always requires the latest update. If the player indicates a willingness to install the update, your title calls the <a href="XOnlineTitleUpdate.htm">XOnlineTitleUpdate</a> function. This launches Update.xbe, which in turn downloads and installs the updated build of your title. When the update completes, Update.xbe reboots the Xbox and launches the upated version of the title.</p><p>If you want to pass specific configuration information to the updated version of your title, pass it through the the <b>XOnlineTitleUpdate</b> function's <i>dwContext</i> parameter. Update.xbe passes this information to your updated title, which retrieves it by calling <a href="x_jc_xgetlaunchinfo.htm">XGetLaunchInfo</a>.</p><h2><a name="IDAVBEV"></a>Testing Your Title's Autoupdate Support</h2>
+<p>To simplify the process of testing of your title's autoupdate support, the Xbox team created a default autoupdate package. This default test will "update" your title by downloading a default title that created solely for testing autoupdate. To use these tools, follow the steps below.</p><ol>
+				<li>
+					<p>Use the <a href="xbox_tool_xbecert.htm">XBECert tool</a> to change the version number of your title to 0x199.</p>
+					
+<pre class="clsCode">
+xbecert /testversion:0x199 default.xbe
+</pre>
+    
+				</li>
+				
+				<li>
+					<p>Verify that your title has the correct version number using <a href="xbox_jbh_tool_imagebld.htm">ImageBld</a>.</p>
+					
+<pre class="clsCode">
+imagebld /dump default.xbe | more
+</pre>
+    
+					<p>In the resulting output, look for the following section to verify that the title ID is your title's ID and that the version number is 199:</p>
+
+<pre class="clsCode">
+
+CERTIFICATE
+        1EC size of certificate
+   3F8DA9BF time date stamp Wed Oct 15 13:10:39 2003
+   FFFF010C title id
+        207 allowed media types
+   80000007 game region
+   FFFFFFFF game ratings
+          0 disk number
+        199 version (XBE: 1, Disc: 153)
+   54524150 online service id
+
+</pre>
+    
+				</li>
+				
+				<li>Run the Clear Xbox Live Configuration tool from within the Xbox <i>Live</i> submenu of the XDK Launcher on your Xbox Development or Debug Kit.</li>
+
+				<li>Logon to PartnerNet with this version of your game. You should be prompted to autoupdate.</li>
+				
+				<li>
+					<p>The title then launches Update.xbe, which displays the following message:</p>
+
+<pre class="clsCode">
+Xbox Live is updating your
+system. Please don't turn off 
+your Xbox console.
+</pre>
+    
+
+					<p>If this happens, your title correctly supports autoupdate. If your title does not detect the need for an autoupdate when using this version, either it does not correctly support autoupdate or the default test has not yet been enabled for your title. You can verify that the default autoupdate test is enabled for your title by contacting 
+<a href="mailto:xboxds@xbox.com" target="_blank">xboxds@xbox.com</a>.</p>
+				</li>
+			</ol>
+<h2><a name="IDAIDEV"></a>Autoupdate Internals</h2>
+<p>Autoupdates are downloaded to the Title Persistent region of the Xbox hard disk. Specifically, they are  placed in the T:\$u folder. If your title is not running, you can view this folder on your development PC using the Xbox Neighborhood by navigating to S:\[title_id]\$u. Any files that are updated in subfolders (media\font.ttf) will be placed in subfolders under T:\$u (T:\$u\media\font.ttf).</p><p>The autoupdate package on the Xbox <i>Live</i> servers contains some metadata about the autoupdate as well as the bitwise difference between the original files and the new files. By storing and downloading only the difference, you can decrease the size of most autoupdates so that downloading the update is quicker. The update itself is broken apart into smaller chunks (about 10 KB) to allow for resumption of a failed download.</p><p>When a title needs to perform an update, it launches Update.xbe, which does the updating. During the update, it wipes out the cache partition of your title and uses this area to store the new files created by adding the difference (the downloaded bits) to the original files (from the DVD). These updated files are placed in the Title Persistent region of the hard disk and Update.xbe then reboots.</p><p>Upon reboot, the Xbox kernel launches the default executable, which is D:\default.xbe. All Xbox <i>Live</i> titles are compiled with special startup code that first checks for an updated version in T:\$u. If it detects one, the startup code reboots to the updated version instead of the one from the disk.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

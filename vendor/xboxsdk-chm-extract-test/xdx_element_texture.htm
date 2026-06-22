@@ -1,0 +1,232 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>texture Element</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+<MSHelp:Attr Name="DevLang" Value="XML"/>
+<MSHelp:Attr Name="DevLang" Value="XSL"/>
+<MSHelp:Attr Name="Technology" Value="XML"/>
+<MSHelp:Keyword Index="K" Term="texture element"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>texture Element</h1>
+<p>The &lt;<b>texture</b>&gt; element specifies a standard 2D texture.</p>
+<pre class="syntax" xml:space="preserve">&lt;texture
+   id = string
+   height = integer
+   width = integer
+   levels = integer
+   source = string
+   alphaSource = string
+   alphaAmount = integer
+   colorKey = string
+   filter = string
+   format = string
+   mapData = string
+   bumpAmount = integer
+/&gt;</pre>
+<h4>Required Attributes</h4>
+<dl id="idXML">
+<dt><b>id</b></dt>
+<dd><p>Texture identifier used for referencing from a &lt;<a href="xdx_element_texturestate.htm">textureState</a>&gt; element. For more details, see <a href="xdx_id_attribute.htm">XDX id Attribute</a>.</p>
+</dd>
+<dt><b>source</b></dt>
+<dd><p>Source image file. For more details, see <a href="xbox_tool_xbrc.htm#remarks">Supported Image File Types</a>. This attribute is not required if a mipmap level 0 is explictly included in the texture using a &lt;<b>mip</b>&gt; element. If there is an alpha channel in the source bitmap, that alpha channel is preserved and output. If there is an alpha channel in the source bitmap and the <b>alphaSource</b> attribute is specified, the <b>alphaSource</b> bitmap will replace the alpha channel given in the source bitmap.</p>
+</dd>
+</dl>
+<h4>Optional Attributes</h4>
+<dl id="idXML">
+<dt><b>height</b></dt>
+<dd><p>Height in texels of the output texture. Must be between 1 and 4096. If this attribute is not included, the source texture height is used. If this attribute is specified and the source image height does not match, the compiler will use a triangular filter with no dithering to scale the image.</p>
+</dd>
+<dt><b>width</b></dt>
+<dd><p>Width in texels of the output texture. Must be between 1 and 4096. If this attribute is not included, the source texture width is used. If this attribute is specified and the source image width does not match, the compiler will use a triangular filter with no dithering to scale the image.</p>
+</dd>
+<dt><b>levels</b></dt>
+<dd><p>Number of mipmap levels to automatically generate. Must be between 0 and 13. To generate mipmaps all the way down to 1&#0215;1, use 0. This attribute should not be specified if the &lt;<b>texture</b>&gt; tag contains &lt;<a href="xdx_element_mip.htm">mip</a>&gt; elements. For RGB textures, mipmaps are generated using a triangular filter with dithering. For UVL textures, mipmaps are generated using a point filter with dithering. The filtering used to generate the mipmaps cannot be changed using the XDX file.</p>
+</dd>
+<dt><b>alphaSource</b></dt>
+<dd><p>Alpha channel source image file. For more details, see <b>Supported Image File Types</b>. The alpha channel is computed by converting the <b>alphaSource</b> image to a full 32-bit color image and taking the average of the red, blue, and green channels as the alpha channel.</p>
+</dd>
+<dt><b>alphaAmount</b></dt>
+<dd><p>Controls the transparency of the alpha channel for the texture. If specified, this attribute must be between 0 and 100. The default value is 100. This attribute is treated as a percentage and is used to clamp alpha vlaues. For example, if <b>alphaAmount</b> is 25, the clamp value will be 63 (255&#0215;0.25) and all alpha channel values less than 63 will be clamped to 63.</p>
+</dd>
+<dt><b>colorKey</b></dt>
+<dd><p>Used to specify the color key the compiler should use to determine what colors to convert to alpha. By default, the color key alpha component is zero and no color key operations are performed.</p>
+</dd>
+<dt><b>filter</b></dt>
+<dd><p>Specifies the filter used to resize the image.</p>
+<p>If this value is specified, it must contain one of the following flags:</p>
+
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>D3DX_FILTER_NONE</td>
+<td>No scaling or filtering will take place. Pixels outside the bounds of the source image are assumed to be transparent black.</td>
+</tr>
+<tr>
+<td>D3DX_FILTER_POINT</td>
+<td>Each destination pixel is computed by sampling the nearest pixel from the source image.</td>
+</tr>
+<tr>
+<td>D3DX_FILTER_TRIANGLE</td>
+<td>Every pixel in the source image contributes equally to the destination image. This is the slowest of the filters.</td>
+</tr>
+<tr>
+<td>D3DX_FILTER_LINEAR</td>
+<td>Each destination pixel is computed by sampling the four nearest pixels from the source image. This filter works best when the scale on both axes is less than two.</td>
+</tr>
+<tr>
+<td>D3DX_FILTER_BOX</td>
+<td>Each pixel is computed by averaging a 2&#0215;2(&#0215;2) box of pixels from the source image. This filter works only when the dimensions of the destination are half those of the source, as is the case with mipmaps.</td>
+</tr>
+</table>
+
+<p>In addition, zero or more of the following flags may be ORed in with one of the flags above.</p>
+
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>D3DX_FILTER_WRAP</td>
+<td>Pixels will be wrapped, not mirrored. This is the default behavior.</td>
+</tr>
+<tr>
+<td>D3DX_FILTER_MIRROR</td>
+<td>Specifying this flag is the same as specifying the D3DX_FILTER_MIRROR_U, D3DX_FILTER_MIRROR_V, and D3DX_FILTER_MIRROR_W flags.</td>
+</tr>
+<tr>
+<td>D3DX_FILTER_MIRROR_U</td>
+<td>Pixels off the edge of the texture on the u-axis should be mirrored, not wrapped.</td>
+</tr>
+<tr>
+<td>D3DX_FILTER_MIRROR_V</td>
+<td>Pixels off the edge of the texture on the v-axis should be mirrored, not wrapped.</td>
+</tr>
+<tr>
+<td>D3DX_FILTER_MIRROR_W</td>
+<td>Pixels off the edge of the texture on the w-axis should be mirrored, not wrapped.</td>
+</tr>
+<tr>
+<td>D3DX_FILTER_DITHER</td>
+<td>This flag indicates that the resulting image be dithered using a 4&#0215;4 ordered dither algorithm.</td>
+</tr>
+</table>
+						
+					</dd>
+<dt><b>format</b></dt>
+<dd><p>Format for the output texture. Must be a member of the <a href="_dx_d3dformat_graphics.htm">D3DFORMAT</a> enumeration; however, it cannot be a depth/stencil format. If the output format is not specified, it will default to D3DFMT_A8R8G8B8.</p>
+</dd>
+<dt><b>mapData</b></dt>
+<dd><p>If this attribute is defined, it must be one of the following values:</p>
+
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+	<tr>
+<td>NormalMap</td>
+<td>Specifies that the texture is a normal map.</td>
+</tr>
+	<tr>
+<td>Generate NormalMap</td>
+<td>Specifies that the texture should be converted to a normal map from a height map.</td>
+</tr>
+</table>
+
+</dd>
+<dt><b>bumpAmount</b></dt>
+<dd><p>Scales the height field making a normal map bumpier. This attribute is used during the conversion of the texture from a height map to a normal map (when <b>mapData</b> is "Generate NormalMap"). The attribute can range from 0 to 100&#8212;the larger the number, the bumpier the normal map. The default value is 100.</p>
+</dd>
+</dl>
+<h4>Element Information</h4>
+<table>
+<tr>
+<td><b>Parent Elements</b></td>
+<td><a href="xdx_element_xdx.htm">XDX</a></td>
+</tr>
+<tr>
+<td><b>Child Elements</b></td>
+<td><a href="xdx_element_mip.htm">mip</a></td>
+</tr>
+</table>
+<h4><a name="remarks"></a>Remarks</h4>
+<p>To specify a texture directly for use in mipmapping, use the &lt;<b>mip</b>&gt; element and not the &lt;<b>texture</b>&gt; element.</p>
+				
+				<p>The source file does not need to have the size or format specified in the <b>height</b>, <b>width</b>, and <b>format</b> attributes. The texture will be resized and the format converted to match the attributes.</p>
+				
+				<h4><a name="examples"></a>Examples</h4>
+<dl><dt><b>A. No mipmapping</b></dt>
+<dd><p>
+						
+<pre class="clsCode">
+&lt;texture id="Forest" source="textures/forest.bmp" format="D3DFMT_LIN_R5G6B5" /&gt;
+</pre>
+    
+						</p>
+</dd>
+<dt><b>B. Automatically generating mipmapping levels</b></dt>
+<dd>
+						<p>Setting <b>levels</b> to zero will generate all mipmapping levels down to 1&#0215;1.</p>
+						
+<pre class="clsCode">
+&lt;texture id="greydirt" source="textures/grydirt1.bmp" width="256" height="128" levels="0" /&gt;
+</pre>
+    
+						</dd>
+<dt><b>C. Using filters with mipmapping</b></dt>
+<dd><p>
+
+<pre class="clsCode">
+&lt;texture id="lightoak" source="textures/LightOaksm.bmp" 
+         format="D3DFMT_DXT1" levels="0" 
+         filter="D3DX_FILTER_TRIANGLE | D3DX_FILTER_MIRROR" /&gt;
+</pre>
+    
+						</p>
+</dd>
+<dt><a name="example_mip"></a><b>D. Directly specifying mipmaps</b></dt>
+<dd><p>
+
+<pre class="clsCode">
+&lt;texture id="DetailTexture" width="256" height="256" format="D3DFMT_DXT4" &gt; 
+   &lt;mip index="0" source="textures/detail0.bmp" &gt; 
+   &lt;mip index="1" source="textures/detail1.bmp" &gt; 
+   &lt;mip index="2" source="textures/detail2.bmp" &gt; 
+&lt;/texture&gt;
+</pre>
+    
+						
+						</p>
+</dd>
+</dl>
+<h4><a name="seealso"></a>See Also</h4>
+<p>&lt;<a href="xdx_element_mip.htm">mip</a>&gt;</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

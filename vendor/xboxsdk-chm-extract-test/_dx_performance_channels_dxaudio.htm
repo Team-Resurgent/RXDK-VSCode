@@ -1,0 +1,52 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Performance Channels</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Performance Channels"/>
+<MSHelp:Keyword Index="F" Term="Performance Channels"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_performance_channels_dxaudio"></A>Performance Channels</H1>
+
+<P>Every playing sound consists of one or more parts. A part might be a MIDI channel, a part in a DirectMusic Producer segment, or a wave. Often, a part corresponds to a single musical instrument. </P>
+
+<P>A performance channel is the route between a part and an audiopath. Every message that contains information about a part also specifies the part's performance channel so that it can be routed correctly.</P>
+
+<P>Performance channels are similar to MIDI channels, but whereas traditional MIDI playback is limited to 16 channels, the number of performance channels is virtually unlimited.</P>
+
+<UL>
+    <LI><A HREF="#_dx_performance_channels_understanding_dxaudio"><B>Understanding Performance Channels</B></A></LI>
+	<LI><A HREF="#xbox_pchannel_memory_usage"><B>Memory Usage</B></A></LI>
+</UL>
+
+<H2><A NAME="_dx_performance_channels_understanding_dxaudio"></A>Understanding Performance Channels</H2>
+
+<P>The following list contains a few details you need to understand about performance channels.</P>
+
+<UL>
+	<LI>There is a mapping between audiopath performance channels and the performance channels on the performance.  When the audiopath is created, unused performance channels on the performance are allocated and mapped to the audiopath performance channels.</LI>
+    <LI>Predefined audiopaths always start with performance channel zero and count on up from there.</LI>
+    <LI>Audiopaths created from configuration files can have any range of performance channels, but they also are assigned to different performance channels on the performance.</LI>
+    <P CLASS="note"><B><I>Note</I></B>&nbsp;&nbsp;&nbsp;&nbsp;Currently, configuration files do not work unless they use only the standard predefined buffers.</P>
+    <LI>To send a pmsg to an audiopath performance channel, you must access the <A HREF="_dx_idirectmusicgraph8_dxaudio.htm"><B>IDirectMusicGraph</B></A> interface in the performance and use its <A HREF="_dx_idirectmusicgraph8_stamppmsg_dxaudio.htm"><B>StampPMsg</B></A> method. To get the <B>IDirectMusicGraph</B> interface, call the <B>QueryInterface</B> method on the audiopath's interface.</LI>
+    <LI>To send a pmsg to a performance channel on the performance, you must access the <B>IDirectMusicGraph</B> interface on the performance and use its <B>StampPMsg</B> method. To get the <B>IDirectMusicGraph</B> interface, call the <B>QueryInterface</B> method on the performance's interface.</LI>
+    <LI>Tools that sit in the audiopath or segment graph process audiopath performance channels.</LI>
+    <LI>Tools that sit in the performance graph process performance channels on the performance.</LI>
+</UL>
+
+<H2><A NAME="xbox_pchannel_memory_usage"></A>Memory Usage</H2>
+
+<P>The number of performance channels specified when creating an audiopath does not cause any  allocation of hardware resources. Resources are allocated on the fly as they are needed. The memory that is allocated for each performance channel used is approximately 30&#8211;40 bytes.</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

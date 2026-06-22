@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>WmaCreateDecoder</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="WmaCreateDecoder [C++]">
+<META NAME="MS-HKWD" CONTENT="WmaCreateDecoder [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="WmaCreateDecoder"/>
+<MSHelp:Keyword Index="F" Term="WmaCreateDecoder"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="xbox_wmacreatedecoder_xmo"></A>WmaCreateDecoder</H1>
+
+<P>Creates and initializes an Xbox Media Object that performs Microsoft&#174; Windows Media&#174; Audio (WMA) decoding.</P>
+
+<PRE class="syntax"><B>HRESULT WINAPI WmaCreateDecoder(</B>
+    <B>LPCSTR</B> <I>pszFileName</I>,
+    <B>HANDLE</B> <I>hFile</I>,
+    <B>BOOL</B> <I>fAsyncMode</I>,
+    <B>DWORD</B> <I>dwLookaheadBufferSize</I>,
+    <B>DWORD</B> <I>dwMaxPackets</I>,
+    <B>DWORD</B> <I>dwYieldRate</I>,
+    <B>LPWAVEFORMATEX</B> <I>pwfxCompressed</I>,
+    <B>XFileMediaObject</B> <I>**ppMediaObject</I>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>pszFileName</I></DT>
+
+<DD>[in] The file name of the source data.  If this is NULL, a valid handle has to be passed to <i>hfile</i>.</DD>
+
+<DT><I>hFile</I></DT>
+
+<DD>[in] A valid handle to a WMA file. If this is NULL, a valid file name must be given to <i>pszFileName</i>.</DD>
+
+<DT><I>fAsyncMode</I></DT>
+
+<DD>[in] Boolean value that determines how the decoder will be created. If TRUE, the decoder will be created for asynchronous operation, which means the <a href="xbox_jc_xmediaobject_process_xmo.htm">Process</a> method will return immediately after it is called. It is important to note that this causes a separate thread to be created that will be used to perform the asynchronous processing. If FALSE, the decoder will be created for synchronous operation. This is the recommended method as it allows synchronous decoding on threads managed by the application.</DD>
+
+<DT><I>dwLookaheadBufferSize</I></DT>
+
+<DD>[in] The number of bytes the decoder will look ahead when decoding.</DD>
+
+<DT><I>dwMaxPackets</I></DT>
+
+<DD>Value that indicates the maximum number of attached packets at any given time.</DD>
+
+<DT><I>dwYieldRate</I></DT>
+
+<DD>Value that specifies how often the decoder should yield execution while decoding data. The value zero indicates it should never yield, the value one indicates it should always yield, and a value two or higher indicates it should yield once every <I>n</I> iterations (where <I>n</I> = <I>dwYieldRate</I>).</DD>
+
+<DT><I>pwfxCompressed</I></DT>
+
+<DD>[out] Address of a <a href="_dx_waveformatex_dxaudio.htm"><b>WAVEFORMATEX</b></a> that describes the input format.</DD>
+
+<DT><I>ppMediaObject</I></DT>
+
+<DD>[out, retval] Address of a pointer to the Xbox Media Object returned.</DD>
+
+</DL>
+
+<H4>Return Values</H4>
+
+<P>Returns DS_OK if successful.</P>
+
+<H4>Remarks</H4>
+
+<P><B>WmaCreateDecoder</B> creates an Xbox Media Object synchronously. If a title needs the creation function to return immediately, the title should use the <A HREF="xbox_wmacreateinmemorydecoder_xmo.htm"><B>WmaCreateInMemoryDecoder</B></A> instead.</P>
+
+<P>Either the <i>pszFileName</i> or <i>hFile</i> parameter must be NULL.</P>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in Dsound.h.</P>
+<P><B>&nbsp;&nbsp;Import Library:</B> Use Dsound.lib.</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

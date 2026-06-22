@@ -1,0 +1,95 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XBR (XbView)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XBR (XbView)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XBR (XbView)</h1>
+<p>The <b>XBR</b> class does all of the data management and access to the bundled resource file. It inherits the <b>Resource</b> class that handles the file loading and memory initialization for the resource file. The <b>Resource</b> class in turn inherits the <b>CXBPackedResource</b> class, which is part of the samples framework. Again, remember that the XBR file is just a generalization of the original Bundler files, which <b>CXBPackedResource</b> was written to handle.</p><img src="images/xbr_classes.jpg"><p><i><b>Illustration</b>&nbsp;&nbsp;This chart shows all of the XBR classes and data structures and how they relate to each other.</i></p>
+<h2><a name="IDAHBN2"></a>Loading an XBR File Using XBR</h2>
+<p>The resource file is loaded asynchronously by calling <b>Resource::StartLoading</b>. The <b>StartLoading</b> function takes a pointer to the Direct3D device and the file name of the resource file to load. It first loads the "headers" for the XBR file. In the old bundler days, this contained the headers needed to fix up the texture and vertex buffer data stored in the Video Memory portion of the file. These headers now also contain the non-video data needed for the XBR file to work. These include things such as the index buffers, vertex shaders, pixel shaders, and so on. </p>
+
+<p>After the headers are loaded, you allocate contiguous memory for the video data and start loading it using Overlapped I/O. You then return S_OK if everything was OK to this point. 
+The load for contiguous memory now happens in the background and the application checks for completion using the <b>Resource::PollLoadingState</b> function. Once the load is complete, this function calls the <b>Resource::OnIOComplete</b> function, which fixes up the data. It then returns the current LOADINGSTATE, defined as follows:</p>
+
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td>LOADING_NOTSTARTED</td>
+<td>Loading hasn't started yet.</td>
+</tr>
+
+<tr>
+<td>LOADING_HEADER</td>
+<td>The Resource class is loading the "header" data. </td>
+</tr>
+
+<tr>
+<td>LOADING_DATA</td>
+<td>The Resource class is loading the video data</td>
+</tr>
+
+<tr>
+<td>LOADING_DONE</td>
+<td>Loading of all data was successfully complete.</td>
+</tr>
+
+<tr>
+<td>LOADING_FAILED </td>
+<td>Loading is done and it didn't work. Usually, this means that the load completed successfully, but the data wasn't in the correct format or attempting to do the fix ups for the data failed. See <a href="xbview_xbr.htm#fixing">Fixing Up the Data After the Load</a> for more details.</td>
+</tr>
+
+</table>
+
+
+<h2><a name="fixing"></a>Fixing Up the Data After the Load</h2>
+<p>When the Overlapped I/O has completed, <b>Resource::OnIOComplete</b> is called from <b>Resource::PollLoadingState</b>. The <b>Resource::OnIOComplete</b> function loops over all of the resources loaded, stores their header and type data and calls <b>Patch</b> for each resource. <b>Patch</b> is a virtual function defined in both the <b>Resource</b> and <b>XBR</b> classes. <b>Patch</b> is the code that fixes up the resource based on the resource type. As such, <b>Patch</b> takes the resource type and the resource header. The <b>XBR::Patch</b> function is called first and understands all of the new resource types and headers. If this version finds a resource type that it doesn't understand, it passes that resource to the <b>Resource::Patch</b> function. <b>Resource::Patch</b> is for patching the actual Direct3D resources using the <a href="xbox_dxg_IDirect3DResource8_Register.htm">IDirect3DResource8::Register</a> call.</p> 
+
+<p>Instead of calling a function such as <a href="_dx_idirect3ddevice8_createtexture_graphics.htm">CreateTexture</a> to load or initialize a resource, you simply call <b>IDirect3DResource8::Register</b> with the header information loaded from the resource file. The header you stored in the resource file is a <a href="_dx_idirect3dresource8_graphics.htm">IDirect3DResource8</a> pointer and you can cast the header as a resource pointer to call <b>IDirect3DResource8::Register</b>. The <b>Register</b> function uses the header information to fix up the pointer to the actual data in the video memory portion of your resource file. </p>
+
+<p><b>Register</b> accomplishes two things:</p>
+
+<ol>
+<li>It tells Direct3D that the video memory used by the header is a valid Direct3D resource of the type specified in the header.</li>
+<li>It marks where the resource starts in contiguous memory and tells Direct3D that it doesn't need to worry about allocating or freeing the resource.</li>
+</ol>
+
+<h2><a name="IDALGN2"></a>Cleaning Up the XBR</h2>
+<p>The destructor in the base class <b>CXBPackedResource</b> handles deleting all of the memory allocated by the resources. The base class also calls a <b>Cleanup</b> function for each resource just in case the resource allocated any memory on its own. The only "dangling" reference that is cleaned up in <b>XBR::Cleanup</b> is the vertex shader handle. All other resources disappear when you free the header and contiguous memory blocks. </p>
+<h2><a name="IDA3GN2"></a>Member Functions</h2>
+<p>Although <b>XBR</b> has many methods, only a few are described in detail:</p>
+
+<ul>
+<li><a href="xbview_xbr_applyvertexshaderconstants.htm">ApplyVertexShaderConstants</a></li>
+<li><a href="xbview_xbr_getanimationdata.htm">GetAnimationData</a></li>
+<li><a href="xbview_xbr_modulatepixelshaderconstants.htm">ModulatePixelShaderConstants</a></li>
+<li><a href="xbview_xbr_setdefaultstate.htm">SetDefaultState</a></li>
+<li><a href="xbview_xbr_setindexbufferresource.htm">SetIndexBufferResource</a></li>
+<li><a href="xbview_xbr_setpixelshaderresource.htm">SetPixelShaderResource</a></li>
+<li><a href="xbview_xbr_settextureresource.htm">SetTextureResource</a></li>
+<li><a href="xbview_xbr_setvertexshaderresource.htm">SetVertexShaderResource</a></li>
+</ul>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

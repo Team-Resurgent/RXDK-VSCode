@@ -1,0 +1,98 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>RaiseException</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="RaiseException">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="RaiseException"/>
+<MSHelp:Keyword Index="F" Term="RaiseException"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_raiseexception"></A>RaiseException</H1>
+
+<P>The <B>RaiseException</B> function raises an exception in the calling thread. </P>
+
+<PRE class=syntax><B>VOID RaiseException(
+  DWORD</B><I> dwExceptionCode</I><B>,       </B>// exception code
+<B>  DWORD</B><I> dwExceptionFlags</I><B>,      </B>// continuable exception flag
+<B>  DWORD</B><I> nNumberOfArguments</I><B>,    </B>// number of arguments
+<B>  CONST ULONG_PTR</B><I> </I><B>*</B><I>lpArguments</I> // array of arguments
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>dwExceptionCode</I></DT>
+
+<DD>[in] Specifies the application-defined exception code of the exception being raised. The filter expression and exception-handler block of an exception handler can use the <A HREF="structex_2fz9.htm">GetExceptionCode</a> function to retrieve this value. 
+
+<P>Note that the system will clear bit 28 of <I>dwExceptionCode</I> before processing the exception.  This bit is a reserved exception bit, used by the system for its own purposes. 
+</DD>
+
+<DT><I>dwExceptionFlags</I></DT>
+
+<DD>[in] Specifies the exception flags. This can be either zero to indicate a continuable exception, or EXCEPTION_NONCONTINUABLE to indicate a noncontinuable exception. Any attempt to continue execution after a noncontinuable exception causes the EXCEPTION_NONCONTINUABLE_EXCEPTION exception. </DD>
+
+<DT><I>nNumberOfArguments</I></DT>
+
+<DD>[in] Specifies the number of arguments in the <I>lpArguments</I> array. This value must not exceed EXCEPTION_MAXIMUM_PARAMETERS. This parameter is ignored if <I>lpArguments</I> is NULL. </DD>
+
+<DT><I>lpArguments</I></DT>
+
+<DD>[in] Pointer to an array of arguments. This parameter can be NULL. These arguments can contain any application-defined data that needs to be passed to the filter expression of the exception handler. 
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>This function does not return a value. </P>
+
+<H4>Remarks</H4>
+
+<P>The <B>RaiseException</B> function enables a title to use structured exception handling to handle private, software-generated, application-defined exceptions. </P>
+
+<P>Raising an exception causes the exception dispatcher to go through the following search for an exception handler: 
+
+<OL>
+	<LI>The system first attempts to notify the debugger, if one is attached. </LI>
+
+	<LI>If a debugger is not attached, or if the debugger does not handle the exception, the system attempts to locate a frame-based exception handler by searching the stack frames of the thread in which the exception occurred. The system searches the current stack frame first, then proceeds backward through preceding stack frames. </LI>
+
+	<LI>If no frame-based handler can be found, or no frame-based handler handles the exception, the system makes a second attempt to notify the debugger.</LI>
+
+	<LI>If a debugger is not attached, or if the debugger does not handle the exception, the system provides default handling based on the exception type. For most exceptions, the default action is to freeze the game console.</LI>
+</OL>
+
+<P>The values specified in the <I>dwExceptionCode</I>, <I>dwExceptionFlags</I>, <I>nNumberOfArguments</I>, and <I>lpArguments</I> parameters can be retrieved in the filter expression of a frame-based exception handler by calling the <A HREF="structex_50oe.htm">GetExceptionInformation</a> function.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+
+<P></P>
+
+<H4>See Also</H4>
+<P>
+<a href="xbox_mt_xtl_sll_structured_exception_handling_overview.htm">Structured Exception Handling Overview</a>,
+<a href="xbox_mt_xtl_sll_structured_exception_handling_functions.htm">Structured Exception Handling Functions</a>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

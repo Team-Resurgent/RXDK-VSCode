@@ -1,0 +1,52 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Starting UIX Features</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Starting UIX Features"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Starting UIX Features</h1>
+<p>To start a UIX feature, call the <a href="ILiveEngine_StartFeature.htm">ILiveEngine::StartFeature</a> function.  <b>ILiveEngine::StartFeature</b> requires that your title pass a structure containing the appropriate startup parameters for the feature being activated.</p><p>When a feature exits (whether successfully or unsuccessfully), or if the current network connection fails, <a href="ILiveEngine_DoWork.htm">ILiveEngine::DoWork</a> sets the UIX_DOWORK_FEATURE_EXIT flag.  Calling <a href="ILiveEngine_GetExitInfo.htm">ILiveEngine::GetExitInfo</a> indicates which feature exited, as well as the feature's exit status and return code.</p><p>Features are partitioned into discrete functional sets so that titles can choose to use the Xbox Drop-in UI for some features while implementing other functionality directly.  Features are started with <b>ILiveEngine::StartFeature</b>, which takes a startup parameters structure that is dependent on the feature being activated.</p><ul>
+<li><a href="#IDAMBEV">Logon Feature</a></li><li><a href="#IDA0CEV">Friends Feature</a></li></ul>
+<h2><a name="IDAMBEV"></a>Logon Feature</h2>
+<p>Calling <b>ILiveEngine::StartFeature</b> to start the logon feature displays the logon screen and begins the logon process. The <i>pFeatureParams</i> parameter must be a pointer to a <a href="UIX_LOGON_PARAMS.htm">UIX_LOGON_PARAMS</a> structure. The information in this structure specifies the type of logon to perform, the maximum number of users to logon (1&#8211;4), the Xbox Live services that need to be accessed, and additional optional values for some logon types. Logon types include normal, silent, using a saved logon state, or responding to an invite.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Titles using Xbox High-Level Voice (XHV) should initialize the voice engine (with <a href="XHVEngineCreate.htm">XHVEngineCreate</a>) only <i>after</i> the logon feature reports a successful logon.</p><p>After a successful logon (UIX_EXIT_LOGON_SUCCESSFUL), the title must call <a href="XOnlineGetServiceInfo.htm">XOnlineGetServiceInfo</a> for each service requested at logon in the <b>LogonServiceIDs</b> member of <b>UIX_LOGON_PARAMS</b>. The title checks the returned HRESULTs to verify that it has successfully connected to the services it requested. If a service critical to the title failed, the title should log off the Xbox Live service.</p><p>The following code fragment demonstrates how to start the logon feature.</p>
+<pre class="clsCode">
+UIX_LOGON_PARAMS ulp;
+ZeroMemory( &amp;ulp, sizeof(ulp) );
+ulp.StructSize = sizeof(ulp);
+ulp.LogonType = UIX_LOGON_TYPE_NORMAL;
+ulp.LogonUserCount = 4;
+ulp.LogonServiceIDs[0] = XONLINE_BILLING_OFFERING_SERVICE;
+ulp.LogonServiceIDs[1] = XONLINE_SIGNATURE_SERVICE;
+ulp.LogonServiceIDs[2] = XONLINE_MATCHMAKING_SERVICE;
+pLiveEngine-&gt;StartFeature( UIX_LOGON_FEATURE, &amp;ulp );
+</pre>
+    <h2><a name="IDA0CEV"></a>Friends Feature</h2>
+<p>Titles call <b>ILiveEngine::StartFeature</b> to start the friends feature. The friends feature displays players' friends lists, enabling players to invite other Xbox Live subscribers to play games. The <i>pFeatureParams</i> parameter must point to a <a href="UIX_FRIENDS_PARAMS.htm">UIX_FRIENDS_PARAMS</a> structure that specifies the user (by port number) whose friends list is displayed, and the friend to initially select in the list (if any). Before starting the friends feature, a successful logon must have been performed. The friends feature also requires that XONLINE_MATCHMAKING_SERVICE was specified when the logon feature was started.</p><p>The following code fragment illustrates how to start the friends feature.</p>
+<pre class="clsCode">
+UIX_FRIENDS_PARAMS ufp;
+ZeroMemory( &amp;ufp, sizeof(ufp) );
+ufp.StructSize = sizeof(ufp);
+ufp.UserPort = 0;
+ufp.SelectedFriendXUID.qwUserID = 0;
+pLiveEngine-&gt;StartFeature( UIX_FRIENDS_FEATURE, &amp;ufp );
+</pre>
+    <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

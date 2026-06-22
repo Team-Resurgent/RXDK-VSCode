@@ -1,0 +1,96 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>constantVS Element</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+<MSHelp:Attr Name="DevLang" Value="XML"/>
+<MSHelp:Attr Name="DevLang" Value="XSL"/>
+<MSHelp:Attr Name="Technology" Value="XML"/>
+<MSHelp:Keyword Index="K" Term="constantVS element"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>constantVS Element</h1>
+<p>The &lt;<b>constantVS</b>&gt; element is used to set constants for use in vertex shader programs.</p>
+<pre class="syntax" xml:space="preserve">&lt;constantVS
+   index = integer
+   comment = string
+   count = string
+   parameter = string
+   matrix = string
+/&gt;</pre>
+<h4>Required Attributes</h4>
+<dl id="idXML">
+<dt><b>index</b></dt>
+<dd>
+						<p>Specifies the vertex shader constant register index. The <b>index</b> attribute must be between -96 and 95. The Xbox Preview Pipeline reserves constants -38, -37, and 0 through 14.. These constants will be overwritten by <a href="xbox_xbview_overview.htm">XbView</a>.</p>
+					</dd>
+</dl>
+<h4>Optional Attributes</h4>
+<dl id="idXML">
+<dt><b>comment</b></dt>
+<dd>
+						<p>Comment describing the constant. This attribute is ignored during compilation.</p>
+					</dd>
+<dt><b>count</b></dt>
+<dd>
+						<p>Number of constant registers getting set. Each constant register consists of four floating-point values. If this attribute is not specified, <b>count</b> defaults to 1. Registers are set in ascending order.</p>
+					</dd>
+<dt><b>parameter</b></dt>
+<dd>
+						<p>Identifies the original resource. This value is set by Deep Exploration and is used for reimportation of the XDX file.</p>
+					</dd>
+<dt><b>matrix</b></dt>
+<dd>
+						<p>Defines which matrix this constant represents. This value is set by Deep Exploration and is used for reimportation of the XDX file but is ignored by the <a href="xbox_tool_xbrc.htm">Xbox Resource Compiler</a>, except when &lt;<b>constantVS</b>&gt; is within the context of &lt;<a href="xdx_element_vertexShaderPass.htm">vertexShaderPass</a>&gt;.</p>
+					</dd>
+</dl>
+<h4>Element Information</h4>
+<table>
+<tr>
+<td><b>Parent Elements</b></td>
+<td><a href="xdx_element_vertexshader.htm">vertexShader</a>, <a href="xdx_element_vertexshaderpass.htm">vertexShaderPass</a></td>
+</tr>
+<tr>
+<td><b>Child Elements</b></td>
+<td>None.</td>
+</tr>
+</table>
+<h4><a name="remarks"></a>Remarks</h4>Vertex shader constants set within a <a href="xdx_element_vertexShader.htm">vertexShader</a> context are treated as global constants for that shader. Constants set within a <b>vertexShaderPass</b> context are specific to that pass and can override the global constants.<h4><a name="examples"></a>Examples</h4>
+<dl><dt><b>Using the count attribute</b></dt>
+<dd><p>This example demonstrates setting a world-view-projection matrix as a constant. Since the matrix is 4&#0215;4 and each constant consists of four floating-point numbers, <b>count</b> is four.
+
+
+<pre class="clsCode">
+&lt;constantVS index="20" count="4" comment="WorldViewProjectMatrix"&gt;
+   0.75 0 0 0
+   0    1 0 0
+   0    0 1 0
+   0    0 0 1
+&lt;/constantVS&gt;
+</pre>
+    
+</p>
+</dd>
+</dl>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Push-Buffer Resources</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="Push-Buffer Resources [Graphics]">
+<META NAME="MS-HKWD" CONTENT="Push-Buffer [Graphics]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Push-Buffer Resources"/>
+<MSHelp:Keyword Index="F" Term="Push-Buffer Resources"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_pushbuffer_resources_graphics"></A>Push-Buffer Resources</H1>
+
+<p>Xbox has added Direct3D extensions to support "push-buffer resources." Push-buffer resources are batch recordings of Direct3D libraries. The recording format is the native "push-buffer" instruction format of the Xbox GPU. Push-buffer resources can be played back with minimal CPU overhead and permit parameters within the push-buffer to be "fixed-up" on every invocation (to permit, for example, transform changes). Push-buffer resources are created by recording Direct3D function calls within a <a href="_dx_idirect3ddevice8_beginpushbuffer_graphics.htm"><b>IDirect3DDevice8::BeginPushBuffer</b></a>/<a href="_dx_idirect3ddevice8_endpushbuffer_graphics.htm"><b>IDirect3DDevice8::EndPushBuffer</b></a> bracket or by using the Xgraphics.lib function <a href="xbox_xgraphics_XGCompileDrawIndexedVertices.htm"><b>XGCompileDrawIndexedVertices</b></a>. Push-buffer resources do not need to be created at run time, but rather can be saved to disk at author time and loaded at run time using the standard Xbox resource Register functions.</p>
+
+<p>Push-buffer resources have two forms, depending on how the memory containing the data is allocated. When the push-buffer data is located in physically contiguous memory with a write-combined view (as created via <a href="_dx_idirect3ddevice8_createpushbuffer_graphics.htm"><b>IDirect3DDevice8::CreatePushBuffer</b></a> with the <i>RunUsingCpuCopy</i> parameter set to FALSE), the GPU can execute the push-buffer in-place, with no copy by the CPU required. When the push-buffer data is located in memory that has a cached view (<i>RunUsingCpuCopy</i> is TRUE), a CPU copy of the data is required whenever the push-buffer is to be executed.</p>
+
+<p>The directly executable case (<i>RunUsingCpuCopy</i> is FALSE) is better when the push-buffer is large, because it can save significant CPU time and system bandwidth by avoiding a CPU copy. However, the copy case (<i>RunUsingCpuCopy</i> is TRUE) is generally better when the push-buffer is small, as there is significant GPU overhead involved in the two JUMP commands required to do the direct execution. Additionally, in the direct execution case, every time the push-buffer is executed, an interrupt is generated and the CPU has to apply all the fix-ups, including the return-address fix-up. (The GPU has no CALL or GOSUB command, only JUMP, so the interrupt is used to patch the return-address JUMP in order to allow multiple executions of the same push-buffer to be enqueued.)
+</p>
+
+<p>The most common use of push-buffer resources will likely be for rendering large static index lists. Normally, when <a href="xbox_dxg_IDirect3DDevice8_DrawIndexedVertices.htm"><b>IDirect3DDevice8::DrawIndexedVertices</b></a> or <a href="_dx_idirect3ddevice8_drawindexedprimitive_graphics.htm"><b>IDirect3DDevice8::DrawIndexedPrimitive</b></a> is called, the indices have to be copied using the CPU. By recording the Draw command into a directly executable push-buffer resource, the CPU copy of the indices can be avoided. Because of the large per-call overhead, however, this should be done only for large index lists.</p>
+
+<p>Push-buffer resources are derived from <a href="_dx_idirect3dresource8_graphics.htm"><b>IDirect3DResource8</b></a>, and so have the automatic benefit of all Direct3D resource functionality, such as <a href="xbox_dxg_IDirect3DResource8_IsBusy.htm"><b>IDirect3DResource8::IsBusy</b></a>. The resource structure is exposed in the header and allows pre-built push-buffers to be loaded from disk and registered.
+</p>
+
+<h4>See Also</h4>
+
+<p><a href="_dx_fixups_graphics.htm"><b>Fix-ups</b></a>, <a href="_dx_recording_state_in_a_pushbuffer_graphics.htm"><b>Recording State in a Push-Buffer</b></a></p>
+
+<DIV CLASS="footer" ID="footer">Unpublished work. &#169 2000 Microsoft Corporation. All rights reserved.</DIV>
+</BODY>
+</HTML>

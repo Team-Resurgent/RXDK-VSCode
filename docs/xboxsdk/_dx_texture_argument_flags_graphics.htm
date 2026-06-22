@@ -1,0 +1,70 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Texture Argument Flags</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Texture Argument Flags"/>
+<MSHelp:Keyword Index="F" Term="Texture Argument Flags"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H2><A NAME="_dx_texture_argument_flags_graphics"></A>Texture Argument Flags</H2>
+
+<P>Each texture stage for a device can have two texture arguments that affect the color or alpha channel of the texture. </P>
+
+<P>Set and retrieve texture arguments by calling the <A HREF="_dx_idirect3ddevice8_settexturestagestate_graphics.htm">IDirect3DDevice8::SetTextureStageState</A> and <A HREF="_dx_idirect3ddevice8_gettexturestagestate_graphics.htm">IDirect3DDevice8::GetTextureStageState</A> methods, and specifying the D3DTSS_COLORARG0, D3DTSS_COLORARG1, D3DTSS_COLORARG2, D3DTSS_ALPHAARG0, D3DTSS_ALPHAARG1, D3DTSS_ALPHAARG2, or D3DTSS_RESULTARG member of the <A HREF="_dx_d3dtexturestagestatetype_graphics.htm">D3DTEXTURESTAGESTATETYPE</A> enumerated type.</P>
+
+<P>The following flags, organized as arguments and modifiers, can be used with color and alpha arguments for a texture stage. You can combine an argument flag with a modifier, but two argument flags cannot be combined.
+
+<DL>
+<DT><B>Argument flags</B></DT>
+
+<DT>D3DTA_CURRENT</DT>
+
+<DD>The texture argument is the result of the previous blending stage. In the first texture stage (stage 0), this argument is equivalent to D3DTA_DIFFUSE. If the previous blending stage uses a bump-map texture (the D3DTOP_BUMPENVMAP operation), the system chooses the texture from the stage before the bump-map texture. If <I>s</I> represents the current texture stage and <I>s</I> &#8211; 1 contains a bump-map texture, this argument becomes the result output by texture stage <I>s</I> &#8211; 2. Permissions are read/write.</DD>
+
+<DT>D3DTA_DIFFUSE</DT>
+
+<DD>The texture argument is the diffuse color interpolated from vertex components during Gouraud shading. If the vertex does not contain a diffuse color, the default color is 0xFFFFFFFF. Permissions are read-only.</DD>
+
+<DT>D3DTA_SELECTMASK</DT>
+
+<DD>Mask value for all arguments; not used when setting texture arguments.</DD>
+
+<DT>D3DTA_SPECULAR</DT>
+
+<DD>The texture argument is the specular color interpolated from vertex components during Gouraud shading. If the vertex does not contain a specular color, the default color is 0xFFFFFFFF. Permissions are read only.</DD>
+
+<DT>D3DTA_TEMP</DT>
+
+<DD>The texture argument is a temporary register color for read or write. The default 
+value for the register is 0x00000000. Permissions are read/write.</DD>
+
+<DT>D3DTA_TEXTURE</DT>
+
+<DD>The texture argument is the texture color for this texture stage. Permissions are read-only.</DD>
+
+<DT>D3DTA_TFACTOR</DT>
+
+<DD>The texture argument is the texture factor set in a previous call to the <A HREF="_dx_idirect3ddevice8_setrenderstate_graphics.htm">IDirect3DDevice8::SetRenderState</A> with the <A HREF="_dx_d3drenderstatetype_graphics.htm#_dx_d3drs_texturefactor_graphics">D3DRS_TEXTUREFACTOR</A> render-state value. Permissions are read-only.</DD>
+
+<DT><B>Modifier flags</B></DT>
+
+<DT>D3DTA_ALPHAREPLICATE</DT>
+
+<DD>Replicate the alpha information to all color channels before the operation completes. This is a read modifier.</DD>
+
+<DT>D3DTA_COMPLEMENT</DT>
+
+<DD>Invert the argument so that, if the result of the argument were referred to by the variable <I>x</I>, the value would be 1.0 minus <I>x</I>. This is a read modifier.</DD>
+</DL>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

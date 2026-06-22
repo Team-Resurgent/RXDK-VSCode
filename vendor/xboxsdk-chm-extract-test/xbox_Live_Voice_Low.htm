@@ -1,0 +1,47 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Low-Level Voice Processing</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Low-Level Voice Processing"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Low-Level Voice Processing</h1>
+<p>Titles can use a handful of Xbox Media Objects (XMOs) to perform voice processing at a low level. In general, the need for this is quite rare. For the most part, titles can simply use the <a href="xbox_Live_Voice_HLV.htm">high-level voice processing engine</a> instead.</p><p>Using XMOs your game can easily work with the headset and to encode and decode voice data. A general synopsis of low-level voice chat implementation follows:</p><ul>
+			<li>Titles call the standard <a href="x_jsk_xgetdevices.htm">XGetDevices</a> and other <a href="x_jsk_xid_functions.htm">Input Device Functions</a> to enumerate connected voice peripherals.</li>
+	
+			<li>Once voice units are detected, create the voice device XMOs for the headphone and microphone using <a href="XVoiceCreateMediaObject.htm">XVoiceCreateMediaObject</a>.</li>
+	
+			<li>The game code then feeds output to the headphones and retrieves input from the headset by supplying buffers to the XMO Process function, <a href="xbox_jc_xmediaobject_process_xmo.htm">XMediaObject::Process</a>. Titles implement a simple buffer queue and manage memory allocation for the buffers. Media are exchanged with the various XMOs through <a href="xbox_jc_xmediapacket_xmo.htm">XMEDIAPACKET</a> structures.</li>
+	
+			<li>Games compress microphone packets intended for transmission over the network with the Voice Encoder XMO. Titles create this XMO using the <b>XVoiceCreate</b> family of encoder creation functions, and then send data to the encoder using the function, <b>XMediaObject::Process</b>. However, for efficiency <a href="xbox_IXVoiceEncoder_ProcessMultiple_xmo.htm">IXVoiceEncoder::ProcessMultiple</a> is recommended.</li>
+	
+			<li>Incoming voice data from the network should be decoded using the Voice Decoder XMO. Titles create this XMO using the <b>XVoiceCreate</b> family of decoder creation functions, and then provide data to the decoder by calling <b>XMediaObject::Process</b>. Here again, <a href="xbox_IXVoiceDecoder_ProcessMultiple_xmo.htm">IXVoiceDecoder::ProcessMultiple</a> is recommended for efficiency. Alternatively, titles can use <a href="XVoiceQueueCreateMediaObject.htm">XVoiceQueueCreateMediaObject</a> to simplify the queuing and timing requirements for packet decoding.</li>
+
+			<li>Decoded packets are sent to the headphone via the process function (<b>XMediaObject::Process</b> or <b>IXVoiceDecoder::ProcessMultiple</b>) on the headphone device XMO. Alternatively, mixing or voice effects can be applied at this stage via DirectSound. </li>
+
+			<li>Games deliver encoded microphone packets across the network using traditional WinSock function calls in the game's standard network layer. Likewise, incoming voice data is retrieved in this same network layer.</li>
+		</ul>
+<p>Developers should weigh the merits of a peer-to-peer arrangement for voice&#8212;whether or not ordinary game traffic is peer-to-peer&#8212;versus the increased packet overhead and bandwidth use of additional voice packets. Voice data will typically need to be sent to only a small number of current players, such as one's current team members or friends. Sending voice traffic as peer-to-peer among listeners saves obvious bandwidth. On the other hand, in games where everyone can hear you scream (to steal a quote), voice data should be piggybacked on existing game data traffic in order to save the costly overhead of Xbox secure packets.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Low-level voice processing does not have access to the voicemail codecs.  XHV is required in order to implement voice mail.</p><ul>
+			<li><a href="xbox_Live_Voice_Creating.htm">Creating and Using Voice Media Objects</a></li>
+			<li><a href="xbox_Live_Voice_Muting.htm">Muting, Blocking, and Banning Players</a></li>
+			<li><a href="xbox_Live_Voice_Effects.htm">Voice Effects, Masking, and Voice Recognition</a></li>
+		</ul>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

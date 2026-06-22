@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Segment Timing</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Segment Timing"/>
+<MSHelp:Keyword Index="F" Term="Segment Timing"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_segment_timing_dxaudio"></A>Segment Timing</H1>
+
+<P>This section covers various aspects of timing in the playing of segments. </P>
+
+<P>To clarify the relationship between times within segments and times within the performance, the following terms are used throughout this section:
+
+<DL>
+<DT><B>Start point</B></DT>
+
+<DD>The first point in the segment that can be a segment start time. By default this value is 0, indicating the beginning of the segment. However, it can be changed by the application.</DD>
+
+<DT><B>Segment start time</B></DT>
+
+<DD>The point in a segment where it begins producing sounds. This time is usually the same as the start point, but can be later if the start point is deliberately aligned to a play time that is in the past. </DD>
+
+<DT><B>Play time</B></DT>
+
+<DD>The point in the performance where a new segment's start point is cued. In the DirectMusic API, this time is sometimes called start time.</DD>
+
+<DT><B>Start marker</B></DT>
+
+<DD>A marker indicating a valid start time in a segment.</DD>
+
+<DT><B>Play marker</B></DT>
+
+<DD>A marker indicating a point in a <A HREF="c.htm#_dx_control_segment_glos">control segment</A> where another segment's start point can be cued.
+
+
+
+<P class=note><B>Note</B>&nbsp;&nbsp; Start markers and play markers are placed in the segment's marker track by the author and cannot be changed by the application. They can, however, be retrieved by using the <A HREF="_dx_guid_valid_start_time_dxaudio.htm">GUID_Valid_Start_Time</A> and <A HREF="_dx_guid_play_marker_dxaudio.htm">GUID_Play_Marker</A> parameters.
+
+</DD>
+</DL>
+
+<P>Segments normally play from the beginning.</P>
+
+<P>If a repeat count is set by using <A HREF="_dx_idirectmusicsegment8_setrepeats_dxaudio.htm">IDirectMusicSegment8::SetRepeats</A>, the entire segment repeats that number of times.</P>
+
+<P>The play time is determined by two parameters of the <A HREF="_dx_idirectmusicperformance8_playsegmentex_dxaudio.htm">IDirectMusicPerformance8::PlaySegmentEx</A> method:</P>
+
+<UL>
+	<LI>The <I>i64StartTime</I> parameter sets the earliest time at which the segment can start playing. If <I>i64StartTime</I> is 0, this time is as soon as possible. The actual time at which the segment will start depends on the type of segment. If it is a primary segment or a secondary <A HREF="c.htm#_dx_control_segment_glos">control segment</A>, the earliest play time is at queue (or flush) time. If it is a noncontrol secondary segment, the earliest play time is at latency time.</LI>
+
+	<LI>The <I>dwFlags</I> parameter specifies how soon after the earliest possible play time the segment will actually start playing. Usually, you will want to wait for an appropriate point in the rhythm before introducing a new primary segment, transition, or motif. You control the delay by setting one or more flags from the <A HREF="_dx_dmus_segf_flags_dxaudio.htm">DMUS_SEGF_FLAGS</A> enumeration.</LI>
+</UL>
+
+<H4><A NAME="_dx_aligning_a_segment_to_a_past_time_dxaudio"></A>Aligning a Segment to a Past Time</H4>
+
+<P>Rather than forcing the segment start time to the next grid, beat, or measure in the <A HREF="c.htm#_dx_control_segment_glos">control segment</A>, you might want the segment to start playing sooner, yet still match the rhythm of the current segment. You can make the segment do so by cuing its start point to a rhythmic boundary that has already passed. The rhythm in the cued segment is thus aligned with that in the current segment, and the new segment can start playing immediately.</P>
+
+<P>To cue the segment in the past, use the DMUS_SEGF_ALIGN flag. Add one of DMUS_SEGF_GRID, DMUS_SEGF_BEAT, or DMUS_SEGF_MEASURE to cue the start point of the segment at the appropriate rhythmic boundary. Alternatively, you can use DMUS_SEGF_MARKER to align the start point to the most recently played play marker in the control segment.</P>
+
+<P>Of course, when the start point is in the past, the segment start time has to be adjusted to fall in the present or the future. The performance uses the following rules to determine the segment start time. In all cases, "next" means "next possible"&#8212;that is, within the part of the segment that does not fall in the past.
+
+<UL>
+	<LI>If a start marker appears in the cued segment before the next resolution boundary of the specified type, the segment start time falls at that point. </LI>
+
+	<LI>If there is no valid start marker, the segment start time is at the next start resolution boundary of the cued segment, as specified by one of the following flags:
+<DL>
+<DT>DMUS_SEGF_VALID_START_BEAT</DT>
+
+<DD>Put the segment start time on the next beat. </DD>
+
+<DT>DMUS_SEGF_VALID_START_GRID</DT>
+
+<DD>Put the segment start time on the next grid. </DD>
+
+<DT>DMUS_SEGF_VALID_START_TICK</DT>
+
+<DD>Put the segment start time at the earliest possible point.
+</DD>
+</DL>
+</LI>
+
+	<LI>If there is no valid start marker and no start resolution flag is supplied, the segment start time is at the next play resolution boundary as specified by the DMUS_SEGF_GRID, DMUS_SEGF_BEAT, or DMUS_SEGF_MEASURE flag. If none of these flags is present, the segment start time is immediate.</LI>
+</UL>
+
+<P>Play markers and start markers allow greater flexibility in the cuing of segments, especially motifs. Suppose a motif is designed to sound best when it starts playing at the beginning of a measure in the primary segment. If the motif is cued with the DMUS_SEGF_MEASURE flag, there might be a significant delay before the next measure boundary is reached and the motif plays. But if the DMUS_SEGF_ALIGN flag is added, the motif can start playing sooner without violating the rhythm. Adding the DMUS_SEGF_MARKER flag ensures that the motif plays at an appropriate boundary within the control segment, rather than on just any measure, beat, or grid.</P>
+
+<P>For information on how tempo changes can affect segment start times, see <A HREF="_dx_clock_time_vs._music_time_dxaudio.htm">Clock Time vs. Music Time</A>.</P>
+
+<P>The following diagram shows how the timing is determined for a segment cued with the DMUS_SEGF_MEASURE, DMUS_SEGF_ALIGN, and DMUS_SEGF_VALID_START_BEAT flags. The solid vertical lines are measure boundaries, and the dotted lines are beat boundaries. The start point of the segment is aligned with the previous measure boundary in the current primary segment. The segment start time falls at the first beat in the cued segment after the unresolved play time.</P>
+
+<P><IMG SRC="images/dmalign.gif" ALT="" BORDER=0></P>
+
+<H4><A NAME="_dx_logical_time_vs._actual_time_dxaudio"></A>Logical Time vs. Actual Time</H4>
+
+<P>Some events have both a logical time and an actual time. The actual time is when the event will take place, and the logical time represents the musical position where it belongs. </P>
+
+<P>For example, a segment might contain a program change that belongs to the start of a beat. The logical time is the start of the beat. However, you want to make sure the program change takes place before the note on the beat is played, so you assign it a physical time that's a little earlier. </P>
+
+<P>If the segment loops to the logical time (the start of that same beat), the program change will still go out.</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

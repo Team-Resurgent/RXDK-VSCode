@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirectSoundBuffer8::SetNotificationPositions</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="IDirectSoundBuffer8::SetNotificationPositions [C++]">
+<META NAME="MS-HKWD" CONTENT="SetNotificationPositions (IDirectSoundBuffer8) [C++]">
+<META NAME="MS-HKWD" CONTENT="SetNotificationPositions [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="SetNotificationPositions (IDirectSoundBuffer8)"/>
+<MSHelp:Keyword Index="K" Term="IDirectSoundBuffer8::SetNotificationPositions"/>
+<MSHelp:Keyword Index="F" Term="SetNotificationPositions"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_idirectsoundnotify8_setnotificationpositions_dxaudio"></A>IDirectSoundBuffer8::SetNotificationPositions</H1>
+
+<P>Sets the notification positions. During playback, whenever the read or play cursor reaches an offset specified in one of the <A HREF="_dx_dsbpositionnotify_dxaudio.htm"><B>DSBPOSITIONNOTIFY</B></A> structures in the caller-supplied array, the associated event is signaled.</P>
+
+<PRE class="syntax"><B>HRESULT SetNotificationPositions(</B>
+    <B>DWORD</B> <I>dwNotifyCount</I>,
+    <B>LPCDSBPOSITIONNOTIFY</B> <I>paNotifies</I>
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>dwNotifyCount</I></DT>
+
+<DD>Number of <A HREF="_dx_dsbpositionnotify_dxaudio.htm"><B>DSBPOSITIONNOTIFY</B></A> structures.</DD>
+
+<DT><I>paNotifies</I></DT>
+
+<DD>Pointer to an array of <A HREF="_dx_dsbpositionnotify_dxaudio.htm"><B>DSBPOSITIONNOTIFY</B></A> structures.</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>Returns DS_OK if successful, an error code otherwise. Can be one of the following values:</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TD width=100%><A HREF="_dx_directsound_return_values_by_name_dxaudio.htm#_dx_dserr_outofmemory_dxaudio"><B>DSERR_OUTOFMEMORY</B></A> </TD>
+</TR>
+</TABLE>
+
+<H4>Remarks</H4>
+<P>In order to use notifications, the buffer must be created with the DSBCAPS_CTRLPOSITIONNOTIFY flag set.</P>
+
+<P>The value DSBPN_OFFSETSTOP can be specified in the <B>dwOffset</B> member to tell the Xbox System Software to signal the associated event when the <A HREF="_dx_idirectsoundbuffer8_stop_dxaudio.htm"><B>IDirectSoundBuffer8::Stop</B></A>  method is called or when the end of the buffer has been reached and the playback is not looping. If it is used, this should be the last item in the position-notify array.</P>
+
+<P>If a position-notify array has already been set, the method replaces the previous array.</P>
+
+<P>The buffer must be stopped when this method is called.</P>
+
+<P CLASS="note"><B><I>Note</I></B>&nbsp;&nbsp;&nbsp;&nbsp;Notifications are only software based. <B>SetNotificationPositions</B> is essentially polling <A HREF="xbox_directsounddowork_dxaudio.htm"><B>DirectSoundDoWork</B></A>, which a title could do on its own.</P>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in dsound.h.</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

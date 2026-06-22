@@ -1,0 +1,187 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Xbox Xray Debug Tool (XbXray)</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Xbox Xray Debug Tool (XbXray)"/>
+<MSHelp:Keyword Index="K" Term="XbXray tool"/>
+<MSHelp:Keyword Index="F" Term="Xbox Xray Debug Tool (XbXray)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1><A NAME=""></A>Xbox Xray Debug Tool (XbXray)</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<!--****Intro paragraph. Should be a three or four sentence summary of the topic.****-->
+<P class="intro">The Xbox Xray Debug Tool (XbXray) helps to debug overdraw
+problems in a running Xbox title. Overdraw, or the excessive redrawing of
+pixels, can be a major performance drain on a title. The Xbox Xray Debug
+Tool intercepts drawing calls made to the Xbox Development Kit, and then redraws the scene in
+grayscale. The brighter a pixel is colored by xbxray, the more times the
+running title has drawn that pixel to the screen.</P>
+<!--*********************************************************************************-->
+
+<PRE>USAGE: xbxray</PRE>
+
+<H3 class="overview">User Interface</H3>
+
+<P class="content">When first started, the Xbox Xray Debug Tool
+presents a dialog box, which looks similar to the following:</P>
+
+<p class="content"><img src="images/xbox_tool_xbxray_ui.jpg" width="299" height="638"
+alt="" border="0"></p>
+
+<p class="content">To begin using XbXray, do the following:</p>
+<OL>
+<Li>On the Xbox Development Kit, start the title you wish to debug.</Li>
+<Li>Click <b>Enable</b>.</Li>
+</OL>
+<p>If the default settings are used, the Xbox Xray Debug Tool should alter what the Xbox Development Kit draws to screen to produce an image similar to the following:</p>
+
+<p class="content"><img src="images/xbox_tool_xbxray_screenshot.jpg"
+width="640" height="480" alt="" border="0"></p>
+
+<p class="content"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;Repeatedly clicking <b>Enable</b> toggles on and off the XBXRAY tool's modification of the on-screen image. Click <b>Done</b> to exit the tool entirely.</p>
+
+<p class="content">The <b>Filter by Debug Marker</b> option tells the Xbox Xray
+Debug Tool to only draw geometry that has been marked by the <a
+href="_dx_idirect3ddevice8_setdebugmarker_graphics.htm">SetDebugMarker</a>
+function. Only objects drawn with the indicated debug marker will appear in the
+image rendered by XbXray.</p>
+
+<p class="content">The <b>Levels</b> slider sets the total levels of grayscale
+brightness that XbXray uses when rendering a scene. For example, at the
+default setting of 8 levels, the entire scene is rendered in 8 shades of
+gray. Adjusting the <b>Levels</b> slider can be useful to fine-tune the display
+produced by XbXray, particularly in scenes where a lot of overdraw
+occurs. Moving the slider to the right (lower number of levels) produces a
+brighter image with fewer gradations of overdraw. Moving the slider to the
+left (higher number of levels) renders a darker image with a wider range of
+gray values.</p>
+
+<p class="content">The <b>FILLMODE</b> settings change how objects are filled
+in the xbxray display, as described below:</p>
+ 
+<UL>
+<Li><b>No change</b> &#8211; Uses the settings defined in the
+running title.</Li>
+<Li><b>Point</b> &#8211; Renders only the vertices of objects.</Li>
+<Li><b>Wireframe</b> &#8211; Renders only a wireframe of objects.</Li>
+<Li><b>Solid</b> &#8211; Renders solid objects.</Li>
+</UL>
+
+<b><i>Note</i></b>&nbsp;&nbsp;&nbsp;Of the settings above, <b>Wireframe</b> can be the most useful for finding rendering errors that may affect the performance of your game title.
+
+<p class="content">The <b>Z ENABLE</b> settings define whether or not
+z-buffering is turned on while XbXray renders the scene, as described below:</p>
+<UL>
+<Li><b>No change</b> &#8211; Lets the title perform whatever z-buffering it normally
+uses.</Li>
+<Li><b>True</b> &#8211; Turns z-buffering on.</li>
+<Li><b>False</b> &#8211; Turns z-buffering off.</Li>
+<Li><b>Use W</b> &#8211; Turns on w-buffering instead of z-buffering.</Li>
+</UL>
+<p><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;By default, XbXray selects <b>False</b> to turn off z-buffering, because z-buffering can hide overdraw problems that may slow the performance of a title. The
+title might still be using CPU time to overdraw pixels, but the z-buffer might filter out some of those
+pixels before XbXray gets a chance to render them.</p>
+
+<p class="content">The <b>STENCIL ENABLE</b> settings allow you to turn stencil
+buffering on and off, as described below:</p>
+<UL>
+<Li><b>No change</b> &#8211; Leaves the running title's stencil
+buffer settings alone.</Li>
+<Li><b>True</b> &#8211; Turns stencil buffering on.</li>
+<Li><b>False</b> &#8211; Turns stencil buffering off.</Li>
+</UL>
+
+<p class="content">The <b>CULL MODE</b> settings control which faces of
+polygons are drawn by XbXray, as described below:</p>
+<UL>
+<Li><b>No change</b> &#8211; Lets the title do its own back culling.</Li>
+<Li><b>None</b> &#8211; Turns culling entirely off.</li>
+<Li><b>CW</b> &#8211; Culls back faces from the clockwise direction.</Li>
+<Li><b>CCW</b> &#8211; Culls from the counterclockwise direction.</Li>
+</UL>
+
+<p class="content"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;When selected, the <b>Display overdraw grayscale</b> check box tells XbXray to render the scene in its special overdraw
+grayscale mode. With the check box empty, XbXray renders the scene in
+whatever colors the title would normally use, but still applies
+the <b>Filter by Debug Marker</b>, <b>FILLMODE</b>, <b>Z ENABLE</b>, <b>STENCIL
+ENABLE</b>, and <b>CULL MODE</b> settings to the scene. While not useful for
+detecting overdraw, changing these other settings may be useful for diagnosing
+other kinds of drawing problems.</p>
+
+<p class="content">The <b>GetVisibilityTestResult</b> settings change the value
+returned by the <a
+href="xbox_dxg_idirect3ddevice8_getvisibilitytestresult.htm">GetVisibilityTestResult</a>
+function. By changing this function's return value, you can see the effect that
+turning visibility testing on and off has on the amount of geometry your game
+title is drawing. Changing this function's return value can also let you see how much overdraw the title performs. The <b>GetVisibilityTestResult</b> options are described below:</p>
+<ul>
+  <li><b>No change</b> &#8211; Makes no changes to the return value.</li>
+  <li><b>Force to 0</b> &#8211; Forces the return value to be 0 pixels, which
+      indicates that an object is not visible.</li>
+  <li><b>Force to 307200</b> &#8211; Forces the return value to be 307200
+      pixels (640 x 480), which indicates that an object is visible.</li>
+</ul>
+
+<H3 class="overview">Remarks</H3>
+
+<p class="content">The Xbox Xray Debug Tool cannot intercept geometry that is
+drawn by direct insertion into the pushbuffer or by using Begin/End. The Xbox
+Xray Debug Tool only recognizes vertices drawn using one of the following methods:</p>
+<UL>
+<Li><b>DrawVertices</b></Li>
+<Li><b>DrawIndexedVertices</b></Li>
+<Li><b>DrawPrimitive</b></Li>
+<Li><b>DrawIndexedPrimitive</b></Li>
+<Li><b>DrawPrimitiveUP</b></Li>
+<Li><b>DrawIndexedPrimitiveUP</b></Li>
+</UL>
+
+<p><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;Anything drawn without using one of the above methods appears as it would normally be drawn on the screen, regardless of what settings you apply in XbXray.</p>
+
+<p class="content">If XbXray is enabled and the <a
+href="xbox_lrf_tool_xbmovie.htm">Xbox Movie Capture Tool (XbMovie)</a> tool is
+capturing video, you will not be able to change any XbXray settings until
+XbMovie capture is disabled.</p>
+
+
+<h3 class="overview">See Also</h3>
+
+<p class="content">
+<a href="xbox_dxg_idirect3ddevice8_getvisibilitytestresult.htm">GetVisibilityTestResult</a>,
+<a href="_dx_idirect3ddevice8_setdebugmarker_graphics.htm">SetDebugMarker</a> |
+<a href="xbox_lrf_tool_xbmovie.htm">Xbox Movie Capture Tool (XbMovie)</a>
+</p>
+
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2002 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

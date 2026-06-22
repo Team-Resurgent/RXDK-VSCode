@@ -1,0 +1,71 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Kernel File Systems</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Kernel File Systems"/>
+<MSHelp:Keyword Index="F" Term="Kernel File Systems"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Kernel File Systems</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<P>The DVD and hard disk systems are implemented with completely new code for Xbox, designed specifically to have a small footprint and high reliability.  Writes to the hard disk are done immediately, not buffered in memory and written out at a later time. This means that loss of power will not result in the loss of that buffered data.</P>
+
+<P>The hard disk file system supports "longer" filenames of up to forty-two characters with no "dot-three" extension required.  Because the Xbox did not need to be MS-DOS compatible, it was possible to implement longer filename support cleanly, without using inefficient tricks.</P>
+
+<P>Other improvements in the hard disk file system include better cluster allocation strategy and cacheing for fast file allocation, and more granular locks to allow reading and writing at the same time with multiple readers and a single writer.  The size required by the file system code has been greatly reduced, resulting in lean, fast code.</P>
+
+<P>The Xbox does not support memory-mapped files.  Performance of memory-mapped files can be rather random, and in general they make more sense in a system that is performing demand paging (which doesn't occur on the Xbox).  Also, they would have been implemented as read only, because, as mentioned above, the system does not perform lazy writes.</P>
+
+<P>There is a file cache used for read caching and (in some cases) as an interim write buffer.  The size of this file cache is variable and can be set by the game title.  The default is currently 64 KB, but the title can specify any size between zero and eight megabytes.  Use the XTL functions <a href="x_jsk_xgetfilecachesize.htm">XGetFileCacheSize</a> and <a href="x_jsk_xsetfilecachesize.htm">XSetFileCacheSize</a> to query and set the cache size.  Note that the size of this file cache can affect hard disk, DVD drive, and memory unit access times and performance.</P>
+
+<P>If the file cache is set to zero, you can read from the DVD but cannot read from or write to the hard disk.  Normally, the minimum size you would want to set the cache to is 4 KB.  With this size, you can both read and write, although performance will be impaired because the reads and writes will have access to only one buffer.  A small cache affects write performance more than read performance.</P>
+
+<H3>File System Performance</H3>
+
+<P>If the system does not perform lazy writes, why does it need a write buffer?  The answer is that the underlying device access places restrictions on the buffers that can be passed down to be written to (or read from) the device.  Data to be written by the game title is first copied to the internal system buffer that follows these restrictions, then written to the device.  Also, normally, data is read into an internal system buffer and then copied to the title's buffer when the title issues a read command.</P>
+
+<P>If you set up your buffers properly and use the correct flags, you can avoid this interim step and cause data to be written to or read from your buffers directly, using DMA (Direct Memory Access).  Using non-cached reads gives you optimal performance because data is placed directly into your buffers using DMA.  To use non-cached reads, you must</P>
+
+<UL>
+ <LI>Specify the FILE_FLAG_NO_BUFFERING flag in your call to <a href="filesio_7wmd.htm">CreateFile</a>.</LI>
+ <LI>Supply buffers that are DWORD aligned.</LI>
+ <LI>Perform I/O operations that are an integral multiple of the sector size. (To determine the sector size for a given device, use the <a href="x_jsk_xgetdisksectorsize.htm">XGetDiskSectorSize</a> XTL function.)</LI>
+</UL>
+
+<P>Note that there is no performance gain when doing non-cached reads from an Xbox memory unit.  There may even be a loss of performance, because the internal buffer size may change and cause extra memory copy operations to occur.</P>
+
+<P>The file system also supports scatter/gather operations.  A scatter operation, initiated by calling <a href="filesio_2c36.htm">ReadFileScatter</a>, causes a read from the file system to place data that is stored sequentially on the storage device into a set of buffers that may not be contiguous in memory.  Conversely, <a href="filesio_55iq.htm">WriteFileGather</a> allows multiple buffers to be written to a contiguous area of the storage device.  The advantage of using these operations is that the hardware is used directly to perform scatter/gather DMA.  A large contiguous (in physical memory) buffer is not needed, and the data need not be copied between an interim contiguous buffer and the game's buffers.  Each buffer used in a scatter or gather operation must be aligned on a 4 KB page boundary.  The <a href="memman_3elf.htm">VirtualAlloc</a> function is the simplest method to request a page or range of pages that are 4 KB aligned.</P>
+
+<!--*******************************************************************************-->
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

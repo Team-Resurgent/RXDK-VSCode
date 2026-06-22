@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>D3DXCreateCubeTexture</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="D3DXCreateCubeTexture">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="D3DXCreateCubeTexture"/>
+<MSHelp:Keyword Index="F" Term="D3DXCreateCubeTexture"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_d3dxcreatecubetexture_graphicsd3dx"></A>D3DXCreateCubeTexture</H1>
+
+<P>Creates an empty cube texture, adjusting the calling parameters as needed.</P>
+
+<PRE class=syntax><B>HRESULT D3DXCreateCubeTexture(
+  LPDIRECT3DDEVICE8</B><I> pDevice</I><B>,</B>
+<B>  UINT</B><I> Size</I><B>,</B>
+<B>  UINT</B><I> MipLevels</I><B>,</B>
+  <B>DWORD</B> <I>Usage</I>,
+<B>  D3DFORMAT</B><I> Format</I><B>,</B>
+  <B>D3DPOOL</B> <I>Pool</I>,
+<B>  LPDIRECT3DCUBETEXTURE8*</B><I> ppCubeTexture</I>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>pDevice</I></DT>
+
+<DD>[in] Pointer to an <A HREF="_dx_idirect3ddevice8_graphics.htm"><B>IDirect3DDevice8</B></A> interface, representing the device to be associated with the texture.</DD>
+
+<DT><I>Size</I></DT>
+
+<DD>[in] Width and height of the cube texture, in pixels. For example, if the cube texture is an 8-pixel by 8-pixel cube, the value for this parameter should be 8.</DD>
+
+<DT><I>MipLevels</I></DT>
+
+<DD>[in] Number of mip levels requested. If this value is zero or D3DX_DEFAULT, a complete mipmap chain is created.</DD>
+
+<DT><I>Usage</I></DT>
+
+<DD>[in] 0 or D3DUSAGE_RENDERTARGET. Setting this flag to D3DUSAGE_RENDERTARGET indicates that the surface is to be used as a render target. The resource can then be passed to the <I>pNewRenderTarget</I> parameter of the <B>SetRenderTarget</B> method. If D3DUSAGE_RENDERTARGET is specified, the application should check that the device supports this operation by calling <A HREF="_dx_idirect3d8_checkdeviceformat_graphics.htm"><B>IDirect3D8::CheckDeviceFormat</B></A>.</DD>
+
+<DT><I>Format</I></DT>
+
+<DD>[in] Member of the <A HREF="_dx_d3dformat_graphics.htm"><B>D3DFORMAT</B></A> enumerated type, describing the requested pixel format for the cube texture. The returned cube texture might have a different format from that specified by <I>Format</I>. Applications should check the format of the returned cube texture.</DD>
+
+<DT><I>Pool</I></DT>
+
+<DD>[in] Member of the <A HREF="_dx_d3dpool_graphics.htm"><B>D3DPOOL</B></A> enumerated type, describing the memory class into which the cube texture should be placed.</DD>
+
+<DT><I>ppCubeTexture</I></DT>
+
+<DD>[out] Address of a pointer to an <A HREF="_dx_idirect3dcubetexture8_graphics.htm"><B>IDirect3DCubeTexture8</B></A> interface, representing the created cube texture object.
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is <A HREF="_dx_return_values_graphics.htm#_dx_d3d_ok_graphics"><B>D3D_OK</B></A>.</P>
+
+<P>If the function fails, the return value can be one of the following values.</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TD width=100%><A HREF="_dx_return_values_graphics.htm#_dx_d3derr_invalidcall_graphics"><B>D3DERR_INVALIDCALL</B></A></TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=100%><A HREF="_dx_return_values_graphics.htm#_dx_d3derr_notavailable_graphics"><B>D3DERR_NOTAVAILABLE</B></A></TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=100%><A HREF="_dx_return_values_graphics.htm#_dx_d3derr_outofvideomemory_graphics"><B>D3DERR_OUTOFVIDEOMEMORY</B></A></TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=100%><A HREF="_dx_return_values_graphics.htm#_dx_e_outofmemory_graphics"><B>E_OUTOFMEMORY</B></A></TD>
+</TR>
+</TABLE><BR>
+
+<H4>Remarks</H4>
+
+<P>Cube textures differ from other surfaces in that they are collections of surfaces. To call <B>SetRenderTarget</B> with a cube texture, you must select an individual face using <A HREF="_dx_idirect3dcubetexture8_getcubemapsurface_graphics.htm"><B>IDirect3DCubeTexture8::GetCubeMapSurface</B></A> and pass the resulting surface to <B>SetRenderTarget</B>.</P>
+
+<P>Internally, <B>D3DXCreateCubeTexture</B> uses <A HREF="_dx_d3dxcheckcubetexturerequirements_graphicsd3dx.htm"><B>D3DXCheckCubeTextureRequirements</B></A> to adjust the calling parameters. Therefore, calls to <B>D3DXCreateCubeTexture</B> will often succeed where calls to <A HREF="_dx_idirect3ddevice8_createcubetexture_graphics.htm"><B>IDirect3Ddevice8::CreateCubeTexture</B></A> would fail.</P>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in D3dx8tex.h.<BR>
+<B>&nbsp;&nbsp;Import Library:</B> Use D3dx8.lib.</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

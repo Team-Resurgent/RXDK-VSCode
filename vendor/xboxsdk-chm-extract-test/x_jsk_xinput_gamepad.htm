@@ -1,0 +1,118 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>XINPUT_GAMEPAD</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="XINPUT_GAMEPAD">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XINPUT_GAMEPAD"/>
+<MSHelp:Keyword Index="F" Term="XINPUT_GAMEPAD"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="xinput_gamepad"></A>XINPUT_GAMEPAD</H1>
+
+<P>The <B>XINPUT_GAMEPAD</B> structure describes the current state of each button or stick on the game pad. </P>
+
+<PRE class=syntax>typedef struct _XINPUT_GAMEPAD
+{
+    WORD    wButtons;
+    BYTE    bAnalogButtons[8];
+    SHORT   sThumbLX;
+    SHORT   sThumbLY;
+    SHORT   sThumbRX;
+    SHORT   sThumbRY;
+} XINPUT_GAMEPAD, *PXINPUT_GAMEPAD;</PRE>
+
+<H4>Members</H4>
+
+<DL>
+<DT><B>wButtons</B></DT>
+
+<DD><B>wButtons</B> is a bit mask of the following device digital buttons:
+<PRE class=syntax>
+#define XINPUT_GAMEPAD_DPAD_UP          0x00000001
+#define XINPUT_GAMEPAD_DPAD_DOWN        0x00000002
+#define XINPUT_GAMEPAD_DPAD_LEFT        0x00000004
+#define XINPUT_GAMEPAD_DPAD_RIGHT       0x00000008
+#define XINPUT_GAMEPAD_START            0x00000010
+#define XINPUT_GAMEPAD_BACK             0x00000020
+#define XINPUT_GAMEPAD_LEFT_THUMB       0x00000040
+#define XINPUT_GAMEPAD_RIGHT_THUMB      0x00000080
+</PRE>
+<P>Additionally, lightgun device subtypes may report status by setting one or more of the following flags in <b>wButtons</b>:</P>
+
+<table>
+<tr><th>Flag</th><th>Value</th><th>Description</th></tr>
+<tr><td>XINPUT_LIGHTGUN_ONSCREEN</td><td>0x00002000</td><td>The lightgun has detected that it is pointed at the screen.</td></tr>
+<tr><td>XINPUT_LIGHTGUN_FRAME_DOUBLER</td><td>0x00004000</td><td>The lightgun has detected that a line doubler is in use on the display.</td></tr>
+<tr><td>XINPUT_LIGHTGUN_LINE_DOUBLER</td><td>0x00008000</td><td>The lightgun has detected that a frame doubler is in use on the display.</td></tr>
+</table>
+</DD>
+
+<DT><B>bAnalogButtons[8]</B></DT>
+
+<DD><B>bAnalogButtons</B> is an array of bytes used to signify the eight analog buttons:
+<PRE class=syntax>
+#define XINPUT_GAMEPAD_A			0
+#define XINPUT_GAMEPAD_B			1
+#define XINPUT_GAMEPAD_X			2
+#define XINPUT_GAMEPAD_Y			3
+#define XINPUT_GAMEPAD_BLACK		4
+#define XINPUT_GAMEPAD_WHITE		5
+#define XINPUT_GAMEPAD_LEFT_TRIGGER		6
+#define XINPUT_GAMEPAD_RIGHT_TRIGGER		7
+</PRE>
+</DD>
+
+<DT><B>sThumbLX</B>, <B>sThumbLY</B>, <B>sThumbRX</B>, <B>sThumbRY</B></DT>
+
+<DD><P>Each of the thumbstick axis variables is a signed value describing the positioning of the thumbstick. A value of 0 is centered.  Negative values signify down and to the left. Positive values signify up and to the right.<P>
+<P>For lightguns, <b>sThumbLX</b> and <b>sThumbLY</b> describe the screen location at which the lightgun is pointed.  If the lightgun is pointed offscreen (or directly at the center of the screen), the reported location will be 0,0.  For lightguns that have a thumbstick, <b>sThumbRX</b> and <b>sThumbRY</b> report the position of the thumbstick.</P>
+</DD>
+</DL>
+
+<H4>Remarks</H4>
+
+<P>In addition to gamepads, this structure is used to define other gaming input devices, such as steering wheels, lightguns, and joysticks. This structure is used by <A HREF="x_jsk_xinput_state.htm">XINPUT_STATE</a> when polling for changes in the state of the gaming device.</P>
+
+<P>The specific mappings of button to game function varies depending on the device and game type.  See the <B>Xbox Controller Default Button Mapping</B> appendix in the <B>Xbox Guide</B> for more information.</P>
+
+<P>The Xbox libraries automatically filter out analog button values less than 0x20 (32 decimal). Values in this range represent crosstalk effects between the buttons on the controller. That is, while pressing one analog button, small values are reported for other non-pressed analog buttons.  These invalid values are automatically filtered. This does not apply to the left and right triggers because they do not exhibit this behavior.</P>
+
+<P>Lightguns report trigger presses in the XINPUT_GAMEPAD_A button.</P>
+
+<P>Note that lightguns initially require approximately 20 frames to determine whether line or frame doubling is being used by the display.  During that time, the XINPUT_LIGHTGUN_ONSCREEN flag will not be set.  Subsequently, however, that flag will be set almost immediately when a lightgun detects that it is pointed at the screen.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Xbox.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+
+<H4>See Also</H4>
+<P>
+<A HREF="x_jsk_xid_structures.htm">Input Device Structures</a> |
+<A HREF="x_jsk_xinput_feedback.htm">XINPUT_FEEDBACK</a>,
+<A HREF="x_jsk_xinput_state.htm">XINPUT_STATE</a>,
+<A HREF="x_jsk_xinputgetstate.htm">XInputGetState</a>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

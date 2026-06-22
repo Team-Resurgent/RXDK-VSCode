@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>PSFinalCombinerConstants</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="PSFinalCombinerConstants"/>
+<MSHelp:Keyword Index="F" Term="PSFinalCombinerConstants"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1><A NAME=""></A>PSFinalCombinerConstants</H1>
+<!--***********************************************************-->
+
+<p>The last field, <b>PSFinalCombinerConstants</b>, is very much like the <a href="_dx_psc0mapping_and_psc1mapping_graphics.htm"><b>PSC0Mapping and PSC1Mapping</b></a> fields except that only two constant mappings are defined because there are only two constants in the final combiner (c0 and c1). The macro <b>PS_FINALCOMBINERCONSTANTS(</b><i>c0</i>,<i>c1</i>,<i>flags</i><b>)</b> may be used to set these constants. This macro is defined as below:</p>
+
+<a name="ps_finalcombinerconstants"></a><pre class=syntax>#define PS_FINALCOMBINERCONSTANTS(c0,c1,flags) (((DWORD)(flags) &lt;&lt; 8) | ((DWORD)(c0)&amp;0xf)&lt;&lt; 0) | (((DWORD)(c1)&amp;0xf)&lt;&lt; 4)</pre>
+
+<p>The <i>c0</i> and <i>c1</i> parameters are used to set the associated constants in the final combiner.</p>
+
+<p>There is an additional flag defined in this field that affects the behavior of the Direct3D run-time code. This flag is specified in the third parameter of the macro and can be selected from the following flags:</p>
+
+<ul>
+	<li>PS_GLOBALFLAGS_NO_TEXMODE_ADJUST</li>
+	<li>PS_GLOBALFLAGS_TEXMODE_ADJUST</li>
+</ul>
+
+<p>In the Direct3D assembly language, it is not required to specify whether a texture operation is expected to operate on a 2D texture, a 3D texture, or a cubemap texture. The same <a href="_dx_tex_graphics.htm"><b>tex</b></a> instruction is used for all of these textures. However, the GPU hardware does have specific modes for each of these textures. If PS_GLOBALFLAGS_TEXMODE_ADJUST is set to adjust the texture modes, the Direct3D run-time code will make the following adjustments to the texture mode in each stage based on the type of texture that is set on that stage:</p>
+
+<blockquote>
+<p>If the set texture is a cubemap then:</p>
+<ul>
+	<li>Change PS_TEXTUREMODES_PROJECT2D to PS_TEXTUREMODES_CUBEMAP.</li>
+	<li>Change PS_TEXTUREMODES_PROJECT3D to PS_TEXTUREMODES_CUBEMAP.</li>
+	<li>Change PS_TEXTUREMODES_DOT_STR_3D to PS_TEXTUREMODES_DOT_STR_CUBE.</li>
+</ul>
+
+<p>If the set texture is a volume texture:</p>
+<ul>
+	<li>Change PS_TEXTUREMODES_PROJECT2D to PS_TEXTUREMODES_PROJECT3D.</li>
+	<li>Change PS_TEXTUREMODES_CUBEMAP to PS_TEXTUREMODES_PROJECT3D.</li>
+	<li>Change PS_TEXTUREMODES_DOT_STR_CUBE to PS_TEXTUREMODES_DOT_STR_3D.</li>
+</ul>
+
+<p>If the set texture is neither a cubemap nor a volume texure:</p>
+<ul>
+	<li>Change PS_TEXTUREMODES_PROJECT3D to PS_TEXTUREMODES_PROJECT2D.</li>
+	<li>Change PS_TEXTUREMODES_CUBEMAP to PS_TEXTUREMODES_PROJECT2D.</li>
+</ul>
+</blockquote>
+
+<p>Because this remapping is required to support the pixel shader assembly language, this flag is set by default by the assembler. Most directly defined pixel shaders will want to disable this automatic texture mode mapping because they have complete control over the texture mode that is set in each stage.</p>
+
+
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

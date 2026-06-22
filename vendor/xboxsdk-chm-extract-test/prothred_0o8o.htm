@@ -1,0 +1,84 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>SleepEx</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="SleepEx">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="SleepEx"/>
+<MSHelp:Keyword Index="F" Term="SleepEx"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_sleepex"></A>SleepEx</H1>
+
+<P>The <B>SleepEx</B> function suspends the current thread until one of the following occurs: 
+
+<UL>
+	<LI>An I/O completion callback function is called.</LI>
+
+	<LI>An asynchronous procedure call (APC) is queued to the thread.</LI>
+
+	<LI>The time-out interval elapses.</LI>
+</UL>
+
+<PRE class=syntax><B>DWORD SleepEx(
+  DWORD</B><I> dwMilliseconds</I><B>,  </B>// time-out interval
+<B>  BOOL</B><I> bAlertable</I>        // early completion option
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>dwMilliseconds</I></DT>
+
+<DD>[in] Specifies the time, in milliseconds, that the delay is to occur. A value of zero causes the thread to relinquish the remainder of its time slice to any other thread of equal priority that is ready to run. If there are no other threads of equal priority ready to run, the function returns immediately, and the thread continues execution. A value of INFINITE causes an infinite delay. </DD>
+
+<DT><I>bAlertable</I></DT>
+
+<DD>[in] Specifies whether the function may terminate early due to an I/O completion callback function or an APC. If <I>bAlertable</I> is FALSE, the function does not return until the time-out period has elapsed. If an I/O completion callback occurs, the function does not return and the I/O completion function is not executed. If an APC is queued to the thread, the function does not return and the APC function is not executed.
+
+<P>If <I>bAlertable</I> is TRUE and the thread that called this function is the same thread that called the extended I/O function <A HREF="filesio_0660.htm">ReadFileEx</a>, the function returns when either the time-out period has elapsed or when an I/O completion callback function occurs. If an I/O completion callback occurs, the I/O completion function is called. If an APC is queued to the thread (<A HREF="synchro_3dk3.htm">QueueUserAPC</a>), the function returns when either the timer-out period has elapsed or when the APC function is called.
+
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>The return value is zero if the specified time interval expired. </P>
+
+<P>The return value is WAIT_IO_COMPLETION if the function returned due to one or more I/O completion callback functions. This can happen only if <I>bAlertable</I> is TRUE and if the thread that called the <B>SleepEx</B> function is the same thread that called the extended I/O function. </P>
+
+<H4>Remarks</H4>
+
+<P>This function can be used with the <B>ReadFileEx</B> function to suspend a thread until an I/O operation has been completed. These functions specify a completion routine that is to be executed when the I/O operation has been completed. For the completion routine to be executed, the thread that called the I/O function must be in an alertable wait state when the completion callback function occurs. A thread goes into an alertable wait state by calling either <B>SleepEx</B>, <A HREF="synchro_5yrc.htm">WaitForSingleObjectEx</a>, or <A HREF="synchro_5lbs.htm">WaitForMultipleObjectsEx</a>, with the function's <I>bAlertable</I> parameter set to TRUE. </P>
+
+<P>A thread can relinquish the remainder of its time slice by calling this function with a sleep time of zero milliseconds. </P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p><H4>See Also</H4>
+<P> 
+<a href="xbox_mt_xtl_sll_threads_overview.htm">Thread Overview</a>,
+<a href="xbox_mt_xtl_sll_threads_functions.htm">Thread Functions</a> | 
+<A HREF="synchro_3dk3.htm">QueueUserAPC</a>,  <A HREF="filesio_0660.htm">ReadFileEx</a>,  <A HREF="prothred_7jxs.htm">Sleep</a>,  <A HREF="synchro_5lbs.htm">WaitForMultipleObjectsEx</a>,  <A HREF="synchro_5yrc.htm">WaitForSingleObjectEx</a>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

@@ -1,0 +1,29 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Purchasing and Canceling Offerings</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Purchasing and Canceling Offerings"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+		<MSHelp:Keyword Index="K" Term="offerings, purchasing and canceling"/>
+	</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Purchasing and Canceling Offerings</h1>
+<p>After reading the detailed information for an offering, the player may decide to purchase it. When the player chooses to purchase an offering, the title calls the <a href="XOnlineOfferingPurchase.htm">XOnlineOfferingPurchase</a> function to perform the purchase operation. The <b>XOnlineOfferingPurchase</b> function should be called only for offerings that are not free, as determined by the <b>fOfferingIsFree</b> member of the <a href="XONLINE_PRICE.htm">XONLINE_PRICE</a> structure.</p><p><b>XOnlineOfferingPurchase</b> requires the following: 1) the user index of the currently logged-on user who will be making the purchase, and 2) the identifier that uniquely specifies the offering (the same identifier returned by the offering enumeration and used to retrieve the offering details). <b>XOnlineOfferingPurchase</b> creates an asynchronous online task and returns a code indicating the success or failure of the task creation. After a purchase operation has been initiated with <b>XOnlineOfferingPurchase</b>, it is not possible to halt the operation. Prior to task completion, some asynchronous online tasks can be halted by calling <a href="XOnlineTaskClose.htm">XOnlineTaskClose</a> for the task handle.  <b>XOnlineOfferingPurchase</b>, however, sends the purchase request to a server, and that request cannot be recalled. Always call <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> to completion for the purchase operation, and only then call <b>XOnlineTaskClose</b> to close the task handle.</p><p>If the offering purchased is cancelable (usually indicative of a subscription with a recurring charge), the user can later cancel his or her subscription by choosing to do so from within the game menus. If the user so chooses, the title calls <a href="XOnlineOfferingCancel.htm">XOnlineOfferingCancel</a> to begin an asynchronous task that cancels the purchase. Like <b>XOnlineOfferingPurchase</b>, once the cancel operation has been initiated it cannot be halted by closing the task handle.  Continue to call <b>XOnlineTaskContinue</b> until it returns a value other than XONLINETASK_S_RUNNING. Only after a value other than XONLINETASK_S_RUNNING is returned should <b>XOnlineTaskClose</b> be called to close the task handle for the cancel operation.</p><p>After an offering has been successfully purchased, and if it is associated with downloadable content, it must still be downloaded and installed to the local Xbox console in order for the player to make use of the offering.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

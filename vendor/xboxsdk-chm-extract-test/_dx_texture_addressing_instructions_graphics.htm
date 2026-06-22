@@ -1,0 +1,133 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Texture Addressing Instructions</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Texture Addressing Instructions"/>
+<MSHelp:Keyword Index="F" Term="Texture Addressing Instructions"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_texture_addressing_instructions_graphics"></A>Texture Addressing Instructions</H1>
+
+<P>This section contains reference information for the texture addressing instructions implemented by the Direct3DX pixel shader assembler. The texture addressing instructions are provided to enable manipulations of texture address data (as opposed to texture color contents).</P>
+
+<P>The textures set at the sampling stages are sampled from the corresponding textures using the sampling, filtering, and wrapping modes selected by the Direct3D interface texture stage states. When these textures are sampled, some operations may be applied to the address used to sample them. These operations are referred to as texture addressing operations.</P>
+
+<P>A subset of the texture addressing instructions and the texture perturbation operations are listed in the following table.</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=28%>Instruction</TH>
+<TH align=left width=72%>Description</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=28%><A HREF="_dx_tex_graphics.htm">tex</A></TD>
+<TD width=72%>No modification</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=28%><A HREF="_dx_texbem_graphics.htm">texbem</A></TD>
+<TD width=72%>Bump environment map</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=28%><A HREF="_dx_texbeml_graphics.htm">texbeml</A></TD>
+<TD width=72%>Bump environment map with luminance</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=28%><A HREF="_dx_texbrdf_graphics.htm">texbrdf</A></TD>
+<TD width=72%>Bump environment map with luminance</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=28%><A HREF="_dx_texcoord_graphics.htm">texcoord</A></TD>
+<TD width=72%>Determines surface color based on reflection</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=28%><A HREF="_dx_texkill_graphics.htm">texkill</A></TD>
+<TD width=72%>Mask out pixel </TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=28%><A HREF="_dx_texm3x2depth_graphics.htm">texm3x2depth</A></TD>
+<TD width=72%>Determines depth of color fragment</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=28%><A HREF="_dx_texm3x2pad_graphics.htm">texm3x2pad</A></TD>
+<TD width=72%>Input to 3&times;2 matrix multiply </TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=28%><A HREF="_dx_texm3x2tex_graphics.htm">texm3x2tex</A></TD>
+<TD width=72%>3&times;2 matrix multiply result</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=28%><A HREF="_dx_texreg2ar_graphics.htm">texreg2ar</A></TD>
+<TD width=72%>Remapping alpha and red components</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=28%><A HREF="_dx_texreg2gb_graphics.htm">texreg2gb</A></TD>
+<TD width=72%>Remapping green and blue components</TD>
+</TR>
+</TABLE><BR>
+
+<P>In addition, the pixel shader interface supports a number of methods to perform a per-pixel 3&times;3 matrix multiply on the vector sampled from a texture. The 3&times;3 matrix is comprised of the texture coordinates from three consecutive texture declaration stages. These matrix multiply operations are constructed from multiple texture address operations.</P>
+
+<P>The following table lists the remaining texture addressing instructions, those that are concerned with per-pixel 3&times;3 matrix multiplies.</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=28%>Instruction</TH>
+<TH align=left width=72%>Description</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=28%><A HREF="_dx_texm3x3diff_graphics.htm">texm3x3diff</A></TD>
+<TD width=72%>Determines the diffuse color of a fragment</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=28%><A HREF="_dx_texm3x3pad_graphics.htm">texm3x3pad</A></TD>
+<TD width=72%>Input to 3&times;3 matrix multiply</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=28%><A HREF="_dx_texm3x3spec_graphics.htm">texm3x3spec</A></TD>
+<TD width=72%>Specular reflection and environment mapping</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=28%><A HREF="_dx_texm3x3tex_graphics.htm">texm3x3tex</A></TD>
+<TD width=72%>3&times;3 matrix multiply result</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=28%><A HREF="_dx_texm3x3vspec_graphics.htm">texm3x3vspec</A></TD>
+<TD width=72%>Specular reflection/environment mapping without constant eye vector</TD>
+</TR>
+</TABLE><BR>
+
+<P>Texture address instructions define an output argument (result) being the texture register that they declare/define. Some instructions require an input operand to be specified. This input operand must be a previously defined texture. These can also be thought of as declarations of the texture colors emitted by the texture sampling units into the color operation/alpha operation/blending shader. These texture registers can be declared in terms of previously declared textures, but not in terms of later textures or other pixel color registers.</P>
+
+<P>All texture address operations must be declared in the order of the texture they define. No texture address operation can refer to another texture that is after it (that is, of a higher stage number).</P>
+
+<P class=note><B><i>Performance Note</i></B>&nbsp;&nbsp;Texture addressing operations need to support sufficient precision for representing texture addresses. For example, precision should be sufficient enough to represent perturbations in the elements of the bump environment mapping matrix that can perturb to a fraction of a texel in an environment map of the maximum texture dimensions supported by the device. Furthermore, all iterated quantities in these operations must be iterated with perspective correction.</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

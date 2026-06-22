@@ -1,0 +1,95 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Instruction Modifiers</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Instruction Modifiers"/>
+<MSHelp:Keyword Index="F" Term="Instruction Modifiers"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_instruction_modifiers_graphics"></A>Instruction Modifiers</H1>
+
+<P>The Direct3DX pixel shader assembler support shift/scale modifier flags and a saturation modifier flag that affects the generated output result. Instruction modifiers integrate with the instruction processing in the following order.
+
+<OL>
+	<LI>Perform inversion.</LI>
+
+	<LI>Apply biasing.</LI>
+
+	<LI>Apply scaling to the result.</LI>
+
+	<LI>Perform clamping.</LI>
+</OL>
+
+<P>The shift/scale modifiers can vary the magnitude of the result within a certain range.</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=40%>Name</TH>
+<TH align=left width=60%>Modifier</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=40%>_x2</TD>
+<TD width=60%>Multiply result by 2</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=40%>_x4</TD>
+<TD width=60%>Multiply result by 4</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=40%>_d2</TD>
+<TD width=60%>Divide result by 2</TD>
+</TR>
+</TABLE><BR>
+
+<!-- 
+<P>In addition, a saturation modifier (<B>_sat</B>) is provided for both color and alpha blending instructions and texture addressing instructions. </P>
+
+<P>For color and alpha blending instruction, the saturation modifier clamps the result of this instruction into the range 0.0 to 1.0 for each component. The following example shows how to use this instruction modifier.</P>
+
+<PRE>dp3_sat r0, t0_bx2, v0_bx2    ; t0 is bump, v0 is light direction
+</PRE>
+
+<P>This operation occurs after the scaling instruction modifier. This is most often used to clamp dot product results. However, it also allows consistent emulation of multipass methods where the frame buffer is always in the range 0 to 1, and of Microsoft&#174; DirectX&#174; 6.0 and 7.0 multitexture syntax, in which saturation is defined to occur at every stage.</P>
+
+<P>For texture addressing instructions, the saturation modifier can be appended to the operation to indicate that the result of the operation should be clamped into the color range 0 .0 to 1.0 upon completion of the operation. This is commonly required for use in lighting operations. The following example shows how to use this instruction modifier.</P>
+
+<PRE>ps.1.0                       ; DirectX 8.0 Version
+tex t0                       ; Read a texture color.
+dp3_sat t1, t0_bx2, v0_bx2   ; Calculate a dotproduct with the texture coordinates and clamp.
+</PRE>
+
+-->
+
+<P>The following <A HREF="_dx_add_graphics.htm">add</A> instruction loads the destination register (d) with the sum of the two colors in the source operands (s0 and s1), and multiplies the result by 2.</P>
+
+<PRE>add_x2   d, s0, s1
+</PRE>
+
+<!--
+<P>The following <B>add</B> instruction loads the destination register (d) with the sum of the two colors in the source operands (s0 and s1), and clamps the result into the range 0.0 to 1.0 for each component.</P>
+
+<PRE>add_sat   d, s0, s1
+</PRE>
+
+<P>The following <B>add</B> instruction loads the destination register (d) with the sum of the two colors in the source operands (s0 and s1), multiplies the result by 2, and clamps the result into the range 0.0 to 1.0 for each component.</P>
+
+<PRE>add_2x_sat   d, s0, s1
+</PRE>
+-->
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

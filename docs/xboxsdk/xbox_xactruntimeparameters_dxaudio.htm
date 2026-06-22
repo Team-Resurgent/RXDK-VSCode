@@ -1,0 +1,87 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XACT_RUNTIME_PARAMETERS</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XACT_RUNTIME_PARAMETERS"/>
+<MSHelp:Keyword Index="F" Term="XACT_RUNTIME_PARAMETERS"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+    <body topmargin="0">
+        <table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+        <h1>XACT_RUNTIME_PARAMETERS</h1>
+
+        
+        
+<p>Contains XACT audio engine initialization information.</p>
+
+	
+		
+
+<pre class="syntax">typedef struct _XACT_RUNTIME_PARAMETERS{
+    DWORD dwMax2DHwVoices;
+    DWORD dwMax3DHwVoices;
+    DWORD dwMaxConcurrentStreams;
+    DWORD dwMaxNotifications;
+    DWORD dwInteractiveAudioLookaheadTime;
+} XACT_RUNTIME_PARAMETERS, *PXACT_RUNTIME_PARAMETERS;
+
+typedef const XACT_RUNTIME_PARAMETERS *PCXACT_RUNTIME_PARAMETERS;</pre>
+                    
+                
+            
+            
+                <h4><a name="members"></a>Members</h4>
+<dl>
+			<dt><b>dwMax2DHwVoices</b></dt>
+				<dd>The maximum number of 2D hardware voices/streams that the XACT engine will use. This can range from 0 to 188.</dd>
+			
+			<dt><b>dwMax3DHwVoices</b></dt>
+				<dd>The maximum number of 3D hardware voices/streams that the XACT engine will use. This can range from 0 to 64.</dd>
+			
+			<dt><b>dwMaxConcurrentStreams</b></dt>
+				<dd>Of the total voices specified by <b>dwMax2DHwVoices</b>, this is the maximum number of 2D voices that XACT may use for streaming from the hard disk and DVD. The remaining 2D voices, as specified by <b>dwMax2DHwVoices</b>, will be used for in-memory playback.</dd> 
+			
+			<dt><b>dwMaxNotifications</b></dt>
+				<dd>The maximum number of notifications. If zero is passed, the engine will use a default value.</dd>
+			
+			<dt><b>dwInteractiveAudioLookaheadTime</b></dt>
+<dd>The look-ahead time, in milliseconds, used by interactive audio.  Defines the minimum transition time for non-immediate transitions.  See <b>Remarks</b> below.</dd>
+		</dl>
+                <h4><a name="remarks"></a>Remarks</h4>
+			<p>The number of 2D voices that XACT can reserve must be less than or equal to 188. Any remaining hardware voices are available to be used by DirectSound and/or DirectMusic, if desired.</p>
+			<p>During development, the value for <b>dwMaxNotifications</b> can be tuned to suit the needs of your title. For a good beginning estimate, apply the following formula:</p>
+<p><i>(Number of cue instances playing concurrently) * (number of notification types per cue) + (number of cues) * (number of notification types per cue)</i></p>
+			<p>When waves and sounds are auditioned, they use voices from the same pool the XACT engine uses for in-game sounds. It is important to provide enough voices to support both.</p>
+			<p><b>dwInteractiveAudioLookaheadTime</b> is used only by XACT Interactive Audio.  It defines the minimum time to wait before performing any type of transition other than Immediate to non-TimeAligned, and is the time that the engine will wait while the destination sound is being prepared or primed.  This period is called the <i>look-ahead time</i> because it determines how far ahead the engine looks for loop ends and markers.  The engine also uses this value when doing time-aligned transitions, by picking an effective transition time that is <b>dwInteractiveAudioLookaheadTime</b> milliseconds greater than the triggering transition time (again, in order to allow the destination sound time to prepare or be primed).  Immediate to non-TimeAligned transitions ignore this value, making their transitions as soon as the destination sound is prepared.  Titles should set this value based on the anticipated time needed to prepare or prime transitions.  Zero milliseconds is definitely too short, and can cause dropouts when making transitions.  For reference, the Audio Console Application auditioning tool (AudConsole) uses a value of 250 milliseconds.</p>
+		
+				
+            
+                <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xact.h.</p>
+            
+                <h4><a name="seealso"></a>See Also</h4>
+<p>
+			<a href="xbox_xactenginecreate_dxaudio.htm">XACTEngineCreate</a>
+		</p>
+
+        <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+    </body>
+    </html>

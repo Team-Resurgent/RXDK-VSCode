@@ -1,0 +1,49 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Overview of Audio Data Flow</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Overview of Audio Data Flow"/>
+<MSHelp:Keyword Index="F" Term="Overview of Audio Data Flow"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_overview_of_audio_data_flow_dxaudio"></A>Overview of Audio Data Flow</H1>
+
+<P>Typically, a DirectMusic application obtains musical data from one or more of the following sources:</P>
+
+<UL>
+	
+	<LI>Wave files.</LI>
+
+	<LI>Segment files authored in DirectMusic Producer or a similar application.</LI>
+
+	<LI>Component files authored in an application such as DirectMusic Producer and turned into a complete composition by the composer object.</LI>
+</UL>
+
+<P>Data from these sources is encapsulated in segment objects. Each segment object represents data from a single source. At any given moment in a performance, one primary segment and any number of secondary segments can be playing. Source files can be mixed; for example, a secondary segment based on a wave file can be played along with a primary segment based on an authored segment file.</P>
+
+<P>A segment comprises one or more tracks, each containing timed data of a particular kindfor example, notes or tempo changes. Most tracks generate time-stamped messages when the segment is played by the performance. Other kinds of tracks supply data only when queried by the performance. </P>
+
+<P>The performance first dispatches the messages to any application-defined tools. Such tools are grouped in segment toolgraphs that process only messages from particular segments, audiopath toolgraphs for messages from all segments playing on the path, and a performance toolgraph that accepts messages from all segments. A tool can modify a message and pass it on, delete it, or send a new message. </P>
+
+<P>Finally, the messages are delivered to the output tool, which converts the data to MIDI format before passing it to the synthesizer. Channel-specific MIDI messages are directed to the appropriate channel group on the Xbox Media Communications Processor (MCP).</P>
+
+
+<P>The following diagram is a simplified view of the flow of data from files to the speakers. A single segment is shown, though multiple segments can play at the same time. The segment gets its data from only one of the four possible sources shown: a wave file, a segment file authored in DirectMusic Producer, or component files combined by the composer object.</P>
+
+<P><IMG SRC="images/dmdatflo2.gif" ALT="" BORDER=0></P>
+
+<P>For a closer look at the flow of messages through the performance, see <A HREF="_dx_using_directmusic_messages_dxaudio.htm">Using DirectMusic Messages</A>.</P>
+
+<P>For information on how to implement the process shown in the illustration, see <A HREF="_dx_loading_audio_data_dxaudio.htm">Loading Audio Data</A> and <A HREF="_dx_playing_sounds_dxaudio.htm">Playing Sounds</A>.</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

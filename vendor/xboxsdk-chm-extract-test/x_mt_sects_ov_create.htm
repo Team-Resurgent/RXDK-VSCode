@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Creating XBE Sections</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Creating XBE Sections"/>
+<MSHelp:Keyword Index="F" Term="Creating XBE Sections"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Creating XBE Sections</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<P>Sections in an XBE image can be created by two different means.
+
+<P>The compiler pragmas dealing with code and data sections (bss_seg, code_seg, const_seg, and data_seg) can be used to place code and data into specific named sections. These sections correspond directly to XBE image sections. Code placed into a named section will be available in a section with that name within the XBE image. The same is true for data sections.  The <B>/MERGE</B> linker switch can be used to combine multiple sections into a single section. This switch is useful, for example, to combine a code section and a data section into a single section that contains the code and data necessary for a specific task or set of tasks.</P>
+
+<P>Specifying the /INSERTFILE flag when building an XBE with Image Builder allows you to insert a named file as a section in the image. Specify the name of the file to be inserted as well as the section name, and that file is then available as a section within the XBE. In comparison to a file that is read from a DVD, a file you add as a section is included as part of the XBE image and so is automatically cryptographically signed; its content is verified as intact and unmodified.</P>
+
+<P>Using either method, section names are limited to eight characters or less.</P>
+<BR />
+
+<P>The following example demonstrates the use of compiler pragmas to group code and data into a named section:</P>
+
+<PRE>// Place the code and data below here into the TESTSEG section.
+#pragma code_seg( "TESTSEG" )
+#pragma data_seg( "TSEG_RW" )
+#pragma bss_seg( "TSEG_RW" )
+#pragma const_seg( "TSEG_RD" )
+#pragma comment(linker, "/merge:TSEG_RW=TESTSEG")
+#pragma comment(linker, "/merge:TSEG_RD=TESTSEG")
+</PRE>
+
+<P>These pragmas instruct the compiler to place code into the TESTSEG section and data into the TSEG_RW and TSEG_RD sections.  const_seg specifies where constant, initialized data is placed; bss_seg specifies where uninitialized data is placed; data_seg specifies where initialized data is placed; and code_seg specifies where code is placed. The linker's <B>/MERGE</B> switch combines the TESTSEG, TSEG_RW, and TSEG_RD sections into a single section named TESTSEG.</P>
+
+<P>The pragmas above modify the sections where subsequent code and data declarations are placed.</P>
+
+<PRE>int g_nVal = 1;                         // data
+int g_nVal2;                            // bss
+const char szString[] = "Test Segment"; // const
+</PRE>
+
+<P>These data declarations will be placed into the TSEG_RW and TSEG_RD sections, then merged into the TESTSEG section when the module is linked. The following functions will be placed into the TESTSEG section:</P>
+
+<PRE>void SetVal2( int n2 )
+{
+    g_nVal2 = n2;
+    return;
+}
+
+int GetVal1( void )
+{
+    return g_nVal;
+}
+
+int GetVal2( void )
+{
+    return g_nVal2;
+}
+
+LPCTSTR GetString( void )
+{
+    return szString;
+}
+</PRE>
+
+<P>This example creates a collection of functions and data grouped into the TESTSEG section.  Use the <B>link -dump -headers</B> command on a compiled .exe (<I>not</I> .xbe) to see reports concerning the sections that a built image contains.  For example, the command</P>
+
+<PRE>link -dump -headers sample.exe</PRE>
+
+<P>might produce, as part of its output, the following summary that lists the image's sections and the size of each of those sections:</P>
+
+<PRE>
+  Summary
+
+          40 .XBLD
+         140 .XPP
+        46A0 .data
+        68C0 .reloc
+       18B80 .text
+          20 .tls
+       26940 D3D
+       1D420 D3DX
+        1660 D3DX_RW
+       5D580 D3D_RW
+         900 INIT
+        3D20 XGRPH
+        1AC0 XGRPH_RW
+        99E0 XPP
+          40 data
+          40 TESTSEG
+</PRE>
+
+<!--*******************************************************************************-->
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

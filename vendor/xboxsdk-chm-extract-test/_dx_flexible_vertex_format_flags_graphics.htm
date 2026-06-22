@@ -1,0 +1,130 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Flexible Vertex Format Flags</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Flexible Vertex Format Flags"/>
+<MSHelp:Keyword Index="K" Term="FVF"/>
+<MSHelp:Keyword Index="F" Term="Flexible Vertex Format Flags"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H2><A NAME="_dx_flexible_vertex_format_flags_graphics"></A>Flexible Vertex Format Flags</H2>
+
+<P>The flexible vertex format (FVF) is used to describe the contents of vertices stored interleaved in a single data stream. A FVF code is generally used to specify data to be processed by fixed function vertex processing.</P>
+
+<p>One significant requirement that the system places on how you format your vertices 
+is on the order in which the data appears. The following illustration depicts the 
+required order for all possible vertex components in memory, and their associated data 
+types.</p>
+
+<img src="images/fvf1.jpg">
+
+<P>The following flags describe a vertex format.</p>
+
+<DL>
+<DT><B>Flexible vertex format (FVF) flags</B></DT>
+
+<DT>D3DFVF_DIFFUSE</DT>
+
+<DD>Vertex format includes a diffuse color component.</DD>
+
+<DT>D3DFVF_NORMAL</DT>
+
+<DD>Vertex format includes a vertex normal vector. This flag cannot be used with the D3DFVF_XYZRHW flag.</DD>
+
+<DT>D3DFVF_SPECULAR</DT>
+
+<DD>Vertex format includes a specular color component.</DD>
+
+<DT>D3DFVF_XYZ</DT>
+
+<DD>Vertex format includes the position of an untransformed vertex. This flag cannot be used with the D3DFVF_XYZRHW flag. </DD>
+
+<DT>D3DFVF_XYZRHW</DT>
+
+<DD>Vertex format includes the position of a transformed vertex. This flag cannot be used with the D3DFVF_XYZ or D3DFVF_NORMAL flag. </DD>
+
+<DT>D3DFVF_XYZB1 through D3DFVF_XYZB4</DT>
+
+<DD>Vertex format contains position data, and a corresponding number of weighting (beta) values to use for multimatrix vertex blending operations. Currently, Microsoft&#174; Direct3D&#174; can blend with up to three weighting values and four blending matrices.</DD>
+
+<DT><B>Texture-related FVF flags</B></DT>
+
+<DT>D3DFVF_TEX0 through D3DFVF_TEX4</DT>
+
+<DD>Number of texture coordinate sets for this vertex. The actual values for these flags are not sequential.</DD>
+
+<DT>D3DFVF_TEXTUREFORMAT1 through D3DFVF_TEXTUREFORMAT4</DT>
+
+<DD>Number of values that define a texture coordinate set. The D3DFVF_TEXTUREFORMAT1 flag indicates one-dimensional texture coordinates, D3DFVF_TEXTUREFORMAT2 indicates two-dimensional texture coordinates, and so on. These flags are rarely used alone; they are used with the <A HREF="_dx_d3dfvf_texcoordsizen_graphics.htm">D3DFVF_TEXCOORDSIZE<I>n</I></A> macros.</DD>
+
+<DT><B>Mask values</B></DT>
+
+<DT>D3DFVF_POSITION_MASK</DT>
+
+<DD>Mask for position bits.</DD>
+
+<DT>D3DFVF_RESERVED0 and D3DFVF_RESERVED2</DT>
+
+<DD>Mask values for reserved bits in the flexible vertex format. Do not use.</DD>
+
+<DT>D3DFVF_TEXCOUNT_MASK</DT>
+
+<DD>Mask value for texture flag bits.</DD>
+
+<DT><B>Miscellaneous</B></DT>
+
+<DT>D3DFVF_TEXCOUNT_SHIFT</DT>
+
+<DD>The number of bits by which to shift an integer value that identifies the number of a texture coordinates for a vertex. This value might be used as follows:</DD>
+</DL>
+
+<PRE>    DWORD dwNumTextures = 1;  // Vertex has only one set of 
+    // coordinates.
+ 
+    // Shift the value for use when creating an FVF combination.
+    dwFVF = dwNumTextures&lt;&lt;D3DFVF_TEXCOUNT_SHIFT;
+ 
+    /*
+     * Now, create an FVF combination using the shifted value.
+     */
+</PRE>
+
+<P>The following example shows some other common flag combinations.</P>
+
+<PRE>    // Lightweight, untransformed vertex for lit, untextured,
+    // Gouraud-shaded content.
+    dwFVF = ( D3DFVF_XYZ | D3DFVF_DIFFUSE );
+ 
+    // Untransformed vertex for unlit, untextured, Gouraud-shaded 
+    // content with diffuse material color specified per vertex.
+    dwFVF = ( D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE );
+ 
+    // Untransformed vertex for light-map-based lighting.
+    dwFVF = ( D3DFVF_XYZ | D3DFVF_TEX2 );
+ 
+    // Transformed vertex for light-map-based lighting 
+    // with shared rhw.
+    dwFVF = ( D3DFVF_XYZRHW | D3DFVF_TEX2 );
+ 
+    // Heavyweight vertex for unlit, colored content with two 
+    // sets of texture coordinates.
+    dwFVF = ( D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE | 
+                     D3DFVF_SPECULAR | D3DFVF_TEX2 );
+</PRE>
+
+<H4>Xbox Optimizations</h4>
+
+<P>Xbox does not support the D3DFVF_PSIZE flag or the D3DFVF_LASTBETA_UBYTE4 flag.</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

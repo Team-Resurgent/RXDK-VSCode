@@ -1,0 +1,159 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>recvfrom</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="recvfrom">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="recvfrom"/>
+<MSHelp:Keyword Index="F" Term="recvfrom"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="xbox_recvfrom_winsock"></A>recvfrom</H1>
+
+<P>Receives data and stores the source address.</P>
+<PRE class=syntax><B>int recvfrom(
+  SOCKET </B><I>s</I>,<B>                   </B>
+<B>  char FAR*</B><I> buf</I>,<B>              </B>
+<B>  int </B><I>len</I>,<B>                    </B>
+<B>  int </B><I>flags</I>,<B>                  </B>
+<B>  struct sockaddr FAR </B><I>*from</I>,<B>  </B>
+<B>  int FAR </B><I>*fromlen            </I>
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>s</I></DT>
+
+<DD>[in] Descriptor identifying a bound socket.</DD>
+
+<DT><I>buf</I></DT>
+
+<DD>[out] Buffer for the incoming data.</DD>
+
+<DT><I>len</I></DT>
+
+<DD>[in] Length of <I>buf</I>.</DD>
+
+<DT><I>flags</I></DT>
+
+<DD>[in] Unsupported; must be zero.</DD>
+
+<DT><I>from</I></DT>
+
+<DD>[out] Optional pointer to a buffer that will hold the source address upon return.</DD>
+
+<DT><I>fromlen</I></DT>
+
+<DD>[in/out] Optional pointer to the size of the <I>from</I> buffer.
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If no error occurs, <B>recvfrom</B> returns the number of bytes received. If the connection has been gracefully closed, the return value is zero. Otherwise, a value of SOCKET_ERROR is returned, and a specific error code can be retrieved by calling <A HREF="xbox_wsagetlasterror_winsock.htm">WSAGetLastError</A>.</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=35%>Error code</TH>
+<TH align=left width=65%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>WSANOTINITIALISED</TD>
+<TD width=65%>A successful <A HREF="xbox_wsastartup_winsock.htm">WSAStartup</A> call must occur before using this function.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>WSAEINPROGRESS</TD>
+<TD width=65%>A blocking call is in progress, or the service provider is still processing a callback function.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>WSAEINVAL</TD>
+<TD width=65%>The socket has not been bound with <A HREF="xbox_bind_winsock.htm">bind</A>, or an unknown flag was specified, or (for byte stream-style sockets only) <I>len</I> was zero or negative.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>WSAENOTSOCK</TD>
+<TD width=65%>The descriptor is not a socket.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>WSAESHUTDOWN</TD>
+<TD width=65%>The socket has been shut down; it is not possible to <B>recvfrom</B> on a socket after <A HREF="xbox_shutdown_winsock.htm">shutdown</A> has been invoked with <I>how</I> set to SD_RECEIVE or SD_BOTH.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>WSAEWOULDBLOCK</TD>
+<TD width=65%>The socket is marked as nonblocking and the <B>recvfrom</B> operation would block.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>WSAEMSGSIZE</TD>
+<TD width=65%>The message was too large to fit into the specified buffer and was truncated.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>WSAETIMEDOUT</TD>
+<TD width=65%>The connection has been dropped because of a network failure or because the system on the other end went down without notice.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>WSAECONNRESET</TD>
+<TD width=65%>The virtual circuit was reset by the remote side executing a hard or abortive close. The title should close the socket as it is no longer usable.</TD>
+</TR>
+</TABLE><BR>
+
+<H4>Remarks</H4>
+
+<P>The <B>recvfrom</B> function reads incoming data on both connected-oriented and connectionless sockets and captures the address from which the data was sent.</P>
+
+<P>The local address of the socket must be known. For server applications, this is usually done explicitly through <A HREF="xbox_bind_winsock.htm">bind</A>. Explicit binding is discouraged for client applications. For client applications using this function, the socket can become bound implicitly to a local address through <A HREF="xbox_sendto_winsock.htm">sendto</A> or <A HREF="xbox_wsasendto_winsock.htm">WSASendTo</A>.</P>
+
+<P>For stream-oriented sockets such as those of type <B>SOCK_STREAM</B>, a call to <B>recvfrom</B> returns as much information as is currently available&#8212;up to the size of the buffer supplied.  The <I>from</I> and <I>fromlen</I> parameters are ignored for connection-oriented sockets.</P>
+
+<P>For message-oriented sockets, data is extracted from the first enqueued message, up to the size of the buffer supplied. If the datagram or message is larger than the buffer supplied, the buffer is filled with the first part of the datagram, and <B>recvfrom</B> generates the error WSAEMSGSIZE. For unreliable protocols (UDP, for example) the excess data is lost.</P>
+
+<P>If the <I>from</I> parameter is nonzero and the socket is not connection oriented, (type <B>SOCK_DGRAM</B> for example), the network address of the peer that sent the data is copied to the corresponding <A HREF="xbox_sockaddr_winsock.htm">SOCKADDR</A> structure. The value pointed to by <I>fromlen</I> is initialized to the size of this structure and is modified, on return, to indicate the actual size of the address stored in the <B>SOCKADDR</B> structure.</P>
+
+<P>If no incoming data is available at the socket, the recvfrom function blocks and waits for data to arrive according to the blocking mode of the socket. In the socket is nonblocking, a value of SOCKET_ERROR is returned with the error code set to <A HREF="xbox_winsock_error_codes_winsock.htm#_win32_wsaewouldblock_2">WSAEWOULDBLOCK</A>. The <A HREF="xbox_select_winsock.htm">select</A> function can be used to determine when more data arrives.</P>
+
+<P>If the socket is connection-oriented and the remote side has shut down the connection gracefully, the call to <B>recvfrom</B> will complete immediately with zero bytes received. If the connection has been reset, <B>recvfrom</B> will fail with the error <A HREF="xbox_winsock_error_codes_winsock.htm#_win32_wsaeconnreset_2">WSAECONNRESET</A>.</P>
+
+<H4>Requirements</H4>
+<p>
+<b>Header: </b>Declared in winsockx.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xnet.lib for titles that only support system link play, XOnline.lib for titles that support online play. Use the secure versions of the library file (Xnets.lib or XOnlines.lib) for final testing.
+</p>
+
+
+<H4>See Also</H4>
+
+<P>
+<a href="xbox_winsock_overview_winsock.htm">Winsock Overview</A>,
+<a href="xbox_winsock_functions_winsock.htm">Winsock Functions</A> |
+<A HREF="xbox_recv_winsock.htm">recv</A>,
+<A HREF="xbox_send_winsock.htm">send</A>,
+<A HREF="xbox_socket_winsock.htm">socket</A>,
+<A HREF="xbox_wsarecvfrom_winsock.htm">WSARecvFrom</A>
+</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>XMountUtilityDrive</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="XMountUtilityDrive">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XMountUtilityDrive"/>
+<MSHelp:Keyword Index="F" Term="XMountUtilityDrive"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_xbox_xmountutilitydrive"></A>XMountUtilityDrive</H1>
+
+<P>The <B>XMountUtilityDrive</B> function is used to mount the title's utility storage region.  A hard disk partition is selected and assigned to the title for use as temporary storage and caching of game data.</P>
+
+<PRE class=syntax><B>BOOL XMountUtilityDrive(</B>
+  <b>BOOL</b><I> fFormatClean</I><b>  </b>             
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>fFormatClean</I></DT>
+<DD><P>[in] Specifies whether the partition should be quick-formatted or not.  If a partition that was last used by the calling title is available, that partition will be selected and assigned to the title.  In that case, <I>fFormatClean</I> determines whether or not the partition will be formatted to remove any previous data it contained.  If no such partition is available, the assigned partition will be returned in a quick-formatted state regardless of the value specified for <I>fFormatClean</I>.</P>
+
+<P>A TRUE value for <i>fFormatClean</i> also indicates that the title wishes to use the utility partition for temporary data only.  The partition is marked as discardable, and data written to the partition may be erased when a reboot of the console occurs.</P>
+</DD>
+
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is TRUE.</P>
+
+<P><P>If the function fails, the return value is FALSE.  To get extended error information, call <A HREF="errors_3uwi.htm">GetLastError</a>.</P>
+</P>
+
+<H4>Remarks</H4>
+
+<P>This function is used to mount an extra hard disk partition that can be used for temporary scratch space, caching data from the game DVD, or any other transitory functionality as desired by the title.  The partition assigned will be available to the title for exclusive use while the title is running.  However, the data on the partition is not guaranteed to be available the next time the title is launched; thus, it cannot be relied on for permanent storage.  The data on the partition <I>may</I> be available if other game titles have not used the partition in the interim.</P> 
+
+<P>This function need not be called if the game image file has the XINIT_MOUNT_UTILITY_DRIVE initialization flag set (which is the default), in which case the utility region is automatically mounted for the title at initialization time.  The XINIT_FORMAT_UTILITY_DRIVE flag, in combination with XINIT_MOUNT_UTILITY_DRIVE, specifies that the partition should be formatted at initialization time.  See the <B>/INITFLAGS</B> switch in the ImageBld documentation for more information.</P>
+
+<P>After successfully mapping the utility region, the hard disk partition is available to the title through the Z:\ drive.</P>
+
+<P>It is expected that a given title will always specify the same value for <i>fFormatClean</i> when mounting its utility partition.  Specifying TRUE in some cases and FALSE in others can produce indeterminate behavior as to whether data on the partition is cached across a reboot or not.  A title that wishes to retain cached data on its utility partition across reboots should always specify FALSE; a title that uses the utility partition for temporary storage only during a single boot of the game should always specify TRUE.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Xbox.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p>
+<H4>See Also</H4>
+<P><A HREF="x_jsk_storage_ov.htm">Xbox Storage Reference</a></P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

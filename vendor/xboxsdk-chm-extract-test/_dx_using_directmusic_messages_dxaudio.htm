@@ -1,0 +1,57 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Using DirectMusic Messages</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Using DirectMusic Messages"/>
+<MSHelp:Keyword Index="F" Term="Using DirectMusic Messages"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H2><A NAME="_dx_using_directmusic_messages_dxaudio"></A>Using DirectMusic Messages</H2>
+
+<P>Sound data passes through the DirectMusic performance in the form of messages. For the most part, messages are created and processed behind the scenes, and your application might never have to work directly with them. However, a basic knowledge of messages can help you understand how DirectMusic works, and a more thorough understanding will enable you to use messages for greater control over the performance.</P>
+
+<P>DirectMusic uses two different kinds of messages:
+
+<UL>
+	<LI>Performance messages. All sequenced data passes through the performance engine in this form. These messages contain detailed information about timing and routing of the data.</LI>
+
+	<LI>Standard MIDI messages. These can be read from a MIDI file or device and either passed directly (thrued) to another device or converted to performance message format when played by the performance.</LI>
+</UL>
+
+<P>Applications don't deal directly with MIDI messages. When a segment is played, all its data is in the form of performance messages and stays that way until it reaches the final output tool, which converts it to MIDI message format before sequencing it to the synthesizer. However, some performance messages contain information similar to that in standard MIDI messages. To help you understand such messages, this section describes some aspects of the MIDI message format.</P>
+
+<P class=note><B>Note</B>&nbsp;&nbsp;The <A HREF="_dx_dmus_midi_pmsg_dxaudio.htm"><B>DMUS_MIDI_PMSG</B></A> structure contains data equivalent to that in any standard MIDI message. It is, however, a performance message.</P>
+
+<P>Most performance messages are sent by a segment's tracks as the segment is playing. Applications can also send messages to do things like setting a MIDI controller, playing a single note, or changing the tempo. </P>
+
+<P>Once a message has been sent, the application cannot retrieve or alter it except by implementing a tool. For example, a segment authored in DirectMusic Producer might contain a lyrics track that generates <A HREF="_dx_dmus_lyric_pmsg_dxaudio.htm"><B>DMUS_LYRIC_PMSG</B></A> messages. The only way an application can display the lyrics is by implementing a tool designed for that purpose. For more information, see <A HREF="_dx_directmusic_tools_dxaudio.htm"><B>DirectMusic Tools</B></A>.</P>
+
+<P>Notifications are an exception to the rule that messages can be intercepted only by tools. The <A HREF="_dx_idirectmusicperformance8_getnotificationpmsg_dxaudio.htm"><B>IDirectMusicPerformance8::GetNotificationPMsg</B></A> method enables the application to retrieve <A HREF="_dx_dmus_notification_pmsg_dxaudio.htm"><B>DMUS_NOTIFICATION_PMSG</B></A> messages. For more information, see <A HREF="_dx_notification_and_event_handling_dxaudio.htm"><B>Notification and Event Handling</B></A>.</P>
+
+<P>The following topics discuss messages and how they are routed:
+
+<UL>
+	<LI><A HREF="_dx_channels_dxaudio.htm"><B>Channels</B></A> </LI>
+
+	<LI><A HREF="_dx_message_creation_and_delivery_dxaudio.htm"><B>Message Creation and Delivery</B></A> </LI>
+
+	<LI><A HREF="_dx_application_created_messages_dxaudio.htm"><B>Application-Created Messages</B></A></LI>
+
+	<LI><A HREF="_dx_performance_message_types_dxaudio.htm"><B>Performance Message Types</B></A> </LI>
+
+	<LI><A HREF="_dx_curves_dxaudio.htm"><B>Curves</B></A></LI>
+
+	<LI><A HREF="_dx_midi_messages_dxaudio.htm"><B>MIDI Messages</B></A> </LI>
+</UL>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

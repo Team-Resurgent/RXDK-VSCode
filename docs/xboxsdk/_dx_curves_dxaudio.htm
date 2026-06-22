@@ -1,0 +1,60 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Curves</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Curves"/>
+<MSHelp:Keyword Index="F" Term="Curves"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_curves_dxaudio"></A>Curves</H1>
+
+<P>A curve is a series of MIDI controller changes bringing about a smooth transition from one value to another&#8212;for example, volume fade-out or fade-in.</P>
+
+<P>You can execute a curve by sending a single performance message of type <A HREF="_dx_dmus_curve_pmsg_dxaudio.htm">DMUS_CURVE_PMSG</A>. This structure enables you to set the start and end values, the duration of the curve, and its shape. Optionally, you can also set a reset value, which is the value to which the controller will return in case of an invalidation. </P>
+
+<P>The <B>wMeasure</B>, <B>nOffset</B>, <B>bBeat</B>, <B>bGrid</B>, and <B>mtOriginalStart</B> members of the message structure are for information only, and do not affect the timing of the message. They are set in messages sent by DirectMusic Producer segments, and can be used by tools. Applications can normally set these members to 0.</P>
+
+<P>The <B>wMergeIndex</B> member is used to determine whether changes are cumulative or overriding. Two curve messages with different merge indexes are cumulative; otherwise, each message in turn overrides settings made by a previous message. </P>
+
+<P>The <B>bCCData</B> member contains the MIDI controller number for controller changes, and is otherwise ignored. For information on controller numbers, see the MIDI specification.</P>
+
+<P>The following sample code causes the volume to fade from its current value to zero over five seconds. If an invalidation occurs during that period, which might happen if another segment replaces the currently playing segment, full volume is restored.</P>
+
+<PRE>DMUS_CURVE_PMSG *pCurveMsg;
+HRESULT hr = g_pPerf-&gt;AllocPMsg(sizeof(DMUS_CURVE_PMSG), 
+        (DMUS_PMSG**) &amp;pCurveMsg);
+ZeroMemory(pCurveMsg, sizeof(DMUS_CURVE_PMSG));
+
+pCurveMsg-&gt;dwSize = sizeof(DMUS_CURVE_PMSG);
+pCurveMsg-&gt;rtTime = 0;
+pCurveMsg-&gt;dwFlags = DMUS_PMSGF_DX8 | DMUS_PMSGF_REFTIME
+        | DMUS_PMSGF_LOCKTOREFTIME;  
+pCurveMsg-&gt;dwPChannel = DMUS_PCHANNEL_BROADCAST_PERFORMANCE;
+pCurveMsg-&gt;dwType = DMUS_PMSGT_CURVE;
+pCurveMsg-&gt;dwGroupID = 0xFFFFFFF;
+pCurveMsg-&gt;mtDuration = 5000;
+pCurveMsg-&gt;nEndValue = 0;
+pCurveMsg-&gt;bCurveShape = DMUS_CURVES_LINEAR;
+pCurveMsg-&gt;bCCData = 7;
+pCurveMsg-&gt;bFlags = DMUS_CURVE_RESET | DMUS_CURVE_START_FROM_CURRENT;
+pCurveMsg-&gt;bType = DMUS_CURVET_CCCURVE ;
+
+pCurveMsg-&gt;mtResetDuration = 0;
+pCurveMsg-&gt;nResetValue = 127;
+
+g_pPerf-&gt;SendPMsg((DMUS_PMSG*) pCurveMsg);
+</PRE>
+
+<P class=note><B><i>Note</i></B>&nbsp;&nbsp; A simpler way to implement volume fading is by using <A HREF="_dx_idirectmusicaudiopath8_setvolume_dxaudio.htm">IDirectMusicAudioPath8::SetVolume</A>. This method always uses the linear shape for the curve.</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

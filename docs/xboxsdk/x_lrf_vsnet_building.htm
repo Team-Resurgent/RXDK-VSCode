@@ -1,0 +1,147 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Building Projects with Visual Studio .NET</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Building Projects with Visual Studio .NET"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+        <MSHelp:Keyword Index="K" Term="Visual Studio .NET, building projects with"/>
+        <MSHelp:Keyword Index="K" Term="Visual Studio .NET, known build issues"/>
+    </xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Building Projects with Visual Studio .NET</h1>
+
+            <p>
+                The build commands in Visual Studio .NET have gone through significant changes 
+                from their equivalents in Visual C++ 6.0:
+            </p>
+
+            <ul>
+
+                <li>The biggest build change is that when you click <b>Build</b> on 
+                the <b>Build</b> menu, the IDE builds the entire Solution. This 
+                differs from Visual C++ 6.0, which would only build the Active project (displayed 
+                in bold) and all of its dependencies. The bold project is no longer 
+                considered "active" in Visual Studio .NET. While the bold project is still 
+                considered the startup project for the debugger, it no longer affects what is 
+                built.</li>
+
+                <li>If your solution consists of multiple projects, the project that is 
+                currently selected may be built using the menus. You can use the <b>Build 
+                Project</b> command to build the project and its dependent projects.</li>
+
+                <li>You cannot build a project without building its dependencies. This differs 
+                from the Visual C++ 6.0 Build (Selection only) commands.</li>
+
+                <li>There is no longer a node in the Solution Viewer showing that a project has 
+                a project dependency. Instead, there is a dialog box at <b>Solution.Properties.CommonProperties.ProjectDependencies</b> 
+                that provides this information.</li>
+
+                <li>Visual Studio .NET no longer has the concept of an Active Project for 
+                building. Many people liked having an active project that they could build, and 
+                then build all of its dependencies but nothing else. People liked this because 
+                some of the projects in their solution never needed to be built. Although there 
+                is no way to pin down one project as the active project, there is a way to 
+                prevent some of the projects in a solution from building. To prevent a project 
+                from ever being built, use the <b>Configuration Manager</b> dialog 
+                box, which you can get to by clicking <b>Configuration Manager</b> 
+                in the project settings dialog box. Deselect the build check box for each 
+                project that you don't want to participate in the build.</li>
+
+                <li>Visual C++ 6.0 developers often have difficulty adjusting to the selection 
+                behavior of the Solution Explorer. When you use the text editor to open a file 
+                in your project, the Solution Explorer makes your file visible by expanding the 
+                tree, selecting the file, and then scrolling it into view. If the file is not in 
+                one of your projects, the last project selected also has its project node 
+                selected. Many C++ developers are distracted by this, because the Solution 
+                Explorer "jumps" around the screen as the developer presses <b>CTRL+TAB</b> to switch 
+                through opened files. Unfortunately, there is nothing that can be done to change 
+                this behavior.</li>
+
+                <li>It is sometimes difficult to get the IDE to show you the full path to a file 
+                you have opened in the text editor. If the file is in your project, and you put 
+                the focus on the Solution Explorer, the property grid shows you the full path to 
+                the file. If the file is not in any of your projects, the IDE puts the file in 
+                the <b>Miscellaneous Files</b> project. By default, the <b>Miscellaneous 
+                Files</b> project is not shown in the IDE. If you enable showing the <b>Miscellaneous 
+                Files</b> project in the Solution Explorer, you will be able to see the 
+                properties of the files located in that project. To show the <b>Miscellaneous 
+                Files</b> project, navigate to <b>Tools.Options.Environment.Documents</b>, 
+                and in the Solution Explorer option, click <b>Show Miscellaneous Files</b>.</li>
+
+                <li>At the beginning of a build, the Output window is displayed and shows the 
+                progress of the build. At the end of the build, the Task list appears to show 
+                any errors or warnings that occurred in the build. The new Task list in Visual 
+                Studio .NET is not the best UI for C++ build output. To shut off the Task list, 
+                close the <b>Task List</b> window, navigate to <b>Tools.Options.Environment.Projects 
+                and Solutions</b>, and then deselect <b>Task List</b> if your 
+                build finishes with errors.</li>
+
+                <li>On the same <b>Projects and Solutions</b> page, there is an 
+                option to <b>Save Changes on Build</b>. There is a slight difference 
+                between Visual C++ 6.0 and Visual C++ .NET in that the project and solution are 
+                considered documents in Visual Studio .NET. This means that if you enable the <b>Save 
+                Changes on Build</b> option, when you press <b>F5</b> the first time, the <b>Save 
+                Changes on Build</b> option forces you to save a copy of the solution file. 
+                In addition, enabling this option also saves changes to the project settings to 
+                disk.</li>
+            </ul>
+
+        <h2><a name="IDAVCN2"></a>Known Issues</h2>
+<p>
+                This section lists known issues with using Visual Studio.NET to build Xbox 
+                projects.
+            </p><ul>
+                <li>
+                    <p>
+                        If the XDK is installed on a system on which the Intel&reg; pre-release compiler 
+                        for Visual Studio .NET has been installed, Visual Studio .NET will crash whenever 
+                        the user tries to open an Xbox project. In addition, the Intel pre-release 
+                        compiler for Visual Studio .NET will not install on a system on which the XDK 
+                        has been installed. This issue is fixed in version 7.0 of the Intel compiler. To 
+                        obtain version 7.0 of the compiler, contact Intel Premier Support.
+                    </p>
+                </li>
+                <li>
+                    <p>
+                        If you disable MAP file generation in Visual Studio, old MAP files are not 
+                        deleted when the project is cleaned. As a result, you may receive the following 
+                        compiler warning:
+                    </p>
+            
+<pre class="clsCode">
+IMAGEBLD : warning IM1040: mismatched map file
+</pre>
+    
+
+            
+                    <p>
+                        To resolve this compiler warning, do one of the following:
+                    </p>
+                    <ul>
+                        <li>Enable MAP files: Project Properties-&gt;Linker-&gt;Debug-&gt;Generate Map 
+                        File = "YES"</li>
+                        <li>Add *.MAP to the extensions to delete on clean: Project Properties-&gt;General-&gt;Extensions 
+                        to Delete on Clean</li>
+                    </ul>
+                </li>
+
+            </ul>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

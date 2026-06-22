@@ -1,0 +1,134 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>D3DADAPTER_IDENTIFIER8</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="D3DADAPTER_IDENTIFIER8">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="D3DADAPTER_IDENTIFIER8"/>
+<MSHelp:Keyword Index="F" Term="D3DADAPTER_IDENTIFIER8"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_d3dadapter_identifier8_graphics"></A>D3DADAPTER_IDENTIFIER8</H1>
+
+<P>Contains information identifying the adapter.</P>
+
+<PRE class=syntax>typedef struct _D3DADAPTER_IDENTIFIER8 {
+    char            Driver[MAX_DEVICE_IDENTIFIER_STRING];
+    char            Description[MAX_DEVICE_IDENTIFIER_STRING];
+
+#ifdef _WIN32
+    LARGE_INTEGER   DriverVersion;            /* Defined for 32-bit components */
+#else
+    DWORD           DriverVersionLowPart;     /* Defined for 16-bit driver components */
+    DWORD           DriverVersionHighPart;
+#endif
+
+    DWORD           VendorId;
+    DWORD           DeviceId;
+    DWORD           SubSysId;
+    DWORD           Revision;
+
+    GUID            DeviceIdentifier;
+
+    DWORD           WHQLLevel;
+} D3DADAPTER_IDENTIFIER8;
+</PRE>
+
+<H4>Members</H4>
+
+<DL>
+<DT><B>Driver</B> and<B> Description</B></DT>
+
+<DD>Used for presentation to the user. They should not be used to identify particular drivers, since many different strings may be associated with the same device and driver from different vendors.</DD>
+
+<DT><B>DriverVersion</B>, <B>DriverVersionLowPart</B>, and <B>DriverVersionHighPart</B></DT>
+
+<DD>Identify the version of the Microsoft&#174; Direct3D&#174; driver. It is legal to do &lt; and &gt; comparisons on the 64-bit signed integer value. However, exercise caution if you use this element to identify problematic drivers. Instead, you should use <B>DeviceIdentifier</B>. 
+
+<P>The following pseudocode example illustrates the version format encoded in this member. 
+
+
+<PRE>Product = HIWORD(DriverVersion.HighPart)
+Version = LOWORD(DriverVersion.HighPart)
+SubVersion = HIWORD(DriverVersion.LowPart)
+Build = LOWORD(DriverVersion.LowPart)
+</PRE>
+
+
+<P>See the Platform SDK for more information on the <B>HIWORD</B> macro, the <B>LOWORD</B> macro, and the <B>LARGE_INTEGER</B> structure.
+</DD>
+
+<DT><B>VendorId</B></DT>
+
+<DD>Can be used to help identify a particular chip set. Query this member to identify the manufacturer. The value may be zero if unknown.</DD>
+
+<DT><B>DeviceId</B></DT>
+
+<DD>Can be used to help identify a particular chip set. Query this member to identify the type of chip set. The value may be zero if unknown.</DD>
+
+<DT><B>SubSysId</B></DT>
+
+<DD>Can be used to help identify a particular chip set. Query this member to identify the subsystem, typically the particular board. The value may be zero if unknown.</DD>
+
+<DT><B>Revision</B></DT>
+
+<DD>Can be used to help identify a particular chip set. Query this member to identify the revision level of the chip set. The value may be zero if unknown.</DD>
+
+<DT><B>DeviceIdentifier</B></DT>
+
+<DD>Can be queried to check changes in the driver and chip set. This GUID is a unique identifier for the driver and chip set pair. Query this member to track changes to the driver and chip set in order to generate a new profile for the graphics subsystem. <B>DeviceIdentifier</B> can also be used to identify particular problematic drivers.</DD>
+
+<DT><B>WHQLLevel</B></DT>
+
+<DD>Used to determine the Windows Hardware Quality Lab (WHQL) certification level for this driver and device pair. The <B>DWORD</B> is a packed date structure defining the date of the release of the most recent WHQL test passed by the driver. It is legal to perform &lt; and &gt; operations on this value. The following illustrates the date format.
+
+<PRE>Bits
+31-16:    The year, a decimal number from 1999 upwards.
+15-8:     The month, a decimal number from 1 to 12.
+7-0:      The day, a decimal number from 1 to 31.
+</PRE>
+
+
+<P>The following values are also used.
+
+
+<DL>
+<DT>0</DT>
+
+<DD>Not certified.</DD>
+
+<DT>1</DT>
+
+<DD>WHQL certified, but no date information is available.
+</DD>
+</DL>
+</DD>
+</DL>
+
+<H4>Remarks</H4>
+
+<P>MAX_DEVICE_IDENTIFIER_STRING is a constant with the following definition.</P>
+
+<PRE>#define MAX_DEVICE_IDENTIFIER_STRING        512
+</PRE>
+
+<P>The <B>VendorId</B>, <B>DeviceId</B>, <B>SubSysId</B>, and <B>Revision</B> members can be used in tandem to identify particular chip sets. However, use these members with caution.</P>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in D3d8types.h.</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

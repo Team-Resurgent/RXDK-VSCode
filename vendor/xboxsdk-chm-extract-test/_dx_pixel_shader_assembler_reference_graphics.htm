@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Pixel Shader Assembler Reference</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Pixel Shader Assembler Reference"/>
+<MSHelp:Keyword Index="K" Term="instruction pairing, pixel shader assembler"/>
+<MSHelp:Keyword Index="K" Term="language extensions, pixel shader assembler"/>
+<MSHelp:Keyword Index="F" Term="Pixel Shader Assembler Reference"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_pixel_shader_assembler_reference_graphics"></A>Pixel Shader Assembler Reference</H1>
+
+<P>This section contains reference information for the Direct3DX pixel shader assembler. Reference material is divided into the following categories. 
+
+<UL>
+	<LI><A HREF="_dx_registers_graphics.htm">Registers</A></LI>
+
+	<LI><A HREF="_dx_instructions_graphics.htm">Instructions</A></LI>
+
+	<LI><A HREF="_dx_modifiers_graphics.htm">Modifiers</A></LI>
+
+	<LI><A HREF="_dx_output_write_masks_graphics.htm">Output Write Masks</A></LI>
+</UL>
+
+<p>For additional information, see the <a href="xbox_jbh_tool_xsasm.htm">Xbox Shader Assembler Tool (XSAsm)</a>.</p>
+
+<P>The pixel shader assembler is composed of a set of registers defined along with a set of operations that can be performed on the registers. Operations are expressed as instructions composed of an operator and one or more arguments (operands).</P>
+
+<P>DirectX 8.0 requires intermediate computations to maintain at least 8-bit precision for all surface formats. Both higher precision (12-bit) for in-stage math and saturation to 8 bits between texture stages are recommended. No modifiable rounding modes or exceptions are supported. Multiplication should be supported with a round-to-nearest precision to minimize precision loss.</P>
+
+
+<H3 Class="subheading1">Pixel Shader Language Extensions</H3>
+
+<P class="content">One of the key features on the Xbox GPU custom-designed by NVIDIA&reg; is the ability to write small programs that define how pixels are shaded.  The Xbox GPU exposes several features that are not supported in Direct3D 8.0.  In addition, game developers have requested the ability to set pixel shaders using either the shading language or by directly setting the registers in the pixel shader stages of the pipeline.  This requires a change in the pixel shader assembler architecture as shown below:</P>
+
+<IMG SRC="images/xbox_jbh_dxref_pixelshader.jpg" WIDTH="620" HEIGHT="398" ALT="" BORDER="0">
+ 
+<P class="content">On the PC, Direct3D must use the pixel shader language to abstract the differences between various hardware implementations.  The pixel shader assembler tokenizes the language, and the tokens are passed to the driver for interpretation.  The driver then sets the registers on the graphics chip appropriately.  On Xbox, Direct3D only has to support one graphics chip, so it is more convenient to have the pixel shader assembler convert the pixel shader language directly to register values that can be set on the chip.  This provides the added advantage for someone who is familiar with the Xbox GPU registers that they can program these registers directly without having to go through the pixel shading language.</P>
+
+<P class="content">The Xbox hardware supports up to eight general-purpose color-blending stages.  These stages can use any of the color blending instructions defined by DirectX 8.0 (<b>mov</b>, <b>add</b>, <b>sub</b>, <b>mul</b>, <b>mad</b>, <b>lrp</b>, <b>cnd</b>, and <b>dp3</b>).  In addition, the <b>mma</b>, <b>mmc</b>, <b>dm</b>, and <b>dd</b> instructions can also be used to perform up to three operations at once.</P>
+
+<P class="content">The Xbox hardware also has a ninth color-blending stage referred to as the final combiner.  The <b>xfc</b> instruction can be used to specify the operation of the final combiner.</P>
+
+<P class="content">The following pixel shader instructions are added to the set already specified in Direct3D 8.0: <b>xmma</b>, <b>xmmc</b>, <b>xdm</b>, <b>xdd</b>, <b>xfc</b>.</P>
+
+<H3 Class="subheading1"><A NAME="_instruction_pairing"></A>Pixel Shader Instruction Pairing</H3>
+
+<P>The processor that executes the pixel shader has two parallel pipelines, one for vector processing (RGB), and one for scalar processing (alpha). Using these pipelines in parallel results in substantially better processor utilization and performance by reducing the total number of clock cycles required. In essence, this affects the pixel fill rate performance.</P>
+
+<P>The output masks can affect how the two pipelines are allocated, but there can be ambiguities in the order of operations unless explicit pairing syntax is used. The following table illustrates the output masks and their associated pipe.</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=21%>Output mask</TH>
+<TH align=left width=79%>Pipe</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=21%><B>.a</B></TD>
+<TD width=79%>The operation is in the scalar pipe.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=21%><B>.rgb</B></TD>
+<TD width=79%>The operation is in the vector pipe.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=21%><B>.rgba</B></TD>
+<TD width=79%>The operation is in both the scalar and vector pipes. It already counts as a pair.</TD>
+</TR>
+</TABLE><BR>
+
+<P>Pairing is indicated by a plus sign (+) preceding the second instruction of the pair.</P>
+
+<PRE>  mul r0.rgb, t0, v0    // Component-wise multiply the colors,
++ add r0.a,   t0, v0    // but add the alpha components.
+</PRE>
+
+<P>The dot product instructions are a special case. They are vector operations and always executed in the vector pipeline. Therefore, you can specify a different instruction in the scalar pipe and still get pairing, as shown in the following pixel shader example code.</P>
+
+<PRE>dp3 r0.rgb, t0, v0
+mul r0.a,   t0, v0
+</PRE>
+
+<P>You cannot specify a dot product operation as a scalar instruction without a dot product operations as a vector instruction.</P>
+
+<!-- Other Pixel Shader Language Differences from D3D8 -->
+
+<H3 Class="subheading1">Modifier "_sat" Not Supported</H3>
+
+<P class="content">Direct3D 8.0 defines a saturate modifier (_sat) that can be added to an instruction to cause its output to be clamped to the range [0..1].  This modifier is not supported on the Xbox.</P>
+
+<H3 Class="subheading1">Initial Register Values</H3>
+
+<P class="content">Direct3D 8.0 specifies that all temporary registers must be written before they can be read from.  On the Xbox, the alpha portion of the R0 register is initialized to the alpha component of texture 0 if texturing is enabled for texture 0.  The alpha channel of this register may be read before it is written.</P>
+
+<H3 Class="subheading1">Writeable Vertex Color Registers</H3>
+
+<P class="content">As indicated in the description of the xmma instruction, the v0 and v1 registers can be specified as destination registers.  Direct3D 8.0 defines these registers to be read-only.  The other instructions defined by Direct3D 8.0 can also specify these registers as destinations on Xbox.</P>
+
+<H3 Class="subheading1">Pixel Shader Version Numbers</H3>
+
+<P class="content">Pixel shaders that use the Xbox extensions should be identified using the xps keyword with a version of 1.1 as follows:</P>
+<PRE>xps.1.1    // Xbox pixel shader
+</PRE>
+
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

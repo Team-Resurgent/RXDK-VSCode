@@ -1,0 +1,1290 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Xbox Secure Sockets</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="Xbox Secure Sockets">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Xbox Secure Sockets"/>
+<MSHelp:Keyword Index="K" Term="secure sockets"/>
+<MSHelp:Keyword Index="K" Term="packet formats"/>
+<MSHelp:Keyword Index="K" Term="voice data protocol"/>
+<MSHelp:Keyword Index="K" Term="VDP"/>
+<MSHelp:Keyword Index="K" Term="UDP"/>
+<MSHelp:Keyword Index="K" Term="TCP"/>
+<MSHelp:Keyword Index="K" Term="port optimization"/>
+<MSHelp:Keyword Index="K" Term="Xbox Live, secure sockets"/>
+<MSHelp:Keyword Index="K" Term="padding and payload"/>
+<MSHelp:Keyword Index="K" Term="payload and padding"/>
+<MSHelp:Keyword Index="K" Term="security gateways"/>
+<MSHelp:Keyword Index="K" Term="packets, authenticating"/>
+<MSHelp:Keyword Index="K" Term="packets, encrypting"/>
+<MSHelp:Keyword Index="K" Term="hacker attacks, preventing"/>
+<MSHelp:Keyword Index="K" Term="packets, spoofing"/>
+<MSHelp:Keyword Index="K" Term="packets, sniffing"/>
+<MSHelp:Keyword Index="K" Term="packets, tampering"/>
+<MSHelp:Keyword Index="K" Term="Xbox Live, key exchange algorithm"/>
+<MSHelp:Keyword Index="K" Term="buffer overruns, preventing"/>
+<MSHelp:Keyword Index="K" Term="sniffing packets, preventing"/>
+<MSHelp:Keyword Index="K" Term="spoofing packets, preventing"/>
+<MSHelp:Keyword Index="K" Term="denial of service, preventing"/>
+<MSHelp:Keyword Index="K" Term="preventing hacker attacks"/>
+<MSHelp:Keyword Index="K" Term="attacks by hackers, preventing"/>
+<MSHelp:Keyword Index="K" Term="system link key exchange"/>
+<MSHelp:Keyword Index="K" Term="online key exchange"/>
+<MSHelp:Keyword Index="K" Term="key exchange"/>
+<MSHelp:Keyword Index="K" Term="key exchange algorithms, Diffie-Hellman"/>
+<MSHelp:Keyword Index="K" Term="key exchange algorithms, Xbox Live"/>
+<MSHelp:Keyword Index="K" Term="Diffie-Hellman Key Exchange Algorithm"/>
+<MSHelp:Keyword Index="F" Term="Xbox Secure Sockets"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+
+<H1 class="heading"><A NAME=""></A>Xbox Secure Sockets</H1>
+
+
+<p><i>By Pete Isensee, Development Lead, Xbox Advanced Technology Group</i></p>
+		
+<p>Secure communication is one of the foundations of the Xbox video game system from Microsoft. All data transmitted to and from Xbox consoles is cryptographically secured and authenticated. This white paper discusses the Xbox packet formats, encryption and authentication technologies, secure key exchange, and performance characteristics as they relate to System Link and Xbox Live online games. The last section of this white paper
+summarizes best practices related to Xbox sockets.</p>
+
+<h2>Xbox Packet Formats</h2>
+
+<p>The Xbox supports three different protocols that may be used by games: UDP, TCP, and VDP (Xbox Voice and Data Protocol). From a high-level perspective, these protocols work exactly as on a PC or any other device that supports TCP/IP. UDP is an unreliable connectionless protocol, and UDP packets may be received out of order. TCP is a reliable, connection-based
+protocol, and TCP packets are always received in order. If necessary, TCP packets are re-sent by the network stack. VDP is designed for sending voice traffic in an optimal fashion. VDP is described in more detail in the <a href="#_VDP">VDP</a> section, and is also described in more detail in the white paper: Xbox Voice and Data Protocol.</p>
+
+<p>The data transmitted on the Internet for each of these formats is quite different than what would be transmitted on a PC. The advantage of these unusual packet formats is twofold: (1) all Xbox communication is secure, and (2) peer-to-peer gameplay works properly even for Xbox consoles behind Network Address Translators (NATs). The wire formats for Xbox packets are shown in the tables below: </p>
+
+<h3>Xbox UDP Packets</h3>
+
+<table>
+ <tr>
+  <th>Name</th>
+  <th>Data</th>
+  <th align="CENTER">Size (bytes)</th>
+  <th align="CENTER">Authenticated</th>
+  <th align="CENTER">Encrypted</th>
+ </tr>
+ <tr>
+  <td>IP header</td>
+  <td>Standard IP header</td>
+  <td align="CENTER">20</td>
+  <td align="CENTER">&nbsp;</td>
+  <td align="CENTER">&nbsp;</td>
+ </tr>
+ <tr>
+  <td>NAT UDP</td>
+  <td>For NAT traversal</td>
+  <td align="CENTER">8</td>
+  <td align="CENTER">&nbsp;</td>
+  <td align="CENTER">&nbsp;</td>
+ </tr>
+ <tr>
+  <td>XFlags</td>
+  <td>Packet information</td>
+  <td align="CENTER">1</td>
+  <td align="CENTER" style="font-family:Wingdings">&#252;</td>
+  <td align="CENTER">&nbsp;</td>
+ </tr>
+ <tr>
+  <td>XSP</td>
+  <td>Security parameter index</td>
+  <td align="CENTER">3</td>
+  <td align="CENTER" style="font-family:Wingdings">&#252;</td>
+  <td align="CENTER">&nbsp;</td>
+ </tr>
+ <tr>
+  <td>Payload</td>
+  <td>Game data</td>
+  <td align="CENTER">0&ndash;1304</td>
+  <td align="CENTER" style="font-family:Wingdings">&#252;</td>
+  <td align="CENTER" style="font-family:Wingdings">&#252;</td>
+ </tr>
+ <tr>
+  <td>Padding</td>
+  <td>Pad to 8-byte boundary</td>
+  <td align="CENTER">0&ndash;7</td>
+  <td align="CENTER" style="font-family:Wingdings">&#252;</td>
+  <td align="CENTER" style="font-family:Wingdings">&#252;</td>
+ </tr>
+ <tr>
+  <td>SourcePort</td>
+  <td>UDP source port</td>
+  <td align="CENTER">0&ndash;2</td>
+  <td align="CENTER" style="font-family:Wingdings">&#252;</td>
+  <td align="CENTER">&nbsp;</td>
+ </tr>
+ <tr>
+  <td>DestPort</td>
+  <td>UDP dest port</td>
+  <td align="CENTER">0&ndash;2</td>
+  <td align="CENTER" style="font-family:Wingdings">&#252;</td>
+  <td align="CENTER">&nbsp;</td>
+ </tr>
+ <tr>
+  <td>XSeqNum</td>
+  <td>Packet sequence number</td>
+  <td align="CENTER">2</td>
+  <td align="CENTER" style="font-family:Wingdings">&#252;</td>
+  <td align="CENTER">&nbsp;</td>
+ </tr>
+ <tr>
+  <td>XHash</td>
+  <td>Authentication hash</td>
+  <td align="CENTER">10</td>
+  <td align="CENTER">&nbsp;</td>
+  <td align="CENTER">&nbsp;</td>
+ </tr>
+</table>
+   
+<h3>Xbox VDP Packets</h3>
+
+<table>
+ <tr>
+  <th>Name</th>
+  <th>Data</th>
+  <th align="CENTER">Size (bytes)</th>
+  <th align="CENTER">Authenticated</th>
+  <th align="CENTER">Encrypted</th>
+ </tr>
+ <tr>
+  <td>IP header</td>
+  <td>Standard IP header</td>
+  <td align="CENTER">20</td>
+  <td align="CENTER">&nbsp;</td>
+  <td align="CENTER">&nbsp;</td>
+ </tr>
+ <tr>
+  <td>NAT UDP</td>
+  <td>For NAT traversal</td>
+  <td align="CENTER">1</td>
+  <td align="CENTER">&nbsp;</td>
+  <td align="CENTER">&nbsp;</td>
+ </tr>
+ <tr>
+  <td>XFlags</td>
+  <td>Packet information</td>
+  <td align="CENTER">1</td>
+  <td align="CENTER" style="font-family:Wingdings">&#252;</td>
+  <td align="CENTER">&nbsp;</td>
+ </tr>
+ <tr>
+  <td>XSP</td>
+  <td>Security parameter index</td>
+  <td align="CENTER">3</td>
+  <td align="CENTER" style="font-family:Wingdings">&#252;</td>
+  <td align="CENTER">&nbsp;</td>
+ </tr>
+ <tr>
+  <td>Payload</td>
+  <td>Game data</td>
+  <td align="CENTER">0&ndash;1304</td>
+  <td align="CENTER" style="font-family:Wingdings">&#252;</td>
+  <td align="CENTER" style="font-family:Wingdings">&#252;</td>
+ </tr>
+ <tr>
+  <td>Padding</td>
+  <td>Pad to 8-byte boundary</td>
+  <td align="CENTER">0&ndash;7</td>
+  <td align="CENTER" style="font-family:Wingdings">&#252;</td>
+  <td align="CENTER" style="font-family:Wingdings">&#252;</td>
+ </tr>
+ <tr>
+  <td>SourcePort</td>
+  <td>VDP source port</td>
+  <td align="CENTER">0&ndash;2</td>
+  <td align="CENTER" style="font-family:Wingdings">&#252;</td>
+  <td align="CENTER">&nbsp;</td>
+ </tr>
+ <tr>
+  <td>DestPort</td>
+  <td>VDP dest port</td>
+  <td align="CENTER">0&ndash;2</td>
+  <td align="CENTER" style="font-family:Wingdings">&#252;</td>
+  <td align="CENTER">&nbsp;</td>
+ </tr>
+ <tr>
+  <td>VoiceData</td>
+  <td>Voice data</td>
+  <td align="CENTER">0&ndash;1304</td>
+  <td align="CENTER" style="font-family:Wingdings">&#252;</td>
+  <td align="CENTER">&nbsp;</td>
+ </tr>
+ <tr>
+  <td>DataSize</td>
+  <td>(Game data + pad size)/8</td>
+  <td align="CENTER">0&ndash;1</td>
+  <td align="CENTER" style="font-family:Wingdings">&#252;</td>
+  <td align="CENTER">&nbsp;</td>
+ </tr>
+ <tr>
+  <td>XSeqNum</td>
+  <td>Packet sequence number</td>
+  <td align="CENTER">2</td>
+  <td align="CENTER" style="font-family:Wingdings">&#252;</td>
+  <td align="CENTER">&nbsp;</td>
+ </tr>
+ <tr>
+  <td>XHash</td>
+  <td>Authentication hash</td>
+  <td align="CENTER">10</td>
+  <td align="CENTER">&nbsp;</td>
+  <td align="CENTER">&nbsp;</td>
+ </tr>
+</table>
+   
+<h3>Xbox TCP Packets</h3>
+<table>
+ <tr>
+  <th>Name</th>
+  <th>Description</th>
+  <th align="CENTER">Size (bytes)</th>
+  <th align="CENTER">Authenticated</th>
+  <th align="CENTER">Encrypted</th>
+ </tr>
+ <tr>
+  <td>IP header</td>
+  <td>Standard IP header</td>
+  <td align="CENTER">20</td>
+  <td align="CENTER">&nbsp;</td>
+  <td align="CENTER">&nbsp;</td>
+ </tr>
+ <tr>
+  <td>NAT UDP</td>
+  <td>For NAT traversal</td>
+  <td align="CENTER">8</td>
+  <td align="CENTER">&nbsp;</td>
+  <td align="CENTER">&nbsp;</td>
+ </tr>
+ <tr>
+  <td>XFlags</td>
+  <td>Packet information</td>
+  <td align="CENTER">1</td>
+  <td align="CENTER" style="font-family:Wingdings">&#252;</td>
+  <td align="CENTER">&nbsp;</td>
+ </tr>
+ <tr>
+  <td>XSP</td>
+  <td>Security parameter index</td>
+  <td align="CENTER">3</td>
+  <td align="CENTER" style="font-family:Wingdings">&#252;</td>
+  <td align="CENTER">&nbsp;</td>
+ </tr>
+ <tr>
+  <td>Payload</td>
+  <td>Game data</td>
+  <td align="CENTER">0&ndash;1304</td>
+  <td align="CENTER" style="font-family:Wingdings">&#252;</td>
+  <td align="CENTER" style="font-family:Wingdings">&#252;</td>
+ </tr>
+ <tr>
+  <td>Padding</td>
+  <td>Overlaps w/ next portion</td>
+  <td align="CENTER">0</td>
+  <td align="CENTER" style="font-family:Wingdings">&#252;</td>
+  <td align="CENTER" style="font-family:Wingdings">&#252;</td>
+ </tr>
+ <tr>
+  <td>SourcePort</td>
+  <td>TCP source port</td>
+  <td align="CENTER">0&ndash;2</td>
+  <td align="CENTER" style="font-family:Wingdings">&#252;</td>
+  <td align="CENTER">&nbsp;</td>
+ </tr>
+ <tr>
+  <td>DestPort</td>
+  <td>TCP dest port</td>
+  <td align="CENTER">0&ndash;2</td>
+  <td align="CENTER" style="font-family:Wingdings">&#252;</td>
+  <td align="CENTER">&nbsp;</td>
+ </tr>
+ <tr>
+  <td>TCP SeqNum</td>
+  <td>TCP sequence number</td>
+  <td align="CENTER">4</td>
+  <td align="CENTER" style="font-family:Wingdings">&#252;</td>
+  <td align="CENTER">&nbsp;</td>
+ </tr>
+ <tr>
+  <td>TCP AckNum</td>
+  <td>TCP ACK number</td>
+  <td align="CENTER">4</td>
+  <td align="CENTER" style="font-family:Wingdings">&#252;</td>
+  <td align="CENTER">&nbsp;</td>
+ </tr>
+ <tr>
+  <td>TCP HdrBits</td>
+  <td>TCP hdr and code bits</td>
+  <td align="CENTER">2</td>
+  <td align="CENTER" style="font-family:Wingdings">&#252;</td>
+  <td align="CENTER">&nbsp;</td>
+ </tr>
+ <tr>
+  <td>TCP Window</td>
+  <td>TCP window</td>
+  <td align="CENTER">2</td>
+  <td align="CENTER" style="font-family:Wingdings">&#252;</td>
+  <td align="CENTER">&nbsp;</td>
+ </tr>
+ <tr>
+  <td>XSeqNum</td>
+  <td>Packet sequence number</td>
+  <td align="CENTER">2</td>
+  <td align="CENTER" style="font-family:Wingdings">&#252;</td>
+  <td align="CENTER">&nbsp;</td>
+ </tr>
+ <tr>
+  <td>XHash</td>
+  <td>Authentication hash</td>
+  <td align="CENTER">10</td>
+  <td align="CENTER">&nbsp;</td>
+  <td align="CENTER">&nbsp;</td>
+ </tr>
+</table>
+   
+
+
+<h3>NAT UDP</h3>
+
+<p>A Network Address Translator (NAT) is a router that allows multiple devices to share one or more IP addresses. A NAT may be a hardware device or a software application. NATs are becoming ubiquitous in the home, where various PCs and game consoles share a single Internet connection. NATs make programming peer-to-peer PC games very difficult, because NATs often act as firewalls, blocking traffic sent from certain addresses or sent on certain ports.</p>
+
+<p>To solve the NAT problem where a NAT acts as a firewall, all Xbox game traffic is encapsulated into true UDP packets sent on a single known port. By using only a single port and regular heartbeat messages to the Xbox Live service, the Xbox Secure Network Library (SNL) can ensure that the NAT stays open, accepting Xbox packets from the Xbox online service as well as from other Xbox consoles.</p>
+
+<p>Xbox games can specify UDP, VDP or TCP sockets using the Xbox socket functions. In general, the socket functions are compatible with Winsock 1.1, and include standard functions such as <b>connect</b>, <b>send</b>, and <b>recv</b>. From the perspective of game code, TCP and UDP work just as they would on a PC or any other device that supports standard sockets. VDP works similarly to UDP, with the requirement that the message buffer be in a specific format. At the network layer, the UDP, VDP or TCP data is encapsulated and transmitted <i>using only UDP packets</i>. Yes, even TCP is sent using UDP. The network stack automatically handles retries, sequencing, and so on. </p>
+
+<p>The NAT UDP header always has the source and destination port set to 3074. 3074 is registered with the Internet Assigned Numbers Authority (IANA) as the Xbox Game Port. Game code may use any port numbers from 1 to 65535; the ports specified by the game are transmitted in the encapsulated portion of the packet.</p>
+
+<p>The IP header and NAT UDP header are not authenticated, because routers and NATs typically modify them during transmission. The Xbox assumes that these fields can and will be modified. The Xbox SNL uses the information in the authenticated section of the packet as the true indicators of packet source and destination.</p>
+
+
+
+<h3>XFlags</h3>
+
+<p>The XFlags field contains information that the Xbox SNL uses to process the packet. (You can distinguish the packet type by examining this field.) The Netmon parsers provided in the Xbox SDK also use the XFlag field to detect the actual packet type. The XFlag field contains the following data:</p>
+
+<table>
+ <tr>
+  <th>Bits</th>
+  <th>Data</th>
+  <th>Description</th>
+ </tr>
+ <tr>
+  <td>0&ndash;4</td>
+  <td>Xbox packet type</td>
+  <td>UDP, VDP, or TCP packet type (See list below.)</td>
+ </tr>
+ <tr>
+  <td>5&ndash;7</td>
+  <td>Padding specifier</td>
+  <td>Number of bytes used for padding (0&ndash;7)</td>
+ </tr>
+</table>
+
+<p>The packet type bits contain one of the following values:</p>
+
+<table>
+ <tr>
+  <th>Code</th>
+  <th>Name</th>
+  <th>Description</th>
+ </tr>
+ <tr>
+  <td>0</td>
+  <td>SEC</td>
+  <td>Internal packet type used for key exchange</td>
+ </tr>
+ <tr>
+  <td>1</td>
+  <td>TCP0</td>
+  <td>TCP data with 0-byte ports</td>
+ </tr>
+ <tr>
+  <td>2</td>
+  <td>TCP1</td>
+  <td>TCP data with 1-byte ports</td>
+ </tr>
+ <tr>
+  <td>3</td>
+  <td>TCP2</td>
+  <td>TCP data with 2-byte ports</td>
+ </tr>
+ <tr>
+  <td>4</td>
+  <td>UDP0</td>
+<td>UDP data with 0-byte ports</td>
+ </tr>
+ <tr>
+  <td>5</td>
+  <td>UDP1</td>
+  <td>UDP data with 1-byte ports</td>
+ </tr>
+ <tr>
+  <td>6</td>
+  <td>UDP2</td>
+  <td>UDP data with 2-byte ports</td>
+ </tr>
+ <tr>
+  <td>7</td>
+  <td>VDP0</td>
+  <td>VDP data with 0-byte ports</td>
+ </tr>
+ <tr>
+  <td>8</td>
+  <td>VDP1</td>
+  <td>VDP data with 1-byte ports</td>
+ </tr>
+ <tr>
+  <td>9</td>
+  <td>VDP2</td>
+  <td>VDP data with 2-byte ports</td>
+ </tr>
+ <tr>
+  <td>10</td>
+  <td>VDPvoice0</td>
+  <td>VDP voice-only data with 0-byte ports</td>
+ </tr>
+ <tr>
+  <td>11</td>
+  <td>VDPvoice1</td>
+  <td>VDP voice-only data with 1-byte ports</td>
+ </tr>
+ <tr>
+  <td>12</td>
+  <td>VDPvoice2</td>
+  <td>VDP voice-only data with 2-byte ports</td>
+ </tr>
+ <tr>
+  <td>13</td>
+  <td>VDPdata</td>
+  <td>VDP data-only with 0-byte ports</td>
+ </tr>
+ <tr>
+  <td>14</td>
+  <td>VDPdata1</td>
+  <td>VDP data-only with 1-byte ports</td>
+ </tr>
+ <tr>
+  <td>15</td>
+  <td>VDPdata2</td>
+  <td>VDP data-only with 2-byte ports</td>
+ </tr>
+</table>
+
+<p>If the packet type bits are all zero, the packet does not represent game data. Instead, the packet is a confidential SEC packet used for key exchange and other custom Xbox data. Notice that port numbers can be represented using 0, 1, or 2 bytes. Port size compression is described in the <a href="#port_optimization">Port Optimization</a> section.</p>
+
+
+
+<h3>Xbox Security Parameter Index (XSP)</h3>
+
+<p>Whenever an Xbox console first communicates with another Xbox or with Xbox Live, it performs a key exchange that determines how communication between the two devices will be cryptographically secured (see <a href="#key_exchange">Key Exchange</a>). This process results in both endpoints storing unique keys used for data transfer. These keys are stored in a Security Table at each endpoint. The Xbox Security Parameter Index (XSP) is the identifier that allows the receiver of a packet to find the proper authentication and cryptographic keys from its local Security Table.</p>
+
+
+
+<h3>Payload and Padding</h3>
+
+<p>The payload is the data sent or received by the game. The payload refers to the buffer passed to <b>send</b> or to <b>sendto</b>, and received by <b>recv</b> or <b>recvfrom</b>. Before the Xbox sends the data, the data is automatically padded to a multiple of 8 bytes, and it is then encrypted. The encryption algorithm requires the padding. The Xbox SNL decrypts the payload and strips the padding when the packet is received.</p>
+
+<p>The payload is both encrypted and authenticated. To reduce the effects of denial of service attacks, the payload is encrypted prior to generating the authentication hash. The receiver will decrypt the payload only if the packet is authentic. The receiver will never decrypt packets that have been modified.</p>
+
+
+
+<h3><a name="port_optimization"></a>Port Optimization</h3>
+
+<p>On a PC, the source and destination UDP/TCP port numbers each take two bytes. This allows ports to have values from 1&ndash;65535. Xbox packets support the same two-byte format and same range of port values. However, Xbox packets have a special optimization that allows the Xbox network library to transmit one-byte port numbers if the game uses source and destination ports in the 1000&ndash;1255 range. Furthermore, if the game uses port 1000 for both the source and destination ports, the port numbers are optimized away entirely (that this, they are not transmitted in the packet at all). For instance, a UDP socket using source and dest port 1000 will have an XFlags packet type of UDP0, which indicates that both the SourcePort and DestPort sections of the Xbox packet are size zero.</p>
+
+<p>To take advantage of this optimization, games should send and receive the majority&mdash;if not all&mdash;of game traffic on port 1000. This port optimization is used across all Xbox packet formats: UDP, VDP and TCP.</p>
+
+<table>
+ <tr>
+  <th>Source Port</th>
+  <th>Dest Port</th>
+  <th>Overhead (bytes)</th>
+  <th>Packet Types</th>
+ </tr>
+ <tr>
+  <td>1000</td>
+  <td>1000</td>
+  <td>0</td>
+  <td>TCP0, UDP0, VDP0, VDPvoice0, VDPdata0</td>
+ </tr>
+ <tr>
+  <td>1000&ndash;1255</td>
+  <td>1000&ndash;1255</td>
+  <td>2</td>
+  <td >TCP1, UDP1, VDP1, VDPvoice1, VDPdata1</td>
+ </tr>
+ <tr>
+  <td>1&ndash;65535</td>
+  <td>1&ndash;65535</td>
+  <td>4</td>
+  <td>TCP2, UDP2, VDP2, VDPvoice2, VDPdata2</td>
+ </tr>
+</table>
+
+
+
+<h3>UDP Header Data</h3>
+
+<p>A normal UDP header consists of 8 bytes:</p>
+
+<pre>struct UDPheader
+{
+   WORD SourcePort;
+   WORD DestPort;
+   WORD MessageLength;
+   WORD Checksum;
+};</pre>
+
+<p>The Xbox packet format already includes the MessageLength in the NAT UDP header. There is also no need to include the Checksum since the Xbox packet format is cryptographically authenticated using a much stronger hash algorithm. That leaves only the source and destination ports that must be embedded into the Xbox packet. Depending on the port optimizations used, this will require 0&ndash;4 bytes. For instance, if both ports are 1000, this structure will be empty.</p>
+
+<pre>struct UDPxbox
+{
+    VAR SourcePort; // 0-2 bytes
+    VAR DestPort;   // 0-2 bytes
+};</pre>
+
+
+
+<h3>TCP Header Data</h3>
+
+<p>A normal TCP header consists of 20 bytes:</p>
+
+<pre>struct TCPheader
+{
+    WORD SourcePort;
+    WORD DestPort;
+    DWORD SeqNum;
+    DWORD AckNum;
+    WORD HdrBits;
+    WORD Window;
+    WORD Checksum;
+    WORD Urgent;
+};</pre>
+
+<p>The Xbox packet format already handles the Checksum. The Xbox SNL does not support Urgent data. The Xbox port optimization is used for TCP packets, which reduces the size by up to 4 more bytes. As a result, for TCP sockets, the Xbox packet embeds only 12&ndash;16 bytes of header data:</p>
+
+<pre>struct TCPxbox
+{
+    VAR SourcePort; // 0-2 bytes
+    VAR DestPort;   // 0-2 bytes
+    DWORD SeqNum;
+    DWORD AckNum;
+    WORD HdrBits;
+    WORD Window;
+};</pre>
+
+
+
+<h3>Padding Revisited</h3>
+
+<p>To reduce the number of bytes of padding that must be added to payloads that are not evenly divisible by 8, the Xbox network library opportunistically uses the embedded port numbers and embedded TCP header data as padding bytes. For instance, suppose a game using a UDP socket on port 1001 is sending payloads of size 21. In order to be evenly divisible by
+8, the payload must be padded by 3 additional bytes. Packets sent on port 1001 require 2 bytes for the port information. The Xbox SNL will pad the payload using the source port byte, the dest port byte, and only one additional padding byte (rather than three additional padding bytes).</p>
+
+<p>When port numbers and/or embedded header data is used for padding, the portion used for padding will be encrypted. This means that although the port and header information is not encrypted by default, the initial portions of the information may be encrypted if the payload is not evenly divisible by 8.</p>
+
+<p>The following table shows the number of padding bytes added to the packet under various conditions:</p>
+
+<table>
+ <tr>
+  <th>Packet Type</th>
+  <th colspan="8">Payload Size Modulo 8</th>
+ </tr>
+ <tr>
+  <td>&nbsp;</td>
+  <td align="CENTER"><b>0</b></td>
+  <td align="CENTER"><b>1</b></td>
+  <td align="CENTER"><b>2</b></td>
+  <td align="CENTER"><b>3</b></td>
+  <td align="CENTER"><b>4</b></td>
+  <td align="CENTER"><b>5</b></td>
+  <td align="CENTER"><b>6</b></td>
+  <td align="CENTER"><b>7</b></td>
+ </tr>
+ <tr>
+  <td>TCP[any]</td>
+  <td align="CENTER">0</td>
+  <td align="CENTER">0</td>
+  <td align="CENTER">0</td>
+  <td align="CENTER">0</td>
+  <td align="CENTER">0</td>
+  <td align="CENTER">0</td>
+  <td align="CENTER">0</td>
+  <td align="CENTER">0</td>
+ </tr>
+ <tr>
+  <td>UDP0</td>
+  <td align="CENTER">0</td>
+  <td align="CENTER">7</td>
+  <td align="CENTER">6</td>
+  <td align="CENTER">5</td>
+  <td align="CENTER">4</td>
+  <td align="CENTER">3</td>
+  <td align="CENTER">2</td>
+  <td align="CENTER">1</td>
+ </tr>
+ <tr>
+  <td>UDP1</td>
+  <td align="CENTER">0</td>
+  <td align="CENTER">5</td>
+  <td align="CENTER">4</td>
+  <td align="CENTER">3</td>
+  <td align="CENTER">2</td>
+  <td align="CENTER">1</td>
+  <td align="CENTER">0</td>
+  <td align="CENTER">0</td>
+ </tr>
+ <tr>
+  <td>UDP2</td>
+  <td align="CENTER">0</td>
+  <td align="CENTER">3</td>
+  <td align="CENTER">2</td>
+  <td align="CENTER">1</td>
+  <td align="CENTER">0</td>
+  <td align="CENTER">0</td>
+  <td align="CENTER">0</td>
+  <td align="CENTER">0</td>
+ </tr>
+ <tr>
+  <td>VDP[any]0</td>
+  <td align="CENTER">0</td>
+  <td align="CENTER">7</td>
+  <td align="CENTER">6</td>
+  <td align="CENTER">5</td>
+  <td align="CENTER">4</td>
+  <td align="CENTER">3</td>
+  <td align="CENTER">2</td>
+  <td align="CENTER">1</td>
+ </tr>
+ <tr>
+  <td>VDP[any]1</td>
+  <td align="CENTER">0</td>
+  <td align="CENTER">5</td>
+  <td align="CENTER">4</td>
+  <td align="CENTER">3</td>
+  <td align="CENTER">2</td>
+  <td align="CENTER">1</td>
+  <td align="CENTER">0</td>
+  <td align="CENTER">0</td>
+ </tr>
+ <tr>
+  <td>VDP[any]2</td>
+  <td align="CENTER">0</td>
+  <td align="CENTER">3</td>
+  <td align="CENTER">2</td>
+  <td align="CENTER">1</td>
+  <td align="CENTER">0</td>
+  <td align="CENTER">0</td>
+  <td align="CENTER">0</td>
+  <td align="CENTER">0</td>
+ </tr>
+</table>
+
+<p>Xbox TCP packets never require padding, regardless of the payload size. That's because the Xbox Secure Network Library can always use the initial 7 bytes of the embedded TCP header data as padding bytes. In the worst cases, on UDP or VDP sockets using src/dest port 1000, the SNL may add up to 7 bytes of padding. For optimal bandwidth utilization on UDP or VDP sockets using src/dest port 1000, games should send payloads that are evenly divisible by 8 (16, 24, 32, and so on). This is because these sizes incur no padding. Furthermore, payloads that are slightly smaller than 8x (such as 15) are better than payloads slightly larger than 8x (such as 17). This is because a payload of 15 will only result in a maximum of one padding byte, whereas a payload of 17 might result in up to seven padding bytes.</p>
+
+
+
+<h3><a name="_VDP"></a>VDP</h3>
+
+<p>Due to legal and international issues, voice data must not be encrypted. Xbox Technical Certification Requirements state that voice must be sent in the clear. To comply with these restrictions, the Xbox console supports a custom packet format for transmitting voice. This format is called the <i>Xbox Voice and Data Protocol (VDP)</i>. To use this protocol, sockets are created using the IPPROTO_VDP flag. VDP is basically UDP, but with a special payload format that the Xbox SNL understands and interprets. From the perspective of game code, all messages sent or received on these sockets must be in the following format:</p>
+
+<table>
+ <tr>
+  <th>Name</th>
+  <th>Data</th>
+  <th>Size (bytes)</th>
+ </tr>
+ <tr>
+  <td>GameDataSize</td>
+  <td>Size of GameData in bytes (not incl. padding)</td>
+  <td>2</td>
+ </tr>
+ <tr>
+  <td>GameData</td>
+  <td>Game data (encrypted on the wire)</td>
+  <td>variable</td>
+ </tr>
+ <tr>
+  <td>VoiceData</td>
+  <td>Voice data (not encrypted on the wire)</td>
+  <td>variable</td>
+ </tr>
+</table>
+
+<p>When this data buffer is sent, the game data portion of the packet is automatically encrypted, and the voice data portion is sent in the clear. It is acceptable to send only game data or only voice data on a VDP socket. Additional information about VDP is provided in the XDK documentation and in the Xbox Voice and Data Protocol white paper.</p>
+
+<h3>VoiceData and DataSize</h3>
+
+<p>VDP packets typically contain both game and voice data, although VDP supports game data only and voice data only. When a game sends both game data and voice data (Xbox packet types VDP[0&ndash;2]), the game data is padded and encrypted exactly as if the game data had been sent on a UDP socket. The VoiceData is neither padded nor encrypted. Immediately following the VoiceData is a single DataSize byte that contains the number of 8-byte chunks of encrypted game data. The receiver uses the DataSize byte to properly parse out the data and voice sections of the packet. Note that the GameDataSize of the VDP buffer is not directly sent on the wire, but is compressed into the DataSize byte.</p>
+
+<p>If the game sends a VDP buffer that includes only game data (Xbox packet types VDPdata[0&ndash;2]), the DataSize byte is not sent. In other words, with the exception of the packet type value in the XFlags field, the outgoing packet looks exactly the same as if the game data had been sent on a 
+UDP socket.</p>
+
+<p>If the game sends a VDP buffer that includes only voice data (Xbox packet types VDPvoice[0&ndash;2]), the following results will occur: 1) the Payload and Padding sections of the packet will be empty, 2) the VoiceData section will contain the unencrypted voice data and no padding, and 3) no DataSize byte is sent.</p>
+
+
+
+<h3>XSeqNum</h3>
+
+<p>The Xbox sequence number is used to detect duplicate packets and packet replay attacks. Each packet sent by an Xbox on a given XSP has a new sequence number, which is incremented each time a new packet is sent. The receiver maintains the last sequence number received on the XSP, and uses the last sequence number to determine if incoming packets are valid. The Xbox SNL automatically handles sequence number rollover. In fact, the Xbox Secure Network Library keeps track of a full 32-bit sequence number at each endpoint, but only transmits the low order 16 bits.</p>
+
+<p>The Xbox SNL uses a sequence number <i>window</i> mechanism for detecting valid packets. The network stack will accept packets that have a sequence number that is somewhat larger than the last received sequence number. The exact size of the window is confidential. This technique allows the Xbox to correctly handle out-of-order packets, yet still reject packets that are too old or that have been intercepted and then sent at some future time (packet replay attacks). If the Xbox SNL detects an invalid sequence number, it discards the packet without even computing the packet hash. This ensures that the Xbox console is resistant to denial of service attacks based on packet replays.</p>
+
+
+<h3>XHash</h3>
+
+<p>The XHash is the secure hash value used to authenticate the packet. Just prior to sending a packet, the Xbox SNL computes the hash of the packet, and appends that hash to the packet. The receiver computes the hash based on the incoming packet data, and compares it to the hash that was received. If they match, the packet is valid. If not, the packet has been tampered with (or unintentionally corrupted) and is discarded. The Xbox SNL never propagates invalid packets to the title level. This authentication mechanism inhibits common network cheats such as packet spoofing, buffer overruns, and other forms of tampering.</p>
+
+
+<h2>Security Gateways</h2>
+
+<p>Before talking about authentication, encryption or key exchange, its important to discuss Xbox Security Gateways. Security Gateways (SGs) form the secure perimeter of all Xbox online services. An SG is a firewall through which an Xbox console must communicate in order to talk with insecure devices of any sort (including custom PC game servers and generic Xbox online services like matchmaking.) Security Gateways filter Internet traffic and authenticate Xbox packets before decrypting those packets and handing them off to other servers. Similarly, SGs accept cleartext data from game servers and online services. They then encrypt and hash the data into the correct packet formats before sending the data to Xbox consoles. SGs reside in Xbox server data centers.</p>
+
+
+<h2>Packet Authentication</h2>
+
+<p>All Xbox packets are authenticated. The Xbox Packet Format tables above indicate what portions are authenticated. The IP and NAT UDP headers are not authenticated since they may be modified during transit by routers and NATs. On receipt, a packet is authenticated only after the following have occurred: 1) its XSP has been validated (that is, the XSP refers to a valid location in the receivers Security Table), and 2) the XSeqNum has been checked against the last received sequence number.</p>
+
+<p>The Xbox SNL handles all authentication automatically. Games should not include any additional hashing or checksum mechanism in transmitted game data, as it would not increase security and would waste valuable time and bandwidth.</p>
+
+<p>At the time of this writing, the authentication algorithm is a keyed message authentication code (HMAC) using the SHA-1 hash function. If necessary, the authentication algorithm can easily be updated in future versions of the SNL. The key used to compute the hash is generated during the key exchange process, so its specific to each Xbox pair or Xbox-SG pair. Even if the key is discovered, only the traffic for a specific session between two endpoints is compromised.</p>
+
+<p>The SHA-1 hash algorithm was chosen because its efficient and extremely secure. It produces a 160-bit message digest that is resistant to brute force collision attacks, birthday attacks, and inversion attacks. The XHash value transmitted in Xbox packets is only 80 bits (10 bytes). As a security practice, the hash is truncated on the wire (less information on the hash result is available to a hacker). There are currently no known practical cryptographic attacks on the SHA-1 algorithm. The end result is that you can trust that your game packets have not been modified to a much higher degree than you would trust a common checksum.</p>
+
+
+
+<h2>Packet Encryption</h2>
+
+<p>UDP and TCP sockets automatically encrypt game data. VCP sockets encrypt game data but not voice data. For maximum performance, the only portion of the packet that is encrypted is the game data (and padding). The other elements of the packet are sent in the clear. The encryption phase occurs prior to the authentication phase so that the hash is based on the encrypted bits. </p>
+
+<p>The encryption cipher is symmetric, which means that the same key is used to both encrypt and decrypt data. The symmetric key used to encrypt and decrypt the payload is generated during the key exchange process. As a result, the symmetric key is specific to each Xbox pair or Xbox-SG pair. Even if the key is discovered, only the traffic for a specific session between two endpoints is compromised. The cipher key is always different from the
+authentication key.</p>
+
+<p>When a game sends the same data multiple times, the Xbox SNL automatically encrypts that data to different ciphertext in order to prevent known plaintext attacks. The encryption initialization vector (IV) is not transmitted in the packet, but is computed using a confidential heuristic in the Xbox SNL.</p>
+
+<p>At the time of this writing, the encryption algorithm is the DES or triple-DES (3DES) symmetric encryption cipher. DES is used for Xbox-to-Xbox communication, and 3DES is used for Xbox-to-SG communication. If necessary, the encryption algorithms can easily be updated in future versions of the SNL. The Xbox SNL handles all encryption and decryption automatically. There is no need for games to provide their own data encryption technology.</p>
+
+<p>The DES algorithm was chosen because its both standard and efficient. Although the 56-bit key is susceptible to brute force attack (expensive custom hardware can crack DES in a days time), Xbox-to-Xbox communication is generally only relevant for a very short amount of time. As a result, there is little benefit to using a huge key size. </p>
+
+<p>However, Xbox-to-SG communication contains account data which must be protected for a significant period of time. Consequently, 3DES was chosen as the default for Xbox to SG transmissions. 3DES has an effective security of 112 bits. </p>
+
+<p class="note"><b><i>Note</i></b>&nbsp;&nbsp; SGs may be configured to use single DES for performance reasons, such as when the SG is only protecting a game server.</p>
+
+
+<h2>How the Xbox Prevents Common Hacker Attacks</h2>
+
+<p>The Xbox SNL is designed to prevent many common network cheats and hacker attacks. By handling these attacks within the network stack itself, the Xbox insulates networked games from having to individually deal with these issues. Any invalid packets are thrown away before propagating to game code. The following table describes common game cheats, and how the Xbox inhibits that cheat:</p>
+
+<table>
+ <tr>
+  <th>Cheat</th>
+  <th>Xbox Detection/Prevention</th>
+ </tr>
+ <tr>
+  <td>Packet sniffing</td>
+  <td>All game data is encrypted. Packet sniffers can only detect the packet type, ports,
+  sequence number, and voice data. Although voice data is sent in the clear, it is 
+  compressed and difficult to extract without proper context.</td>
+ </tr>
+ <tr>
+  <td>Packet tampering</td>
+  <td>All packets are authenticated. A change to a single bit will be detected by 
+  the receiver and the packet will be ignored.</td>
+ </tr>
+ <tr>
+  <td>Packet spoofing</td>
+  <td>Packets sent from devices masquerading as an Xbox console will be ignored, because
+  those masquerading devices do not have the machine account information and private keys
+  required to emulate an Xbox console. Any change to the embedded port numbers or to any
+  other authenticated data will also cause the packet to fail authentication.</td>
+ </tr>
+ <tr>
+  <td>Buffer overruns</td>
+  <td>Generating a buffer overrun requires a hacker to modify the packet so that it 
+  contains or seems to contain more data than the receiver expects. A modified packet 
+  will fail authentication.</td>
+ </tr>
+ <tr>
+  <td>Replay attacks</td>
+  <td>Packet replays are detected by the receiver (detection is based on the XSeqNum).
+  Delayed packets are also detected when they fall outside the sliding window. Packets 
+  that are extremely delayed (by a matter of days) will fail to authenticate because new
+  Security Table keys are in use and the authentication hash is based on the old keys.</td>
+ </tr>
+ <tr>
+  <td>Denial of service</td>
+  <td>All packets, even for TCP sockets, are sent as UDP on the wire. This prevents 
+  attacks like TCP SYN floods. The next line of Denial of Service defense is the XSP 
+  and XSeqNum values. Both the XSP and XSeqNum are validated before the packet is even
+  authenticated. The authentication algorithm is extremely fast. Packets that fail
+  authentication are never decrypted. A flooder program would have to send an extremely 
+  high number of authentic non-repeated packets to adversely affect a game.</td>
+ </tr>
+</table>
+
+
+<h2>Packet Overhead</h2>
+
+<p>The following tables show the overhead of the Xbox packet formats compared to normal UDP and TCP packets. The Optimal Xbox column shows the case where the game data payload is evenly divisible by 8, and the src/dest ports are both 1000. The Worse Case Xbox column shows a payload not evenly divisible by 8 that is sent on a socket with a source and/or dest port outside the range 1000&ndash;1255.</p>
+
+<p>To summarize, Xbox packets are 16&ndash;24 bytes larger than their PC cousins. To obtain the minimum overhead (16 bytes), use UDP or VDP sockets on port 1000, and send game data payloads that are evenly divisible by 8. Its critical to take this overhead into account when planning for game network traffic.</p>
+
+
+<h3>UDP Overhead</h3>
+
+<table>
+ <tr>
+  <th>&nbsp;</th>
+  <th align="CENTER">Normal UDP</th>
+  <th align="CENTER">Optimal Xbox</th> 
+  <th colspan="3" align="CENTER">Worst-Case Xbox</th>
+ </tr>
+ <tr>
+  <td>IP header</td>
+  <td align="CENTER">20</td>
+  <td align="CENTER">20</td>
+  <td colspan="3" align="CENTER">20</td>
+ </tr>
+ <tr>
+  <td>NAT UDP</td> 
+  <td align="CENTER">8</td>
+  <td align="CENTER">8</td>
+  <td colspan="3" align="CENTER">8</td>
+ </tr>
+ <tr>
+  <td>XFlags</td>
+  <td align="CENTER">-</td>
+  <td align="CENTER">1</td>
+  <td colspan="3" align="CENTER">1</td>
+ </tr>
+ <tr>
+  <td>XSP</td>
+  <td align="CENTER">-</td>
+  <td align="CENTER">3</td>
+  <td colspan="3" align="CENTER">3</td>
+ </tr>
+ <tr>
+  <td>Padding</td>
+  <td align="CENTER">-</td>
+  <td align="CENTER">0</td>
+  <td align="CENTER">3</td>
+  <td align="CENTER">5</td>
+  <td align="CENTER">7</td>
+ </tr>
+ <tr>
+  <td>Source Port</td>
+  <td align="CENTER">-</td>
+  <td align="CENTER">0</td>
+  <td align="CENTER">2</td>
+  <td align="CENTER">1</td>
+  <td align="CENTER">0</td>
+ </tr>
+ <tr>
+  <td>Dest Port</td>
+  <td align="CENTER">-</td>
+  <td align="CENTER">0</td>
+  <td align="CENTER">2</td>
+  <td align="CENTER">1</td>
+  <td align="CENTER">0</td>
+ </tr>
+ <tr>
+  <td>XSeqNum</td>
+  <td align="CENTER">-</td>
+  <td align="CENTER">2</td>
+  <td colspan="3" align="CENTER">2</td>
+ </tr>
+ <tr>
+  <td>XHash</td>
+  <td align="CENTER">-</td>
+  <td align="CENTER">10</td>
+  <td colspan="3" align="CENTER">10</td>
+ </tr>
+ <tr>
+  <td><b><i>Total</i></b></td>
+  <td align="CENTER"><b><i>28</i></b></td>
+  <td align="CENTER"><b><i>44</i></b></td>
+  <td colspan="3" align="CENTER"><b><i>51</i></b></td>
+ </tr>
+ <tr>
+  <td><b><i>Difference</i></b></td>
+  <td align="CENTER">&nbsp;</td>
+  <td align="CENTER"><b><i>16</i></b></td>
+  <td colspan="3" align="CENTER"><b><i>23</i></b></td>
+ </tr>
+</table>
+
+
+<h3>VDP Overhead</h3>
+
+<p>A VDP packet is essentially the same as a UDP packet. However, when the VDP packet contains both game data and voice data, the VDP packet includes an additional byte of overhead.</p>
+
+<table>
+ <tr>
+  <th>&nbsp;</th>
+  <th align="CENTER">Normal UDP</th>
+  <th align="CENTER">Optimal Xbox</th>
+  <th colspan="3" align="CENTER">Worst-Case Xbox</th>
+ </tr>
+ <tr>
+  <td>IP header</td>
+  <td align="CENTER">20</td>
+  <td align="CENTER">20</td>
+  <td colspan="3" align="CENTER">20</td>
+ </tr>
+ <tr>
+  <td>NAT UDP</td>
+  <td align="CENTER">8</td>
+  <td align="CENTER">8</td>
+  <td colspan="3" align="CENTER">8</td>
+ </tr>
+ <tr>
+  <td>XFlags</td>
+  <td align="CENTER">-</td>
+  <td align="CENTER">1</td>
+  <td colspan="3" align="CENTER">1</td>
+ </tr>
+ <tr>
+  <td>XSP</td>
+  <td align="CENTER">-</td>
+  <td align="CENTER">3</td>
+  <td colspan="3" align="CENTER">3</td>
+ </tr>
+ <tr>
+  <td>Payload</td>
+  <td align="CENTER">Variable</td>
+  <td align="CENTER">Variable</td>
+  <td colspan="3" align="CENTER">Variable</td>
+ </tr>
+ <tr>
+  <td>Padding</td>
+  <td align="CENTER">-</td>
+  <td align="CENTER">0</td>
+  <td align="CENTER">3</td>
+  <td align="CENTER">5</td>
+  <td align="CENTER">7</td>
+ </tr>
+ <tr>
+  <td>Source Port</td>
+  <td align="CENTER">-</td>
+  <td align="CENTER">0</td>
+  <td align="CENTER">2</td>
+  <td align="CENTER">1</td>
+  <td align="CENTER">0</td>
+ </tr>
+ <tr>
+  <td>Dest Port</td>
+  <td align="CENTER">-</td>
+  <td align="CENTER">0</td>
+  <td align="CENTER">2</td>
+  <td align="CENTER">1</td>
+  <td align="CENTER">0</td>
+ </tr>
+ <tr>
+  <td>Voice Data</td>
+  <td align="CENTER">Variable</td>
+  <td align="CENTER">Variable</td>
+  <td colspan="3" align="CENTER">Variable</td>
+ </tr>
+ <tr>
+  <td>Data Size</td>
+  <td align="CENTER">-</td>
+  <td align="CENTER">0</td>
+  <td colspan="3" align="CENTER">1</td>
+ </tr>
+ <tr>
+  <td>XSeqNum</td>
+  <td align="CENTER">-</td>
+  <td align="CENTER">2</td>
+  <td colspan="3" align="CENTER">2</td>
+ </tr>
+ <tr>
+  <td>XHash</td>
+  <td align="CENTER">-</td>
+  <td align="CENTER">10</td>
+  <td colspan="3" align="CENTER">10</td>
+ </tr>
+ <tr>
+  <td><b><i>Total</i></b></td>
+  <td align="CENTER"><b><i>28</i></b></td>
+  <td align="CENTER"><b><i>44</i></b></td>
+  <td colspan="3" align="CENTER"><b><i>52</i></b></td>
+ </tr>
+ <tr>
+  <td><b><i>Difference</i></b></td>
+  <td>&nbsp;</td>
+  <td align="CENTER"><b><i>16</i></b></td>
+  <td colspan="3" align="CENTER"><b><i>24</i></b></td>
+ </tr>
+</table>
+
+
+
+<h3>TCP Overhead</h3>
+
+<p>Because of the padding optimization, the size of the payload does not affect the size of the Xbox TCP packet. Port optimization is the only thing that affects Xbox TCP packet size.</p>
+
+<table>
+ <tr>
+  <th>&nbsp;</th>
+  <th align="CENTER">Normal TCP</th>
+  <th align="CENTER">Optimal Xbox</th>
+  <th align="CENTER">Worst-Case Xbox</th>
+ </tr>
+ <tr>
+  <td>IP header</td>
+  <td align="CENTER">20</td>
+  <td align="CENTER">20</td>
+  <td align="CENTER">20</td>
+ </tr>
+ <tr>
+  <td>NAT UDP</td>
+  <td align="CENTER">-</td>
+  <td align="CENTER">8</td>
+  <td align="CENTER">8</td>
+ </tr>
+ <tr>
+  <td>XFlags</td>
+  <td align="CENTER">-</td>
+  <td align="CENTER">1</td>
+  <td align="CENTER">1</td>
+ </tr>
+ <tr>
+  <td>XSP</td>
+  <td align="CENTER">-</td>
+  <td align="CENTER">3</td> 
+  <td align="CENTER">3</td>
+ </tr>
+ <tr>
+  <td>Payload</td>
+  <td align="CENTER">Variable</td>
+  <td align="CENTER">Variable</td>
+  <td align="CENTER">Variable</td>
+ </tr>
+ <tr>
+  <td>Padding</td>
+  <td align="CENTER">-</td>
+  <td align="CENTER">0</td>
+  <td align="CENTER">0</td>
+ </tr>
+ <tr>
+  <td>Source Port</td>
+  <td align="CENTER">2</td>
+  <td align="CENTER">0</td>
+  <td align="CENTER">2</td>
+ </tr>
+ <tr>
+  <td>Dest Port</td>
+  <td align="CENTER">2</td>
+  <td align="CENTER">0</td>
+  <td align="CENTER">2</td>
+ </tr>
+ <tr>
+  <td>TCP Seq Num</td>
+  <td align="CENTER">4</td>
+  <td align="CENTER">4</td>
+  <td align="CENTER">4</td>
+ </tr>
+ <tr>
+  <td>TCP Ack Num</td>
+  <td align="CENTER">4</td>
+  <td align="CENTER">4</td>
+  <td align="CENTER">4</td>
+ </tr>
+ <tr>
+  <td>TCP Hdr Bits</td>
+  <td align="CENTER">2</td>
+  <td align="CENTER">2</td>
+  <td align="CENTER">2</td>
+ </tr>
+ <tr>
+  <td>TCP Window</td>
+  <td align="CENTER">2</td>
+  <td align="CENTER">2</td>
+  <td align="CENTER">2</td>
+ </tr>
+ <tr>
+  <td>XSeqNum</td>
+  <td align="CENTER">-</td>
+  <td align="CENTER">2</td>
+  <td align="CENTER">2</td>
+ </tr>
+ <tr>
+  <td>XHash</td>
+  <td align="CENTER">-</td>
+  <td align="CENTER">10</td>
+  <td align="CENTER">10</td>
+ </tr>
+ <tr>
+  <td>TCP Chksum</td>
+  <td align="CENTER">2</td>
+  <td align="CENTER">-</td>
+  <td align="CENTER">-</td>
+ </tr>
+ <tr>
+  <td>TCP Urgent</td>
+  <td align="CENTER">2</td>
+  <td align="CENTER">-</td>
+  <td align="CENTER">-</td>
+ </tr>
+ <tr>
+  <td><b><i>Total</i></b></td>
+  <td align="CENTER"><b><i>40</i></b></td>
+  <td align="CENTER"><b><i>56</i></b></td>
+  <td align="CENTER"><b><i>60</i></b></td>
+ </tr>
+ <tr>
+  <td><b><i>Difference</i></b></td>
+  <td align="CENTER"><b><i>&nbsp;</i></b></td>
+  <td align="CENTER"><b><i>16</i></b></td>
+  <td align="CENTER"><b><i>20</i></b></td>
+ </tr>
+</table>
+
+
+<h2>Packet Maximums</h2>
+
+<p>The maximum UDP payload size, including padding, is 1,304 bytes. The maximum VDP payload size (game data + padding + voice data) is also 1,304 bytes. The VDP GameDataSize field is not actually transmitted on the wire, so it does not contribute to the payload size. The maximum TCP payload size for a single unfragmented packet is 1,304 bytes. TCP buffers larger than 1,304 bytes are split automatically by the SNL into multiple packets, and are then reassembled by the recipient network stack.</p>
+
+
+
+<h2>Performance</h2>
+
+<p>The Xbox SNL authentication and encryption algorithms were chosen not only for their security, but also for their performance characteristics. Sending a 1024-byte payload with the Xbox SNL takes approximately 0.11 milliseconds. That includes the time to allocate the packet, fill it in, encrypt the payload, compute the hash, and transmit the packet. The time overhead is linear based on payload size. The time to send and the time to receive a packet are approximately equal, since the same authentication and encryption algorithms are used at each endpoint.</p>
+
+<p>CPU usage is another important gauge of performance. Even at bandwidths of 512 kilobits per second, the Xbox SNL performs at under one percent CPU. (Future versions of this paper will include detailed performance information at various bitrates and for various payload sizes.)</p>
+
+<h2><a name="key_exchange"></a>Key Exchange</h2>
+
+<p>In order for secure communication to take place between two Xbox consoles or between a console and an SG, the endpoints must agree on the keys that will be used to encrypt, decrypt, and authenticate packets. This handshaking mechanism is called <i>key exchange</i>. On the Xbox, key exchange occurs when two endpoints initially establish a connection. After that, all communication between the endpoints is secured using the newly established keys. Keys are stored internally in the Xbox Secure Network Library Security Table, and are identified by Xbox Security Parameter indices (XSPs) and Xbox Key Identifiers (XNKIDs). The Xbox network stack handles key exchange automatically. However, there are performance considerations that can impact a game.</p>
+
+<p>The Xbox SNL supports two different key exchange algorithms: DH and XK. The algorithm that is used depends on the multiplayer mode and the endpoints in question.</p>
+
+
+<h3>Diffie-Hellman Key Exchange Algorithm</h3>
+
+<p>The DH algorithm is the Diffie-Hellman key exchange algorithm. Details on the algorithm can be found in most cryptographic references. Using the DH algorithm, the two endpoints compute some values and share those values by transmitting them to each other <i>in the clear</i>. They then each use those shared values (as well as some exponential mathematics) to generate the secret keys. The beauty of the DH algorithm is that both endpoints will generate exactly the same key valueyet no one listening on the channel can generate that key. The DH algorithm requires significant computing time for both endpoints. The endpoints must each perform an initial 13-ms computation before they can share information. Once the endpoints have exchanged the shared values, they must each perform another 13-ms computation to generate the secret key.</p>
+
+
+
+<h3>Xbox Live Key Exchange Algorithm</h3>
+
+<p>The XK algorithm is a confidential Xbox key exchange algorithm used only by online Xbox consoles. The XK algorithm relies on the fact the every online Xbox: 1) has been validated by an Xbox Security Gateway, 2) has exchanged keys using the DH algorithm with the Security Gateway, and 3) has been successfully verified by the Xbox <i>Live</i> authentication service (which uses the Kerberos authentication protocol). Online Xbox consoles have unique online
+identifiers that allow them to perform the XK algorithm many orders of magnitude faster than the DH algorithm. In addition, performing the XK algorithm with the unique online identifiers provides security comparable to the DH algorithm.</p>
+
+
+
+<h3>System Link Key Exchange</h3>
+
+<p>Xbox consoles participating in System Link games always use the DH algorithm for performing key exchange. The DH algorithm occurs in two phases: the registration phase and the exchange phase. For System Link games, the registration phase occurs whenever a new System Link session identifier (XNKID) is registered using <b>XNetRegisterKey</b>. This call requires 13 ms. Because registration does not typically occur during active gameplay, this delay does not usually have an adverse affect. The more significant performance characteristic for the DH algorithm occurs during the exchange phase. The exchange phase occurs when a game sends the first packet to a new Xbox address. This happens shortly after <b>send</b> or <b>sendto</b> is called for the first time on an IP address obtained by <b>XNetXnAddrToInAddr</b>. The two endpoints automatically exchange the shared information computed during registration, and then each endpoint performs the second half of the algorithm to compute the secret key. This computation requires 13 ms on each Xbox. The secret key computation occurs at deferred procedure call (DPC) time, so it cannot be directly controlled by the game. For games that are not join-in-progress, this key exchange typically happens in the game lobby as new Xbox consoles join the host, so the performance hit is usually not a concern. However, for join-in-progress games, the performance hit can cause the host to drop a frame mid-game.</p>
+
+<p>Once the two endpoints have completed the key exchange, they do not need to perform a key exchange again, even if they communicate on different ports. The endpoints only need to re-key if a new session ID is registered. The most likely cause of a new session ID being registered is the host leaving the game and a new host taking over (host migration).</p>
+
+
+
+
+<h3>Online Key Exchange</h3>
+
+<p>Online games use the DH algorithm when an Xbox first establishes a connection to an Xbox Security Gateway. The connection to the SG happens during the sign-in process when the game calls <b>XOnlineLogon</b> and then <b>XOnlineTaskContinue</b>. The 13-ms key registration computation occurs within <b>XOnlineLogon</b>. The second 13-ms secret key computation and
+exchange occurs as the logon task is being pumped, and before <b>XOnlineTaskContinue</b> returns XONLINE_S_LOGON_CONNECTION_ESTABLISHED. The secret key calculation occurs at
+DPC time, so it cannot be directly controlled by the game.</p>
+
+<p>Once the Xbox console is online, it uses the XK algorithm whenever the Xbox establishes a new connection to another online Xbox. The XK algorithm has an insignificant performance hit in comparison to DH, so online Xbox games can support join-in-progress sessions without penalty.</p>
+
+<p>The <b>XNetRegisterKey</b> function does <i>not</i> require 13 milliseconds when the title is registering an online session ID. An online session ID is one returned by the Xbox Live matchmaking service by means of <b>XOnlineMatchGetResults</b>. For comparison, a System Link session ID is one returned by <b>XNetCreateKey</b>. Titles can detect whether a session ID (XNKID) is a System Link or an online session by using the <b>XNetXnKidIs</b> family of functions. The <b>XOnlineChangeLogonUsers</b> function also does <i>not</i> invoke the DH algorithm, since the Xbox must have already exchanged keys with the Xbox Security Gateway during <b>XOnlineLogon</b>, prior to calling <b>XOnlineChangeLogonUsers</b>.</p>
+
+
+<h3>Reducing the DH Penalty</h3>
+
+<p>Games can alleviate the key <i>registration</i> penalty by registering System Link session IDs on a separate thread, that is, by calling <b>XNetRegisterKey</b> on a separate thread. Online games can alleviate the key registration penalty by calling <b>XOnlineLogon</b> on a separate thread. However, because the default thread quantum is 20 ms, games must adjust the quantum by means of <b>XSetProcessQuantumLength</b> in order to realize any benefits of using a separate thread. Furthermore, because session ID registration and online sign-in typically occur during non-critical gameplay, its usually not necessary to offload registration to another thread.</p>
+
+<p>Games cannot control the secret key computation penalty (which occurs during first direct communication in System Link and during the logon task pump for Xbox Live). This computation is performed at DPC time. Deferred procedure calls may be run asynchronously at any point during the execution flow of the title. The Xbox team is currently researching ways of reducing the penalty (this option is unlikely), splitting the penalty up, or providing a solution involving notifications and DH scheduling.</p>
+
+
+<h3>Key Exchange Summary</h3>
+
+<table>
+ <tr>
+  <th>&nbsp;</th>
+  <th colspan="2" align="CENTER">Multiplayer Mode</th>
+ </tr>
+ <tr>
+  <td><b>API</b></td>
+  <td align="CENTER"><b>System Link</b></td>
+  <td align="CENTER"><b>Online</b></td>
+ </tr>
+ <tr>
+  <td><b>XNetRegisterKey</b></td>
+  <td align="CENTER">DH; 13 ms</td>
+  <td align="CENTER">0 ms</td>
+ </tr>
+ <tr>
+  <td>first <b>send</b>/<b>sendto</b></td>
+  <td align="CENTER">DH; 13 ms (DPC level)</td>
+  <td align="CENTER">XK; ~0 ms</td>
+ </tr>
+ <tr>
+  <td><b>XOnlineLogon</b></td>
+  <td align="CENTER">n/a</td>
+  <td align="CENTER">DH; 13 ms</td>
+ </tr>
+ <tr>
+  <td>logon task pump (<b>XOnlineTaskContinue</b>)</td>
+  <td align="CENTER">n/a</td>
+  <td align="CENTER">DH; 13 ms (DPC level)</td>
+ </tr>
+</table>
+
+
+<h2>Additional Information</h2>
+
+<p>The Xbox packet format is loosely based on the IP Encapsulating Security Payload (IPSec) protocol specified by RFC 2406. Details are available at <a href="http://www.ietf.org/rfc/rfc2406.txt" target="_blank">http://www.ietf.org/rfc/rfc2406.txt</a>. The Xbox packet format was designed on this standard. This packet format was then heavily optimized for maximum speed and minimum overheadwithout sacrificing security.</p>
+
+<p>The HMAC keyed hashing algorithm is described in RFC 2104 online at <a href="http://www.ietf.org/rfc/rfc2104.txt" target="_blank">http://www.ietf.org/rfc/rfc2104.txt</a>.</p>
+<p>The SHA-1 hashing algorithm is presented in FIPS PUB 180-1 at <a
+href="http://www.itl.nist.gov/fipspubs/fip180-1.htm" target="_blank">http://www.itl.nist.gov/fipspubs/fip180-1.htm</a>.</p>
+<p>The DES encryption cipher is specified by FIPS 46-2 available at <a
+href="http://www.itl.nist.gov/fipspubs/fip46-2.htm" target="_blank">http://www.itl.nist.gov/fipspubs/fip46-2.htm</a>.</p>
+
+
+
+<h2>Best Practices Summary</h2>
+
+<ul>
+<li>Understand Xbox packet overhead when planning for game bandwidth. Xbox packets are 16+ bytes larger than their PC cousins.</li>
+
+<li>Use port 1000 to send and receive game traffic.</li>
+
+<li>If you must use ports other than port 1000, use ports in the 1000&ndash;1255 range.</li>
+
+<li>On UDP and VDP sockets, send game data buffers that are evenly divisible by 8. Game data that is not evenly divisible by 8 may require padding bytes. Voice data is not padded.</li>
+
+<li>Use VDP sockets when sending voice (an Xbox Technical Certification Requirement). When possible, transport both game data and voice on VDP sockets to minimize packet overhead.</li>
+
+<li>If your goal is minimizing bandwidth, give preference to VDP or UDP over TCP. Xbox TCP packets are at least 12 bytes larger than Xbox UDP packets.</li>
+
+<li>Don't embed checksums or hashes in game data. The Xbox automatically authenticates packets.</li>
+
+<li>Don't encrypt game data before sending it. The Xbox automatically encrypts game data.</li>
+
+<li>Don't encrypt voice data before sending it. Xbox Technical Certification Requirements specify that voice data must be sent in the clear.</li>
+
+<li>Don't write custom game code to handle NAT traversal. The Xbox SNL handles NATs automatically.</li>
+
+<li>Understand the performance impact of key registration and key exchange, particularly for System Link games that support join-in-progress.</li>
+</ul>
+
+<p>&nbsp;</p>
+
+<!--*******************************************************************************-->
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirectMusicPerformance8::SendPMsg</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="IDirectMusicPerformance8::SendPMsg [C++]">
+<META NAME="MS-HKWD" CONTENT="SendPMsg (IDirectMusicPerformance8) [C++]">
+<META NAME="MS-HKWD" CONTENT="SendPMsg [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="SendPMsg (IDirectMusicPerformance8)"/>
+<MSHelp:Keyword Index="K" Term="IDirectMusicPerformance8::SendPMsg"/>
+<MSHelp:Keyword Index="F" Term="SendPMsg"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_idirectmusicperformance8_sendpmsg_dxaudio"></A>IDirectMusicPerformance8::SendPMsg</H1>
+
+<P>Sends a performance message. This method is called by tracks when they are played. It might also be called by a tool to inject new data into a performance.</P>
+
+<PRE class="syntax"><B>HRESULT SendPMsg(</B>
+    <B>DMUS_PMSG</B> <I>*pPMSG</I>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>pPMSG</I></DT>
+    <DD>Message allocated by <A HREF="_dx_idirectmusicperformance8_allocpmsg_dxaudio.htm"><B>IDirectMusicPerformance8::AllocPMsg</B></A>.  This structure is of a type derived from <A HREF="_dx_dmus_pmsg_dxaudio.htm"><B>DMUS_PMSG</B></A>. See DirectMusic Messages.</DD>
+
+</DL>
+
+<H4>Return Values</H4>
+
+<P>Returns S_OK if successful, an error code otherwise. Can return one of the following error values:</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TD width=100%><A HREF="_dx_directmusic_return_values_by_name_dxaudio.htm#_dx_e_invalidarg_dxaudio"><B>E_INVALIDARG</B></A></TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=100%><A HREF="_dx_directmusic_return_values_by_name_dxaudio.htm#_dx_e_pointer_dxaudio"><B>E_POINTER</B></A></TD>
+</TR>
+</TABLE>
+
+<H4>Remarks</H4>
+
+<P>The <B>dwFlags</B> member (see <A HREF="_dx_dmus_pmsg_dxaudio.htm"><B>DMUS_PMSG</B></A>) must contain either DMUS_PMSGF_MUSICTIME or DMUS_PMSGF_REFTIME, depending on the time stamp in either <B>rtTime</B> or <B>mtTime</B>. The <B>dwFlags</B> member should also contain the appropriate delivery type&#8212;DMUS_PMSGF_TOOL_QUEUE, DMUS_PMSGF_TOOL_ATTIME, or DMUS_PMSGF_TOOL_IMMEDIATEdepending on the type of message. If none is selected, DMUS_PMSGF_TOOL_IMMEDIATE is used by default.</P>
+
+<P>If the time of the message is set to 0 and the <B>dwFlags</B> member contains DMUS_PMSGF_REFTIME, it is assumed that this message is queued to go out immediately.</P>
+
+
+
+<P>Normally, the performance frees the message after it has been processed. For more information, see the Remarks for <A HREF="_dx_idirectmusicperformance8_freepmsg_dxaudio.htm"><B>IDirectMusicPerformance8::FreePMsg</B></A>.</P>
+
+
+
+<H4>Requirements</H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in Dmusici.h.</P>
+
+<H4>See Also</H4>
+
+<P><A HREF="_dx_messages_dxaudio.htm"><B>Messages</B></A>, <A HREF="_dx_directmusic_messages_dxaudio.htm"><B>DirectMusic Messages</B></A>, <A HREF="_dx_directmusic_tools_dxaudio.htm"><B>DirectMusic Tools</B></A> </P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

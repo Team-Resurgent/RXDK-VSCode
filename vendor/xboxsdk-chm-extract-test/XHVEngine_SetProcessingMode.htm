@@ -1,0 +1,79 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>IXHVEngine::SetProcessingMode</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="F" Term="SetProcessingMode"/>
+<MSHelp:Keyword Index="K" Term="SetProcessingMode (IXHVEngine)"/>
+<MSHelp:Keyword Index="K" Term="IXHVEngine::SetProcessingMode"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>IXHVEngine::SetProcessingMode</h1>
+<pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>SetProcessingMode(</b>
+    <b>DWORD</b> <i>dwLocalPort</i><b>,</b>
+    <b>XHV_PROCESSING_MODE</b> <i>processingMode</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+<dt><i>dwLocalPort</i></dt>
+<dd>[in]  Controller port of the local talker.</dd>
+<dt><i>processingMode</i></dt>
+<p><dd>[in]  <b>XHV_PROCESSING_MODE</b> value specifying the current processing mode to use for the local talker.  Must be one of the following values:</dd>
+				<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+					<tr>
+<td>XHV_INACTIVE_MODE</td>
+<td>Inactive.  No voice chat encoding or recognition processing is done for this local talker.</td>
+</tr>
+					<tr>
+<td>XHV_LOOPBACK_MODE</td>
+<td>Loopback mode. Sends the microphone data through the encoder and decoder and plays it back through the communicator headset.  This mode is often used to try different voice masks and to test communication effects. It is generally not used while playing the game.</td>
+</tr>
+					<tr>
+<td>XHV_VOICECHAT_MODE</td>
+<td>Voice communication mode. While in this mode, all data coming from this local talker's voice headset is encoded.  The encoding process requires CPU cycles.</td>
+</tr>
+					<tr>
+<td>XHV_SR_MODE</td>
+<td>Speech recognition mode. Start recognizing speech data for this local talker. The speech recognition (SR) engine will be active (that is, executing and using CPU cycles) for as long as this mode is selected.</td>
+</tr>
+				</table>
+</p>
+</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>Returns S_OK if successful, an error code otherwise.</p><h4><a name="remarks"></a>Remarks</h4>
+<p>Prior to setting a local talker to a specific processing mode, <a href="IXHVEngine_EnableProcessingMode.htm">EnableProcessingMode</a> must have been called to enable XHV engine processing for that specific mode.  After a local talker has been registered, additional processing modes cannot be enabled in <a href="IXHVEngine.htm">IXHVEngine</a>.</p>
+<p>For speech recognition mode (XHV_SR_MODE), call <b>SetProcessingMode</b> only after successfully calling <a href="XHVEngine_SelectVocabulary.htm">SelectVocabulary</a>.</p><h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xhv.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xvoice.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="IXHVEngine_EnableProcessingMode.htm">IXHVEngine::EnableProcessingMode</a>
+</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

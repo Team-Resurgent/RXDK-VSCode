@@ -1,0 +1,27 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Linker (XbRC)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Linker (XbRC)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Linker (XbRC)</h1>
+<p>The linker phase is very similar to the <a href="xbrc_compiler.htm">compiler phase</a>. Basically, you iterate over the main list of containers and call each container's link function. The main difference between the compiling and linking phase is that you iterate over the list multiple times to handle different situations.</p><p><img src="images/xbrc_fig4.jpg"></p><p>First, iterate over the list and find any duplicate identifiers. If the identifiers are identical and the resource type is identical, tell only one instance of the resource to link in because you don't need both. (There are some cases where a developer may want both resources to link in. In this case, it would be up to the developer to change the behavior of the linker.) If you have two resources with the same identifier but different resource types, a linker error results.</p><p>The next step is to link in all resources except the XBRC_FRAME and XBRC_MODEL resources. This is done to remove any order dependencies in the resource file.</p><p>We then link in the XBRC_MODEL resources and then the XBRC_FRAME resources.</p><p>The main workhorse of the linker is the <b>CBundler</b> class, which is similar to the original <b>CBundler</b> class used by the old <a href="xbox_jbh_tool_bundler.htm">Bundler</a>.  This class creates a binary file containing Xbox Direct3D resources that reside in both Video (or contiguous) memory (vertex buffers and textures) and System memory (everything else). These resources are loaded into the Xbox in two reads. For details on how this works, see the <a href="xbview_architecture.htm">Xbox Viewer Architecture</a>. The <b>CBundler</b> class ensures that all data requirements are met for the resources so that their memory footprint can be loaded and fixed up and the resources can be used without further work. For example, textures are aligned to the correct memory boundaries to ensure that they can be used by simply calling <a href="xbox_dxg_IDirect3DResource8_Register.htm">IDirect3DResource8::Register</a> in Direct3D on the Xbox.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

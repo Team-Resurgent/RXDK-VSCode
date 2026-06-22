@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Stock Text. Do not change.****-->
+<TITLE>Compiler Error C2993</TITLE>
+<!--**********************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="C2993"/>
+<MSHelp:Keyword Index="F" Term="C2993"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Stock Text. Do not change.****-->
+<H1 class="heading"><A NAME="c2993"></A>Compiler Error C2993</H1>
+<!--**********************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<P><B>'<I>identifier</I>' : illegal type for non-type template parameter '<I>parameter</I>'</B></P>
+
+<P>You cannot declare a template with a structure or union argument. Use pointers to pass structures and unions as template parameters. </P>
+
+<P>The following sample generates C2993:</P>
+
+<PRE class="code">// C2993.cpp
+// compile with: /LD
+struct MyStruct 
+{
+   int a;char b;
+};
+
+template &lt;class T, struct MyStruct S&gt;   // C2993
+// try
+// template &lt;class T, struct MyStruct * S&gt;
+class CMyClass 
+{
+};</pre>
+
+<p>This error will also be generated when an attempt is made to use floating-point 
+non-type template parameters. </p>
+
+<p>If it is a function template, use a function argument to pass in the floating-point non-type template parameter. The following example is valid in both the Visual Studio 
+.NET 2003 and Visual Studio .NET versions of Visual C++. If it is a class template, there 
+is no easy workaround.</P>
+
+<PRE class="code">// C2993b.cpp
+// compile with: /LD
+template&lt;class T, float f&gt;   // C2993
+void func(T)
+{
+}
+
+template&lt;class T&gt;   // OK
+void func2(T, float)
+{
+}
+
+}</PRE>
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+
+</BODY>
+</HTML>

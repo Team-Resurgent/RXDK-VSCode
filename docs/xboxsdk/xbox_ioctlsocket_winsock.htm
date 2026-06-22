@@ -1,0 +1,116 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>ioctlsocket</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="ioctlsocket">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="ioctlsocket"/>
+<MSHelp:Keyword Index="F" Term="ioctlsocket"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="xbox_ioctlsocket_winsock"></A>ioctlsocket</H1>
+
+<P>Controls the I/O mode of a socket.</P>
+
+<PRE class=syntax><B>int ioctlsocket(
+  SOCKET</B><I> s</I>,<B>         </B>
+<B>  long</B><I> cmd</I>,<B>         </B>
+<B>  u_long FAR </B><I>*argp  </I>
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>s</I></DT>
+
+<DD>[in] Descriptor identifying a socket.</DD>
+
+<DT><I>cmd</I></DT>
+
+<DD>[in] Command to perform on the socket <I>s</I>.</DD>
+
+<DT><I>argp</I></DT>
+
+<DD>[in/out] Pointer to a parameter for <I>cmd</I>.
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>Upon successful completion, the <B>ioctlsocket</B> returns zero. Otherwise, a value of SOCKET_ERROR is returned, and a specific error code can be retrieved by calling <A HREF="xbox_wsagetlasterror_winsock.htm">WSAGetLastError</A>.</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=33%>Error code</TH>
+<TH align=left width=67%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=33%>WSANOTINITIALISED</TD>
+<TD width=67%>A successful <A HREF="xbox_wsastartup_winsock.htm">WSAStartup</A> call must occur before using this function.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=33%>WSAEINPROGRESS</TD>
+<TD width=67%>A blocking call is in progress.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=33%>WSAENOTSOCK</TD>
+<TD width=67%>The descriptor <I>s</I> is not a socket.</TD>
+</TR>
+
+</TABLE><BR>
+
+<H4>Remarks</H4>
+
+<P>The <B>ioctlsocket</B> function can be used on any socket in any state. It is used to set or retrieve operating parameters associated with the socket, independent of the protocol and communications subsystem. Here are the supported commands to use in the <I>cmd</I> parameter and their semantics:
+
+<DL>
+<DT><B>FIONBIO</B></DT>
+
+<DD>Use with a nonzero <I>argp</I> parameter to enable the nonblocking mode of socket <I>s</I>. The <I>argp</I> parameter is zero if nonblocking is to be disabled. The <I>argp</I> parameter points to an unsigned long value. When a socket is created, it operates in blocking mode by default (nonblocking mode is disabled). This is consistent with BSD sockets.
+</DD>
+
+<DT><B>FIONREAD</B></DT>
+
+<DD>Use to determine the amount of data pending in the network's input buffer that can be read from socket <I>s</I>. The <I>argp</I> parameter points to an unsigned long value in which <B>ioctlsocket</B> stores the result. If <I>s</I> is stream oriented (for example, type <B>SOCK_STREAM</B>), <B>FIONREAD</B> returns the amount of data that can be read in a single call to the <B>recv</B> function; this might not be the same as the total amount of data queued on the socket. If <I>s</I> is message oriented (for example, type <B>SOCK_DGRAM</B>), <B>FIONREAD</B> returns the size of the first datagram (message) queued on the socket.</DD>
+
+</DL>
+
+<H4>Compatibility</H4>
+
+<P>This <B>ioctlsocket</B> function performs only a subset of functions on a socket when compared to the <B>ioctl </B>function found in Berkeley sockets. The <B>ioctlsocket</B> function has no command parameter equivalent to the <B>FIOASYNC</B> of <B>ioctl</B>, and no socket-level commands are supported by <B>ioctlsocket</B>.</P>
+
+<H4>Requirements</H4>
+<p>
+<b>Header: </b>Declared in winsockx.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xnet.lib for titles that only support system link play, XOnline.lib for titles that support online play. Use the secure versions of the library file (Xnets.lib or XOnlines.lib) for final testing.
+</p>
+
+
+<H4>See Also</H4>
+
+<P>
+<a href="xbox_winsock_overview_winsock.htm">Winsock Overview</A>,
+<a href="xbox_winsock_functions_winsock.htm">Winsock Functions</A> |
+  <A HREF="xbox_getsockopt_winsock.htm">getsockopt</A>, <A HREF="xbox_setsockopt_winsock.htm">setsockopt</A>, <A HREF="xbox_socket_winsock.htm">socket</A> </P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

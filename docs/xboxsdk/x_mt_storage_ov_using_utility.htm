@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Using the Utility Region</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Using the Utility Region"/>
+<MSHelp:Keyword Index="K" Term="utility region, using"/>
+<MSHelp:Keyword Index="F" Term="Using the Utility Region"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Using the Utility Region</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<P>The title's utility region, which comprises a single disk partition, is the simplest region to use and manage. The region is exposed to the title through the Z:\ drive. The Xbox system needs to understand nothing about how the data is used by the title. Titles have complete use of an entire partition, thus removing the possibility of corrupting other title's data.</P>
+
+<P>There are many uses for this utility space besides the caching of DVD data. Examples include storing environment deformations, implementing virtual memory, building up sound or other dynamic data, and so on.</P>
+
+<H3>Mounting the Utility Region</H3>
+
+<P>You can set flags at build time that determine the initialization options for the utility region. These flags are passed to the <a href="xbox_jbh_tool_imagebld.htm">XBE Image Builder (ImageBld)</A> using the /INITFLAGS switch when the .xbe file is built for the title. The XINIT_MOUNT_UTILITY_DRIVE flag specifies that a utility region is automatically mounted for the title at initialization time. This flag is the default if no flags are set.  The XINIT_FORMAT_UTILITY_DRIVE flag, in combination with XINIT_MOUNT_UTILITY_DRIVE, specifies that the partition is to be formatted by the system at title initialization time before the partition is given to the title to use.</P>
+
+<P>These options allow titles that do not need utility space not to incur the overhead of mounting the partition. Similarly. if the title needs to use the partition as scratch space only, it can ensure that it always gets the partition in a clean, known state.</P>
+
+<P>The <A HREF="x_jsk_xmountutilitydrive.htm">XMountUtilityDrive</A> function allows a title to mount the title's utility storage region at run time (if it wasn't already mounted during initialization).</P>
+
+
+<P>If a title does not mount a utility partition at all, then no partition is marked as having been used by the title. If a title specifies at build time that the utility space should be formatted at title load, the utility partition it uses is not marked as being in use, because the title does not need to recover the data the next time the game runs.</P>
+
+<P>When a utility partition needs to be assigned to a title, the system assigns a partition based on the following scheme:</P>
+
+<UL>
+<LI>If there is a utility partition already in use by that title, that partition is assigned.</LI>
+<LI>If there is a utility partition that is not in use by any title, that partition is assigned.</LI>
+<LI>The least-recently-used partition is assigned.</LI>
+</UL>
+
+<!--*******************************************************************************-->
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

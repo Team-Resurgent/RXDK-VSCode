@@ -1,0 +1,175 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Save Games</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Save Games"/>
+<MSHelp:Keyword Index="F" Term="Save Games"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Save Games</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<H3>Enumerating Saved Games</H3>
+
+The code example in the previous topic calls a simple EnumSavedGames() function that outputs to the debugger a list of the games on the MU that the title saved.  In a game, this function could build up a list of available save games and display them to the user.</P>
+
+<PRE>
+//
+// Enumerate saved games on the specified device.
+//
+void EnumSavedGames( char chDrive )
+{
+    HANDLE hFind;
+    XGAME_FIND_DATA xgfd;
+    char szDrive[] = "X:\\";
+
+
+    *szDrive = chDrive;
+    hFind = XFindFirstSaveGame( szDrive, &amp;xgfd );
+
+    if( INVALID_HANDLE_VALUE != hFind )
+    {
+        do {
+            OutputDebugStringW( xgfd.szSaveGameName );
+            OutputDebugString( "\r\n" );
+        } while( XFindNextSaveGame( hFind, &amp;xgfd ) );
+        XFindClose( hFind );
+    }
+
+    return;
+}
+</PRE>
+
+<H3>Creating a Save Game</H3>
+
+<P>After a memory unit has been inserted into the controller and has been mounted to get a mapped drive letter, a save game can be written to that MU.  To save a game on the memory unit, use the <A HREF="x_jsk_xcreatesavegame.htm">XCreateSaveGame</A> function.  <B>XCreateSaveGame</B> creates a save game container directory on the memory unit and returns the directory path where the data for that save game can be stored.  The save game data file can then be written in that directory.</P>
+
+<P>Suppose you implement a simple save game design where all that your title saves is the current level in the game that the player is on.  This can be represented with a single number written to the save game data file, so the save game function might be as simple as the following example.  Its parameters are the drive letter for the storage region (a memory unit or the hard disk) where the game will be saved, the save game name (typically specified by the user), and the level the player is on.</P>
+
+<PRE>
+LPCSTR g_pszSaveFile = "\\save.dat";
+LPCSTR g_pszImagePath = "d:\\saveimage.xbx";
+LPCSTR g_pszImageMeta = "saveimage.xbx";
+
+//
+// Write a save game to the specified device using the specified game name.
+//
+BOOL SaveGame( char chDrive, LPCWSTR pwszGameName, DWORD dwSaveInfo )
+{
+    DWORD dwRes = FALSE, dwWritten;
+    XCALCSIG_SIGNATURE xsig;
+    char szDrive[] = "X:\\";
+    char szPath[MAX_PATH];
+    LPSTR pszPathEnd;
+    DWORD dwSaveSize;
+    HANDLE hFile;
+    HANDLE hSig;
+
+    // Create (or open an existing) save game with the specified name.
+
+    *szDrive = chDrive;
+
+    if( ERROR_SUCCESS == XCreateSaveGame(
+                            szDrive,
+                            pwszGameName,
+                            OPEN_ALWAYS,
+                            0,
+                            szPath,
+                            MAX_PATH ) )
+    {
+        // Find the end of the path string and append the save game name.
+        pszPathEnd = szPath + strlen( szPath );
+        strcpy( pszPathEnd, g_pszSaveFile );
+
+        // Create (or open) our save game file.
+        hFile = CreateFile(
+                    szPath,
+                    GENERIC_WRITE,
+                    0,
+                    NULL,
+                    OPEN_ALWAYS,
+                    FILE_ATTRIBUTE_NORMAL,
+                    NULL );
+
+        // Write the save game data to the file.
+        if( INVALID_HANDLE_VALUE == hFile ) {
+            return FALSE;
+        }
+
+        dwSaveSize = sizeof(DWORD);
+
+        // Write the actual save info.
+        dwRes = WriteFile(
+                    hFile,
+                    &amp;dwSaveInfo,
+                    dwSaveSize,
+                    &amp;dwWritten,
+                    NULL );
+
+        // Write the signature.
+        hSig = XCalculateSignatureBegin( 0 );
+        if( INVALID_HANDLE_VALUE != hSig ) {
+            XCalculateSignatureUpdate( hSig, (BYTE *)&amp;dwSaveInfo, dwSaveSize );
+            XCalculateSignatureEnd( hSig, &amp;xsig );
+            dwRes = WriteFile(
+                        hFile,
+                        &amp;xsig,
+                        XCALCSIG_SIGNATURE_SIZE,
+                        &amp;dwWritten,
+                        NULL );
+        } else {
+            dwRes = FALSE;
+        }               
+
+        SetEndOfFile( hFile );
+        CloseHandle( hFile );
+
+        // Provide the metadata image file.
+        // Append the image file name to the end of the save game path name,
+        // and copy our image file to the save game directory.
+        strcpy( pszPathEnd, g_pszImageMeta );
+        CopyFile( g_pszImagePath, szPath, FALSE );
+    }
+
+    return dwRes;
+}
+</PRE>
+
+<P><B>XCreateSaveGame</B> returns the directory path of the save game in the <I>szPath</I> parameter. The code appends the save game name (stored in g_pszSaveFile) to that path and creates the save game file by calling <A HREF="filesio_7wmd.htm">CreateFile</A>.  Then it is simply a matter of writing the level (a single DWORD) out to the file using <A HREF="filesio_3kkl.htm">WriteFile</A>, followed by the signature calculated over the save data.  When loading a save game, the code should calculate the signature over the save data again and compare it to the signature at the end of the save file.  See <A HREF="x_mt_xcalculatesignaturebegin.htm">XCalculateSignatureBegin</A> and the <b>Save Game Signing</b> section of <A HREF="x_mt_softarch_xtl_services.htm">XTL Services</A> for more information.  Also, for more sample code that demonstrates creating save games, see the <A HREF="xbox_jbh_samp_refui_loadsave.htm">LoadSave Sample</A> and the <A HREF="xbox_jbh_samp_techcertgame.htm">Xbox Technical Certification Game</A> topics.</P>
+
+<P>The code now copies the image file for the save game from the title's launch directory (or DVD root).  The image file is 64x64 24-bit color with a single alpha bit in the DXT1 format (created using the <A HREF="xbox_jbh_tool_bundler.htm">Bundler Tool</A>).  The code copies the image to the "saveimage.xbx" file in the save game directory, after which the image will show up in the Dashboard when players are browsing save games.  For more information on the steps required to create this image file, see the <A HREF="xbox_jbh_concept_dashboard_metadata.htm">Dashboard Metadata</A> section.  After this step, the save game is done.</P>
+
+<P>You may want to provide custom images for each save game&mdash;for example, a partial screen shot of the player's location in the game when the save was done.  Rather than simply copying from a previously created image file (as shown in the example above), an image in the proper format can be created directly within the game.  Use <A HREF="_dx_idirect3ddevice8_createtexture_graphics.htm">IDirect3DDevice8::CreateTexture</A> to create a texture in the D3DFMT_DXT1 format, copy the desired image into that texture using <A HREF="_dx_d3dxloadsurfacefromsurface_graphicsd3dx.htm">D3DXLoadSurfaceFromSurface</A>, and then save that texture to a file with the <A HREF="xbox_xgwritesurfaceortexturetoxpr_graphics.htm">XGWriteSurfaceOrTextureToXPR</A> function.  This full process is demonstrated in the <A HREF="xbox_jbh_samp_refui_loadsave.htm">LoadSave</A> reference UI sample and the <B>CXBSavedGame::SaveImage</B> samples framework method.</P>
+
+<!--*******************************************************************************-->
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

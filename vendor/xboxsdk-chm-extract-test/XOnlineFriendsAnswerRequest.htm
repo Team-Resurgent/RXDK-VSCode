@@ -1,0 +1,96 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineFriendsAnswerRequest</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineFriendsAnswerRequest"/>
+<MSHelp:Keyword Index="F" Term="XOnlineFriendsAnswerRequest"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineFriendsAnswerRequest</h1>
+            <p>Responds to a request from a player that the player and the current user be added to each other's friends lists.</p>
+        <pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineFriendsAnswerRequest(</b>
+    <b>DWORD</b> <i>dwUserIndex</i><b>,</b>
+    <b>const XONLINE_FRIEND</b> *<i>pToFriend</i><b>,</b>
+    <b>XONLINE_REQUEST_ANSWER_TYPE</b> <i>Answer</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+            <dt><i>dwUserIndex</i></dt>
+<dd>[in]  Controller index (zero-based) of the player answering the request.  The player must have been successfully logged on with a previous call to <a href="XOnlineLogon.htm">XOnlineLogon</a>.</dd>
+            
+            <dt><i>pToFriend</i></dt>
+<dd>[in]  Pointer to an <a href="XONLINE_FRIEND.htm">XONLINE_FRIEND</a> structure specifying the player to whom the answer should be sent&#8212;that is, the player who made the request.</dd>
+            
+            <dt><i>Answer</i></dt>
+<p><dd>[in]  An <a href="XONLINE_REQUEST_ANSWER_TYPE.htm">XONLINE_REQUEST_ANSWER_TYPE</a> value that specifies the answer to the request.</dd>
+                </p>
+        </dl>
+<h4><a name="return"></a>Return Values</h4>
+
+<p>If <b>XOnlineFriendsAnswerRequest</b> succeeds, the return value is one of the following return codes.</p>
+<table>
+<tr>
+<th>Value</th> <th>Description</th>
+</tr>
+<tr>
+<td>S_OK</td> <td>The system sent the specified response to the Friend request. </td>
+</tr>
+<tr>
+<td>S_FALSE</td> <td>The user has already responded to this Friend request. </td>
+</tr>
+</table>
+<p>If <b>XOnlineFriendsAnswerRequest</b> fails, the return value is one of the following error codes.</p>
+<table>
+    <tr>
+<th>Value</th> <th>Description</th>
+</tr>
+    <tr>
+<td>XONLINE_E_NOTIFICATION_NO_TASK</td> <td>The friends startup task is not active. You must first call <a href="XOnlineFriendsStartup.htm">XOnlineFriendsStartup</a> to create the startup task.</td>
+</tr>
+    <tr>
+<td>XONLINE_E_NOTIFICATION_USER_NOT_FOUND</td> <td>The specified friend is not in list.  This error should occur only if the title is currently enumerating the friends list. You can accept Friend requests only from users that are on the friend's list.</td>
+</tr>
+    <tr>
+<td>XONLINE_E_NOTIFICATION_FRIEND_PENDING</td> <td>The current user previously sent a Friend request to the specified user,  but has not yet received a response. Because the specified user is not yet on the current user's friends list,  the current user should not be answering requests from the specified user.</td>
+</tr>
+    <tr>
+<td>Other</td> <td>See <a href="xbox_online_errors.htm">Online Errors</a> for information about other possible errors.</td>
+</tr>
+</table>
+
+        <h4><a name="remarks"></a>Remarks</h4>
+            <p>The task returned by the <a href="XOnlineFriendsEnumerate.htm">XOnlineFriendsEnumerate</a> function must be active at the time the title calls the <b>XOnlineFriendsAnswerRequest</b> function.</p>
+            <p>If the request is accepted, the two users will be placed on each other's friends lists.</p>
+            <p> <a href="XOnlineTaskContinue.htm">Pump</a> the task returned by <a href="XOnlineFriendsStartup.htm">XOnlineFriendsStartup</a> in order to send the answer.</p>
+        <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+             <a href="x_mt_xonline_functions.htm">Xbox Live Functions</a> | <a href="xbox_Live_Friends.htm">Friends Lists</a> | <a href="XOnlineFriendsRequest.htm">XOnlineFriendsRequest</a>, <a href="XOnlineFriendsRemove.htm">XOnlineFriendsRemove</a>, <a href="XOnlineFriendsStartup.htm">XOnlineFriendsStartup</a>
+        </p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

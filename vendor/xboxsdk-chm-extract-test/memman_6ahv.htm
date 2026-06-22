@@ -1,0 +1,154 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>HeapReAlloc</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="HeapReAlloc">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="HeapReAlloc"/>
+<MSHelp:Keyword Index="F" Term="HeapReAlloc"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_heaprealloc"></A>HeapReAlloc</H1>
+
+<P>The <B>HeapReAlloc</B> function reallocates a block of memory from a heap. This function enables you to resize a memory block and change other memory block properties. The allocated memory is not movable. </P>
+
+<PRE class=syntax><B>LPVOID HeapReAlloc(
+  HANDLE</B><I> hHeap</I><B>,   </B>// handle to heap block
+<B>  DWORD</B><I> dwFlags</I><B>,  </B>// heap reallocation options
+<B>  LPVOID</B><I> lpMem</I><B>,   </B>// pointer to memory to reallocate
+<B>  SIZE_T</B><I> dwBytes</I>  // number of bytes to reallocate
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>hHeap</I></DT>
+
+<DD>[in] Heap from which the memory will be reallocated. This is a handle returned by the <A HREF="memman_5z6t.htm">HeapCreate</a> or <A HREF="memman_5u7k.htm">GetProcessHeap</a> function. </DD>
+
+<DT><I>dwFlags</I></DT>
+
+<DD>[in] Specifies several controllable aspects of heap reallocation. Specifying a value overrides the corresponding value specified in the <I>flOptions</I> parameter when the heap was created by using the <A HREF="memman_5z6t.htm">HeapCreate</a> function. This parameter can be one or more of the following values. 
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=36%>Value</TH>
+<TH align=left width=64%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=36%>HEAP_GENERATE_EXCEPTIONS</TD>
+<TD width=64%>Specifies that the operating-system raises an exception to indicate a function failure, such as an out-of-memory condition, instead of returning NULL.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=36%>HEAP_NO_SERIALIZE</TD>
+<TD width=64%>Specifies that mutual exclusion is not used while <B>HeapReAlloc</B> is accessing the heap. 
+<P>This value should not be specified when accessing the title's default heap. The system may create additional threads that simultaneously access the title's default heap.</P>
+</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=36%>HEAP_REALLOC_IN_PLACE_ONLY</TD>
+<TD width=64%>Specifies that there can be no movement when reallocating a memory block to a larger size. If this value is not specified and the reallocation request is for a larger size, the function may move the block to a new location. If this value is specified and the block cannot be enlarged without moving, the function fails, leaving the original memory block unchanged.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=36%>HEAP_ZERO_MEMORY</TD>
+<TD width=64%>If the reallocation request is for a larger size, this value specifies that the additional region of memory beyond the original size be initialized to zero. The contents of the memory block up to its original size are unaffected.</TD>
+</TR>
+</TABLE><BR>
+
+</DD>
+
+<DT><I>lpMem</I></DT>
+
+<DD>[in] Pointer to the block of memory that the function reallocates. This pointer is returned by an earlier call to the <A HREF="memman_6krn.htm">HeapAlloc</a> or <B>HeapReAlloc</B> function.</DD>
+
+<DT><I>dwBytes</I></DT>
+
+<DD>[in] New size of the memory block, in bytes. A memory block's size can be increased or decreased by using this function. 
+
+<P>If the heap specified by the <I>hHeap</I> parameter is a "non-growable" heap, <I>dwBytes</I> must be less than 0x7FFF8. You create a non-growable heap by calling the <B>HeapCreate</B> function with a nonzero value.
+
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is a pointer to the reallocated memory block. </P>
+
+<P>If the function fails and you have not specified HEAP_GENERATE_EXCEPTIONS, the return value is NULL. </P>
+
+<P>If the function fails and you have specified HEAP_GENERATE_EXCEPTIONS, the function may generate the following exceptions: </P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=45%>Value</TH>
+<TH align=left width=55%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=45%>STATUS_NO_MEMORY</TD>
+<TD width=55%>The reallocation attempt failed for lack of available memory.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=45%>STATUS_ACCESS_VIOLATION</TD>
+<TD width=55%>The reallocation attempt failed because of heap corruption or improper function parameters.</TD>
+</TR>
+</TABLE><BR>
+
+<P>If the function fails, it calls <A HREF="errors_48tu.htm">SetLastError</a>. An application can call <A HREF="errors_3uwi.htm">GetLastError</a> for extended error information.</P>
+
+<H4>Remarks</H4>
+
+<P>If <B>HeapReAlloc</B> succeeds, it allocates at least the amount of memory requested. If the actual amount allocated is greater than the amount requested, the title can use the entire amount. To determine the actual size of the reallocated block, use the <A HREF="memman_9l5x.htm">HeapSize</a> function. </P>
+
+<P>If <B>HeapReAlloc</B> fails, the original memory is not freed, and the original handle and pointer are still valid.</P>
+
+<P>To free a block of memory allocated by <B>HeapReAlloc</B>, use the <A HREF="memman_7b1h.htm">HeapFree</a> function. </P>
+
+<P>Serialization ensures mutual exclusion when two or more threads attempt to simultaneously allocate or free blocks from the same heap. There is a small performance cost to serialization, but it must be used whenever multiple threads allocate and free memory from the same heap. Setting the HEAP_NO_SERIALIZE value eliminates mutual exclusion on the heap. Without serialization, two or more threads that use the same heap handle might attempt to allocate or free memory simultaneously, likely causing corruption in the heap. The HEAP_NO_SERIALIZE value can, therefore, be safely used only in the following situations: 
+
+<UL>
+	<LI>The title has only one thread. </LI>
+
+	<LI>The title has multiple threads, but only one thread calls the heap functions for a specific heap. </LI>
+
+	<LI>The title has multiple threads, and the application provides its own mechanism for mutual exclusion to a specific heap. </LI>
+</UL>
+
+<P class=note><B><I>Note</I></B>&nbsp;&nbsp;To guard against an access violation, you can use structured exception handling to protect code that writes to or reads from a heap. For more information on structured exception handling with memory accesses, see <A HREF="unresolved.htm">Structured Exception Handling</a>.</P>
+
+<P>When allocating memory blocks larger than one or two megabytes, it is more efficient to use the <A HREF="memman_3elf.htm">VirtualAlloc</a> or <A HREF="memman_8ptk.htm">VirtualAllocEx</a> function instead.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p><H4>See Also</H4>
+<P> 
+
+<a href="xbox_mt_xtl_sll_memory_management_functions.htm">Memory Management Functions</a> | 
+<A HREF="memman_5u7k.htm">GetProcessHeap</a>, <B> <A HREF="memman_6krn.htm">HeapAlloc</a></B>,  <A HREF="memman_5z6t.htm">HeapCreate</a>,  <A HREF="memman_862h.htm">HeapDestroy</a>,  <A HREF="memman_7b1h.htm">HeapFree</a>,  <A HREF="memman_9l5x.htm">HeapSize</a>,  <A HREF="errors_48tu.htm">SetLastError</a> </P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

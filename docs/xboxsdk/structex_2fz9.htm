@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>GetExceptionCode</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="GetExceptionCode">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="GetExceptionCode"/>
+<MSHelp:Keyword Index="F" Term="GetExceptionCode"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_getexceptioncode"></A>GetExceptionCode</H1>
+
+<P>The <B>GetExceptionCode</B> function retrieves a code that identifies the type of exception that occurred. The function can be called only from within the filter expression or exception-handler block of an exception handler. </P>
+
+<P class=note><B>Note</B>&nbsp;&nbsp;The Microsoft C/C++ Optimizing Compiler interprets this function as a keyword, and its use outside the appropriate exception-handling syntax generates a compiler error. </P>
+
+<PRE class=syntax><B>DWORD GetExceptionCode(VOID);</B></PRE>
+
+<H4>Parameters</H4>
+
+<P>This function has no parameters. </P>
+
+<H4>Return Values</H4>
+
+<P>The return value identifies the type of exception. Following are the exception codes likely to occur due to common programming errors: </P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=38%>Value</TH>
+<TH align=left width=62%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=38%>EXCEPTION_ACCESS_VIOLATION</TD>
+<TD width=62%>The thread attempted to read from or write to a virtual address for which it does not have the appropriate access.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=38%>EXCEPTION_BREAKPOINT</TD>
+<TD width=62%>A breakpoint was encountered.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=38%>EXCEPTION_SINGLE_STEP</TD>
+<TD width=62%>A trace trap or other single-instruction mechanism signaled that one instruction has been executed.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=38%>EXCEPTION_ARRAY_BOUNDS_EXCEEDED</TD>
+<TD width=62%>The thread attempted to access an array element that is out of bounds, and the underlying hardware supports bounds checking.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=38%>EXCEPTION_FLT_DENORMAL_OPERAND</TD>
+<TD width=62%>One of the operands in a floating-point operation is denormal. A denormal value is one that is too small to represent as a standard floating-point value.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=38%>EXCEPTION_FLT_DIVIDE_BY_ZERO</TD>
+<TD width=62%>The thread attempted to divide a floating-point value by a floating-point divisor of zero.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=38%>EXCEPTION_FLT_INEXACT_RESULT</TD>
+<TD width=62%>The result of a floating-point operation cannot be represented exactly as a decimal fraction.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=38%>EXCEPTION_FLT_INVALID_OPERATION</TD>
+<TD width=62%>This exception represents any floating-point exception not included in this list.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=38%>EXCEPTION_FLT_OVERFLOW</TD>
+<TD width=62%>The exponent of a floating-point operation is greater than the magnitude allowed by the corresponding type.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=38%>EXCEPTION_FLT_STACK_CHECK</TD>
+<TD width=62%>The stack overflowed or underflowed as the result of a floating-point operation.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=38%>EXCEPTION_FLT_UNDERFLOW</TD>
+<TD width=62%>The exponent of a floating-point operation is less than the magnitude allowed by the corresponding type.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=38%>EXCEPTION_INT_DIVIDE_BY_ZERO</TD>
+<TD width=62%>The thread attempted to divide an integer value by an integer divisor of zero.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=38%>EXCEPTION_INT_OVERFLOW</TD>
+<TD width=62%>The result of an integer operation caused a carry out of the most significant bit of the result.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=38%>EXCEPTION_NONCONTINUABLE_EXCEPTION</TD>
+<TD width=62%>The thread attempted to continue execution after a noncontinuable exception occurred.</TD>
+</TR>
+</TABLE><BR>
+
+<H4>Remarks</H4>
+
+<P>The <B>GetExceptionCode</B> function can be called only from within the filter expression or exception-handler block of an exception handler. The filter expression is evaluated if an exception occurs during execution of the <B>__try</B> block, and it determines whether the <B>__except</B> block is executed. </P>
+
+<P>The filter expression can invoke a filter function. The filter function cannot call <B>GetExceptionCode</B>. However, the return value of <B>GetExceptionCode</B> can be passed as a parameter to a filter function. The return value of the <A HREF="structex_50oe.htm">GetExceptionInformation</a> function can also be passed as a parameter to a filter function. <B>GetExceptionInformation</B> returns a pointer to a structure that includes the exception-code information. </P>
+
+<P>In the case of nested handlers, each filter expression is evaluated until one is evaluated as EXCEPTION_EXECUTE_HANDLER or EXCEPTION_CONTINUE_EXECUTION. Each filter expression can invoke <B>GetExceptionCode</B> to get the exception code. </P>
+
+<P>The exception code returned is the code generated by a hardware exception, or the code specified in the <A HREF="structex_2ylq.htm">RaiseException</a> function for a software-generated exception. </P>
+
+<P>When handling the breakpoint exception, it is important to increment the instruction pointer in the context record to continue from this exception. </P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Excpt.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+
+<H4>See Also</H4>
+
+<P><A HREF="xbox_mt_xtl_sll_structured_exception_handling_overview.htm">Structured Exception Handling Overview</a>, <A HREF="xbox_mt_xtl_sll_structured_exception_handling_functions.htm">Structured Exception Handling Functions</a> |  <A HREF="structex_50oe.htm">GetExceptionInformation</a>, <A HREF="structex_2ylq.htm">RaiseException</a> </P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

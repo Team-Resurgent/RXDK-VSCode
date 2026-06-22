@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirect3DPushBuffer8::Verify</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="IDirect3DPushBuffer8::Verify [C++]">
+<META NAME="MS-HKWD" CONTENT="Verify (IDirect3DPushBuffer8) [C++]">
+<META NAME="MS-HKWD" CONTENT="Verify [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Verify (IDirect3DPushBuffer8)"/>
+<MSHelp:Keyword Index="K" Term="IDirect3DPushBuffer8::Verify"/>
+<MSHelp:Keyword Index="F" Term="Verify"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_idirect3dpushbuffer8_verify_graphics"></A>IDirect3DPushBuffer8::Verify</H1>
+
+<P>Helps verify that all resource fix-ups have been applied appropriately.</P>
+
+<PRE class=syntax><B>DWORD Verify(</b>
+  <b>BOOL</b> <i>StampResources</i>
+<b>);</b>
+</PRE>
+
+<h4>Parameters</h4>
+
+<dl>
+<dt><i>StampResources</i></dt>
+<dd>[in] When <i>StampResources</i> is TRUE, this function will parse the push-buffer and replace all physical addresses referenced in the push-buffer with invalid values that would cause a GPU error if executed. When <i>StampResources</i> is FALSE, this function parses the push-buffer and verifies that no invalid physical addresses remain (an invalid physical address would imply that the caller missed doing a resource fix-up).  When such an error is detected, Direct3D outputs the approximate offset to the debugger.</dd>
+
+</dl>
+
+<h4>Return Values</h4>
+
+<p>If the method succeeds, the return value is S_OK.</p>
+
+<H4>Known Issues</H4>
+
+<P>The following is a known issue with <B>IDirect3DPushBuffer8::Verify</B>:</P>
+<ul>
+<li>After <a href="_dx_idirect3dpushbuffer8_jump_graphics.htm">IDirect3DPushBuffer8::Jump</a> is used in a push-buffer fixup, calling <b>Verify</b> on that push-buffer will result in the assertion failure "ERR[D3D]: Assertion failure: instruction != 1".</li>
+</ul>
+
+<h4>Remarks</h4>
+
+<p>This is a debug-only function for help in verifying that all resource fix-ups have been applied appropriately.  Forgetting or missing a fix-up in a push-buffer can cause random, hard-to-track-down errors, unless this function is used.
+</p>
+
+<p>Because the CPU has to read from write-combined memory for the non-D3DPUSHBUFFER_RUN_USING_CPU_COPY cases, this function can be very slow.  Because any push-buffer that has had <b>IDirect3DPushBuffer8::Verify</b> (TRUE) run on it will cause the GPU to automatically generate an interrupt and break into the debugger if there is a missed fix-up, for performance reasons the caller might want to start calling <b>IDirect3DPushBuffer8::Verify</b> (FALSE) only when tracking down the reasons for such GPU generated errors.</p>
+
+<p>The intended use of this method is as a debugging aid when recording push-buffers that are saved to disk and loaded later (such as when static push-buffers are created at author time).  The caller would call <b>IDirect3DPushBuffer8::Verify</b> (TRUE) after recording the push-buffer and just before saving to disk.  Then at run time, if the GPU generates a weird error interrupt while running the push-buffer, do <b>IDirect3DPushBuffer8::Verify</b> (FALSE) before it's run again to find any missing fix-ups.</p>
+
+<H4>Requirements</H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in D3d8.h.<BR>
+<B>&nbsp;&nbsp;Import Library:</B> Use D3d8.lib.</P>
+
+<H4>See Also</H4>
+
+<p><a href="_dx_pushbuffer_overview_graphics.htm"><b>Push-Buffer Overview</b></a></p>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

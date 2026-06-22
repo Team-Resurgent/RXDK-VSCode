@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>D3DVBLANKDATA</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="D3DVBLANKDATA"/>
+<MSHelp:Keyword Index="F" Term="D3DVBLANKDATA"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_d3dvblank_graphics"></A>D3DVBLANKDATA</H1>
+
+<P>Describes the current vertical blank.</P>
+
+<PRE class=syntax>typedef struct _D3DVBLANKDATA {  // Xbox extension
+    DWORD           VBlank;
+    DWORD           Swap;
+    DWORD           Flags;
+} D3DVBLANKDATA;
+
+</PRE>
+
+<H4>Members</H4>
+
+<DL>
+<DT><B>VBlank</B></DT>
+
+<DD>The vertical blank count. If the current video mode is interlaced, <b>VBlank</b> will be even if the current field is even and it will be odd if the current field is odd.</DD>
+
+<DT><B>Swap</B></DT>
+
+<DD>The count of the most recent swap that was shown. If the swap was shown, starting on the vertical blank that initialized <b>D3DVBLANKDATA</b>, the <b>Swap</b> member will reflect the count of that swap.</DD>
+
+<DT><B>Flags</B></DT>
+
+<DD>The <b>Flags</b> member will be one of the following values:
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td>0</td>
+<td>This is the value if Direct3D neither handled a swap on the vertical blank nor expected to (such as when the <b>FullScreen_PresentationInterval</b> member of <a href="_dx_d3dpresent_parameters_graphics.htm"><b>D3DPRESENT_PARAMETERS</b></a> is D3DPRESENT_INTERVAL_TWO and it's on the first vertical blank).</td>
+</tr>
+
+<tr>
+<td>D3DVBLANK_SWAPMISSED</td>
+<td>This flag is set if, according to the <b>FullScreen_PresentationInterval</b> member of <b>D3DPRESENT_PARAMETERS</b>, Direct3D expected to show a swap on this vertical blank, but the title didn't make the swap in time (the title missed a frame).</td>
+</tr>
+
+<tr>
+<td>D3DVBLANK_SWAPDONE</td>
+<td>This flag is set if a swap was shown durnig the vertical blank.</td>
+</tr>
+</table></DD>
+
+
+</DL>
+
+<h4>Remarks</h4>
+
+<p>This structure is used by the callback function set on the device by <a href="_dx_idirect3ddevice8_setverticalblankcallback_graphics.htm"><b>IDirect3DDevice8::SetVerticalBlankCallback</b></a>.</p>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in D3d8types.h.</P>
+
+<H4>See Also</H4>
+
+<p><a href="_dx_idirect3ddevice8_setverticalblankcallback_graphics.htm"><b>IDirect3DDevice8::SetVerticalBlankCallback</b></a></p>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

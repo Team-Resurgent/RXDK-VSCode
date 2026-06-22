@@ -1,0 +1,51 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>3D Algorithms for Buffers</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="3D Algorithms for Buffers"/>
+<MSHelp:Keyword Index="F" Term="3D Algorithms for Buffers"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H4><A NAME="_dx_3_d_algorithms_for_buffers_dxaudio"></A>3D Algorithms for Buffers</H4>
+
+<P>The Xbox Media Communications Processor (MCP) has the ability to perform sophisticated 3D audio processes, including multichannel panning, <A HREF="h.htm#_dx_hrtf_glos"><B>HRTF</B></A> (Head Related Transfer Function) 3D for speakers or headphones, and multichannel wave format playback.</P>
+
+<P>There are three ways to make sounds come from multiple speakers:
+<UL>
+<LI>Create a 3D HRTF buffer and a mono format data source, and use the DirectSound3D libraries to control (x,y,z) positions of source and listener.  This is done by setting the DSBCAPS_CTRL3D flag when creating a DirectSound buffer or stream.</LI>
+<LI>Create a non&#8211;3D buffer and a mono datasource, and use <B>SetMixBins</B> and <B>SetMixBinVolumes</B> to explicitly set the speakers and volumes of the sound.</LI>
+<LI>Create a multichannel DirectSound buffer (nChannels >= 2) and an appropriate multichannel datasource (a .wav format with nChannels >= 2), and play the DirectSound buffer.</LI>
+</UL>
+</P>
+
+<H4>Definitions</H4>
+<P>There is often confusion between interactive 3D sound and multichannel sound.  We will use the terms as follows:
+<UL>
+<LI><B>Interactive 3D Sound</B><BR>
+Interactive 3D sound is created by taking a mono sound source and applying HRTF and/or multispeaker panning to create the illusion of a sound somewhere in 3D space around the listener (the sound source and listener each require their position to be specified using (x,y,z) coordinates).  Effects such as Doppler and rolloff are also included in "3D audio processing."  Xbox also includes effects for occlusion, obstruction, and "environmental reverb" using the I3DL2 specification, which can be found under the link "3D Audio Rendering Guidelines Level 2" on the <A HREF="http://www.iasig.org" target="_blank"><B>http://www.iasig.org</B></A> Web site.</LI>
+<LI><B>Multichannel Sound</B><BR>
+Multichannel sound results from delivering an N-channel file to M speakers.  
+Examples include:<UL>
+    <LI>A stereo wave file played to the main left and right speakers.</LI>
+    <LI>A linear 5.1 wave file played to 5.1 speakers.</LI>
+    <LI>A linear 4.0 wave file played and downmixed to the left and right speakers.</LI></UL>
+</LI>
+</UL></P>
+
+<P>The Xbox MCP can play 256 simultaneous voices. Of these 256, 64 are connected to HRTF-based 3D audio processors.  When a DirectSound buffer is created with the DSPCAPS_CTRL3D flag set, one of these 64 HRTF voices is allocated.  The HRTF audio processors will output either two-speaker HRTF output, four-speaker HRTF output, or headphone-based HRTF output.</P>
+
+<H4>HRTF Coefficient Sets</H4>
+<P>Xbox supports two different sets of HRTF coefficients: one "full 360" set, which provides HRTF coefficients for a full 360-degree HRTF effect, and one "azimuth-only" set, which provides azimuth-only processing in the horizontal plane.  The full set requires a working set of approximately 70 KB; the azimuth-only set requires approximately 7 KB. This allows an application to make a trade-off between more realistic HRTF processing and code size requirement. To use the full HRTF set, call the <A HREF="xbox_directsoundusefullhrtf_dxaudio.htm"><B>DirectSoundUseFullHRTF</B></A> function after initialization.  If a game wants to reduce its memory footprint and use the azimuth-only HRTF set, the <A HREF="xbox_directsounduselighthrtf_dxaudio.htm"><B>DirectSoundUseLightHRTF</B></A> function should be called after initialization.</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

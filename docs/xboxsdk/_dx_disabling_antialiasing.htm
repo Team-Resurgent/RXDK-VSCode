@@ -1,0 +1,59 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Disabling Antialiasing</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Disabling Antialiasing"/>
+<MSHelp:Keyword Index="F" Term="Disabling Antialiasing"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1>Disabling Antialiasing</H1>
+
+<p>There are two ways to turn off antialiasing after it has been enabled. The first method is to reset the device using <a href="_dx_idirect3ddevice8_reset_graphics.htm">IDirect3DDevice8::Reset</a> and specify D3DMULTISAMPLE_NONE for the <b>MultiSampleType</b> member of <a href="_dx_d3dpresent_parameters_graphics.htm">D3DPRESENT_PARAMETERS</a>.
+
+Depending on the situation, you may not want to reset the device. Perhaps antialiasing only needs to be turned off for some selected frames.
+
+<p>The second method of disabling antialiasing is to use the <a href="_dx_d3drenderstatetype_graphics.htm#_dx_d3drs_multisamplemode_graphics">D3DRS_MULTISAMPLEMODE</a> render state and <a href="_dx_idirect3ddevice8_setbackbufferscale_graphics.htm">IDirect3DDevice8::SetBackBufferScale</a>.<p>
+
+<p>Disabling antialiasing should be done before any rendering calls, right after the previous call to <a href="_dx_idirect3ddevice8_swap_graphics.htm">Swap</a> or <a href="_dx_idirect3ddevice8_present_graphics.htm">Present</a>.</p>
+<p>If supersampling is being used, simply disable antialiasing by calling <b>SetBackBufferScale</b> with a scale appropriate to the size of the sampling. Here are some examples:</p>
+
+<pre>// Assume that pDevice is a valid pointer to the
+// IDirect3DDevice8 interface.
+
+// Example 1. The title is doing 2x horizontal supersampling.
+pDevice-&gt;SetBackBufferScale( 0.5f, 1.0f );
+
+// Example 2. The title is doing 4x supersampling.
+pDevice-&gt;SetBackBufferScale( 0.5f, 0.5f );
+
+// Example 3. The title is doing 9x supersampling.
+pDevice-&gt;SetBackBufferScale( 0.3333333f, 0.3333333f );</pre>
+
+<p>If title is using multisampling, then it is necessary to use both D3DRS_MULTISAMPLEMODE and <b>SetBackBufferScale</b> to disable the antialiasing. Here are some more examples:</p>
+
+<pre>// Assume that pDevice is a valid pointer to the
+// IDirect3DDevice8 interface.
+
+// Example 1. The title is doing 4x multisampling.
+// pDevice-&gt;SetRenderState( D3DRS_MULTISAMPLEMODE, D3DMULTISAMPLEMODE_1X );
+// pDevice-&gt;SetBackBufferScale( 0.5f, 0.5f );
+
+// Example 2. The title is doing 2x multisampling.
+// pDevice-&gt;SetRenderState( D3DRS_MULTISAMPLEMODE, D3DMULTISAMPLEMODE_1X );
+// pDevice-&gt;SetBackBufferScale( 0.5f, 1.0f );</pre>
+
+<p>Changing the multisample mode has the effect of changing the ratio of the sample size to the number of pixels sent to the pixel shader. With a multisample mode of D3DMULTISAMPLEMODE_4X, the sample size will be four and a single pixel will be sent to the pixel shader. With a multisample mode of D3DMULTISAMPLEMODE_1X, the sampling size will be one and a single pixel will be sent on the pixel shader. Setting the mode to D3DMULTISAMPLEMODE_1X turns off multisampling and effectively turns on supersampling, which is why it is necessary to call <b>SetBackBufferScale</b>.</p>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

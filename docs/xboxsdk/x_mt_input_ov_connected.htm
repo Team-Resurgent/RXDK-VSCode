@@ -1,0 +1,84 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Determining Connected Devices</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Determining Connected Devices"/>
+<MSHelp:Keyword Index="F" Term="Determining Connected Devices"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Determining Connected Devices</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<P>The <A HREF="x_jsk_xgetdevices.htm">XGetDevices</A> function determines the devices that are currently connected to the Xbox.  Specify the device type to be enumerated, and <B>XGetDevices</B> returns a bit mask representing the currently connected devices of that type.  Each bit set in the mask represents a connected device on a specific port.  For devices that plug directly into the controller ports, the position of the bit set corresponds directly to the controller port number:  If bit zero is set, a device is connected to port zero; if bit one is set, a device is connected to port one; and so on, up to bit three, representing a device connected to port three.  For example, a return value of 0x0009 indicates that there are devices connected to ports zero and three.</P>
+
+<P>For devices that plug into slots on controllers (memory units, for example), the device can be plugged into either the top or bottom slot in the controller.  In this case, bits zero to three correspond to devices in the top slot of controllers in ports zero to three, respectively. Likewise, bits 16 to 19 correspond to devices in the bottom slots of controllers in ports zero to three.</P>
+
+<P><B>XGetDevices</B> takes one parameter, the device type to enumerate.  This device type must be one of the defined Xbox device type values: XDEVICE_TYPE_GAMEPAD, XDEVICE_TYPE_MEMORY_UNIT, XDEVICE_TYPE_VOICE_MICROPHONE, XDEVICE_TYPE_VOICE_HEADPHONE, or XDEVICE_TYPE_DEBUG_KEYBOARD.  For each call to <B>XGetDevices</B>, the function returns only devices of the specified type. So to detect all currently connected devices of all types, a title must call <B>XGetDevices</B> once for each device type, as shown in the following example.  This example creates an array of structures, one for each device type, that will contain the current connection state for that device type.  The code calls <B>XGetDevices</B> for each device type to get a picture of all currently connected devices.  You would add this code to the DeviceInit() routine:</P>
+
+<pre>
+struct DEVICE_STATE {
+    XPP_DEVICE_TYPE *pxdt;
+    DWORD dwState;
+};
+
+DEVICE_STATE g_dsDevices[] = {
+    { XDEVICE_TYPE_GAMEPAD, 0 },
+    { XDEVICE_TYPE_MEMORY_UNIT, 0 },
+    { XDEVICE_TYPE_VOICE_MICROPHONE, 0 },
+    { XDEVICE_TYPE_VOICE_HEADPHONE, 0 },
+    { XDEVICE_TYPE_DEBUG_KEYBOARD, 0 },
+};
+#define NUM_DEVICE_STATES   (sizeof(g_dsDevices)/sizeof(*g_dsDevices))
+
+void DeviceInit( void )
+{
+    .
+    .
+    .
+	
+    // Get initial state of all connected devices.
+    for( i = 0; i &lt; NUM_DEVICE_STATES; i++ )
+    {
+        g_dsDevices[i].dwState = XGetDevices( g_dsDevices[i].pxdt );
+        HandleDeviceChanges( g_dsDevices[i].pxdt, g_dsDevices[i].dwState, 0 );
+    }
+}
+</pre>
+
+<P>After your title executes the code above, it will know the connection state of all the device types.  The HandleDeviceChanges() function that this example implements performs the desired processing for the devices detected.  This function is discussed later in <A HREF="x_mt_input_ov_handle_changes.htm">Handling Device Changes</A>.</P>
+
+<P>Note that when the code calls <B>XGetDevices</B>, especially if it does so early in title initialization, the device control software may not have detected or initialized all of the devices connected to the Xbox.  It is possible initially to see only a subset of connected devices, possibly even none at all.  As the devices come online and the code detects them, the normal device change mechanism will report them. This mechanism is discussed next in <a href="x_mt_input_ov_changes.htm">Detecting Device Changes</a>.</P>
+
+
+<!--*******************************************************************************-->
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

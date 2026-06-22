@@ -1,0 +1,78 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>SphereMap Sample</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="SphereMap Sample"/>
+<MSHelp:Keyword Index="F" Term="SphereMap Sample"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>SphereMap Sample</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<!--****Intro paragraph. Should be a three or four sentence summary of the topic.****-->
+<P class="intro">The SphereMap sample illustrates an environment-mapping technique called sphere mapping. Environment mapping is a technique in which the environment surrounding a 3D object (such as the lights) is put into a texture map so that the object can have complex lighting effects without expensive lighting calculations.</P>
+<!--*********************************************************************************-->
+
+<!--****Stock text. Do not change.****-->
+<h3 class="overview">Overview</H3>
+<!--**********************************-->
+
+<!--****Content paragraph. To use multiple paragraphs, copy and paste this tag.****-->
+
+<P class="content">Sphere mapping uses a pre-computed (at model time) texture map that contains the entire environment as reflected by a chrome sphere. The idea is to consider each vertex, compute its normal, find where the normal matches up on the chrome sphere, and then assign that texture coordinate to the vertex.</P>
+
+<P class="content">Although the math is not complicated, this still involves computations for each vertex for every frame. Fortunately, Direct3D has a texture-coordinate generation feature that can be used to do this. The relevant RenderState operation is <B>D3DTSS_TCI_CAMERASPACENORMAL</B>, which takes the normal of the vertex in camera space and pumps it through a texture transform to generate texture coordinates. You can use this feature and simply set up your texture matrix to do the rest. In this case, the matrix just has to scale and translate the texture coordinates to get from camera space (&#8211;1, +1) to texture space (0, 1).</P>
+
+<!--*******************************************************************************-->
+
+
+<h3 class="overview">The Spherical Environment Map</H3>
+
+<P class="content">The environment map is a square texture with usable texture data contained within a circle that is bound by the borders of the texture. The center of the texture corresponds to the view within the environment, from the mesh's point of view, that lies directly behind the camera. As you move toward the outer rim of the usable texture data, the image corresponds to the points in the environment that lie to the sides and rear of the mesh.</P>
+
+<!--****Use this tag for inserting centered images. Drag and drop the image from the contents pane.****-->
+<P Class="image"><IMG SRC="images/xbox_jbh_samp_gra_spheremap2.jpg" WIDTH="256" HEIGHT="256" ALT="" BORDER="0"></P>
+<!--***************************************************************************************************-->
+
+<P class="content">Looking at this texture map, you can see that it would be difficult to generate dynamically and that it is view-dependent; the reflection is correct only if the camera is in the location that maps to the center of the texture map. This means that for the texture to look right, the camera must be restricted to one degree of freedom (along the z-axis).</P>
+
+<H3 class="hdcontrols">Controls</H3>
+
+<P class="content">For a complete list of controller mappings, press the <B>Back</B> button on the Xbox controller while this sample is running.</P>
+
+
+<h3 class="overview">See Also</H3>
+
+<P class="content"><A HREF="xbox_jbh_samp_gra_cubemap.htm"><B>CubeMap Sample</B></A></P>
+
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

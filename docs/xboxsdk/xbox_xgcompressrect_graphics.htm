@@ -1,0 +1,153 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>XGCompressRect</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="XGCompressRect [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XGCompressRect"/>
+<MSHelp:Keyword Index="F" Term="XGCompressRect"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="Placeholder"></A>XGCompressRect</H1>
+
+<P>This function will compress a rectangle into one of the Xbox supported compressed texture formats: DXT1, DXT2, DXT3, DXT4 or DXT5.</P>
+
+<PRE class=syntax><b>HRESULT WINAPI XGCompressRect( 
+  LPVOID</b> <i>pDestBuf</i>,
+  <b>D3DFORMAT</b> <i>DestFormat</i>,
+  <b>DWORD</b> <i>dwDestPitch</i>, 
+  <b>DWORD</b> <i>dwWidth</i>,
+  <b>DWORD</b> <i>dwHeight</i>,
+  <b>LPVOID</b> <i>pSrcData</i>,
+  <b>D3DFORMAT</b> <i>SrcFormat</i>,
+  <b>DWORD</b> <i>dwSrcPitch</i>,
+  <b>FLOAT</b> <i>fAlphaRef</i>,
+  <b>DWORD</b> <i>dwFlags</i>
+<b>);</b>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+
+<dt><i>pDestBuf</i></dt>
+
+<DD>[out] Either <i>pDestBuf</i> is a pointer to a Direct3D created texture (using <a href="_dx_idirect3ddevice8_createtexture_graphics.htm"><b>IDirect3DDevice8::CreateTexture</b></a>) or <i>pDestBuf</i> is a pointer to a contiguous memory allocation to be used with the <a href="xbox_dxg_IDirect3DResource8_Register.htm"><b>IDirect3DResource8::Register</b></a> function. In either case, the compressed texture is written out to <i>pDestBuf</i>.
+</DD>
+
+<dt><i>DestFormat</i></dt>
+
+<dd>[in] Member of the <b>D3DFORMAT</b> enumeration, describing the texture compression format of the destination. It must be one of the following values:
+
+<ul>
+<li>D3DFMT_DXT1</li>
+<li>D3DFMT_DXT2</li>
+<li>D3DFMT_DXT3</li>
+<li>D3DFMT_DXT4</li>
+<li>D3DFMT_DXT5</li>
+</ul>
+
+In order to get DXT2 or DXT4 compression, XGCOMPRESS_PREMULTIPLY must be one of the flags passed to <i>dwFlags</i>.
+</dd>
+
+<dt><i>dwDestPitch</i></dt>
+
+<dd>[in] Pitch of the destination, in terms of a row of 4x4 blocks. For example, a DXT1 texture with a width of 16 pixels has a pitch of 4 blocks * 8 bytes per block = 32 bytes.</dd>
+
+<DT><I>dwWidth</I></DT>
+
+<DD>[in] Width of the source rectangle measured in pixels.</DD>
+
+<dt><i>dwHeight</i></dt>
+
+<dd>[in] Height of the source rectangle measured in pixels.</dd>
+
+<DT><I>pSrcData</I></DT>
+
+<DD>[in] A pointer to linear (not swizzled) texture data.</DD>
+
+<DT><I>SrcFormat</I></DT>
+
+<DD>[in] Member of the <a href="_dx_d3dformat_graphics.htm"><b>D3DFORMAT</b></a> enumerated type, describing the format of the source texture. This needs to be one of the Xbox linear formats below:
+
+<ul>
+	<li> D3DFMT_LIN_A8R8G8B8</li>
+	<li> D3DFMT_LIN_X8R8G8B8</li>
+	<li> D3DFMT_LIN_R5G6B5</li>
+	<li> D3DFMT_LIN_A1R5G5B5</li>
+	<li> D3DFMT_LIN_X1R5G5B5</li>
+	<li> D3DFMT_LIN_A4R4G4B4</li>
+	<li> D3DFMT_LIN_R6G5B5</li>
+	<li> D3DFMT_LIN_A8B8G8R8</li>
+	<li> D3DFMT_LIN_B8G8R8A8</li>
+	<li> D3DFMT_LIN_R4G4B4A4</li>
+	<li> D3DFMT_LIN_R5G5B5A1</li>
+	<li> D3DFMT_LIN_R8G8B8A8</li>
+</ul>
+</DD>
+
+<dt><i>dwSrcPitch</i></dt>
+
+<dd>[in] Pitch of the source texture measure in bytes.</dd>
+
+<dt><i>fAlphaRef</i></dt>
+
+<dd>[in] Specifies the cutoff value between transparent and opaque for DXT1 compression.</dd>
+
+<dt><i>dwFlags</i></dt>
+
+<dd>[in] Flags that describe compression behavior. This parameter must be the value zero, or one or more of the following flags:
+
+	<dl>
+	<dt>XGCOMPRESS_PREMULTIPLY</dt>
+	<dd>Setting this flag ensures that alpha is premultiplied which will allow DXT2 and DXT4 compression.</dd>
+	
+	<dt>XGCOMPRESS_NEEDALPHA0</dt>
+	<dd>Ensures that zero is available with interpolated alpha.</dd>
+	
+	<dt>XGCOMPRESS_NEEDALPHA1</dt>
+	<dd>Ensures that one is available with interpolated alpha.</dd>
+	
+	<dt>XGCOMPRESS_PROTECTNONZERO</dt>
+	<dd>Ensures that non-zero values don't get quantized to zero.</dd>
+	</dl>
+	
+<p>Normally, using interpolated alpha, there is no guarantee as to what the decoded alpha values will end up being. It is unlikely that 0.0 or 1.0 will end up as any of the interpolants. If you want to make sure that these end up as values, it is necessary to use XGCOMPRESS_NEEDALPHA0 and XGCOMPRESS_NEEDALPHA1. However, using these two flags will take away from other possible interpolated values, and some accuracy will be lost from the intermediate values.</p>
+
+<p>When XGCOMPRESS_NEEDALPHA0 is set and alphakill is enabled, small non-zero alpha values may end up at zero. The XGCOMPRESS_PROTECTNONZERO flag adjusts the interpolant endpoints so that this doesn't happen. If both XGCOMPRESS_NEEDALPHA0 and XGCOMPRESS_PROTECTNONZERO are set, 6-value interpolation is used instead of 8-value interpolation.</p>
+
+</dd>
+
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If this method succeeds, it returns S_OK.</P>
+
+<h4>Remarks</h4>
+
+<p>In Direct3D on the PC, D3DFMT_DXT2 and D3DFMT_DXT3 are two distinct texture formats.  On Xbox, the hardware treats these two formats the same, so the value of their enumerants is the same.  The same situation applies for DXT5 and DXT4.  The only difference between these two texture types is that one type (DXT2 and DXT4) requires that each of the RGB channels be multiplied by the Alpha channel before the compression takes place.  With DXT3 and DXT5, no premultiplication of Alpha occurs. </p> 
+
+<p>On Xbox, the values of the <b>D3FORMAT</b> enumeration are different than in DirectX 8.0. The Xbox <b>D3DFORMAT</b> values need to be used for the <i>DestFormat</i> and <i>SrcFormat</i> parameters of <b>XGCompressRect</b>, even when it is used on Win32. When compiling on Win32, the Xbox version of these constants can be obtained from the default location of "C:\Program Files\Microsoft Xbox SDK\Include\d3d8-xbox.h."</p> 
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in xgraphics.h.<BR>
+<B>&nbsp;&nbsp;Import Library:</B> Use xgraphics.lib.</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

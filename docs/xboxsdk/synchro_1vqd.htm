@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>ReleaseSemaphore</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="ReleaseSemaphore">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="ReleaseSemaphore"/>
+<MSHelp:Keyword Index="F" Term="ReleaseSemaphore"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_releasesemaphore"></A>ReleaseSemaphore</H1>
+
+<P>The <B>ReleaseSemaphore</B> function increases the count of the specified semaphore object by a specified amount. </P>
+
+<PRE class=syntax><B>BOOL ReleaseSemaphore(
+  HANDLE</B><I> hSemaphore</I><B>,       </B>// handle to semaphore
+<B>  LONG</B><I> lReleaseCount</I><B>,      </B>// count increment amount
+<B>  LPLONG</B><I> lpPreviousCount</I>   // previous count
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>hSemaphore</I></DT>
+
+<DD>[in] Handle to the semaphore object. The <A HREF="synchro_9zol.htm">CreateSemaphore</a> or <A HREF="synchro_3y3p.htm">OpenSemaphore</a> function returns this handle. 
+</DD>
+
+<DT><I>lReleaseCount</I></DT>
+
+<DD>[in] Specifies the amount by which the semaphore object's current count is to be increased. The value must be greater than zero. If the specified amount would cause the semaphore's count to exceed the maximum count that was specified when the semaphore was created, the count is not changed and the function returns FALSE. </DD>
+
+<DT><I>lpPreviousCount</I></DT>
+
+<DD>[out] Pointer to a variable to receive the previous count for the semaphore. This parameter can be NULL if the previous count is not required. 
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is nonzero.</P>
+
+<P>If the function fails, the return value is zero. To get extended error information, call <A HREF="errors_3uwi.htm">GetLastError</a>. </P>
+
+<H4>Remarks</H4>
+
+<P>The state of a semaphore object is signaled when its count is greater than zero and nonsignaled when its count is equal to zero. The thread that calls the <A HREF="synchro_9zol.htm">CreateSemaphore</a> function specifies the semaphore's initial count. Each time a waiting thread is released because of the semaphore's signaled state, the count of the semaphore is decreased by one. </P>
+
+<P>Typically, an application uses a semaphore to limit the number of threads using a resource. Before a thread uses the resource, it specifies the semaphore handle in a call to one of the <a href="unresolved.htm">wait functions</a>. When the wait function returns, it decreases the semaphore's count by one. When the thread has finished using the resource, it calls <B>ReleaseSemaphore</B> to increase the semaphore's count by one. </P>
+
+<P>Another use of <B>ReleaseSemaphore</B> is during a library's initialization. The application can create a semaphore with an initial count of zero. This sets the semaphore's state to nonsignaled and blocks all threads from accessing the protected resource. When the library finishes its initialization, it uses <B>ReleaseSemaphore</B> to increase the count to its maximum value, to permit normal access to the protected resource. </P>
+
+<H4>Example</H4>
+
+<P>For an example that uses <B>ReleaseSemaphore</B>, see <a href="unresolved.htm">Using Semaphore Objects</a>. </P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p><H4>See Also</H4>
+<P> 
+
+<a href="xbox_mt_xtl_sll_synchronization_functions.htm">Synchronization Functions</a> | 
+<A HREF="synchro_9zol.htm">CreateSemaphore</a>,  <A HREF="synchro_3y3p.htm">OpenSemaphore</a> </P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

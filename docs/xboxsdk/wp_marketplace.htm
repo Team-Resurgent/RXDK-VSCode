@@ -1,0 +1,472 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Marketplace</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="avatars"/>
+<MSHelp:Keyword Index="K" Term="chat, using in games"/>
+<MSHelp:Keyword Index="K" Term="spatial chat"/>
+<MSHelp:Keyword Index="K" Term="podium chat, Marketplace"/>
+<MSHelp:Keyword Index="K" Term="private channel chat, Marketplace"/>
+<MSHelp:Keyword Index="K" Term="push-to-talk"/>
+<MSHelp:Keyword Index="K" Term="voice network stats"/>
+<MSHelp:Keyword Index="K" Term="proximity, Marketplace communication"/>
+<MSHelp:Keyword Index="K" Term="ambient sound, simulating"/>
+<MSHelp:Keyword Index="K" Term="walla, directional conversation"/>
+<MSHelp:Keyword Index="K" Term="directional conversation, walla"/>
+<MSHelp:Keyword Index="K" Term="voice attenuation"/>
+<MSHelp:Keyword Index="K" Term="attenuated voice"/>
+<MSHelp:Keyword Index="K" Term="peer-to-peer voice"/>
+<MSHelp:Keyword Index="K" Term="server-forward voice"/>
+<MSHelp:Keyword Index="K" Term="Talk-bots"/>
+<MSHelp:Keyword Index="K" Term="Marketplace, Xbox Live"/>
+<MSHelp:Keyword Index="F" Term="Marketplace"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="marketplace"></A>Marketplace</H1>
+
+	<UL>
+		<LI><A href="#marketplace_overview">Overview</A></LI>
+		<LI><A href="#marketplace_basics">Basic Operation</A></LI>
+		<LI><A href="#marketplace_concepts">Concepts Demonstrated</A></LI>
+		<LI><A href="#marketplace_nonconcepts">Concepts Not Demonstrated</A></LI>
+		<LI><A href="#marketplace_wp">Related White Papers</A></LI>
+		<LI><A href="#marketplace_credits">Credits</A></LI>
+	</UL>
+	
+<H2><A name="marketplace_overview"></A>Overview</H2>
+
+<P>In online social play, players interact in different situations and have different communication needs. The most common need is for small-group chat and information exchange&#8212;like you might have in a head-to-head sports title, or with your friends on the Allies side playing <I>Return to Castle Wolfenstein</I>. Current shipping games and Xbox samples (SimpleVoice) cover this area pretty well. Best practices information is also available in the Xbox <I>Live</I> white papers.</P>
+
+<P>Many situations also call for spatial chat&#8212;to taunt a fallen enemy without stopping as <I>Moto GP</I> illustrates, or to have people interact with each other in a larger lobby area. For example, <I>Phantasy Star Online</I> uses text-chat in their lobby to let players form groups or try to sell items. Massively multiplayer games in development are also considering ways to use voice to enhance the social experience.</P>
+
+<P>The Marketplace sample can serve as both a design sample of how players can interact in spatial chat, and as a technical sample showing several methods of handling player communications, bandwidth issues, peer-to-peer voice, and server voice.</P>
+
+<P>The different communications paths shown in the sample&#8212;private, proximity, and broadcast&#8212;and the mix of in-the-ear and TV-speaker delivery should give you the ability to determine the systems needed to best enhance your game experience.</P>
+
+<P>In this document, the words "host" and "server" are used interchangeably; the Marketplace server also provides functionality as a client, so it is referred to as a "host" in much of the documentation. In a large multiplayer game, the server typically wouldn't provide local client functionality.</P>
+
+<H2><A name="marketplace_basics"></A>Basic Operation</H2>
+
+<P>Marketplace requires a connection to the Xbox <I>Live</I> service. When you first run it, you will be asked to log in to Xbox <I>Live</I> on PartnerNet; select an account, and press <B>A</B>. You will be presented with four choices: to host with or without Talk-bots, to join an existing session, or to edit the Talk-bot voices (more detail on this later ). Marketplace is based on a client-server architecture, although for convenience you can still interact as a client even if you are hosting the session.</P>
+
+<P>If you are running this by yourself, you will probably want to pick <B>Host New Marketplace (Bots). </B>It will allow you to sample most of the features without requiring more than one XDK.</P>
+
+<P>Once you are in the application, you will be presented with a large Marketplace display:</P>
+
+<IMG src="images/marketplace_fig1.jpg">
+
+<H3>Key</H3>
+
+	<TABLE>
+		<TR>
+			<TH>#</TH>
+			<TH>Note</TH>
+		</TR>
+		<TR>
+			<TD>(1)</TD>
+			<TD>This is your avatar. Your avatar will have a yellow icon above her head; all others will have blue icons.</TD>
+		</TR>
+		<TR>
+			<TD>(2)</TD>
+			<TD>These are Talk-bots; note the 
+			<IMG src="images/marketplace_fig2.jpg"> next to them.</TD>
+		</TR>
+		<TR>
+			<TD>(3)</TD>
+			<TD>Trees (no functionality).</TD>
+		</TR>
+		<TR>
+			<TD>(4)</TD>
+			<TD>Fountain (no functionality, has a 3D fountain sound).</TD>
+		</TR>
+		<TR>
+			<TD>(5)</TD>
+			<TD>Podium - if you are behind the podium, you will be broadcast 
+			to everyone in the Marketplace.</TD>
+		</TR>
+		<TR>
+			<TD>(6)</TD>
+			<TD>If someone would be able to hear you talking, they are highlighted.</TD>
+		</TR>
+		<TR>
+			<TD>(7)</TD>
+			<TD>If someone wouldn't be able to hear you, they are darker grey.</TD>
+		</TR>
+		<TR>
+			<TD>(8)</TD>
+			<TD>This is the statistics display (turned on with the white button).</TD>
+		</TR>
+	</TABLE>
+
+<H3>Icon Summary</H3>
+
+	<TABLE>
+		<TR>
+			<TH>Icon</TH>
+			<TH>Comments</TH>
+		</TR>
+		<TR>
+			<TD><IMG width="29" height="31" src="images/marketplace_fig2.jpg"></TD>
+			<TD>The computer icon identifies Talk-bots.</TD>
+		</TR>
+		<TR>
+			<TD><IMG width="26" height="30" src="images/marketplace_fig3.jpg"></TD>
+			<TD>Player is not currently talking.</TD>
+		</TR>
+		<TR>
+			<TD><IMG width="28" height="35" src="images/marketplace_fig4.jpg"></TD>
+			<TD>Player or Talk-bot is talking.</TD>
+		</TR>
+		<TR>
+			<TD><IMG width="31" height="34" src="images/marketplace_fig5.jpg"></TD>
+			<TD>Player is talking to everyone on the podium.</TD>
+		</TR>
+		<TR>
+			<TD><IMG width="15" height="20" src="images/marketplace_fig6.jpg"></TD>
+			<TD>Player is on the private channel and can hear the private channel over her headset and talk on the private channel by pressing the <B>A</B> button.</TD>
+		</TR>
+		<TR>
+			<TD><IMG width="31" height="31" src="images/marketplace_fig7.jpg"></TD>
+			<TD>Player is talking on the private channel.</TD>
+		</TR>
+	</TABLE>
+
+<H3>Command Summary</H3>
+	<TABLE>
+		<TR>
+			<TH>Button</TH>
+			<TH>Command</TH>
+			<TH>Comments</TH>
+		</TR>
+		<TR>
+			<TD><IMG width="48" height="59" src="images/marketplace_fig8.jpg">
+<br><b>Black</b></TD>
+			<TD><b>Show Names</b></TD>
+			<TD>Hold this down to reveal the Gamertags of people in the Marketplace (Talk-bots won't have names, of course).</TD>
+		</TR>
+		<TR>
+			<TD><IMG width="51" height="65" src="images/marketplace_fig9.jpg"><br><b>X</b></TD>
+			<TD><b>Join Private Channel</b></TD>
+			<TD>Joins the Private channel - a letter <B>P</B> is displayed next to people on the channel.</TD>
+		</TR>
+		<TR>
+			<TD><IMG width="52" height="64" src="images/marketplace_fig10.jpg"><br><b>A</b></TD>
+			<TD><b>Push-To-Talk</b></TD>
+			<TD>If you've joined the party channel, hold down the <B>A</B> button as a push-to-talk.</TD>
+		</TR>
+		<TR>
+			<TD><IMG width="50" height="72" src="images/marketplace_fig11.jpg"><br><b>Y</b></TD>
+			<TD><b>Host Menu</b></TD>
+			<TD>If you are the host, <B>Y</B> will pull up the host menu.</TD>
+		</TR>
+		<TR>
+			<TD><IMG width="46" height="55" src="images/marketplace_fig12.jpg">
+			<br><b>White</b></TD>
+			<TD><b>Toggle Stats</b></TD>
+			<TD>Turns the bandwidth display / network statistics chart on and off.</TD>
+		</TR>
+		<TR>
+			<TD><IMG width="96" height="89" src="images/marketplace_fig13.jpg"></TD>
+			<TD><b>Left Stick</b></TD>
+			<TD>Moves your avatar around in the marketplace. Your avatar is the one with the yellow <IMG width="26" height="30" src="images/marketplace_fig3.jpg"> above it.</TD>
+		</TR>
+		<TR>
+			<TD><b>Black + LTrigger + RTrigger</b></TD>
+			<TD><b>Quit</b></TD>
+			<TD>Exits the Marketplace sample.</TD>
+		</TR>
+	</TABLE>
+	
+<H3>Public Chat</H3>
+
+<P>When you say anything on the headset microphone, it is public chat&#8212;and goes to all of the people that can currently hear you (highlighted). Walk around and engage in conversations with others, or listen to the random murmurings of the Talk-bots.</P>
+
+<H3>Private Channel Chat</H3>
+
+<table>
+<tr>
+  <td><IMG width="60" height="104" src="images/marketplace_fig14.jpg"></td>
+  <td valign="top"><p>Once you join the Private channel (by pressing <B>X</B>), you can hear in your headset anyone who is speaking on that channel. To speak on the private channel once you have joined it, press and hold <B>A</B> while speaking into the microphone. To disable the private channel, just press <B>X</B> again. Players who are in the party channel have a <IMG src="images/marketplace_fig6.jpg" width="15" height="20"> next to their avatar.</p></td>
+</tr>
+</table>
+
+<H3>Podium Chat</H3>
+
+<table>
+<tr>
+  <td><IMG width="81" height="131" src="images/marketplace_fig15.jpg"></td>
+  <td valign="top"><p>The podium is a demonstration of broadcast using the server channel. A user who speaks at the podium can be heard by everyone in the Marketplace.</p></td>
+</tr>
+</table>
+
+<H3>CPU Characters</H3>
+
+<table>
+<tr>
+  <td><IMG width="89" height="114" src="images/marketplace_fig16.jpg"></td>
+  <td valign="top"><p>Talk-bots can be enabled on the host to demonstrate chat when you don't have enough people to play in the simulation. You can customize the Talk-bots with your own speech and sound effects to more closely model the kind of experience you want to create.</p></td>
+</tr>
+</table>
+
+<H3>Voice Stats Screen</H3>
+
+<IMG width="652" height="226" src="images/marketplace_fig17.jpg">
+
+<P>The Voice network statistics display is toggled with the <B>White</B> button.</P>
+
+	<UL>
+		<LI>TX - Transmit stats</LI>
+		<LI>RX - Receive stats</LI>
+		<LI>Cur - current rate of transfer in kilobits per second (Kbps) over the last second.</LI>
+		<LI>Max - peak rate of transfer since the stats display was started.</LI>
+		<LI>Avg - average rate of transfer since the stats display was started.</LI>
+		<LI>Ttl - total number of bytes transferred since the stats display was started.</LI>
+	</UL>
+	
+<P>Technical details on exactly what counts as voice network traffic is detailed in the statistics section below.</P>
+
+<H4>Host Menu</H4>
+
+<P>The host menu is displayed by pressing <B>Y</B>. Here you can change several settings that affect the technical details of how Marketplace works. Use the directional pad to select a setting, and press left and right to change it. Pressing <B>A</B> will accept (and <B>B</B> will cancel) all of the changes you have made and return you to the Marketplace. Host menu settings are detailed in the technical section below.</P>
+
+<H2><A name="marketplace_concepts"></A>Concepts Demonstrated</H2>
+
+<IMG width="525" height="394" src="images/marketplace_fig18.jpg">
+
+<H3>Proximity Conversations</H3>
+
+<P><I><B>Vision: </B> A user walking around the Marketplace should naturally form and break conversations based on proximity to speakers.</I></P>
+
+<P>Marketplace implements a simple priority system for joining conversations that takes into account a number of factors that would be important for determining who in a player's proximity she is most interested in talking to. Adjusting these priority factors slightly can make the conversations make or break in the way you find is most natural for your game.</P>
+
+<H3>Priority Factors</H3>
+
+	<TABLE>
+		<TR>
+			<TH>Parameter</TH>
+			<TH>Priority</TH>
+		</TR>
+		<TR>
+			<TD>Proximity</TD>
+			<TD>Priority of 5 up to a defined minimum distance (in this case, 5 meters), falls off linearly further away.</TD>
+		</TR>
+		<TR>
+			<TD>Facing</TD>
+			<TD>Priority of 0.5 if directly facing the listener; falls off proportional to the cosine of the angle between speakers facing and listener direction.</TD>
+		</TR>
+		<TR>
+			<TD>Stationary</TD>
+			<TD>Priority of 1.0 if listener is not moving; helps conversation coherency with passers-by.</TD>
+		</TR>
+	</TABLE>
+	
+<P>If you were to implement this system for a shipping game, you'd probably want to add other prioritizing factors&#8212;for example, friends or party members could get a higher priority, even for normal social chat.</P>
+
+<h3>Parabolic and Distance Voice Attenuation</h3>
+
+<table>
+<tr>
+  <td><IMG width="139" height="138" src="images/marketplace_fig19.jpg"></td>
+  <td valign="top"><p><I><b>Vision: </b>Facing and distance should factor into voice position and volume.</I></p> 
+
+<p>Voice is attenuated (gets quieter) over distance from the speaker. It also depends on whether the user is facing the speaker. Some simple panning is also done on the voice to try to position it appropriately to the avatar in the Marketplace sample.</P></td>
+</tr>
+</table>
+
+<P><i><b>Note</b></i>&nbsp;&nbsp; Because of the 2D isometric view used
+in the sample, the experience isn't quite as effective as it might be in a first-person or shoulder-view third-person title. So you might want to consider visual reinforcement for the speakers you were hearing. Attenuation was also turned up because of the limited space and character size this demo uses.</P>
+
+<H3>Dynamic Ambient Sound</H3>
+
+<P><I><B>Vision: </B>A social space should get noisier when there are more people talking, even if you cannot make out individual speakers.</I></P>
+
+<P>There is an ambient chatter in the Marketplace, which is affected by the number of people present and the number of people who are currently talking. With just three people talking, the ambient sound is low; with more people, the ambient sound is louder.</P>
+
+<P>Other 3D-positioned ambient sound sources (such as the central fountain) in the Marketplace demonstrate how these blend in to the overall scene.</P>
+
+<H3>Directional Conversation, or "Walla"</H3>
+
+<P><I><B>Vision: </B>Having a sense that there is conversation happening nearby makes a more interesting social space and lets users navigate into conversations.</I></P>
+
+<P>Walla is the audio industry term for the unintelligible murmuring that any crowd (or an excited jury) makes.</P>
+
+<P>Users who are not in the conversation can hear a 3D-positioned "walla" for individuals who are talking but not sending network voice due to bandwidth constraints. When the user gets in close enough proximity, he or she can join into the conversation and hear the voices of people speaking.</P>
+
+<P>The sample for the base "walla" sound is pitch-shifted slightly to sound like different speakers. With several bots making the sound, it is easy to hear something that approximates crowd noise.</P>
+
+<P><i><b>Note</b></i>&nbsp;&nbsp; Even with your eyes closed, you can quickly navigate to where the conversation is taking place and have it resolve into audible speech.</P>
+
+<H3>Simultaneous Speaker and Headset Audio</H3>
+
+<P><I><B>Vision:</B> Use the TV audio and 3D Sounds to make the space seem more immersive and social.</I></P>
+
+<P>At the time of this writing, most games are using headset audio only, and the mandate to have voice through speakers for users who do not have the headset is a recent initiative for Xbox <I>Live</I> (see TCRs 3.0 on Xbox Central ).</P>
+
+<P>Xbox <I>Live</I> games are primarily a social event. Unfortunately, while many are great fun for the person on the couch, they are not as much fun for others in the room who miss out on all of the interesting conversations, smack-talk, and chatter. Marketplace attempts to provide a more immersive feeling. Communication you would want to hear mixed in with the ambient sound is sent to through your sound system, while personal conversation is sent directly through your headset.</P>
+
+<P>Users who have used Marketplace find the mix of ambient conversation and "private channel" conversation natural and easy to concentrate on one or the other. Perhaps it is years of telephone and cell phone training that lets players casually monitor what is happening in the room while concentrating on an "in ear" conversation.</P>
+
+<H3>Use of Talk-bots</H3>
+
+<P><I><B>Vision:</B> A user should be able to experience, test, and experiment with Marketplace without having to have a full complement of human users.</I></P>
+
+<P>The Talk-bots fulfill a dual role in Marketplace. Their primary purpose is to send data and voice conversation continually so you can adjust and experiment with the matching rules, and walk around to experience audio that your game could have in a lobby or other common area.</P>
+
+<P>The other role of the Talk-bots is to think about how they would work as NPC characters&#8212;interacting verbally in the same space as players. A weaponsmith might call out about weapons for sale, and someone could approach and see a menu of what was being offered.  Through some simple demonstrations you can imagine what a crowded spaceport or a medieval village could look and sound like for a player, and model the experience as a dynamic social space.</P>
+
+<P>The bots are easily configurable to record in a variety of environmental sounds, voices, or chatter to customize the experience. The <B>Edit Bot Voices</B> command off the main menu lets you record your own Talk-bot voices.</P>
+
+<P><i><b>Note</b></i>&nbsp;&nbsp; In a game, content for bots could easily be streamed from storage. Higher-quality, local 3D-positioned audio could be used instead of the voice format that is used in the Marketplace sample&#8212;this was done so the bots could fulfill their primary mission as voice chatter source.</P>
+
+<H3>Tweaking Host Settings</H3>
+
+<P>Access the <B>Host Settings</B> menu by pressing the <B>Y</B> button on the host.</P>
+
+<P>There is currently no way to see the host settings on the client.</P>
+
+	<TABLE>
+		<TR>
+			<TH>Setting</TH>
+			<TH>Comments</TH>
+		</TR>
+		<TR>
+			<TD>Voice Mode</TD>
+			<TD>Peer-to-peer or server-forward</TD>
+		</TR>
+		<TR>
+			<TD>Network Rate</TD>
+			<TD>How often network update packets are sent</TD>
+		</TR>
+		<TR>
+			<TD>Voice Rate</TD>
+			<TD>How often voice update packets are sent</TD>
+		</TR>
+		<TR>
+			<TD>Speech Timeout</TD>
+			<TD>How much time must elapse before a client is identified as not talking.</TD>
+		</TR>
+		<TR>
+			<TD>Downstream Peers</TD>
+			<TD>Maximum number of streams that can be heard by any client</TD>
+		</TR>
+		<TR>
+			<TD>Upstream Peers</TD>
+			<TD>Maximum number of clients any client can send to peer-to-peer</TD>
+		</TR>
+	</TABLE>
+	
+<P>Setting the voice mode to peer-to-peer or server-forward affects the general architecture of the voice system. Peer-to-peer is recommended because generally clients have bandwidth to spare, while managing bandwidth on the host or server is common problem in multiplayer games. Server-forward is provided to allow bandwidth comparisons. </P>
+
+<P>Network and voice rate also directly affect bandwidth. Lower values will require more bandwidth but will allow for greater fidelity. For Marketplace, the network rate defaults to 50 ms (1/20<SUP>th</SUP> of a second), as does the voice rate.</P>
+
+<P>The speech timeout is used to adjust how long someone has to pause in a conversation to be considered "not talking." Changing this affects how peer-to-peer paths get allocated. The default is 1 second. We encourage you to try different settings. Let us know what seems natural for your game.</P>
+
+<P>Downstream/Upstream peers are set for all clients at once in this sample, but could be based on the QoS APIs to allow clients on better connections to have a higher number of simultaneous connections. The default for both of these is 4.</P>
+
+<H3>Dynamic Allocation of Channels for Peer-to-Peer Voice</H3>
+
+<P><I><B>Vision:</B> Each client has bandwidth for only a limited number of voice streams.  Allocating these wisely is important&#8212;voice allocation should be distributed and scalable.</I></P>
+
+<P>Each client runs a simulation based on the most recent information from the server regarding who is talking and who is not. The server can send this bit on regular updates, since the method demonstrated by the Marketplace sample does not require complete up-to-date information (clients always have enough information to create a good approximation of ideal routes, even if it is a little old).</P>
+
+<P>The basic flow for knowing who to send peer-to-peer voice traffic to is as follows:</P>
+
+<IMG src="images/marketplace_fig20.jpg">
+
+<P>Peer-to-peer voice update:</P>
+
+	<OL>
+		<LI>Is local client talking? If no, continue with game. If yes, go to Step 2.</LI>
+		<LI>Compute grid of priorities for all peers with all peers based on last server update. (The server updates gives positions, velocities, and a talking yes/no state at that update.) This would probably be limited to players in the same zone, or within a certain large distance (100 meters). Priority calculations are detailed above.</LI>
+		<LI>Go through the grid and find the highest priority. Add the sender/listener pair to the connection list.</LI>
+		<LI>If adding the pair uses up all of the outgoing channels of the sender or all of the incoming channels of the listener, remove them from the priority grid.</LI>
+	</OL>
+	
+<P>Repeat steps 3 and 4 until there are no more senders in the grid.</P>
+
+<P>Notes:</P>
+
+	<OL>
+		<LI>Each client can have its own count of outgoing/incoming channels and can have voice to them scaled appropriately (based on QoS, for instance).</LI>
+		<LI>All voice paths are calculated on the client, so no server bandwidth is used up sending voice paths,and no delay is introduced requesting permission to speak.</LI>
+		<LI>If there is an inconsistency between who is really talking and who the client thinks is talking, it will resolve within the space of a server update (defaults to 50ms), so a client will not be over-saturated with voice for very long (the system is self-balancing).</LI>
+	</OL>
+	
+<H3>Server Voice Forwarding</H3>
+	
+<P><I><B>Vision: </B>Sometimes it is desirable to send voice from one client to many others&#8212;when giving speeches, for instance, or talking to other people in a party.</I></P>
+
+<P>Both the podium and the private channel use server-forwarding; the voice data first goes to the host, who then passes it on to other clients by appending the voice data to the update packets. While it is costly in terms of CPU usage and bandwidth to do this all of the time, it is very useful to provide server-forwarding functionality in specific cases (for example, when one person wants to address a large number of other people).</P>
+
+<H3>Voice Network Statistics Display</H3>
+
+<P><I><B>Vision: </B>It is important to know how much bandwidth would be utilized by voice, and be able to compare the costs of different approaches and settings.</I></P>
+
+<P>On a client, the voice network statistics display always show how much bandwidth is being used for voice on transmit and receive. Packet overhead is counted, for peer-to-peer voice, but not for server-forwarded voice as voice data is appended to the update packets.</P>
+
+<P>On the host, the voice network statistics display <i>does not include the local client</i>. A massively multiplayer server would not have a local display client, so it is more useful to see how much server bandwidth would be used.</P>
+
+<H3>Manual Estimation</H3>
+
+<p>To estimate the necessary voice bandwidth, simply fill in the green squares in this <a href="https://xds.xbox.com/content/download/envelope.xls" target="_blank">spreadsheet</a>.</p>
+
+<H2><A name="marketplace_nonconcepts"></A>Concepts Not Demonstrated</H2>
+
+<P>This section contains additional ideas and concepts that might be interesting to explore in your game or related areas Marketplace might be expanded to in the future. They are not demonstrated in the sample.</P>
+
+<H3>Specific Audio Filters for Voice</H3>
+
+<P>Currently possible, but not shown by this sample is the ability on Xbox to apply specific special effects such as echo. Adding in special effects, noise (such as a static crackle, distortion, or drift), and special filters might be appropriate for some games. Characters communicating over radio would sound like radio, or characters using a real podium might have a microphone tap when they first step up or might hear the occasional feedback squeak, and so on.</P>
+
+<H3>Dynamic Ambient with Elevated Speakers</H3>
+
+<P>In a crowded room, you will often notice the occasional voice rising above the "white noise" or "walla" of a crowded space. Marketplace does not show this directly, but it could be done by selecting random speech for the server channel (if it wasn't being used for another purpose) and broadcast it to a larger area. XHV also did not expose "volume" of speech. It might be worth experimentally selecting out speech that suddenly rises (panic shouts, laughter, etc.) for wider distribution so normal conversation would be represented as ambience, but someone shouting "Help Me" would get broadcast to a fairly wide area.</P>
+
+<H3>Extremely Low-Quality Voice Compression</H3>
+
+<P>It would have been interesting to experiment with an extremely low-quality voice compression&#8212;to give the impression of speech in a space but not have it be particularly intelligible until you are actually engaged in conversation. You could have a fixed amount of bandwidth to devote to conversation streams, or forward a very compressed "summary" through the server. In this sample, the generic "walla" was located in 3D and volume-attenuated to get a hopefully similar result.</P>
+
+<P>Xbox does not currently feature a configurable codec. There may be potential at some point to do this through third-party software.</P>
+
+<H3>Voice Masks</H3>
+
+<P>Voice masks were not used in this demonstration. See the LowLevelVoice sample for a demonstration of voice masking.</P>
+
+<P>A variety of game-specific voice masks can be used and created.</P>
+
+<H2><A name="marketplace_wp"></A>Related White Papers</H2>
+
+<P><A href="https://xds.xbox.com/BPProgInfo.asp?Page=content/prog_wp_customvoicechat.htm">Creating a Custom Voice Chat Engine</A>, <i>by John Harding</i>.</P>
+
+<P><A href="https://xds.xbox.com/BPProgInfo.asp?Page=content/prog_wp_XboxLiveNetworkingBP.htm">Xbox <i>Live</i> Networking Best Practices</A>, <i>by Pete Isensee</i>.</P>
+
+<P><A href="https://xds.xbox.com/BPProgInfo.asp?Page=content/prog_wp_XboxNetworkPerformance.htm">Xbox Network Performance</A>, <i>by Pete Isensee</i>.</P>
+
+<H2><A name="marketplace_credits"></A>Credits</H2>
+
+<ul>
+  <li>Concept &amp; Design: <i>Mark Terrano</i></li>
+  <li>Programming &amp; Design: <i>Michael Austin</i></li>
+  <li>Avatar &amp; Marketplace Art: <i>Paul Steed</i></li>
+  <li>Icon Art: <i>Dave McCoy</i></li>
+  <li>Voice consultation:  <i>John Harding</i></li>
+  <li>The Talk-bot Voices (ATG people): <i>Chris Prince</i>, <i>Dan Banay</i>, <i>Michael Austin</i>, 
+      <i>Andrew Walker</i>, <i>Tracey Frankcom</i>, <i>Mark Terrano</i></li>
+</ul>
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirectSoundStream::Flush</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="IDirectSoundStream::Flush [C++]">
+<META NAME="MS-HKWD" CONTENT="Flush (IDirectSoundStream) [C++]">
+<META NAME="MS-HKWD" CONTENT="Flush [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Flush (IDirectSoundStream)"/>
+<MSHelp:Keyword Index="K" Term="IDirectSoundStream::Flush"/>
+<MSHelp:Keyword Index="F" Term="Flush"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="xbox_jc_idirectsoundstream_flush_dxaudio"></A>IDirectSoundStream::Flush</H1>
+
+<P>Flushes the stream (stops output and completes all packets).</P>
+
+<PRE class=syntax><B>HRESULT Flush();</B></PRE>
+
+
+<H4>Return Values</H4>
+
+<P><B>Flush</B> should always return DS_OK if successful.</P>
+
+
+<H4>Remarks</H4>
+
+<!--
+<P>Because of restrictions in the hardware, this call can cause a busy-wait state. You must make sure that the stream has stopped by polling <a href="xbox_jc_idirectsoundstream_getstatus_dxaudio.htm">IDirectSoundStream::GetStatus</a>. Check the <b>DSSTREAMSTATUS_PLAYING</b> flag before calling <a>Flush</a> as in the following example:</P>
+
+<pre class="clsCode">DWORD dwStatus;
+pDSStream-&gt;Stop();
+do
+{
+    pDSStream-&gt;GetStatus( &amp;dwStatus );
+} while( dwStatus &amp; DSSTREAMSTATUS_PLAYING );</pre>
+pDSStream-&gt;Flush();
+-->
+
+<p>When the stream is playing, calling Flush may cause a busy-wait state while waiting for the hardware voice to stop. To avoid busy-wait states, call <a href="xbox_idirectsoundstream_flushex_dxaudio.htm"><b>IDirectSoundStream::FlushEx</b></a> and specify the DSSTREAMFLUSHEX_ASYNC flag.</p>
+
+<P>Additionally, calling some methods on the stream immediately after stopping the stream can generate debug warning messages.  See <a href="xbox_directsound_warning_messages_dxaudio.htm">DirectSound Warning Messages</a> for more information.</P>
+
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in dsound.h.</P>
+
+<H4>See Also</H4>
+
+<p><a href="xbox_idirectsoundstream_flushex_dxaudio.htm"><b>IDirectSoundStream::FlushEx</b></a></p>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

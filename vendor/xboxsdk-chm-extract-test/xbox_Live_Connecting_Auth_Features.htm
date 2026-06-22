@@ -1,0 +1,42 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Authentication Features</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Authentication Features"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Authentication Features</h1>
+<p>The goal of the authentication functions is to provide game developers with an easy way to securely authenticate the user to the XBox <i>Live</i> service without the complexities of authentication and security. These functions were designed based on the following guidelines:</p><ul>
+			<li><p>Simple and lightweight</p>
+	    	<p>In order to meet the needs of Xbox console developers, the primary goal is to provide simple and lightweight functions. Developers should not have to load large amounts of code or rely upon heavy abstractions in order to deal with online gameplay.</p></li>
+		    <li><p>Provide maximum security</p>
+	    	<p>The main purpose of the Xbox <i>Live</i> authentication functions is to enable secure and trusted online gameplay, such that all Xbox <i>Live</i> identities can be trusted to be who they say they are. The functions also provide mutual authentication capability between Xbox consoles and Xbox <i>Live</i> services.</p></li>
+		    <li><p>Enable title developers</p>
+	    	<p>After Xbox <i>Live</i> authentication has been established, we enable title developers to communicate with various Xbox <i>Live</i> services without worrying about any authentication details.</p></li>
+		</ul>
+<p>To meet these goals, authentication supports the following features.</p><ul>
+<li><a href="#IDAQREV">Users</a></li><li><a href="#IDAASEV">Guests</a></li><li><a href="#IDA4SEV">Silent Logons</a></li><li><a href="#IDAWTEV">Hot-Plugging into a Game-in-Progress</a></li><li><a href="#IDA4TEV">Credential Revocation and Banning</a></li></ul>
+<h2><a name="IDAQREV"></a>Users</h2>
+<p>The user is the fundamental entity for billing and policy transactions. Users are not locked to a particular Xbox, but user credential information does need to reside either on the hard disk or on an Xbox Memory Unit (MU). While these credentials are hidden from the user to remove the need for pass code dialog boxes, users can protect their accounts with simple PIN-style pass codes.</p><p>Up to eight user accounts can reside on an Xbox console. All user creation and management will be handled in the Xbox Dashboard; thus, the development work in this area is trivial. Titles simply need to enumerate the available user accounts on the Xbox hard disk and Xbox MU, and allow a user to choose one at logon time.</p><p>Titles use the <a href="XOnlineGetUsers.htm">XOnlineGetUsers</a> function to enumerate users. If multiple users are concurrently logging in on the same Xbox (from multiple controllers), the title must gather user information from each user before making the <a href="XOnlineLogon.htm">XOnlineLogon</a> call. Xbox <i>Live</i> titles must prevent multiple players on the same Xbox from using the same user account. Each player on each controller must have a valid user account or log in as a guest of another player (see below).</p><h2><a name="IDAASEV"></a>Guests</h2>
+<p>Your title can allow guests to log onto Xbox <i>Live</i>. However, they must be playing on the same Xbox console as a valid Xbox <i>Live</i> user. Guest accounts are intended for users who have not yet subscribed to Xbox <i>Live</i>, but who are interested in exploring the service. At least one subscribed user must play concurrently with the guest.  Guests have more limited privileges than subscribers. There are specific requirements that limit the Xbox <i>Live</i> features usable by guests. For example, voice chat is disallowed for guests.  </p><p>Understanding how guest accounts may be abused in your game is perhaps as crucial as understanding how guest accounts will be used. In a deathmatch game, for example, a guest account could be used to easily distort one user's statistics with a series of pushover kills. Games will need to protect against cheating with the guest account by selectively changing the rules that affect guest players.</p><p>Your title creates guest accounts when it calls the <b>XOnlineLogon</b> function. It must copy the information in the valid Xbox <i>Live</i> user's <a href="XONLINE_USER.htm">XONLINE_USER</a> structure into the array slot associated with the guest's controller. Next, it calls the <a href="XOnlineSetUserGuestNumber.htm">XOnlineSetUserGuestNumber</a> macro to assign the guest a number in the range 1&#8211;3, inclusive.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Feedback to the Xbox Live service about guests is treated as if the target of the feedback was the player with the official Live account rather than the guest.</p><h2><a name="IDA4SEV"></a>Silent Logons</h2>
+<p>Your title can log players onto the most recently used Xbox <i>Live</i> account without requiring the player to specify account information. This technique is referred to as <i>silent logon</i>. To perform a silent logon, your title invokes the <a href="XOnlineSilentLogon.htm">XOnlineSilentLogon</a> function. The parameters to <b>XOnlineSilentLogon</b> are nearly the same as those used for <b>XOnlineLogon</b>. The difference is that <b>XOnlineSilentLogon</b> does not require your title to specify the users being logged onto Xbox <i>Live</i>.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;For the <b>XOnlineSilentLogon</b> function, players must enable silent logon in the Xbox Dashboard.</p><h2><a name="IDAWTEV"></a>Hot-Plugging into a Game-in-Progress</h2>
+<p>Many current Xbox multiplayer games support plug-and-play entry into a current game as a great player-friendly feature. For these titles, the player merely needs to plug in a new controller and push a button to join a game already in progress on that Xbox console. Use the <a href="XOnlineChangeLogonUsers.htm">XOnlineChangeLogonUsers</a> function to dynamically change the set of currently logged on users. </p><h2><a name="IDA4TEV"></a>Credential Revocation and Banning</h2>
+<p>At various times during gameplay, the notification service (described below) will notify the title that a user's credentials have just been revoked. Credentials may be revoked for a variety of reasons, from simple account timeout to an immediate user ban due to violation of the Terms of Service. The game title should first attempt to re-authenticate all logged-on users with <b>XOnlineLogon</b>. If this <b>XOnlineLogon</b> call succeeds, continue as usual. These calls may happen in the middle of gameplay, and it is expected that all titles will handle this transparently to the player.</p><p>At this point, <b>XOnlineLogon</b> may then return an error code indicating a more serious problem. A player may have recently been banned from the service. Or a system-wide service error may have taken place. In these cases, the title is expected to display the proper UI and act accordingly.</p><p>Xbox <i>Live</i> titles must respect any error messages from <b>XOnlineLogon</b> that indicate that the individual user has been banned.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

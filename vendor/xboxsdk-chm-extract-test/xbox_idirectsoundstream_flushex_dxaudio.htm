@@ -1,0 +1,114 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>IDirectSoundStream::FlushEx</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="F" Term="FlushEx"/>
+<MSHelp:Keyword Index="K" Term="FlushEx (IDirectSoundStream)"/>
+<MSHelp:Keyword Index="K" Term="IDirectSoundStream::FlushEx"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>IDirectSoundStream::FlushEx</h1>
+<p>Flushes the stream (stops output and completes all packets) either synchronously or asynchronously.</p>
+<pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>FlushEx(</b>
+    <b>REFERENCE_TIME</b> <i>rtTimeStamp</i><b>,</b>
+    <b>DWORD</b> <i>dwFlags</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+            <dt><i>rtTimeStamp</i></dt>
+                <dd><b>REFERENCE_TIME</b> value specifying the time at which the flush operation should be performed.  Specify zero to initiate the flush operation immediately.</dd>
+            
+            <dt><i>dwFlags</i></dt>
+                <dd>Value that contains the flags that indicate how the flush should be performed. Can be a combination of the following values:</dd>
+                <table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+					<tr>
+<td>DSSTREAMFLUSHEX_IMMEDIATE</td>
+<td>The flush operation should be performed immediately in a synchronous operation. When <b>FlushEx</b> returns, the flush will have been completed. Calling <b>FlushEx</b> with this value is identical to calling <a href="xbox_jc_idirectsoundstream_flush_dxaudio.htm">Flush</a>, and may cause a busy-wait state (see below).<p>The <i>rtTimeStamp</i> parameter must be set to zero when this flag is specified.</p></td>
+</tr>				
+                    <tr>
+<td>DSSTREAMFLUSHEX_ASYNC</td>
+<td>The flush operation should be performed as an asynchronous operation. If <i>rtTimeStamp</i> is nonzero and specifies a time in the future, <b>FlushEx</b> will post the flush request (to be performed during a future call to <a href="xbox_directsounddowork_dxaudio.htm">DirectSoundDoWork</a>) and return immediately.  Otherwise, <b>FlushEx</b> will initiate the flush operation and return without waiting for the flush operation to complete.
+
+<p>Use the standard packet completion mechanisms or <a href="xbox_jc_idirectsoundstream_getstatus_dxaudio.htm">IDirectSoundStream::GetStatus</a> to determine when the flush has completed (see the example below).</p></td>
+</tr>
+                    <tr>
+<td>DSSTREAMFLUSHEX_ENVELOPE</td>
+<td>The stream should enter the release portion of its envelope before performing the flush.<p>The DSSTREAMFLUSHEX_ASYNC flag must be set when using this flag.</p></td>
+</tr>
+					<tr>
+<td>DSSTREAMFLUSHEX_ENVELOPE2</td>
+<td>When the release segment completes, status returned by <b>IDirectSoundStream::GetStatus</b> will include DSSTREAMSTATUS_ENVELOPECOMPLETE. This bit will remain set until the stream is flushed again with a call to either <b>Flush</b> or <b>FlushEx</b>).<p>The DSSTREAMFLUSHEX_ASYNC flag must be set when using this flag.</p>
+					</td>
+</tr>
+                </table>
+            
+        </dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>Returns S_OK if successful, an error code otherwise.</p>
+<h4><a name="remarks"></a>Remarks</h4>
+            <p><b>FlushEx</b> allows titles to flush a stream synchronously or post an asynchronous flush request.  Flushing a stream is similar to calling <a href="_dx_idirectsoundbuffer8_stop_dxaudio.htm">IDirectSoundBuffer8::Stop</a> on a DirectSound buffer.</p>
+
+			<p>Because of restrictions in the hardware, using the DSSTREAMFLUSHEX_IMMEDIATE flag to perform a synchronous flush may cause a busy-wait state while waiting for the hardware voice to stop.  Calling <b>FlushEx</b> with DSSTREAMFLUSHEX_IMMEDIATE is equivalent to calling <a href="xbox_jc_idirectsoundstream_flush_dxaudio.htm">Flush</a>.</p>
+			
+			<p>To determine when an asynchronous flush has completed, either use standard packet completion mechanisms or poll <b>GetStatus</b> and check for DSSTREAMSTATUS_PLAYING, as shown in the following example:</p>
+
+
+<pre class="clsCode">
+DWORD dwStatus;
+pDSStream-&gt;FlushEx( 0, DSSTREAMFLUSHEX_ASYNC );
+do
+{
+    // Perform other tasks while waiting for FlushEx to complete
+	
+    pDSStream-&gt;GetStatus( &amp;dwStatus );
+} while( dwStatus &amp; DSSTREAMSTATUS_PLAYING );
+</pre>
+    
+
+<p>Do not perform additional operations on the stream until the flush has completed.  Calling some methods on the stream immediately after flushing the stream can generate debug warning messages.  See <a href="xbox_directsound_warning_messages_dxaudio.htm">DirectSound Warning Messages</a> for more information.</p>
+
+<p>Packet completion notifications can be enabled by specifying a callback function in the <b>lpfnCallback</b> member of the <a href="xbox_jc_dsstreamdesc_dxaudio.htm">DSSTREAMDESC</a> structure when the stream is created with <a href="xbox_jc_directsoundcreatestream_dxaudio.htm">DirectSoundCreateStream</a>.</p>
+
+<p><a href="xbox_jc_idirectsound8_gettime_dxaudio.htm">IDirectSound8::GetTime</a> returns the current reference time, which can be added to in order to specify a future reference time for <i>rtTimeStamp</i>.</p>
+ 
+        <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in DSound.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use DSound.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+			<a href="xbox_jc_idirectsoundstream_flush_dxaudio.htm">IDirectSoundStream::Flush</a>,
+			<a href="xbox_jc_idirectsoundstream_getstatus_dxaudio.htm">IDirectSoundStream::GetStatus</a>,
+			<a href="xbox_jc_idirectsound8_gettime_dxaudio.htm">IDirectSound8::GetTime</a>,
+			<a href="xbox_directsounddowork_dxaudio.htm">DirectSoundDoWork</a>,
+			<a href="xbox_jc_dsstreamdesc_dxaudio.htm">DSSTREAMDESC</a>,
+			<a href="xbox_jc_directsoundcreatestream_dxaudio.htm">DirectSoundCreateStream</a>
+		</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

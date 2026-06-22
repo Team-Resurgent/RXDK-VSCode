@@ -1,0 +1,145 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XUID</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XUID"/>
+<MSHelp:Keyword Index="F" Term="XUID"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+    <body topmargin="0">
+        <table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+        <h1>XUID</h1>
+
+        
+        
+<p>Contains the user identifier and user-specific settings.</p>
+
+	
+		
+
+<pre class="syntax">typedef struct{
+    union {
+        ULONGLONG qwUserID;
+        ULONGLONG qwTeamID;
+    } ;
+    DWORD dwUserFlags;
+} XUID;</pre>
+                    
+                
+            
+            
+                <h4><a name="members"></a>Members</h4>
+<dl>
+			
+	            <dt><b>qwUserID</b></dt>
+	                <dd>Value that contains the user identifier.</dd>
+	            
+	            <dt><b>qwTeamID</b></dt>
+	                <dd>Value that contains the team identifier. Note that Xbox <i>Live</i> team IDs start with the prefix 0xFeFe.</dd>
+	            
+			
+            <dt><b>dwUserFlags</b></dt>
+                <p><dd>Value that contains settings associated with this player. Can be a combination of the following flags:</dd>
+                <table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+                     <tr>
+<td>XONLINE_USER_VOICE_NOT_ALLOWED</td>
+<td>This player is not allowed to use the voice chat feature.</td>
+</tr>
+                    <tr>
+<td>XONLINE_USER_PURCHASE_NOT_ALLOWED</td>
+<td>This player is not allowed to make any purchases.</td>
+</tr>
+                    <tr>
+<td>XONLINE_USER_NICKNAME_NOT_ALLOWED</td>
+<td>This player is not allowed to choose custom nicknames.</td>
+</tr>
+					<tr>
+<td>XONLINE_USER_SHARED_CONTENT_NOT_ALLOWED</td>
+<td>This player is not allowed to share content.</td>
+</tr>
+                </table>
+				<p>Additionally, the following masks indicate the bit offsets of additional data stored in the <b>dwUserFlags</b> member:</p>
+					<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+                   <tr>
+<td>XONLINE_USER_GUEST_MASK</td>
+<td>Mask for the bits that contain the player guest number.  If this player is not a guest, the value is zero.  If this player is a guest, the sponsoring player is specified in <b>qwUserID</b>.  Up to three guest players (one for each additional controller) can be associated with a single logged on player.</td>
+</tr>
+					<tr>
+<td>XONLINE_USER_NOSHOW_RATING_MASK</td>
+<td>Mask for the bits that contain the player NoShowRating. The NoShowRating value represents the ratio of tournament match no-shows to tournament match sessions played.</td>
+</tr>
+					<tr>
+<td>XONLINE_USER_DISCONNECT_RATING_MASK</td>
+<td>Mask for the bits that contain the DisconnectRating. The DisconnectRating value represents the ratio of disconnects to arbitrated sessions played.</td>
+</tr>
+                   <tr>
+<td>XONLINE_USER_COUNTRY_MASK</td>
+<td>Mask for the bits that contain the player country identifier, representing the country in which the player is registered. This value is one of the XONLINE_COUNTRY_ values in the XOnline.h file.</td>
+</tr>
+</table>
+				</p>
+            
+        </dl>
+                <h4><a name="remarks"></a>Remarks</h4>
+	<p>For titles using arbitration, the service aggregates information about playing patterns. Specifically, arbitration service keeps a tally of the number of arbitrated sessions a player has engaged in, as well as the number of times a player disconnected from an arbitrated session prematurely. All players are divided into eight buckets based on the ratio of disconnects to the total number of sessions played.</p>
+	<p>Likewise, the service keeps track of the total number of tournament matches each player has registered for, as well as the number of matches each player failed to show for. All players are divided into eight buckets based on the ratio of no-shows to the total number of tournament matches played.</p>
+	<p>Titles can use this information for player profiles, matchmaking, unlocking content, trophies, and so on. Because the Disconnect and No-Show ratings are updated every time a player participates in a tournament or an arbitrated game session, they must not be persisted beyond the duration of a player session.</p>
+	<p>The NoShowRating and Disconnect Rating are returned by <a href="XOnlineLogon.htm">XOnlineLogon</a> in the <b>dwUserFlags</b> field of the <b>XUID</b> structure.</p>
+	<p>Use the <a href="XOnlineUserDisconnectRating.htm">XOnlineUserDisconnectRating</a>(<i>dwUserFlags</i>) macro to access the DisconnectRating and the <a href="XOnlineUserNoShowRating.htm">XOnlineUserNoShowRating</a>(<i>dwUserFlags</i>) macro to access the NoShowRating.</p>
+	<p>Use the following functions to extract additional user information from an <b>XUID</b> structure:</p>
+	<ul>
+		<li><a href="XOnlineAreUsersIdentical.htm">XOnlineAreUsersIdentical</a></li>
+		<li><a href="XOnlineIsUserGuest.htm">XOnlineIsUserGuest</a></li>
+		<li><a href="XOnlineIsUserNicknameAllowed.htm">XOnlineIsUserNicknameAllowed</a></li>
+		<li><a href="XOnlineIsUserPurchaseAllowed.htm">XOnlineIsUserPurchaseAllowed</a></li>
+		<li><a href="XOnlineIsUserSharedContentAllowed.htm">XOnlineIsUserSharedContentAllowed</a></li>
+		<li><a href="XOnlineIsUserVoiceAllowed.htm">XOnlineIsUserVoiceAllowed</a></li>
+		<li><a href="XOnlineUserCountryId.htm">XOnlineUserCountryId</a></li>
+		<li><a href="XOnlineUserGuestNumber.htm">XOnlineUserGuestNumber</a></li>
+	</ul>
+
+				
+            
+                <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in XOnline.h.</p>
+            
+                <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="x_mt_xonline_structures.htm">Xbox Live Structures</a> |
+<a href="XOnlineFriendsAnswerRequest.htm">XOnlineFriendsAnswerRequest</a>,
+<a href="XOnlineFriendsRequest.htm">XOnlineFriendsRequest</a>,
+<a href="XOnlineMutelistAdd.htm">XOnlineMutelistAdd</a>,
+<a href="XOnlineMutelistRemove.htm">XOnlineMutelistRemove</a>,
+<a href="XONLINE_FRIEND.htm">XONLINE_FRIEND</a>,
+<a href="XONLINE_USER.htm">XONLINE_USER</a>
+</p>
+
+        <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+    </body>
+    </html>

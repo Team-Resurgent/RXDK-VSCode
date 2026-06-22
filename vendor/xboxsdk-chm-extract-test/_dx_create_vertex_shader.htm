@@ -1,0 +1,180 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Creating a Vertex Shader</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Creating a Vertex Shader"/>
+<MSHelp:Keyword Index="F" Term="Creating a Vertex Shader"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME=""></A>Creating a Vertex Shader</H1>
+
+<p>This example creates a simple vertex shader that will transform and color the vertices of an object. This example focuses on vertex shader basics.</p>
+
+<p>To use a vertex shader in your title, follow these steps:</p>
+
+<ol>
+<li><a href="#declare">Declare the Vertex Data and Shader Registers</a>.</li>
+<li><a href="#design">Design the Shader Program</a>.</li>
+<li><a href="#compile">Compile the Shader Program</a>.</li>
+<li><a href="#load">Load and Set the Shader</a>.</li>
+<li><a href="#render">Render the Object</a>.</li>
+</ol>
+
+<h4><a name="declare"></a>Declare the Vertex Data and Shader Registers</h4>
+
+<p>Vertex data can include position, normals, specular and diffuse color, and up to four sets of texture coordinates. With this rich set of data, it is necessary to tell the shader exactly what kind of data to expect. A custom structure for the vertex data will let you tell the shader exactly what register is being used when passing information to the shader.</p>
+
+<p>This example uses a quadliteral that is made up of two triangles. Our vertex data will only consist of the vertices coordinates and a diffuse color.</p>
+
+<pre>struct CUSTOMVERTEX
+{ 
+    FLOAT x,y,z; // position
+    DWORD color; // diffuse color
+};
+
+CUSTOMVERTEX g_Vertices[] =
+{
+    //   x      y     z       color
+    {-1.0f, -1.0f, 0.0f, 0xffff0000 }, // red    - bottom right
+    { 1.0f, -1.0f, 0.0f, 0xff00ff00 }, // green  - bottom left
+    { 1.0f,  1.0f, 0.0f, 0xff0000ff }, // blue   - top left
+    {-1.0f,  1.0f, 0.0f, 0xffffff00 }  // yellow - top right
+};</pre>
+
+<p>The <b>CUSTOMVERTEX</b> structure is used to describe the vertex data. The four vertices of our quadrilateral are centered about the origin, and each vertex has been assigned a different diffuse color.</p>
+
+<p>It is also necessary to create a shader declaration. This declaration will be used later by the shader to determine the input stream, the registers that will be receiving data, and the type of data the registers will receive.</p>
+
+<pre>DWORD g_dwVertexDecl[] = 
+{
+    D3DVSD_STREAM( 0 ),
+    D3DVSD_REG( 0, D3DVSDT_FLOAT3 ),    // position
+    D3DVSD_REG( 1, D3DVSDT_D3DCOLOR ),  // diffuse color
+    D3DVSD_END()
+};</pre>
+
+<p>The <a href="_dx_d3dvsd_stream_graphics.htm">D3DVSD_STREAM</a> macro is used to tell the shader it will be using input stream zero.</p>
+
+<p>Each vertex shader supports 16 input registers: v0 through v15. The shader declaration must state which registers are going to be used, as well as the dimensionality and data type of the data that will be passed into that register. This is accomplished using the <a href="_dx_d3dvsd_reg_graphics.htm">D3DVSD_REG</a> macro. The declaration above says that v0 will get three FLOATs and v1 will receive a D3DCOLOR value.</p>
+
+<p><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;Every shader declaration needs to end with <a href="_dx_d3dvsd_end_graphics.htm">D3DVSD_END</a>.
+
+<h3><a name="design"></a>Design the Shader Program</h3>
+
+<p>When vertex shaders are used, you must create a vertex shader program that handles all necessary transformations and lighting. Vertex shader programs typically start as ASCII files that are compiled during design time using the <a href="xbox_jbh_tool_xsasm.htm">Xbox Shader Assembler Tool (XSAsm)</a>. The compiled program will get loaded into the title during run-time.</p>
+
+<p>In this example, the shader program needs to transform the vertices from world space to projection space and apply a color to each vertex. (Because there is no lighting, the only color will come from the diffuse color of each vertex.)</p>
+
+<p>To create the vertex shader program, create a file, VertexShader.vsh.</p>
+
+<pre>; v0        - position
+; v1        - diffuse color
+; c0 - c3   - world x view x projection 
+
+xvs.1.0     ; Version instruction
+
+; Transform vertex position from world to projection space.
+dp4 oPos.x, v0, c0
+dp4 oPos.y, v0, c1
+dp4 oPos.z, v0, c2
+dp4 oPos.w, v0, c3
+
+; Write the diffuse color to the vertex
+mov oD0, v1</pre>
+
+<p>Everything following a semicolon is treated as a comment. In order to agree with the vertex shader declaration (in the previous section), registers v0 and v1 will contain the position and diffuse color. Constant registers c0 through c3 will be set at run-time to contain the transpose of the product of the world, view, and projection matrices. (It is necessary to use the transpose since the vertex shader <a href="_dx_dp4_graphicsd3dx.htm">dp4</a> works on rows and not columns.)</p>
+
+<p><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;Every vertex shader program must start with a <a href="_dx_version_and_constant_definition_instructions_graphicsd3dx.htm">version instruction</a>.</p>
+
+<p>Vertex shader programs must write their final results to the <a href="_dx_output_registers_graphicsd3dx.htm">output registers</a>. It is not necessary to write to every output register, but shaders must write the final position of the tranformed vertex to <a href="_dx_opos_graphicsd3dx.htm">oPos</a>. Typically, shaders write the diffuse color to oD0, and write the specular color to oD1.</p>
+
+<h3><a name="compile"></a>Compile the Shader Program</h3>
+
+<p>Once the vertex shader program has been designed, there are two ways to compile the program: 1) during run-time using the <a href="xbox_jbh_dxref_assembleshader.htm">XGAssembleShader</a> function, or 2) during design-time using the <a href="xbox_jbh_tool_xsasm.htm">Xbox Shader Assembler Tool (XSAsm)</a>. Continuing with the example, we will use XSAsm to compile the vertex shader program.</p>
+
+<p>Xbox titles use many different forms of media. To keep your programs organized, you would typically save your vertex shader programs in a subdirectory, such as Media\Shaders\VertexShader.vsh. To run the shader assembler, open a command prompt, navigate to the directory containing the .vsh file, and then enter the following:</p>
+
+<pre>xsasm VertexShader.vsh</pre>
+
+<p>This command will generate a file called VertexShader.xvu. This file is the assembled shader in binary form that will be loaded by the title during runtime.</p>
+
+<p>Xsasm has many different switches. (For a full listing, see the reference page for the Xbox Shader Assembler tool.) However, there are two options that can be useful when debugging shaders: 1) "-Od" option turns off optimizations, and 2) the "-l" option generates a listing file. In the same directory as the .vsh file, enter:</p>
+
+<pre>xsasm -Od -l VertexShader.vsh</pre>
+
+<p>This creates the listing file, VertexShader.lst. The .lst file is a text file showing exactly how the shader was assembled, the number of slots and cycles used, and information about stalls.</p>
+
+<h3><a name="load"></a>Load and Set the Shader</h3>
+
+<p>Within your applications initialization phase, you will need to load the vertex shader into memory and get a handle to the vertex shader.</p>
+
+<pre>// This code assumes that g_pd3dDevice is a valid pointer to 
+// the IDirect3DDevice8 interface and that g_dwVShader has been 
+// previously defined as a DWORD.
+
+// Need to load the vertex shader into memory.
+HANDLE hFile = CreateFile( "d:\\media\\shaders\\VertexShader.xvu", 
+                           GENERIC_READ,       // access mode
+                           FILE_SHARE_READ,    // share mode
+                           NULL,               // ignored
+                           OPEN_EXISTING,      // how to create
+                           0,                  // file attributes
+                           NULL );             // must be NULL
+DWORD dwSize = GetFileSize( hFile, NULL );
+BYTE* pData = new BYTE[ dwSize + 4 ];
+ZeroMemory( pData, dwSize + 4 );
+DWORD dwBytesRead;
+ReadFile( hFile, pData, dwSize, &amp;dwBytesRead, NULL );
+
+// Create the shader and get the handle.
+g_pd3dDevice-&gt;CreateVertexShader( g_dwVertexDecl, (const DWORD*)pData, &amp;g_dwVShader, 0 );
+
+// Clean up.
+CloseHandle( hFile );
+delete [] pData;</pre>
+
+<p><a href="_dx_idirect3ddevice8_createvertexshader_graphics.htm">IDirect3DDevice8::CreateVertexShader</a> tells Direct3D (by passing in the vertex declaration, g_dwVertexDecl) what sort of vertex information to expect. In addition, the function is passed a pointer to the compiled vertex shader program, pData, and it returns a handle to that shader, g_dwVShader. The handle is used later. Titles can have as many vertex shaders as they want (only a limited number may be set on the device at any given time), each one having its own handle. When a vertex shader is created using <b>CreateVertexShader</b>, Direct3D allocates memory for that shader and copies the program to its own memory store. That memory is only released when the shader is no longer in use and has been deleted by calling <a href="_dx_idirect3ddevice8_deletevertexshader_graphics.htm">IDirect3DDevice8::DeleteVertexShader</a>.</p>
+
+<p>Before any rendering can occur, the vertex shader needs to be set on the device using either <a href="_dx_idirect3ddevice8_setvertexshader_graphics.htm">IDirect3DDevice8::SetVertexShader</a> or <a href="xbox_dxg_IDirect3DDevice8_loadvertexshader.htm">IDirect3DDevice8::LoadVertexShader</a>.</p>
+
+<pre>g_pd3dDevice-&gt;SetVertexShader( g_dwVShader );</pre>
+
+<h3><a name="render"></a>Render the Object</h3>
+
+<p>It is important to remember that our shader program is replacing a part of the fixed-function pipeline. In our shader program, the world, view, and projection transforms are handled as constants. For a vertex shader, constants can be set using <a href="_dx_idirect3ddevice8_setvertexshaderconstant_graphics.htm">IDirect3DDevice8::SetVertexShaderConstant</a>.</p>
+
+<pre>XGMATRIX matWorld, matView, matProj, matWVP;
+// This code assumes that these matrices are setup in the code.
+// ...
+
+// Setup the world-view-projection matrix.
+// XGMatrixMultiply( &amp;matWVP, &amp;matWorld, &amp;matView );
+// XGMatrixMultiply( &amp;matWVP, &amp;matWVP, &amp;matProj );
+
+// Pass the transform matrix into the shader.
+XGMatrixTranspose( &amp;matWVP, &amp;matWVP );
+g_pd3dDevice-&gt;SetVertexShaderConstant( 0, &amp;matWVP, 4 );
+</pre>
+
+<p>Direct3D uses matrices in row-column notation, whereas vertex shaders typically use matrices in column-row notation. The column-row notation allows shaders to perform a matrix transform using four <b>dp4</b> instructions. The impact to the developer is that it is necessary to take the transpose of any matrices (using <a href="xgraphics_xgmatrixtranspose.htm">XGMatrixTranspose</a>) before sending the matrices to the vertex shader.</p>
+
+<p>Finally, you render and present the quadrilateral.</p>
+
+<pre>g_pd3dDevice-&gt;DrawPrimitiveUP( D3DPT_TRIANGLEFAN, 2, g_Vertices, sizeof(CUSTOMVERTEX) );
+g_pd3dDevice-&gt;Swap( D3DSWAP_DEFAULT );</pre>
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

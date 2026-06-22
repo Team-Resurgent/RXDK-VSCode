@@ -1,0 +1,126 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Xbox Storage Best Practices</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Xbox Storage Best Practices"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+  <MSHelp:Keyword Index="K" Term="Best Practices, Xbox Storage"/>
+  <MSHelp:Keyword Index="K" Term="storage conventions, best practices"/>
+  <MSHelp:Keyword Index="K" Term="file system for Xbox"/>
+  <MSHelp:Keyword Index="K" Term="throughput, Xbox hard disk"/>
+  <MSHelp:Keyword Index="K" Term="throughput, Memory Units"/>
+  <MSHelp:Keyword Index="K" Term="peak throughput for Xbox"/>
+  <MSHelp:Keyword Index="K" Term="performance hits, Xbox"/>
+  <MSHelp:Keyword Index="K" Term="game performance, maximizing"/>
+  <MSHelp:Keyword Index="K" Term="minimizing data I/O in games"/>
+  <MSHelp:Keyword Index="K" Term="optimizing games for Xbox"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Xbox Storage Best Practices</h1>
+<p><i>By Pete Isensee, Software Design Engineer, Xbox Advanced Technology Group</i></p><p>The Xbox<sup style="font-size:smaller">TM</sup> video game system from Microsoft includes a hard disk in every unit, allowing game developers unprecedented and dynamic game capabilities. The Xbox file system is a thin layer that provides rapid access to the Xbox hard disk, DVD disc, and memory units (MUs). PC file systems typically have a high system overhead, using many megabytes of memory for file caching and other optimizations. The Xbox file system does not impose this overhead; it has a very low memory footprint. The tradeoff is that the Xbox file system has limitations and performance hurdles that are critical for game developers to understand. The following list documents Xbox game storage conventions that provide maximum performance and show how best to take advantage of the Xbox file system.</p><h2><a name="IDAKREV"></a>Read and Write Data in Large Blocks</h2>
+<p>The following table shows the optimum minimum buffer sizes for reading and writing to Xbox storage devices. For best performance, use the buffer size shown (or a larger buffer), when calling <a href="filesio_39id.htm">ReadFile</a> and <a href="filesio_3kkl.htm">WriteFile</a>. For instance, when reading from the Xbox hard disk, pass at least 32,768 bytes (32 KB) in the <i>dwBytesToRead</i> parameter of <b>ReadFile</b>.</p><table>
+<tr>
+<th>Device</th>
+<th>Read</th>
+<th>Write</th>
+</tr>
+<tr>
+<td>Hard disk</td>
+<td>32 KB</td>
+<td>16 KB</td>
+</tr>
+<tr>
+<td>Memory unit</td>
+<td>64 KB</td>
+<td>16 KB</td>
+</tr>
+<tr>
+<td>Disc drive</td>
+<td>16 KB</td>
+<td>N/A</td>
+</tr>
+<p><b>Optimum Minimum Buffer Sizes</b></p>
+</table>
+<h2><a name="IDARSEV"></a>Read and Write Sequentially</h2>
+<p>Sequential input/output (I/O) is faster than random I/O. Because the default Xbox file cache is small, random reads and writes usually require physically accessing storage. Sequential I/O can take advantage of the file cache much more often than random I/O. If you must perform random I/O, increase the file cache size temporarily using <a href="x_jsk_xsetfilecachesize.htm">XSetFileCacheSize</a>.</p><h2><a name="IDAZSEV"></a>Don't Read (or Write) the Same Place Twice</h2>
+<p>Reading the same file location twice may require physically accessing the storage device twice, due to the small size of the Xbox file cache. Save the data in memory to avoid having to re-read it from storage.</p><h2><a name="IDA5SEV"></a>Preset the File Size</h2>
+<p>The Xbox can improve file write times if the file size of a new file is known in advance. To presize a file, use the <a href="filesio_8iwi.htm">SetFilePointer</a> and <a href="filesio_18bp.htm">SetEndOfFile</a> functions.</p><h2><a name="IDAJTEV"></a>Avoid Small Files</h2>
+<p>Small files have a high overhead because each file requires a minimum of one cluster of physical space. The size of cluster is available via the <a href="x_mt_xgetdiskclustersize.htm">XGetDiskClusterSize</a> function. At the time of this writing, the Xbox hard disk and memory unit cluster size is 16 KB. That means a 1-KB file would waste 15 KB of disk space. Games with small files typically have a large number of files, which also adversely affects performance (see next section).</p><h2><a name="IDARTEV"></a>Limit the Number of Files in a Directory</h2>
+<p>The maximum number of files and subdirectories per directory is 4,096. However, any directory with more than 768 files is going to give slower file access than a directory with 768 files or less, due to the technique that the Xbox file system uses to store directory listings. Additionally, directories are not sorted, so it requires an O(n) search to find and open a file. The more files in a directory, the longer it takes to open a file in that directory.</p><p>Especially avoid storing many files on the root directory of a partition, for example, on T:\ (persistent data region) or Z:\ (utility region). For better performance, store files in a subdirectory. If you must store many files, increase the file cache size using <b>XSetFileCacheSize</b>.</p><h2><a name="IDA1TEV"></a>Increase the File Cache During Disk Operations</h2>
+<p>The default file cache size on Xbox is 64 KB. For comparison, the file cache size for Microsoft&reg; Windows&reg; 2000 on a 64-MB machine can range from 10 to 20+ MB! Temporarily boosting the size of the Xbox file cache during heavy disk I/O can improve performance dramatically. Even file creation and deletion times are significantly reduced when the cache size is enlarged. To get and set the cache size, use the <a href="x_jsk_xgetfilecachesize.htm">XGetFileCacheSize</a> and <a href="x_jsk_xsetfilecachesize.htm">XSetFileCacheSize</a> functions. Be aware that changing the cache size changes the memory footprint of your game.</p><h2><a name="IDANUEV"></a>Limit the Number of Files Per Saved Game</h2>
+<p>We recommend using a single save game data file for optimal read and write times, especially if your game allows saves on memory units and saved games are large (&gt;1 MB).</p><h2><a name="IDATUEV"></a>Calculate Storage Sizes Correctly</h2>
+<p>Like most file systems, Xbox file systems have a minimum allocation size for files. This minimum size is called a cluster. The size of a cluster depends on the device and is given by the <a href="x_mt_xgetdiskclustersize.htm">XGetDiskClusterSize</a> function. A 1-byte file occupies one physical cluster. A file with <b>XGetDiskClusterSize</b> + 1 bytes occupies two clusters. Use the following formula to determine the number of bytes physically used by a file:</p>
+<pre class="clsCode">
+    DWORD dwClusterSize = XGetDiskClusterSize( . . . );
+    DWORD dwClusters = ( dwBytes + (dwClusterSize-1) ) / 
+                         dwClusterSize;
+</pre>
+    <p>Use the <a href="x_mt_xgetdisplayblocks.htm">XGetDisplayBlocks</a> function to calculate the size of directories, including the size of all subdirectories. A block is 16 KB.</p><h2><a name="IDAFVEV"></a>Calculate Save Game Size Correctly</h2>
+<p>Saved games always include three components:</p><ul>
+<li>The saved game directory (one cluster)</li>
+<li>SaveMeta.xbx meta file (one cluster)</li>
+<li>The saved game data (game dependent)</li>
+</ul>
+<p>Saved games that include a save game image also include SaveImage.xbx (one cluster). When calculating how much storage space will be required to save a game, be sure to include all components.</p><h2><a name="IDAVVEV"></a>Display Storage Sizes Correctly</h2>
+<p>To meet Technical Certification Requirements, game UI must display storage sizes in terms of "blocks." A block is 16 KB. To determine the number of blocks in use by a given directory and all of its subdirectories, use the <a href="x_mt_xgetdisplayblocks.htm">XGetDisplayBlocks</a> function. This function recursively calculates the number of blocks occupied by all of the files and subdirectories in the given directory.</p><h2><a name="IDA5VEV"></a>Use the Enum/Open Optimization</h2>
+<p>The Xbox has a unique optimization that speeds up opening a list of files. Information on the last file returned by the <b>FindFile</b> family of functions is cached by the file system. <a href="filesio_7wmd.htm">CreateFile</a> checks for this "hint" when it opens a file. If <b>CreateFile</b> is opening the same file that was just enumerated, it can immediately open the file rather than searching for it internally.</p><p>On the Xbox hard disk, this technique can buy as much as a 5x improvement over enumerating the files and then opening them later. On an Xbox MU, the improvement is approximately 3x.</p><h2><a name="IDANWEV"></a>Understand Storage Device Performance Specs</h2>
+<p>Peak Xbox hard disk throughput is 20 MB per second for both reading and writing. Peak Xbox memory unit throughput is about 750 KB per second for reading and 500 KB per second for writing. Peak DVD throughput is 6.5 MB per second. Hard disk seek time averages around 10 milliseconds. Seeking across the game DVD is an order of magnitude slower than seeking across the hard disk.</p><h2><a name="IDATWEV"></a>Use Asynchronous File Operations</h2>
+<p>Normally, <b>ReadFile</b> and <b>WriteFile</b> block until the entire read or write operation has completed. This bottleneck can cause a game to hang noticeably during large reads and writes. Asynchronous file I/O allows the system to notify you when a read or write is complete. That allows you do other work, like rendering graphics and audio, while a file is being read or written. A file is opened for asynchronous I/O by passing the flags FILE_FLAG_OVERLAPPED and FILE_FLAG_NO_BUFFERING to <b>CreateFile</b>. Files opened for asynchronous I/O have limitations on valid file buffer sizes and file offsets. There are two types of notification methods to choose from: callbacks and event objects. For additional information, see the XDK documentation on <b>CreateFile</b>.</p><p>Due to limitations in the Xbox file system, asynchronous file I/O calls (for example, <a href="filesio_0660.htm">ReadFileEx</a> and <a href="filesio_8r08.htm">WriteFileEx</a>) may not return immediately. I/O routines must periodically read the file's physical disk cluster mapping list to determine where file clusters are located on the disk. The time penalty required to read the file cluster mappings is insignificant for contiguous files, but may be significant (on the order of milliseconds) for highly fragmented files because they have many cluster mappings. The actual reading and writing of the file data is an asynchronous operation.</p><p>This performance penalty is not an issue on DVDs, where all files are contiguous, so asynchronous I/O on DVDs is truly asynchronous. On the Xbox hard disk, you can avoid the penalty by using asynchronous I/O only on the utility data region, where file fragmentation is typically a non-issue because titles can reformat the utility partition and have full control over the files on that partition. If you must use asynchronous file I/O on the persistent or user data regions of the Xbox hard disk, consider confining the I/O to a separate worker thread so that game rendering is not affected by hard disk file fragmentation.</p><h2><a name="IDAJXEV"></a>Use the CreateFile Optimization Flags</h2>
+<p>When opening a file with <b>CreateFile</b>, use FILE_FLAG_RANDOM_ACCESS to indicate that the file will typically be read/written in a non-sequential fashion. Use FILE_FLAG_SEQUENTIAL_SCAN to indicate that the file will typically be read/written in a sequential fashion. The Xbox file system uses these flags to adjust its file caching techniques. If you specify neither flag, FILE_FLAG_SEQUENTIAL_SCAN is assumed. For more details, see the XDK documentation on <b>CreateFile</b>.</p><h2><a name="IDATXEV"></a>Use Native Xbox Functions, Not CRT Wrappers</h2>
+<p>Both standard C and standard C++ file I/O routines (for example, <b>fopen</b>, <b>fread</b>, and <b>iostreams</b>) are supported on the Xbox. Keep in mind that these routines are wrappers on top of the Xbox file system functions and may impose performance penalties on your game. On the other hand, these libraries may also give improved performance because they provide their own file caching-at the expense of additional memory overhead. If you choose to use these libraries, be aware of potential performance issues. The Xbox functions expose optimization techniques, including optimization flags and asynchronous file operations, that are not provided by the standard C or C++ file functions.</p><h2><a name="IDAIAFV"></a>Use the XCalculateSignature Functions for Security</h2>
+<p>There is a family of <b>XCalculateSignature</b> functions than can be used to authenticate content and other data written to the hard disk. You must use these functions to sign saved games to meet Xbox Technical Certification Requirements. These routines can also be useful for any data that you want to protect from hackers or simply want to verify at run time. The signature function calculates a one-way hash, similar to a checksum, that can be stored with the data. When the data is read, the existing hash can be compared to a fresh hash of the data. If there's a match, you know the data is valid. If not, the data is corrupt.</p><p>The signature functions also allow you to sign files so that they're locked to a particular Xbox. If those files are transported to another Xbox, the hash comparison will fail. The hashing algorithm has good performance characteristics, so it can be used on large files without significant penalty.</p><h2><a name="IDAUAFV"></a>Check for File Function Failures</h2>
+<p>Any function that returns a handle (for example, <b>CreateFile</b>, <a href="filesio_4qcl.htm">FindFirstFile</a>, and <a href="x_mt_xcalculatesignaturebegin.htm">XCalculateSignatureBegin</a>) allocates system memory and should be checked for failure, which typically indicates a low memory condition.</p><p>Any function that accesses physical storage (for example, <b>ReadFile</b> and <b>WriteFile</b>) should be checked for errors, particularly functions that access Xbox memory units. If an MU is pulled from the controller during a file function, that function will report the error condition. Failure to check for file I/O errors can result in a game thinking that it has read or written data successfully when, in fact, the file access failed.</p><p>Another example of a function that should always be checked for errors is <a href="x_jsk_xcreatesavegame.htm">XCreateSaveGame</a>. It will return failure codes when there are already 4,096 saved games (the maximum) on the device or in the rare situations in which the save game directory cannot be created.</p><h2><a name="IDAKBFV"></a>Check for Memory Unit Mount Failures</h2>
+<p>The function <a href="x_jsk_xmountmu.htm">XMountMU</a> is used to prepare an Xbox Memory Unit for future file I/O. It can return a variety of error codes that must be handled properly:</p><table>
+<tr>
+<th>Error (ERROR_ ...)</th>
+<th>Condition</th>
+</tr>
+<tr>
+<td>SUCCESS</td>
+<td>The MU was mounted successfully.</td>
+</tr>
+<tr>
+<td>DISK_FULL</td>
+<td>Mount failed. The MU is full of data (saved games) from other titles and contains no free space. Display MU, but do not allow MU to be selected.</td>
+</tr>
+<tr>
+<td>ALREADY_ASSIGNED</td>
+<td>Mount failed. The MU has already been mounted. All calls to <b>XMountMU</b> must be matched with an <a href="x_jsk_xunmountmu.htm">XUnmountMU</a>.</td>
+</tr>
+<tr>
+<td>DEVICE_NOT_CONNECTED</td>
+<td>Mount failed. The MU was removed from the controller during the <b>XMountMU</b> call.</td>
+</tr>
+<tr>
+<td>OUTOFMEMORY</td>
+<td>Mount failed. Memory could not be allocated to mount the MU. Display MU, but do not allow MU to be selected.</td>
+</tr>
+<tr>
+<td>UNRECOGNIZED_VOLUME</td>
+<td>Mount failed. The MU is damaged and should be reformatted in the Dashboard. Display MU, but do not allow MU to be selected.</td>
+</tr>
+<tr>
+<td>Other file system errors</td>
+<td>Mount failed. System files on the MU failed to be read. The MU is damaged and should be reformatted in the Dashboard. Display MU, but do not allow MU to be selected.</td>
+</tr>
+</table>
+<h2><a name="IDA0CFV"></a>Use Compression to Minimize I/O</h2>
+<p>For games that are not CPU bound, I/O performance can be improved by using lossless compression techniques for storing data. Standard lossless algorithms often provide 2:1 or 3:1 compression ratios depending on the type of data, producing smaller files that require less time to read and write. The tradeoff is that a game will spend CPU time decompressing (and/or compressing) data, but in many cases the trade-off is well worth the I/O time saved.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

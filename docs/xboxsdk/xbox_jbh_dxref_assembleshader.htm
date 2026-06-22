@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>XGAssembleShader</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XGAssembleShader"/>
+<MSHelp:Keyword Index="F" Term="XGAssembleShader"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="xbox_jbh_swizzle_assembleshader"></A>XGAssembleShader</H1>
+
+<P>Assembles an ASCII description of a vertex or pixel shader into binary form.</P>
+
+<PRE class=syntax><B>HRESULT WINAPI XGAssembleShader(
+    LPCSTR</b> <i>pSourceFileName</i>,
+    <b>LPCVOID</b> <i>pSrcData</i>,
+    <b>UINT</b> <i>SrcDataLen</i>,
+    <b>DWORD</b> <i>Flags</i>,
+    <b>LPXGBUFFER</b> <i>*pConstants</i>,
+    <b>LPXGBUFFER</b> <i>*pCompiledShader</i>,
+    <b>LPXGBUFFER</b> <i>*pErrorLog</i>,
+    <b>LPXGBUFFER</b> <i>*pListing</i>,
+    <b>SASM_ResolverCallback</b> <i>pResolver</i>,
+    <b>LPVOID</b> <i>pResolverUserData</i>,
+    <b>LPDWORD</b> <i>pShaderType</i>
+    <b>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+
+<DT><I>pSourceFileName</I></DT>
+<DD>[in] Source file name&#8212;used in error messages.</DD>
+<DT><I>pSrcData</I></DT>
+<DD>[in] A pointer to the source data.</DD>
+<DT><I>SrcDataLen</I></DT>
+<DD>[in] The source data length.</DD>
+<DT><I>Flags</I></DT>
+<DD>[in] SASM_xxx flags. See xgraphics.h for a complete list.</DD>
+<DT><I>pConstants</I></DT>
+<DD>[out] If constants are declared in the shader, they are written here. Pass NULL if you don't care.</DD>
+<DT><I>pCompiledShader</I></DT>
+<DD>[out] The shader microcode is written here. Pass NULL if you don't care.</DD>
+<DT><I>pErrorLog</I></DT>
+<DD>[out] Errors are written here. Pass NULL if you don't care.</DD>
+<DT><I>pListing</I></DT>
+<DD>[out] A human-readable listing is written here. Pass NULL if you don't want it.</DD>
+<DT><I>pResolver</I></DT>
+<DD>[in] Used by the preprocessor. Can be NULL if you don't use #include in your source file.</DD>
+<DT><I>pResolverUserData</I></DT>
+<DD>[in] Passed unmodified to the pResolver function.</DD>
+<DT><I>pShaderType</I></DT>
+<DD>[out] Returns the type of shader that was assembled. Pass NULL if you don't care.</DD>
+
+</DL>
+
+<H4>Return Values</H4>
+
+<P>Returns S_OK if no errors.</P>
+
+<P>Returns a failure code if an error occured. For problems with the assembly program syntax, human-readable errors and warnings are written to the <i>pErrorLog</i>.</P>
+
+<h4>Remarks</h4>
+
+<p>The original file name and line number of the assembly source code can be specified by adding the #line directive to the source data. The #line directive is recognized only when the normal preprocessor is disabled. The  preprocessor can be disabled by passing the SASM_SKIPPREPROCESSOR flag into the <i>Flags</i> parameter of <b>XGAssembleShader</b>.</p>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in xgraphics.h.<BR>
+<B>&nbsp;&nbsp;Import Library: </B>Use xgraphics.lib</P>
+
+<H4>See Also</H4>
+<P><a href="xbox_dxg_AssemblerErrorMessages.htm"><b>Xbox Shader Assembler Error Codes</b></a>, <a href="xbox_jbh_tool_xsasm.htm"><b>Xbox Shader Assembler Tool (xsasm)</b></a> </P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

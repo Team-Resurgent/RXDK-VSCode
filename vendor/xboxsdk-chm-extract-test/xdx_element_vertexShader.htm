@@ -1,0 +1,92 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>vertexShader Element</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+<MSHelp:Attr Name="DevLang" Value="XML"/>
+<MSHelp:Attr Name="DevLang" Value="XSL"/>
+<MSHelp:Attr Name="Technology" Value="XML"/>
+<MSHelp:Keyword Index="K" Term="vertexShader element"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>vertexShader Element</h1>
+<p>The &lt;<b>vertexShader</b>&gt; element is used to group together the following: 1) a declaration which describes how vertex buffers are mapped to vertex registers, 2) a function in vertex shader assembly language, and 3) a block of constants.</p>
+<pre class="syntax" xml:space="preserve">&lt;vertexShader
+   id = string
+/&gt;</pre>
+<h4>Required Attributes</h4>
+<dl id="idXML">
+<dt><b>id</b></dt>
+<dd>
+						<p>Identifier used for referencing inside a &lt;<a href="xdx_element_model.htm">model</a>&gt; element. For more details, see <a href="xdx_id_attribute.htm">XDX id Attribute</a>.</p>
+					</dd>
+</dl>
+<h4>Optional Attributes</h4>
+<p>None.</p><h4>Element Information</h4>
+<table>
+<tr>
+<td><b>Parent Elements</b></td>
+<td><a href="xdx_element_xdx.htm">XDX</a></td>
+</tr>
+<tr>
+<td><b>Child Elements</b></td>
+<td><a href="xdx_element_asm.htm">asm</a>, <a href="xdx_element_constantvs.htm">constantVS</a>, <a href="xdx_element_declvs.htm">declVS</a></td>
+</tr>
+</table>
+<h4><a name="examples"></a>Examples</h4>
+<dl><dt><b>Vertex Shader with Diffuse Lighting</b></dt>
+<dd><p>This examples demonstrates how to setup a vertex shader with its declaration, assembly code, and constants. A vertex shader does not need to have any constants defined.</p>
+						
+
+<pre class="clsCode">
+&lt;vertexShader id="shader1"&gt;
+   &lt;declVS&gt;
+      &lt;stream index="0"&gt;
+         &lt;vreg index="0" name="POSITION" format="FLOAT3/&gt;
+         &lt;vreg index="1" name="NORMAL" format="FLOAT3/&gt;
+      &lt;/stream/&gt;
+   &lt;/declVS&gt;
+   &lt;asm&gt;
+      ;c0 = world * view * projection matrix
+      ;c4 = light position
+	  
+      vs.1.0
+	  
+      ;Compute position
+      m4x4 oPos v0, c0
+	  
+      ;Diffuse lighting
+      add r0,c4,-v0
+      dp3 r0.w,r0,r0
+      rsq r1.x,r0.w
+      mul r0,r0,r1.x
+      dp3 oD0,v1,r0
+   &lt;/asm&gt;
+   &lt;constantVS index="4" comment="light position"&gt;0 0 -1 0&lt;/constantVS&gt;
+&lt;/vertexShader&gt;
+</pre>
+    
+						</dd>
+</dl>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

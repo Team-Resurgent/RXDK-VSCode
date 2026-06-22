@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>XINPUT_CAPABILITIES</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="XINPUT_CAPABILITIES">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XINPUT_CAPABILITIES"/>
+<MSHelp:Keyword Index="F" Term="XINPUT_CAPABILITIES"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="xinput_capabilities"></A>XINPUT_CAPABILITIES</H1>
+
+<P>The <B>XINPUT_CAPABILITIES</B> structure, returned by the <A HREF="x_jsk_xinputgetcapabilities.htm">XInputGetCapabilities</a> function, describes the capabilities of a connected Xbox peripheral.</P>
+
+<PRE class=syntax>typedef struct _XINPUT_CAPABILITIES
+{
+    BYTE    SubType;
+    WORD    Reserved;
+    union  
+    {
+      XINPUT_GAMEPAD Gamepad;
+    } In;
+    union
+    {
+      XINPUT_RUMBLE Rumble;
+    } Out;
+} XINPUT_CAPABILITIES, *PXINPUT_CAPABILITIES;</PRE>
+
+<H4>Members</H4>
+
+<DL>
+<DT><B>SubType</B></DT>
+
+<DD>This value indicates the specific type of the game controller being queried.  The subtype will be one of the following values:
+<TABLE>
+<TR VALIGN="top">
+<TH>Subtype</TH><TH>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD>XINPUT_DEVSUBTYPE_GC_ARCADE_STICK</TD><TD>Arcade style joystick</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD>XINPUT_DEVSUBTYPE_GC_DIGITAL_ARCADE_STICK</TD><TD>Arcade style joystick, and buttons that are normally analog instead return 0 or 255 only</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD>XINPUT_DEVSUBTYPE_GC_FISHING_ROD</TD><TD>Fishing rod controller</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD>XINPUT_DEVSUBTYPE_GC_FLIGHT_STICK</TD><TD>Joystick designed for flight games</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD>XINPUT_DEVSUBTYPE_GC_GAMEPAD</TD><TD>Gamepad</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD>XINPUT_DEVSUBTYPE_GC_GAMEPAD_ALT</TD><TD>Gamepad, alternate configuration</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD>XINPUT_DEVSUBTYPE_GC_LIGHTGUN</TD><TD>Lightgun</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD>XINPUT_DEVSUBTYPE_GC_RADIO_FLIGHT_CONTROL</TD><TD>Wireless flight controller</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD>XINPUT_DEVSUBTYPE_GC_SNOWBOARD</TD><TD>Snowboard controller</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD>XINPUT_DEVSUBTYPE_GC_WHEEL</TD><TD>Wheel</TD>
+</TR>
+
+</TABLE><BR>
+
+<P class=note><B><I>Note</I></B>&nbsp;&nbsp;&nbsp;See the <a href="#remarks">Remarks</a> section below for restrictions on the use of this subtype value.  Additional subtypes may be added in the future.</P>
+
+</DD>
+
+<DT><B>Reserved</B></DT>
+
+<DD>Reserved for internal use only.</DD>
+
+<DT><B>Gamepad</B></DT>
+
+<DD>Contains a structure of type <B><A HREF="x_jsk_xinput_gamepad.htm">XINPUT_GAMEPAD</a></B> to describe available controller features and resolution.</DD>
+
+<DT><B>Rumble</B></DT>
+
+<DD>Contains a structure of type <B><A HREF="x_jsk_xinput_rumble.htm">XINPUT_RUMBLE</a></B> to describe available vibration functionality and resolution.</DD>
+
+</DL>
+
+<a name="remarks"></a><H4>Remarks</H4>
+
+<P>The <b>XINPUT_CAPABILITIES</b> structure is returned by <A HREF="x_jsk_xinputgetcapabilities.htm">XInputGetCapabilities</a> to indicate the characteristics and available functionality of a specified peripheral device.</P>
+
+<P>The structures in the <b>In</b> and <b>Out</b> unions are the same packet structures used when performing actual input or output to the device. On return from <B>XInputGetCapabilities</B>, each bit is set that corresponds to a real input or feedback on the device. For binary state controls, such as digital buttons, the corresponding bit reflects whether or not the control is present. For proportional controls, such as thumbsticks, the bits also indicate the bit resolution (some number of the least significant bits may not be set).</P>
+
+<P>The <b>SubType</b> member indicates the specific subtype of controller present.  Games may detect the controller subtype and tune their handling of controller input or output based on subtypes that are well suited to their game genre.  For example, a car racing game may want to check for the presence of a wheel controller to provide finer control of the car being driven.  However, titles must not disable or ignore a device based on its subtype&mdash;subtypes not recognized by the game or for which the game is not specifically tuned should be treated as a standard gamepad (XINPUT_DEVSUBTYPE_GC_GAMEPAD).  There are technical certification requirements associated with the correct treatment of such controller subtypes.  There are additional technical certification requirements related to the mapping of controller features to game functionality.  Please reference the Xbox Guide for more information.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Xbox.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+
+<H4>See Also</H4>
+<P>
+<A HREF="x_jsk_xid_structures.htm">Input Device Structures</a> |
+<A HREF="x_jsk_xinput_gamepad.htm">XINPUT_GAMEPAD</a>,  
+<A HREF="x_jsk_xinput_rumble.htm">XINPUT_RUMBLE</a>,
+<A HREF="x_jsk_xinputgetcapabilities.htm">XInputGetCapabilities</a>
+</P>
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>ShadowVolume Sample</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="ShadowVolume Sample"/>
+<MSHelp:Keyword Index="F" Term="ShadowVolume Sample"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>ShadowVolume Sample</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<!--****Intro paragraph. Should be a three or four sentence summary of the topic.****-->
+
+<P class="intro">The ShadowVolume sample uses stencil buffers to implement real-time shadows. In the sample, a complex object is rendered and used as a shadow caster to cast real-time shadows on itself and the terrain below.</P>
+
+<P class="intro">Using stencil buffers is a depth-buffer technique that can be updated as geometry is rendered and used again as a mask for drawing more geometry. Common effects include mirrors, shadows (an advanced technique), dissolves, and so on.</P>
+
+<!--*********************************************************************************-->
+
+<!--****Stock text. Do not change.****-->
+<h3 class="overview">Overview</H3>
+<!--**********************************-->
+
+<!--****Content paragraph. To use multiple paragraphs, copy and paste this tag.****-->
+
+<P class="content">Real-time shadows are a fairly advanced rendering technique. As each frame is rendered (or as the geometry or lights in the scene are moved), an object called a shadow volume is computed. A shadow volume is a 3D object that is the silhouette of the shadow-casting object as cast from the light source.</P>
+
+<P class="content">In the ShadowVolume sample, the 3D object that casts shadows is a biplane. For each frame, the silhouette of the plane is computed using an edge-detection algorithm in which silhouette edges are found by making use of the fact that the normals of adjacent polygons will have opposing normals with respect to the light vector. The resulting edge list (the silhouette) is extended away from the light source to create a 3D object. This 3D object is known as the shadow volume, as every point inside the volume is inside a shadow.</P>
+
+<P class="content">The shadow volume is rendered into the stencil buffer twice. First, only forward-facing polygons are rendered and the stencil buffer values are incremented each time there is  overdraw. Then the back-facing polygons of the shadow volume are drawn, decrementing values in the stencil buffer.</P>
+
+<P class="content">Normally, all incremented and decremented values would cancel each other out. However, because the scene was already rendered with normal geometry (the plane and the terrain, in this case), some pixels will fail the z-buffer test as the shadow volume is rendered. Any values left in the stencil buffer correspond to pixels that are in the shadow.</P>
+
+<P class="content">The remaining stencil buffer contents are used as a mask as a large all-encompassing black quad is alpha-blended into the scene. With the stencil buffer as a mask, only pixels in the shadow are darkened.</P>
+
+<p>A single pass solution is also implemented that uses two-sided lighting and the signed-add blend operation. This version will be slightly slower than the two-pass version unless the shadow geometry is transform bound.</p>
+
+<P class=note><B>Note</B>&nbsp;&nbsp; A limitation of shadow volumes is that the projected geometry will pass through other geometry. So the shadow volume will pass through the terrain and may appear on valleys that seem to be shielded by a ridge in the terrain.</P>
+
+<!--*******************************************************************************-->
+
+<H3 class="hdcontrols">Controls</H3>
+
+<P class="content">For a complete list of controller mappings, press the <B>Back</B> button on the Xbox controller while this sample is running.</P>
+
+
+<h3 class="overview">See Also</H3>
+
+<P class="content"><A HREF="xbox_jbh_samp_gra_stencilmirror.htm"><B>StencilMirror Sample</B></A>, <A HREF="xbox_jbh_samp_gra_stencildepth.htm"><B>StencilDepth Sample</B></A></P>
+
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

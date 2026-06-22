@@ -1,0 +1,45 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Suspending Thread Execution</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Suspending Thread Execution"/>
+<MSHelp:Keyword Index="F" Term="Suspending Thread Execution"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR></TR>
+</TABLE>
+<!--**********************************-->
+
+<H3><A NAME="_win32_suspending_thread_execution"></A>Suspending Thread Execution</H3>
+
+<P>A thread can suspend and resume the execution of another thread using the <A HREF="prothred_7gkk.htm"><B>SuspendThread</B></A> and <A HREF="prothred_59no.htm"><B>ResumeThread</B></A> functions. While a thread is suspended, it is not scheduled for time on the processor. </P>
+
+<P>The <B>SuspendThread</B> function is not particularly useful for synchronization because it does not control the point in the code at which the thread's execution is suspended. However, you might want to suspend a thread in a situation where you are waiting for user input that could cancel the work the thread is performing. If the user input cancels the work, have the thread exit; otherwise, call <B>ResumeThread</B>. </P>
+
+<P>If a thread is created in a suspended state (with the CREATE_SUSPENDED flag), it does not begin to execute until another thread calls <A HREF="prothred_59no.htm"><B>ResumeThread</B></A> with a handle to the suspended thread. This can be useful for initializing the thread's state before it begins to execute.  Suspending a thread at creation can be useful for one-time synchronization, because this ensures that the suspended thread will execute the starting point of its code when you call <B>ResumeThread</B>. </P>
+
+<P>A thread can temporarily yield its execution for a specified interval by calling the <A HREF="prothred_7jxs.htm"><B>Sleep</B></A> or <A HREF="prothred_0o8o.htm"><B>SleepEx</B></A> functions.  During the sleep interval, the thread is not scheduled for time on the processor.</P>
+
+<P>The <A HREF="prothred_30h0.htm"><B>SwitchToThread</B></A> function is similar to <B>Sleep</B> and <B>SleepEx</B>, except that you cannot specify the interval. <B>SwitchToThread</B> allows the thread to give up the remainder of its time slice.</P>
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

@@ -1,0 +1,96 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>IDirect3DDevice8::BeginState</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="F" Term="BeginState"/>
+<MSHelp:Keyword Index="K" Term="BeginState (IDirect3DDevice8)"/>
+<MSHelp:Keyword Index="K" Term="IDirect3DDevice8::BeginState"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>IDirect3DDevice8::BeginState</h1>
+<p>Allows the title to write state-setting commands directly into Direct3D's primary push-buffer. Unlike <a href="_dx_idirect3ddevice8_beginpush_graphics.htm">IDirect3DDevice8::BeginPush</a>, <b>BeginState</b> cannot be used to write rendering commands to the push-buffer.</p>
+<pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>BeginState(</b>
+    <b>DWORD</b> <i>Count</i><b>,</b>
+    <b>DWORD</b> **<i>ppPush</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+			<dt><i>Count</i></dt>
+<dd>[in]  The number of DWORDS to be reserved in the push-buffer. The caller can use less than this amount, but Direct3D will always guarantee that there are at least Count DWORDs free when <b>BeginPush</b> returns. For best performance, <i>Count</i> should be less than the <i>KickOffSize</i>, as specified by <a href="xbox_dx_graphics_IDirect3D8_SetPushBufferSize.htm">IDirect3D8::SetPushBufferSize</a>. The caller must never write more data than space has been reserved for.</dd>
+			<dt><i>ppPush</i></dt>
+<dd>[out]  Address of a pointer to a DWORD. On return, <i>*ppPush</i> points directly into Direct3D's primary push-buffer.</dd>
+		</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>Returns S_OK if successful, an error code otherwise.</p>
+<h4><a name="remarks"></a>Remarks</h4>
+<p>Calls to <a href="_dx_idirect3ddevice8_setvertexshaderconstant_graphics.htm">IDirect3DDevice8::SetVertexShaderConstant</a> can be replaced by calls to <b>BeginState</b> and <a href="_dx_idirect3ddevice8_endstate_graphics.htm">EndState</a>. <b>BeginState</b> and <b>EndState</b> are useful for cases when constant data has just been computed using SSE. The title can then write the data directly from the SSE registers into the push-buffer (instead of writing the data to memory, having Direct3D immediately read that memory, and then writing the data back out to the GPU). After calling <b>BeginState</b>, <b>IDirect3DDevice8::EndState</b> must be called once the data is completely written.</p>
+
+<p>Direct3D performs no validation on the data written to the push-buffer, even on debug builds. However, the GPU may generate a Graphics Hardware Error if the data is bad.</p>
+
+<p>The following example code shows how <b>BeginState</b>/<b>EndState</b> may be used to replace a call to <b>SetVertexShaderConstant</b>:</p>
+
+
+<pre class="clsCode">
+// The following code replaces pDev-&gt;SetVertexShaderConstant(CONSTANT, &amp;mat, 4):
+ 	
+DWORD* pPush;
+
+// Can reserve more than needed, but a value of 128 or more dwords is more 
+// expensive:
+
+pDev-&gt;BeginState(64, &amp;pPush);
+
+// 1 here isn't the parameter for SET_TRANSFORM_CONSTANT_LOAD; rather, it's 
+// the number of dwords written to that register:
+
+pPush[0] = D3DPUSH_ENCODE(D3DPUSH_SET_TRANSFORM_CONSTANT_LOAD, 1); 
+
+// Here is the actual parameter for SET_TRANSFORM_CONSTANT_LOAD.  Always
+// add 96 to the constant register:
+
+pPush[1] = CONSTANT + 96; 
+
+// A 4x4 matrix is 16 dwords.  You can encode a maximum of 32 dwords 
+// to D3DPUSH_SET_TRANSFORM_CONSTANT before needing another
+// D3DPUSH_ENCODE(D3DPUSH_SET_TRANSFORM_CONSTANT, ...):
+
+pPush[2] = D3DPUSH_ENCODE(D3DPUSH_SET_TRANSFORM_CONSTANT, 16); 
+memcpy(pPush + 3, &amp;mat, sizeof(mat));
+
+// The EndState parameter must always point to exactly the end of the
+// data written, otherwise random Graphics Hardware Errors will result:
+
+pDev-&gt;EndState(pPush + 19);
+</pre>
+    
+
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in D3d8.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use D3d8.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p><a href="_dx_idirect3ddevice8_endstate_graphics.htm">IDirect3DDevice8::EndState</a>, <a href="_dx_idirect3ddevice8_beginpush_graphics.htm">IDirect3DDevice8::BeginPush</a>, <a href="_dx_idirect3ddevice8_endpush_graphics.htm">IDirect3DDevice8::EndPush</a></p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

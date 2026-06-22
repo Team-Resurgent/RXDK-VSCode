@@ -1,0 +1,112 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineMutelistStartup</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineMutelistStartup"/>
+<MSHelp:Keyword Index="F" Term="XOnlineMutelistStartup"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineMutelistStartup</h1>
+<p>Creates an asynchronous task that processes additions to, as well as removals from, the mutelist.</p>
+<pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineMutelistStartup(</b>
+    <b>HANDLE</b> <i>hWorkEvent</i><b>,</b>
+    <b>PXONLINETASK_HANDLE</b> <i>phTask</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+<dt><i>hWorkEvent</i></dt>
+<p>
+<dd>[in, optional]  Handle to an event object, created by the title. This event is signaled 
+when there is work to do on the asynchronous task that adds and removes 
+players to/from the mutelist. Perform work on the task by calling 
+<a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> with the handle returned in the 
+<i>phTask</i> parameter. This parameter is optional and may be 
+NULL. If this parameter is NULL, the title should call 
+<b>XOnlineTaskContinue</b> periodically to perform work on the task.</dd> 
+</p>
+
+<dt><i>phTask</i></dt>
+<p>
+<dd>[out]  Pointer to a variable of type <b>XONLINETASK_HANDLE</b> that 
+receives the mutelist task. This task must be pumped by 
+<b>XOnlineTaskContinue</b> in order to process mutelist additions and 
+removals. When mutelist functionality is no longer needed, call 
+<a href="XOnlineTaskClose.htm">XOnlineTaskClose</a> to close this task.</dd> 
+</p>
+ 
+</dl>
+<h4><a name="return"></a>Return Values</h4> 
+<p>If <b>XOnlineMutelistStartup</b> succeeds, the return value is S_OK.</p>
+<p>If <b>XOnlineMutelistStartup</b> fails, the return value is one of the following error codes.</p>
+
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td>E_OUTOFMEMORY</td>
+<td>Insufficient memory. Free some memory.</td>
+</tr>
+
+<tr>
+<td>Other</td>
+<td>See <a href="xbox_online_errors.htm">Online Errors</a> for information about other possible errors.</td>     
+</tr>
+</table>
+
+
+<h4><a name="remarks"></a>Remarks</h4>
+
+<p>The title must successfully call <b>XOnlineMutelistStartup</b> once before making any calls to <a href="XOnlineMutelistAdd.htm">XOnlineMutelistAdd</a> or <a href="XOnlineMutelistRemove.htm">XOnlineMutelistRemove</a>. The <b>XOnlineMutelistStartup</b> function creates an asynchronous task that must be pumped in order to add or remove players from the mutelist.</p>
+
+<p>The task created by this function never completes on its own, and will 
+occasionally have work which must be done in order to process mutelist 
+tasks. The title should continue to perform work on this task by calling 
+<b>XOnlineTaskContinue</b> (typically once per frame), until either the 
+title no longer needs any mutelist functionality or 
+<b>XOnlineTaskContinue</b> returns an error code indicating a task error.</p>
+
+<p>When mutelist functionality is no longer needed, <a href="XOnlineTaskContinue.htm">pump</a> the task handle until 
+<b>XOnlineTaskContinue</b> returns XONLINETASK_S_RUNNING_IDLE, then close 
+the asynchronous task by calling <b>XOnlineTaskClose</b>.</p>
+
+<p>Players in the mutelist represent players who have been permanently voice 
+muted. The mutelist is maintained by the Xbox <i>Live</i> service and persists 
+across games and titles. The title must check the mutelist before sending 
+or receiving voice to another player.</p>
+
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="x_mt_xonline_functions.htm">Xbox Live Functions</a> | <a href="XOnlineMutelistAdd.htm">XOnlineMutelistAdd</a>,
+<a href="XOnlineMutelistRemove.htm">XOnlineMutelistRemove</a>, <a href="XOnlineMutelistGet.htm">XOnlineMutelistGet</a>
+</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

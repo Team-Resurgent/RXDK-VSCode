@@ -1,0 +1,48 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Synchronizing Push-buffer and Timing Data</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Synchronizing Push-buffer and Timing Data"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+  <MSHelp:Keyword Index="K" Term="push-buffer data, capturing with PIX"/>
+  <MSHelp:Keyword Index="K" Term="timing data, capturing with PIX"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Synchronizing Push-buffer and Timing Data</h1>
+<p>PIX supports capturing timing data without push-buffer data. It can also capture push-buffer data without timing data. It is at its most powerful, though, when both types of data are captured and work together to provide a more complete picture of what is happening in the game.</p><p>Since push-buffer capture takes so long, it is not possible to do it at the same time that timing data is being captured. Trying to capture both at the same time would skew the timing results so much that they would be useless. This means that when both types of data are requested, the data must be captured in two passes. This imposes a requirement on the game being analyzed. It must be able to repeat the rendering commands from the previous frame in the current frame. This ensures that the events in the push-buffer capture match up with the events in the timing capture.</p><p>If the game does not do this properly, PIX will detect that the timing and push-buffer events don't match, and it will then give the user an option to examine just the push-buffer data or just the timing data.</p><p>To determine whether it must repeat a frame, a title should call <a href="_dx_d3dperf_queryrepeatframe.htm">D3DPERF_QueryRepeatFrame</a>. This function returns TRUE if PIX expects the title to repeat the previous frame. The title can call this function at the beginning of its frame to determine whether it should update the scene or re-render it from the previous frame. When PIX is capturing data, <b>D3DPERF_QueryRepeatFrame</b> will return TRUE after <a href="_dx_idirect3ddevice8_present_graphics.htm">Present</a> is called at the end of the timing capture frame, until <b>Present</b> is called at the end of the push-buffer capture frame.</p><p>The following code snippet demonstrates how to use <b>D3DPERF_QueryRepeatFrame</b>.</p>
+<pre class="clsCode">
+// Run the game loop, animating and rendering frames.
+for( ;; )
+{
+   HandleInput();
+   FrameMove();
+   Render();
+   
+   // Render the frame again if the PIX tool is running and has 
+   // requested us to repeat the frame. Note that we don't move, 
+   // but rather re-render the scene exactly as before.
+   if( TRUE == D3DPERF_QueryRepeatFrame() )
+   {
+      Render();
+   }
+}
+</pre>
+    <p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Many games provide a separate means of disabling scene updates so that they can "freeze" the game at a particular point. If the game doesn't wish to support scene repeating on-demand, a user can just put the game in "freeze" mode and then capture timing and push-buffer data.</p><p>It may be possible for PIX to do more than the behavior previously described if the timing events and the push-buffer events don't match. It might make sense for PIX to analyze the two event lists and discard events that don't have a match. The remaining events might still provide some useful information. This will require some experimentation to determine if it is worthwhile.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

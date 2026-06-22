@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>D3DRECTPATCH_INFO</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="D3DRECTPATCH_INFO">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="D3DRECTPATCH_INFO"/>
+<MSHelp:Keyword Index="F" Term="D3DRECTPATCH_INFO"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_d3drectpatch_info_graphics"></A>D3DRECTPATCH_INFO</H1>
+
+<P>Describes a rectangular high-order patch.</P>
+
+<PRE class=syntax>typedef struct _D3DRECTPATCH_INFO {
+    UINT                StartVertexOffsetWidth;
+    UINT                StartVertexOffsetHeight;
+    UINT                Width;
+    UINT                Height;
+    UINT                Stride;
+    D3DBASISTYPE        Basis;
+    D3DORDERTYPE        Order;
+} D3DRECTPATCH_INFO;
+</PRE>
+
+<H4>Members</H4>
+
+<DL>
+<DT><B>StartVertexOffsetWidth</B></DT>
+
+<DD>Starting vertex offset width, in number of vertices. </DD>
+
+<DT><B>StartVertexOffsetHeight</B></DT>
+
+<DD>Starting vertex offset height, in number of vertices. </DD>
+
+<DT><B>Width</B></DT>
+
+<DD>Width of each vertex, in number of vertices. </DD>
+
+<DT><B>Height</B></DT>
+
+<DD>Height of each vertex, in number of vertices. </DD>
+
+<DT><B>Stride</B></DT>
+
+<DD>Stride between segments, in number of vertices.</DD>
+
+<DT><B>Basis</B></DT>
+
+<DD>Member of the <A HREF="_dx_d3dbasistype_graphics.htm">D3DBASISTYPE</A> enumerated type, defining the basis type for the rectangular high-order patch.</DD>
+
+<DT><B>Order</B></DT>
+
+<DD>Member of the <A HREF="_dx_d3dordertype_graphics.htm">D3DORDERTYPE</A> enumerated type, defining the order type for the rectangular high-order patch. If <b>Basis</b> is D3DBASIS_INTERPOLATE, <b>Order</b> cannot be D3DORDER_QUINTIC.
+</DD>
+</DL>
+
+<H4>Remarks</H4>
+
+<P>To render a stream of individual rectangular patches (non-mosaic), you should interpret your geometry as a long narrow (1 &times; N) rectangular patch. The <B>D3DRECTPATCH_INFO</B> structure for such a strip (cubic b&#233;zier) would be set up in the following manner.</P>
+
+<PRE>D3DRECTPATCH_INFO RectInfo;
+
+RectInfo.Width = 4;
+RectInfo.Height= 4;
+RectInfo.Stride= 4;
+RectInfo.Basis =  D3DBASIS_BEZIER;
+RectInfo.Order =  D3DORDER_CUBIC;
+RectInfo.StartVertexOffsetWidth = 0;
+RectInfo.StartVertexOffsetHeight = 4*i;  // The variable i is the index of the patch you want to render.
+</PRE>
+
+<h4>Xbox Optimizations</h4>
+
+<p>Xbox does not support D3DORDER_QUINTIC as the order type for rectangular patches when the basis type is D3DBASIS_INTERPOLATE.</p>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in D3d8types.h.</P>
+
+<H4>See Also</H4>
+
+<P><A HREF="_dx_idirect3ddevice8_drawrectpatch_graphics.htm">IDirect3DDevice8::DrawRectPatch</A></P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

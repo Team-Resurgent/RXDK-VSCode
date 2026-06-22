@@ -1,0 +1,78 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirect3DDevice8::UpdateOverlay</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="UpdateOverlay (IDirect3DDevice8)"/>
+<MSHelp:Keyword Index="K" Term="IDirect3DDevice8::UpdateOverlay"/>
+<MSHelp:Keyword Index="F" Term="UpdateOverlay"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_idirect3ddevice8_updateoverlay_graphics"></A>IDirect3DDevice8::UpdateOverlay</H1>
+
+<P>Updates the overlay.</P>
+
+<PRE class=syntax><B>HRESULT WINAPI UpdateOverlay(
+  D3DSurface</b> <i>*pSurface</i>,<b> 
+  CONST RECT</b> <i>*SrcRect</i><b>, 
+  CONST RECT</b> <i>*DstRect</i><b>, 
+  BOOL</b> <i>EnableColorKey</i><b>, 
+  D3DCOLOR</b> <i>ColorKey</i>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>pSurface</I></DT>
+<DD>[in] Pointer to an <a href="_dx_idirect3dsurface8_graphics.htm">IDirect3DSurface8</a> interface, representing the overlay. This surface must have been created using the <a href="_dx_d3dformat_graphics.htm#d3dfmt_yuy2">D3DFMT_YUY2</a> surface format.</DD>
+
+<DT><I>SrcRect</I></DT>
+<DD>[in] Pointer to a <b>RECT</b> structure containing the source rectangle. Cannot be NULL.</DD>
+
+<DT><I>DstRect</I></DT>
+<DD>[in] Pointer to a <b>RECT</b> structure containing the destination rectangle. Cannot be NULL.</DD>
+
+<DT><I>EnableColorKey</I></DT>
+<DD>[in] TRUE to enable color key operations on the surface being used for an overlay. If <i>EnableColorKey</i> is FALSE, the overlay will be rendered opaquely.</DD>
+
+<DT><I>ColorKey</I></DT>
+<DD>[in] <b>D3DCOLOR</b> value to replace with transparent black. This is always a 32-bit ARGB color, independent of the source image format.</DD>
+
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is S_OK.</P>
+
+<h4>Remarks</h4>
+
+<p>Overlays must have been enabled using <a href="_dx_idirect3ddevice8_enableoverlay_graphics.htm">IDirect3DDevice8::EnableOverlay</a> before calling <b>UpdateOverlay</b>. In addition, before calling <b>UpdateOverlay</b>, at least one call to either <a href="_dx_idirect3ddevice8_present_graphics.htm">IDirect3DDevice8::Present</a> or <a href="_dx_idirect3ddevice8_swap_graphics.htm">IDirect3DDevice8::Swap</a> must occur.</p>
+
+<p><b>UpdateOverlay</b> does not display the overlay surface immediately. The display occurs on the next vertical blank. Check the status of the overlay by calling <a href="xbox_dxg_idirect3ddevice8_getoverlayupdatestatus.htm">IDirect3DDevice8::GetOverlayUpdateStatus</a>. Until <b>GetOverlayUpdateStatus</b> returns TRUE, writing to the previously displayed overlay surface causes visual glitches.</p>
+
+<H4>Requirements</H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in D3d8.h.<BR>
+<B>&nbsp;&nbsp;Import Library:</B> Use D3d8.lib.</P>
+
+<h4>See Also</h4>
+
+<p><a href="_dx_idirect3ddevice8_enableoverlay_graphics.htm">IDirect3DDevice8::EnableOverlay</a>, <a href="xbox_dxg_IDirect3DDevice8_GetOverlayUpdateStatus.htm">IDirect3DDevice8::GetOverlayUpdateStatus</a></p>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

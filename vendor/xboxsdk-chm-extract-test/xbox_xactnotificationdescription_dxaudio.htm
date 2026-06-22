@@ -1,0 +1,217 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XACT_NOTIFICATION_DESCRIPTION</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XACT_NOTIFICATION_DESCRIPTION"/>
+<MSHelp:Keyword Index="F" Term="XACT_NOTIFICATION_DESCRIPTION"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+    <body topmargin="0">
+        <table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+        <h1>XACT_NOTIFICATION_DESCRIPTION</h1>
+
+        
+        
+<p>Contains XACT notification description information.</p>
+
+	
+		
+
+<pre class="syntax">typedef struct _XACT_NOTIFICATION_DESCRIPTION{
+    WORD wType;
+    WORD wFlags;
+    union {
+        PXACTSOUNDBANK pSoundBank;
+        PXACTWAVEBANK pWaveBank;
+    } u;
+    DWORD dwSoundCueIndex;
+    PXACTSOUNDCUE pSoundCue;
+    PVOID pvContext;
+    HANDLE hEvent;
+} XACT_NOTIFICATION_DESCRIPTION, *PXACT_NOTIFICATION_DESCRIPTION;
+
+typedef const XACT_NOTIFICATION_DESCRIPTION *PCXACT_NOTIFICATION_DESCRIPTION;</pre>
+                    
+                
+            
+            
+                <h4><a name="members"></a>Members</h4>
+<dl>
+			<dt><b>wType</b></dt>
+				<dd>Notification type.  An <a href="xbox_xactnotificationtype_dxaudio.htm">XACT_NOTIFICATION_TYPE</a> value, or XACT_NOTIFICATION_TYPE_UNUSED (to retrieve or cancel <i>any</i> notification type when calling <a href="xbox_ixactengine_getnotification_dxaudio.htm">GetNotification</a> or <a href="xbox_ixactengine_flushnotification_dxaudio.htm">FlushNotification</a>).</dd>
+			
+			<dt><b>wFlags</b></dt>
+				<dd>Value indicating the notification flags. This defines the type of object the notification is registered for and can be the following:</dd>
+				<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+					<tr>
+<td>XACT_FLAG_NOTIFICATION_PERSIST</td>
+<td>Indicates that the notification should persist after the event has occurred. This flag is used only when registering a notification. If this flag is not specified, notifications are automatically unregistered after they fire once. This flag is not valid when calling <a href="xbox_ixactengine_getnotification_dxaudio.htm">GetNotification</a> or <a href="xbox_ixactengine_flushnotification_dxaudio.htm">FlushNotification</a>.</td>
+</tr>
+
+					<tr>
+<td>XACT_FLAG_NOTIFICATION_SOUNDCUE_DESTROYED</td>
+<td>Notification references a sound cue that has been terminated and freed by XACT (commonly set for Stop notifications).</td>
+</tr>
+
+					<tr>
+<td>XACT_FLAG_NOTIFICATION_USE_WAVEBANK</td>
+<td>Notification applies to a wave bank. This flag cannot be used with the XACT_FLAG_NOTIFICATION_PERSIST or XACT_FLAG_NOTIFICATION_USE_SOUNDCUE_INDEX flags. When specifying this flag, the <b>wType</b> member must be eXACTNotification_StreamDataAvailable. Also, when specifying this flag, the <b>dwSoundCueIndex</b> member must be XACT_SOUNDCUE_INDEX_UNUSED. A pointer to a valid wave bank must be specified when using this flag.</td>
+</tr>
+					<tr>
+<td>XACT_FLAG_NOTIFICATION_USE_SOUNDCUE_INDEX</td>
+<td>Notification applies to a sound cue index. This flag cannot be used with the XACT_FLAG_NOTIFICATION_USE_WAVEBANK flag. A pointer to a valid sound bank must be specified when using this flag.</td>
+</tr>
+					<tr>
+<td>XACT_FLAG_NOTIFICATION_USE_SOUNDCUE_INSTANCE</td>
+<td>Notification applies to a sound cue instance. This flag cannot be used with the XACT_FLAG_NOTIFICATION_USE_WAVEBANK flag. A pointer to a valid sound bank and a valid sound cue must be specified when using this flag.</td>
+</tr>
+				</table>
+			
+			
+				<dt><b>pSoundBank</b></dt>
+					<dd>Pointer to an <a href="xbox_ixactsoundbank_dxaudio.htm">IXACTSoundBank</a>.</dd>
+				
+				<dt><b>pWaveBank</b></dt>
+					<dd>Pointer to an IXACTWaveBank.</dd>
+				
+			
+			<dt><b>dwSoundCueIndex</b></dt>
+				<dd>Value indicating the sound cue index. This value must be XACT_SOUNDCUE_INDEX_UNUSED when specifying the XACT_FLAG_NOTIFICATION_USE_WAVEBANK flag. If XACT_SOUNDCUE_INDEX_ALL is specified, notifications on all cues will be affected when calling <a href="xbox_ixactengine_getnotification_dxaudio.htm">GetNotification</a>, <a href="xbox_ixactengine_flushnotification_dxaudio.htm">FlushNotification</a>, <a href="xbox_ixactengine_registernotification_dxaudio.htm">RegisterNotification</a>, or <a href="xbox_ixactengine_unregisternotification_dxaudio.htm">UnRegisterNotification</a>.</dd>
+			
+			<dt><b>pSoundCue</b></dt>
+				<dd>Pointer to an IXACTSoundCue. This parameter is reserved when calling <a href="xbox_ixactengine_registernotification_dxaudio.htm">RegisterNotification</a> and <a href="xbox_ixactengine_flushnotification_dxaudio.htm">FlushNotification</a> and should be set to NULL. For <a href="xbox_ixactengine_getnotification_dxaudio.htm">GetNotification</a>, <b>pSoundCue</b> contains the instance pointer of a sound cue, if the notification was registered on a sound cue index.  Titles can use the returned <b>pSoundCue</b> to identify which cue instance the notification applies to, but should not make any calls using the <b>pSoundCue</b> pointer if the XACT_FLAG_NOTIFICATION_SOUNDCUE_DESTROYED flag is set on the notification (indicating that the cue has been freed).</dd>
+			
+			<dt><b>pvContext</b></dt>
+				<dd>Ignored.  Must be NULL.</dd>
+			
+			<dt><b>hEvent</b></dt>
+				<dd>An event handle.</dd>
+			
+		</dl>
+                <h4><a name="remarks"></a>Remarks</h4>
+			<p>Some members of the <b>XACT_NOTIFICATION_DESCRIPTION</b> structure are used differently, depending on which XACT API notification function is called and whether the structure is an <b>in</b> parameter or an <b>out</b> parameter. The following functions take the <b>XACT_NOTIFICATION_DESCRIPTION</b> structure as an <b>in</b> parameter:</p>
+<table>
+    <tr>
+		<th>Notification Function</th>
+        <th>wType</th>
+		<th>wFlags</th>
+		<th>union</th>
+		<th>dwSoundCueIndex</th>
+		<th>pSoundCue</th>
+		
+		<th>hEvent</th>
+	</tr>
+	
+	<tr>
+		<td><a href="xbox_ixactengine_flushnotification_dxaudio.htm">FlushNotification</a></td>
+		<td>Required</td>
+		<td>Required</td>
+		<td>Required</td>
+		<td>Required if <b>wFlags</b> contains XACT_FLAG_NOTIFICATION_USE_SOUNDCUE_INDEX, otherwise use XACT_SOUNDCUE_INDEX_UNUSED</td>
+		<td>Reserved; pass NULL</td>
+		
+		<td>Ignored</td>
+	</tr>
+	
+	<tr>
+		<td><a href="xbox_ixactengine_getnotification_dxaudio.htm">GetNotification</a></td>
+		<td>Required</td>
+		<td>Required</td>
+		<td>Required</td>
+		<td>Required if <b>wFlags</b> contains XACT_FLAG_NOTIFICATION_USE_SOUNDCUE_INDEX, otherwise use XACT_SOUNDCUE_INDEX_UNUSED</td>
+		<td>Reserved; pass NULL</td>
+		
+		
+		<td>Ignored</td>
+	</tr>
+
+	<tr>
+		<td><a href="xbox_ixactengine_registernotification_dxaudio.htm">RegisterNotification</a></td>
+		<td>Required</td>
+		<td>Required</td>
+		<td>Required</td>
+		<td>Required if <b>wFlags</b> contains XACT_FLAG_NOTIFICATION_USE_SOUNDCUE_INDEX, otherwise use XACT_SOUNDCUE_INDEX_UNUSED</td>
+		<td>Reserved; pass NULL</td>
+		
+		<td>Optional handle of an event you wish to have set when the notification fires</td>
+	</tr>
+
+	<tr>
+		<td><a href="xbox_ixactengine_unregisternotification_dxaudio.htm">UnRegisterNotification</a></td>
+		<td>Required</td>
+		<td>Required</td>
+		<td>Required</td>
+		<td>Required if <b>wFlags</b> contains XACT_FLAG_NOTIFICATION_USE_SOUNDCUE_INDEX, otherwise use XACT_SOUNDCUE_INDEX_UNUSED</td>
+		<td>Reserved; pass NULL</td>
+		
+		<td>Ignored</td>
+	</tr>
+</table>
+			<p>Additionally, notification types can be valid or invalid with a particular object type. The table below illustrates which combinations can be used:</p>
+<table>
+    <tr>
+		<th>Notification</th>
+        <th>SoundCue</th>
+		<th>WaveBank</th>
+	</tr>
+	
+	<tr>
+		<td>eXACTNotification_Start</td>
+		<td>Valid</td>
+		<td>Invalid</td>
+	</tr>
+
+	<tr>
+		<td>eXACTNotification_Stop</td>
+		<td>Valid</td>
+		<td>Invalid</td>
+	</tr>
+
+	<tr>
+		<td>eXACTNotification_Marker</td>
+		<td>Valid</td>
+		<td>Invalid</td>
+	</tr>
+
+	<tr>
+		<td>eXACTNotification_StreamDataAvailable</td>
+		<td>Valid</td>
+		<td>Valid</td>
+	</tr>
+</table>
+		
+				
+            
+                <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xact.h.</p>
+            
+                <h4><a name="seealso"></a>See Also</h4>
+<p>
+			<a href="xbox_ixactsoundbank_dxaudio.htm">IXACTSoundBank</a>, <a href="xbox_ixactengine_flushnotification_dxaudio.htm">IXACTEngine::FlushNotification</a>, <a href="xbox_ixactengine_getnotification_dxaudio.htm">IXACTEngine::GetNotification</a>, <a href="xbox_ixactengine_registernotification_dxaudio.htm">IXACTEngine::RegisterNotification</a>, <a href="xbox_ixactengine_unregisternotification_dxaudio.htm">IXACTEngine::UnRegisterNotification</a>, <a href="xbox_xactnotification_dxaudio.htm">XACT_NOTIFICATION</a>
+		</p>
+
+        <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+    </body>
+    </html>

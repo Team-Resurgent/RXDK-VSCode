@@ -1,0 +1,63 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>IDirectSound8::GetOutputLevels</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="F" Term="GetOutputLevels"/>
+<MSHelp:Keyword Index="K" Term="GetOutputLevels (IDirectSound8)"/>
+<MSHelp:Keyword Index="K" Term="IDirectSound8::GetOutputLevels"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>IDirectSound8::GetOutputLevels</h1>
+<p>Retrieves the peak output and root mean square (<a href="r.htm#_dx_root_mean_square_glos">RMS</a>) levels for all digital channels of the current audio frame. The method also retrieves the analog left and right totals for the current audio frame.</p>
+<pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>GetOutputLevels(</b>
+    <b>LPDSOUTPUTLEVELS</b> <i>pOutputLevels</i><b>,</b>
+    <b>BOOL</b> <i>fResetPeakValues</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+            <dt><i>pOutputLevels</i></dt>
+                <dd>[out]  Pointer to a <a href="xbox_dsoutputlevels_dxaudio.htm">DSOUTPUTLEVELS</a> structure that receives the data.</dd>
+            
+            <dt><i>fResetPeakValues</i></dt>
+                <dd>[in]  Boolean value that indicates whether or not to reset the peak values.  If TRUE, future calls to <b>GetOutputLevels</b> will return the peak values that have occurred after the most recent reset.</dd>
+            
+        </dl>
+<h4><a name="return"></a>Return Values</h4>
+            <p>Returns DS_OK if successful, an error code otherwise.</p>
+        <h4><a name="remarks"></a>Remarks</h4>
+			<p>In this case, the length of the current audio frame is 256 samples (5 msec) using the Encode Processor.  The length of an audio frame in the Voice Processor or the Global Processor is typically 0.667 msec.</p>
+			<p>The <a href="r.htm#_dx_root_mean_square_glos">RMS</a> is calculated over the last 256 samples. Peak level is the maximum amplitude out of a channel over the last audio frame.</p>
+			<p>Decibels are calculated from <b>DWORD</b>s as a ratio between the <b>DWORD</b> output level and the full scale amplitude (0 dBFS would be 2^23). To calculate decibel values for <i>OutputLevelPeak</i>, we would use the following formula:</p>
+			<img src="images/xbox_idirectsound8_getoutputlevels_dxaudio_peak.gif">
+			<p>Similarly, if you wanted to calculate RMS in decibels:</p>
+			<img src="images/xbox_idirectsound8_getoutputlevels_dxaudio_rms.gif">
+			<p>To calculate the value in millibels, simply use 2000 instead of 20.</p>
+			<p>Even though DirectSound allows you to set the minimum volume to –100 dB, the XBox audio hardware clamps to silence at –64 dB. Applications that read and display output levels (such as a VU meter) should scale between 0 dB and –64 dB.</p>
+		<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in DSound.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use DSound.lib.</p>
+    <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

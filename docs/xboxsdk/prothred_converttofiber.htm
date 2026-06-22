@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>ConvertThreadToFiber</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="ConvertThreadToFiber">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="ConvertThreadToFiber"/>
+<MSHelp:Keyword Index="F" Term="ConvertThreadToFiber"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_convertthreadtofiber"></A>ConvertThreadToFiber</H1>
+
+<P>The <B>ConvertTheadToFiber</B> function converts the current thread into a fiber. You must convert a thread into a fiber before you can schedule other fibers.</P>
+
+<PRE class=syntax><B>LPVOID ConvertThreadToFiber(
+  LPVOID</B><I> lpParameter  </I>// fiber data for new fiber
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>lpParameter</I></DT>
+
+<DD>[in] Specifies a single variable that is passed to the fiber. The fiber can retrieve this value by using the <A HREF="prothred_getfiberdata.htm">GetFiberData</a> macro.
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>The return value is the address of the fiber.</P>
+
+<H4>Remarks</H4>
+
+<P>The <B>ConvertThreadToFiber</B> function converts the current thread into a fiber.  The fiber is now the currently executing fiber and can create and schedule other fibers.  Fibers cooperatively schedule each other explicitly by calling <A HREF="prothred_switchtofiber.htm">SwitchToFiber</a>.  Only fibers can schedule other fibers. If a thread needs to schedule a fiber, it must first call <B>ConvertThreadToFiber</B> to become a fiber.</P>
+
+<P>Fibers have very low overhead.  Fiber state information is stored at the top of a fiber's stack, so there is no memory cost for a fiber other than its stack.</P>
+
+<P>The fiber data specified in <I>lpParameter</I> is stored as part of the fiber state information.</P>
+
+<H4>Requirements</H4>
+
+<P><b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib</P>
+
+<H4>See Also</H4>
+
+<P>
+<a href="xbox_mt_xtl_sll_threads_overview.htm">Thread Overview</a>,
+<a href="xbox_mt_xtl_sll_threads_functions.htm">Thread Functions</a> | 
+<A HREF="prothred_createfiber.htm">CreateFiber</a>,
+<A HREF="prothred_getfiberdata.htm">GetFiberData</a>,
+<A HREF="prothred_switchtofiber.htm">SwitchToFiber</a>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

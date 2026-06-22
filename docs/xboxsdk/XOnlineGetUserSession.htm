@@ -1,0 +1,93 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineGetUserSession</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineGetUserSession"/>
+<MSHelp:Keyword Index="F" Term="XOnlineGetUserSession"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineGetUserSession</h1>
+            <p>Retrieves the session information for a user.</p>
+        <pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineGetUserSession(</b>
+    <b>DWORD</b> <i>dwUserIndex</i><b>,</b>
+    <b>XUID</b> <i>xuidPeer</i><b>,</b>
+    <b>HANDLE</b> <i>hWorkEvent</i><b>,</b>
+    <b>PXONLINETASK_HANDLE</b> <i>phTask</i><b>,</b>
+    <b>PXONLINE_PEER_SESSION_RESULTS</b> <i>pResults</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+            <dt><i>dwUserIndex</i></dt>
+                <p>
+<dd>[in]  The controller index (zero-based) of the player.
+The player must have been successfully logged on with a previous call to <a href="XOnlineLogon.htm">XOnlineLogon</a>.</dd>
+                </p>
+            
+            <dt><i>xuidPeer</i></dt>
+                <p>
+<dd>[in]  <a href="xuid.htm">XUID</a> of the player for whom to obtain session information.</dd>
+                </p>
+            
+            <dt><i>hWorkEvent</i></dt>
+                <p>
+<dd>[in, optional]  Handle to an event object, created by the title. This event is signaled when
+there is work to do on the asynchronous task that retrieves the session
+information. Perform work on the task by calling <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> with
+the handle returned in the <i>phTask</i> parameter. This parameter is
+optional and may be NULL. If this parameter is NULL, the title should call <b>XOnlineTaskContinue</b> periodically to perform work on the task.</dd>
+                </p>
+            
+            <dt><i>phTask</i></dt>
+                <p>
+<dd>[out]  Pointer to a variable of type <b>XONLINETASK_HANDLE</b> that
+receives a handle to the task that retrieves the session information. Pump this
+task to completion using <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a>. When the task
+completes, <b>XOnlineTaskContinue</b> returns XONLINETASK_S_SUCCESS. After
+the task completes, call <a href="XOnlineTaskClose.htm">XOnlineTaskClose</a> to close the task.</dd>
+                </p>
+            
+            <dt><i>pResults</i></dt>
+                <p>
+<dd>[out]  Pointer to an XONLINE_PEER_SESSION_RESULTS structure that receives
+the session information for the user specified by the <i>xuidPeer</i>
+parameter.</dd>
+                </p>
+            
+        </dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>Returns S_OK if successful, an error code otherwise.</p>
+<h4><a name="remarks"></a>Remarks</h4>
+            <p>Use the <b>XOnlineGetUserSession</b> function to obtain the session information for an
+            Xbox <i>Live</i> game session.</p>
+        <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+			<a href="x_mt_xonline_functions.htm">Xbox Live Functions</a>, <a href="XOnlineGetSession.htm">XOnlineGetSession</a> 
+        </p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

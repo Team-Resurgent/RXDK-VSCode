@@ -1,0 +1,171 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Designing Game Clips</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Designing Game Clips"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Designing Game Clips</h1>
+<p>A publisher can allow stats attachments on any of a title's leaderboards. The stats service currently limits each title to 20 leaderboards. Publishers are allowed 1 GB of attachment storage space per title. The total per-title storage quota of 1 GB is enforced at leaderboard configuration time; the sum of the maximum consumable storage space for all of the title's leaderboards must not exceed 1 GB. The maximum consumable storage space is a product of the maximum upload size and the number of slots on that leaderboard for which upload is allowed. The maximum upload size for a single attachment is 2 MB.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Leaderboards are also referred to as "scoreboards."</p><ul>
+<li><a href="#IDAQKEV">Publisher Submission</a></li><li><a href="#IDAWKEV">Reconfiguration</a></li><li><a href="#IDAHLEV">Attachment Upload Verification</a></li><li><a href="#IDATLEV">Stats-Write Functionality Enhancements</a></li><li><a href="#IDAUMEV">Attachment Upload</a></li><li><a href="#IDAVIEV">Region and Version Conflict Management</a></li><li><a href="#IDADOEV">Maximum Upload Size Enforcement</a></li><li><a href="#IDAZIEV">Attachment Data Format</a></li><li><a href="#IDANOEV">Upload Errors</a></li><li><a href="#IDAFPEV">Destructive Uploads</a></li><li><a href="#IDAKPEV">Metadata</a></li><li><a href="#IDAGNEV">Attachment Download</a></li><li><a href="#IDAIJEV">Download API</a></li><li><a href="#IDAUJEV">Caching</a></li></ul>
+<h2><a name="IDAQKEV"></a>Publisher Submission</h2>
+<p>
+		        Within the limits mentioned above, titles can manage per-leaderboard allotment, including 
+		        maximum upload size and number of uploads per leaderboard. To take advantage of 
+		        stats attachments for any of the title's leaderboards, games must use <a href="xbox_tool_xlast_stats_leaderboard_prop.htm">XLAST</a>
+		        to submit a stats configuration package for each leaderboard to be attachment enabled. 
+
+		    </p><h2><a name="IDAWKEV"></a>Reconfiguration</h2>
+<p>
+		        With <b>XLAST</b>, publishers can change the number of uploads per leaderboard after a game is released. The process is similar to the initial leaderboard configuration process described previously.
+		    </p><p>
+		        If a game reduces the number of uploads allowed on a given leaderboard, then the 
+		        attachments for the ranks that drop below the upload threshold are deleted once 
+		        the threshold is changed. For example, suppose the game initially keeps 20 
+		        packages for the top 20 races. If the title reduces the number of packages to 
+		        only the top 5 races, we delete the other 15 packages at the time the upload 
+		        threshold is changed.
+		    </p><h2><a name="IDAHLEV"></a>Attachment Upload Verification</h2>
+<p>
+		        Games must carry out the stats-write and get an upload confirmation before 
+		        uploading content. Stats-write functionality verifies upload confirmation. 
+		    </p><p>
+		        To prevent duplicate uploads, the stats service allows only one attachment per 
+		        stats write, even if the write request contains multiple user/attribute pairs. 
+		        Titles can work around this restriction if necessary by separating user/attribute 
+		        pairs into multiple write requests.
+		    </p><h2><a name="IDATLEV"></a>Stats-Write Functionality Enhancements</h2>
+<p>
+		        When the game writes the user's stats, the stats service returns a value 
+		        indicating whether the user has qualified for an upload. The stats service includes new information in the stats-write response. Both the wire structure and client functions and structures change accordingly.
+		    </p><ul>
+		<li><b>Upload Confirmation</b> &#8211; A value that indicates whether there is an 
+		    uploaded file associated with this user on this leaderboard.</li>
+		    <li><b>Remote File Reference</b> &#8211; Remote file reference for the attachment.</li>
+		    <li><b>Max Attachment Size</b> &#8211; Size of the largest upload package allowed. The 
+		    client and the server (in case the client is hacked) must fail uploading any 
+		    package above that size.</li>
+		    <li><b>Number of Qualified Upload Slots</b> &#8211; Configured number of slots on the 
+		    leaderboard for which uploads are allowed, counting from the top-ranked slot on 
+		    the leaderboard.</li>
+		</ul>
+<h2><a name="IDAUMEV"></a>Attachment Upload</h2>
+<p>
+		        If the service confirms the attachment upload, the game calls the upload API to 
+		        store the user attachment on the server. This attachment content stays on the 
+		        server indefinitely, with two exceptions:
+		    </p><ol>
+		        <li>If the rank associated with an attachment drops below the per-leaderboard 
+		        upload threshold, the content is no longer downloadable.</li>
+		        <li>If the title reconfigures the upload settings for the leaderboard, the 
+		        threshold moves up to exclude the attachment and the content again becomes 
+		        unavailable for download. For example, if the Most Kills leaderboard initially 
+		        allows uploads for the top 10 ranked players and the threshold changes to 5, the 
+		        uploads for players 6&#8211; 10 can no longer be seen.
+		
+		        </li>
+		    </ol>
+<p>
+		        Titles must ask users whether to proceed with an attachment upload, if they 
+		        qualify for it. For privacy, bandwidth cost, or time reasons, users may decide 
+		        not to upload an attachment. Titles must make it clear that an upload is a now-or-never 
+		        opportunity. Titles must not allow a user to take other actions before making 
+		        the upload decision. For large attachments, the upload can take a long time. Per 
+		        TCR, titles must provide user feedback for uploads longer than three seconds.
+		    </p><h2><a name="IDAVIEV"></a>Region and Version Conflict Management</h2>
+<p>
+		        Xbox <i>Live</i> services do not have built-in ability to manage 
+		        multiple title versions. Developers must ensure that all versions for a given 
+		        TitleID are backward-compatible across auto-updates, and if the game ships in 
+		        multiple regions under the same TitleID, developers must address any 
+		        internationalization and localization issues. Xbox <i>Live</i> 
+		        services can support publishers by resetting leaderboards and deleting old stats 
+		        attachments if a title makes a change that breaks cross-version compatibility.
+		    </p><h2><a name="IDADOEV"></a>Maximum Upload Size Enforcement</h2>
+<p>
+		        The maximum size the server allows is returned to the client in the stats-write 
+		        response. The client enforces the maximum size on every upload and fails all 
+		        attempts to upload a package that is larger than the maximum size specified.
+		    </p><h2><a name="IDAZIEV"></a>Attachment Data Format</h2>
+<p>
+		        Only the title determines the data format of the attachment. The stats service 
+				is passed a binary block of data (blob), it stores the blob and passes the blob 
+				back. Multiple files may be wrapped into a single file for upload. 
+		    </p><h2><a name="IDANOEV"></a>Upload Errors</h2>
+<p>
+		        In general, there is no guarantee that any upload is going to succeed, 
+		        regardless of how immediate the upload attempt is.  The likelihood of success 
+		        does decrease, however, if the game delays the upload operation. The title 
+		        should automatically retry failed attempts to upload an attachment. The title 
+		        should tell the user that upload has failed and ask the user whether to try 
+		        again. 
+		    </p><p>
+		        Upload API errors include the following cases:
+		    </p><ul>
+		        <li><b>Server is too busy.</b> Keep trying.</li>
+		        <li><b>Upload is interrupted.</b> "Resumable" uploads are not supported. Asking 
+		        the user for permission to try again is the only recourse.</li>
+		    </ul>
+<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Uploading empty attachments is not supported and will result in an error.</p><h2><a name="IDAFPEV"></a>Destructive Uploads</h2>
+<p>
+		        Posting a new rating that qualifies for the attachment upload deletes any 
+		        attachment that the user posting a rating might have had previously. If the user 
+		        chooses not to upload (or the upload fails), neither the old nor the new 
+		        attachment is available.
+		    </p><p>
+		        If a ranking drops below the upload threshold, the attachments associated with 
+		        the below-threshold ranks are deleted. If that user's same rank moves above the 
+		        upload threshold, there will be no attachment associated with it. If a user's 
+		        rank drops below the upload threshold during upload, the upload will continue as 
+		        normal. If the ranking is below the threshold after the upload is complete, the 
+		        stats service drops the content at that point.
+		    </p><h2><a name="IDAKPEV"></a>Metadata</h2>
+<p>
+		        For internal auditing and tracking purposes, the Xbox <i>Live</i> 
+		        service stores a minimum amount of metadata for each attachment uploaded to the 
+		        service. This data includes:
+		    </p><ul>
+		        <li>Gamertag and PUID of user uploading attachment</li>
+		        <li>Signature assigned by the signature server</li>
+		        <li>Date and time the attachment was uploaded</li>
+		        <li>Machine PUID of Xbox the attachment was uploaded from</li>
+		        <li>Installed disc size of the attachment in blocks</li>
+		        <li>Compressed size of uploaded attachment</li>
+		    </ul>
+<h2><a name="IDAGNEV"></a>Attachment Download</h2>
+<p>
+		        Uploaded attachments are available for download and viewing by any authenticated 
+		        client running that title. Users discover available attachments by browsing 
+		        through enabled leaderboards. Users can initiate the download process by 
+		        choosing to download any of the available attachments.
+		    </p><h2><a name="IDAIJEV"></a>Download API</h2>
+<p>
+		        The download API for stats attachments provides the following information:
+		    </p><ul>
+		        <li>Remote file reference (in)</li>
+		        <li>Uncompressed size (out)</li>
+		        <li>Compressed size (out)</li>
+		        <li>Attachment content (out)</li>
+		    </ul>
+<h2><a name="IDAUJEV"></a>Caching</h2>
+<p>
+		    The implementation of the stats libraries prevents repeated downloads if the content is already available on the hard disk. Client functions store the downloaded content on the T: drive. The client statistics functions enforce a limit of 20 cached attachments per title across all leaderboards.
+		</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

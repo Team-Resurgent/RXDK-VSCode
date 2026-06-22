@@ -1,0 +1,70 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Dashboard Video Settings</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Dashboard Video Settings"/>
+<MSHelp:Keyword Index="F" Term="Dashboard Video Settings"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="dashboard_video_settings"></A>Dashboard Video Settings</H1>
+
+<p>The user has the option to set a number of video settings in the Xbox Dashboard. These video settings influence the set of video modes that the game can select. The possible settings exposed in the Dashboard vary based on which Audio Video (AV) pack the video region of the console was set to, either North America, Japan, or rest of the world.</p>
+
+<h4>Normal, Letterbox, and Widescreen</h4>
+
+<p>The user will be able to choose one of the following settings, regardless of the installed AV pack:<p>
+
+<ul>
+<li><b>Normal</b></li>
+<li><b>Letterbox</b></li>
+<li><b>Widescreen</b></li>
+</ul>
+
+<p>These settings are used to specify whether the user's TV is a widescreen display. The <b>Letterbox</b> setting is used only for DVD playback. For game purposes, it is treated the same as <b>Normal</b>. If either <b>Normal</b> or <b>Letterbox</b> is selected, a game should not attempt to select a widescreen display mode. If <b>Widescreen</b> is selected, a game may choose to enable a widescreen video mode, but it is not required to do so. A game selects a widescreen video mode by setting the D3DPRESENTFLAG_WIDESCREEN flag in the <b>flags</b> field of the <a href="_dx_d3dpresent_parameters_graphics.htm">D3DPRESENT_PARAMETERS</A> structure that is specified when the Direct3D device is created. If widescreen is not enabled by the user, attempting to create the device with this display mode will fail.</p>
+
+<p>A widescreen video mode activates a special signal to tell the TV to switch into widescreen mode. Some TVs do not recognize this signal, and the user will be required to manually switch the TV. If your game selects a widescreen mode, it will also have to adjust its transform matrix to provide a 16:9 display aspect ratio rather than the more common 4:3 aspect ratio.</p>
+
+<h4>480p, 720p, and 1080i</h4>
+
+<p>If the Xbox HDTV AV Pack is installed, the user may enable the following HDTV settings:</p>
+
+<ul>
+<li><b>Enable 480p</b></li>
+<li><b>Enable 720p</b></li>
+<li><b>Enable 1080i</b></li>
+</ul>
+
+<p>These settings are not mutually exclusive. The user enables the 480p setting to indicate that his TV supports 480p (progressive scan). This does not require a game to support 480p. The same holds true for 720p and 1080i.</p>
+
+<p>If the user has enabled 480p and the game is not doing field rendering, the game should select 480p rather than 480i (interlaced) because the picture quality is better. A game selects the 480p rendering mode by specifying the D3DPRESENTFLAG_PROGRESSIVE flag in the <b>Flags</b> field of <b>D3DPRESENT_PARAMETERS</b> structure that is specified when the device is created or reset. The back buffer height must be 480 and the back buffer width must be either 640 or 720.</p>
+
+<p>If the user has enabled 720p, the game can select 720p by setting the back buffer height to 720, the back buffer width to 1280, and specifying both D3DPRESENTFLAG_PROGRESSIVE  and D3DPRESENTFLAG_WIDESCREEN in the <b>Flags</b> member of the <b>D3DPRESENT_PARAMETERS</b> structure that is specified when the device is created or reset. The 720p mode automatically implies widescreen.</p>
+
+<p>If the user has enabled 1080i, the game can select 1080i by setting the back buffer height to 1080 and the back buffer width to 1920, and specifying both D3DPRESENTFLAG_INTERLACED and D3DPRESENTFLAG_WIDESCREEN in the <b>Flags</b> member of the <b>D3DPRESENT_PARAMETERS</b> structure that is specified when the device is created or reset. The 1080i mode automatically implies widescreen.</p>
+
+<h4>PAL-60</h4>
+
+<p>If the Xbox console was built for a game region outside of North America or Japan, the user will also have the ability to enable support for PAL by selecting the following:</p>
+
+<ul>
+<li><b>Enable PAL-60</b></li>
+</ul>
+
+<p>Support for video standards, such as PAL, are set in the Xbox console at manufacturing time. A title can detect video standard support at runtime by calling <a href="x_jg_xgetvideostandard.htm">XGetVideoStandard</a>. If PAL is supported, the function will return XC_VIDEO_STANDARD_PAL_I. Older PAL televisions only support PAL at 50 Hz. New PAL televisions support both PAL at 50 Hz (PAL) and at 60 Hz (PAL-60). Titles can check for support of PAL-60 by calling <a href="x_jg_xgetvideoflags.htm">XGetVideoFlags</a> and checking to see if XC_VIDEO_FLAGS_PAL_60Hz is one of the flags returned. If this option has been set, the game can select a video mode with a refresh rate of 60 Hz. This is done by setting the <b>FullScreen_RefreshRateInHz</b> field to 60 in the <b>D3DPRESENT_PARAMETERS</b> structure that is specified when the device is created. Normally, this field is 50 Hz for PAL modes. The Xbox video hardware will set up the proper output signal for PAL-60. The only difference that the game will notice is that the vertical blank will occur 60 times per second rather than 50. A game that runs well at 60 Hz will not likely have performance problems running at 50 Hz. However, some content is authored with a specific playback frame rate in mind. For example, video for cut scenes or motion capture sequences may be authored to be decompressed and displayed at 60 Hz.</p>
+
+<p>There are several approaches for dealing with this type of content. The best solution is to author two versions of this content. One should be ideal for playback at 50 Hz, and the other should be ideal for playback at 60 Hz. The game can choose the appropriate version at startup time when it determines the type of display. There will likely be ample room on the game disc to hold both versions of the content. This solution offers the best performance and quality. Another solution is to interpolate the content at run-time based on the time between frames. The system time is read at the start of each frame, and the animation or video is interpolated based on that time. This solution may be more difficult with some types of content than with others, and it does cost some run-time performance. It does have the added advantage that it properly handles cases in which the frame rate is changing due to system overload. The third solution is to drop frames of video or motion capture samples. If one frame in every six is dropped on content authored for 60 Hz, it will play back at the proper rate for 50 Hz. This solution doesn't cost much performance but can result in noticeable quality degradation and is not recommended.</p>
+
+<p>A game can select the PAL-60 mode by setting the back-buffer height to 480 and the back-buffer width to either 640 or 720. It is also necessary to set the <b>FullScreen_RefreshRateInHz</b> field of the <b>D3DPRESENT_PARAMETERS</b> structures to be 60. PAL-60 does not support 640&times;576 or 720&times;576. </p>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

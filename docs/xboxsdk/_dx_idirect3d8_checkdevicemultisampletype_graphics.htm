@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirect3D8::CheckDeviceMultiSampleType</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="IDirect3D8::CheckDeviceMultiSampleType [C++]">
+<META NAME="MS-HKWD" CONTENT="CheckDeviceMultiSampleType (IDirect3D8) [C++]">
+<META NAME="MS-HKWD" CONTENT="CheckDeviceMultiSampleType [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="CheckDeviceMultiSampleType (IDirect3D8)"/>
+<MSHelp:Keyword Index="K" Term="IDirect3D8::CheckDeviceMultiSampleType"/>
+<MSHelp:Keyword Index="F" Term="CheckDeviceMultiSampleType"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_idirect3d8_checkdevicemultisampletype_graphics"></A>IDirect3D8::CheckDeviceMultiSampleType</H1>
+
+<P>Determines if a multisampling technique is available on this device.</P>
+
+<PRE class=syntax><B>HRESULT CheckDeviceMultiSampleType(
+  UINT</B><I> Adapter</I><B>,</B>
+<B>  D3DDEVTYPE</B><I> DeviceType</I><B>,</B>
+<B>  D3DFORMAT</B><I> SurfaceFormat</I>,
+<B>  BOOL</B><I> Windowed</I><B>,</B>
+<B>  D3DMULTISAMPLE_TYPE</B><I> MultiSampleType</I>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>Adapter</I></DT>
+
+<DD>[in] Ordinal number denoting the display adapter to query. D3DADAPTER_DEFAULT is always the primary display adapter. This method returns FALSE when this value equals or exceeds the number of display adapters in the system. See Remarks.</DD>
+
+<DT><I>DeviceType</I></DT>
+
+<DD>[in] Member of the <A HREF="_dx_d3ddevtype_graphics.htm"><B>D3DDEVTYPE</B></A> enumerated type, identifying the device type.</DD>
+
+<DT><I>SurfaceFormat</I></DT>
+
+<DD>[in] Member of the <A HREF="_dx_d3dformat_graphics.htm"><B>D3DFORMAT</B></A> enumerated type that specifies the set of multisampling types requested for the surface. See Remarks.</DD>
+
+<DT><I>Windowed</I></DT>
+
+<DD>[in] Boolean value. On the Xbox, always set this value to FALSE.</DD>
+
+<DT><I>MultiSampleType</I></DT>
+
+<DD>[in] Member of the <A HREF="_dx_d3dmultisample_type_graphics.htm"><B>D3DMULTISAMPLE_TYPE</B></A><I> </I>enumerated type, identifying the multisampling technique to test.
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the device can perform the specified multisampling method, this method returns <A HREF="_dx_return_values_graphics.htm#_dx_d3d_ok_graphics"><B>D3D_OK</B></A>.</P>
+
+<P><A HREF="_dx_return_values_graphics.htm#_dx_d3derr_invalidcall_graphics"><B>D3DERR_INVALIDCALL</B></A> is returned if the <I>Adapter</I> or <I>MultiSampleType</I> parameters are invalid. This method returns <A HREF="_dx_return_values_graphics.htm#_dx_d3derr_notavailable_graphics"><B>D3DERR_NOTAVAILABLE</B></A> if the queried multisampling technique is not supported by this device. <A HREF="_dx_return_values_graphics.htm#_dx_d3derr_invaliddevice_graphics"><B>D3DERR_INVALIDDEVICE</B></A> is returned if <I>DeviceType</I> does not apply to this adapter.</P>
+
+<H4>Remarks</H4>
+
+<P>This method is intended for use with both render-target and depth-stencil surfaces because you must create both surfaces multisampled if you want to use them together.</P>
+
+<P>The following code fragment shows how you could use <B>CheckDeviceMultiSampleType</B> to test for devices that support a specific multisampling method.</P>
+
+<PRE>if( SUCCEEDED(pDevice-&gt;CheckDeviceMultiSampleType( pCaps-&gt;AdapterOrdinal, 
+                                pCaps-&gt;DeviceType, pMode-&gt;Format, 
+                                FALSE, D3DMULTISAMPLE_3_SAMPLES ) ) )
+    return S_OK;
+</PRE>
+
+<P>The preceding code will return S_OK if the device supports the full-screen D3DMULTISAMPLE_3_SAMPLES multisampling method with the surface format.</P>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in D3d8.h.<BR>
+<B>&nbsp;&nbsp;Import Library:</B> Use D3d8.lib.</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

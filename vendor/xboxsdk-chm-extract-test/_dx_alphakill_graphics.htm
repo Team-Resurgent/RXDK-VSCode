@@ -1,0 +1,58 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Alphakill</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Alphakill"/>
+<MSHelp:Keyword Index="F" Term="Alphakill"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Alphakill</H1>
+<!--***********************************************************-->
+
+<p>Alphakill is a subtle but interesting Xbox extension to Microsoft Direct3D that can free up fragment alpha for purposes other than transparency and can slightly improve performance in some circumstances.</p>
+
+<p>Alphakill is a per-texture-stage state, enabled or disabled by setting D3DTSS_ALPHAKILL for any stage to D3DTALPHAKILL_ENABLE or D3DTALPHAKILL_DISABLE, respectively. Alphakill may be enabled in multiple stages simultaneously and will operate independently in any stage for which it is enabled.</p>
+
+<p>When alphakill is enabled for a texture unit, if the alpha value read from that unit (after filtering, if filtering is in effect) is zero for a given pixel fragment, that fragment will not be drawn. Alphakill will operate only with texaddrops that cause texel fetches; for other texaddrops, it has no effect. Alphakill lets any texture stage suppress drawing of a pixel fragment if that stage's texture fetch returns an alpha value of zero. Consequently, alphakill offers a means of producing texture-based transparency, or stenciling. </p>
+
+<p>The similarity of alphakill-based transparency to familiar alphafunc-based transparency may make alphakill appear to be redundant, but there are important differences:</p>
+
+<ol>
+<li>Alphakill can suppress pixel drawing only when alpha is equal to zero. Alphafunc can be programmed to suppress pixel drawing with any of a variety of tests and values.</li>
+<li>Alphakill tests the alpha value read from a texture. Alphafunc tests the alpha value that comes out of the final combiner, reflecting a function of values from up to four textures and eight register combiners, in addition to the final combiner.</li>
+<li>Alphakill can sometimes have a performance advantage when other textures are dependent on the alphakill-enabled texture. Even when it happens, however, this advantage is small and is not the primary reason alphakill is of interest.</li>
+</ol>
+
+<p>The main reason that alphakill is useful is that it provides a way to implement transparency orthogonally to fragment alpha. In other words, you can use alphakill to get transparency without constraining the values fragment alpha can take on. This means that you can, for example, have texture-based transparency while using fragment alpha to calculate compositing values to be stored in the frame buffer. Or you could use alphakill to implement zero-based transparency (even based on zero alpha values in multiple textures, if alphakill is enabled in multiple texture stages) while using fragment alpha to implement transparency for values greater than 0.5, based on an independent calculation in the register combiners. Or you could use alphakill for transparency while using fragment alpha to perform a blend that doesn't involve transparency. Regardless of the application, the point is that alphakill and fragment alpha can operate completely independently, so by using both you can get both transparency and flexible use of fragment alpha.</p>
+
+<p>A final note on alphakill: When alphakill is enabled for a texture stage and the alpha value fetched by that stage is nonzero, the ARGB value fetched by the texture stage is available to dependent texture stages and to register combiners just as if alphakill hadn't been enabled. This means that nonzero alpha values can be used normally even for stages with alphakill enabled. Thus, nonzero alphakill values either can be omitted from or can participate in the calculation of fragment alpha, as needed.</p>
+
+
+
+<!--*******************************************************************************-->
+
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

@@ -1,0 +1,90 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>IXACTEngine::CreateSoundSource</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="F" Term="CreateSoundSource"/>
+<MSHelp:Keyword Index="K" Term="CreateSoundSource (IXACTEngine)"/>
+<MSHelp:Keyword Index="K" Term="IXACTEngine::CreateSoundSource"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>IXACTEngine::CreateSoundSource</h1>
+<p>Creates a 2D or 3D <a href="xbox_ixactsoundsource_dxaudio.htm">IXACTSoundSource</a> object.</p>
+<pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>CreateSoundSource(</b>
+    <b>DWORD</b> <i>dwFlags</i><b>,</b>
+    <b>PXACTSOUNDSOURCE</b> *<i>ppSoundSource</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+			<dt><i>dwFlags</i></dt>
+				<dd>[in]  The type of sound source to create.  This parameter must be one of the following values:</dd>
+				<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+					<tr>
+<td>XACT_FLAG_SOUNDSOURCE_2D</td>
+<td>Create a 2D sound source.  Not typically used; see <a href="xbox_ixactengine_createsoundsource_dxaudio.htm#remarks">Remarks</a> below.</td>
+</tr>
+					<tr>
+<td>XACT_FLAG_SOUNDSOURCE_3D</td>
+<td>Create a 3D sound source.  The sound source can be positioned and modified with 3D methods such as <a href="xbox_ixactsoundsource_setposition_dxaudio.htm">IXACTSoundSource::SetPosition</a>.</td>
+</tr>
+				</table>
+			
+			<dt><i>ppSoundSource</i></dt>
+				<dd>[out]  Pointer to a <b>PXACTSOUNDSOURCE</b> variable that receives the created <a href="xbox_ixactsoundsource_dxaudio.htm">IXACTSoundSource</a>.</dd>
+			
+		</dl>
+<h4><a name="return"></a>Return Values</h4>
+            <p>Returns DS_OK if successful, an error code otherwise.</p>
+        <h4><a name="remarks"></a>Remarks</h4>
+			<p>Any multichannel wave content played onto a 2D or 3D sound source is downmixed to mono.  To play multichannel waves (stereo, 4.0, 5.1, and so on) without downmixing to mono, use the default sound source&#8212;that is, pass NULL, rather than a sound source created with <b>CreateSoundSource</b>, as the <i>pSoundSource</i> parameter to <a href="xbox_ixactsoundbank_play_dxaudio.htm">IXACTSoundBank::Play</a>.</p>
+
+			<p>Sounds played onto 2D and 3D sound sources mix into a MIXIN buffer, and are then played as mono. 2D sound sources send to all six speakers and the I3DL2 reverb mixbins.  2D sound sources are not typically used; the default sound source should be used for most audio playback.  2D sound sources are typically used only for software-implemented "3D" speaker panning (as demonstrated in the <a href="xbox_samp_aud_pan3d.htm">Pan3D Sample</a>), and, infrequently, for certain digital signal processor (DSP) effects programs.</p>
+
+			<p>Manually managed sound sources can be freed when they are no longer active. See the <a href="xbox_ixactsoundsource_getstatus_dxaudio.htm">IXACTSoundSource::GetStatus</a> method.</p>
+
+			<p>For more information about sound sources, see the <b>XACT Sound Sources</b> section of the <a href="cd_aud_wp_bp_chap10.htm">Programming with XACT</a> white paper.</p>
+
+
+
+
+		<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in XACT.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use XACTEng.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+		<a href="cd_aud_wp_bp_chap10.htm">Programming with XACT</a> |
+		<a href="xbox_ixactsoundsource_dxaudio.htm">IXACTSoundSource</a>,
+		<a href="xbox_ixactsoundsource_getstatus_dxaudio.htm">IXACTSoundSource::GetStatus</a>,
+		<a href="xbox_ixactsoundsource_setposition_dxaudio.htm">IXACTSoundSource::SetPosition</a>,
+		<a href="xbox_ixactsoundsource_setvelocity_dxaudio.htm">IXACTSoundSource::SetVelocity</a>,
+		<a href="xbox_ixactsoundbank_play_dxaudio.htm">IXACTSoundBank::Play</a>,
+		<a href="xbox_samp_aud_pan3d.htm">Pan3D Sample</a>
+		</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

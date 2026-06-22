@@ -1,0 +1,170 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>cubeFace Element</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+<MSHelp:Attr Name="DevLang" Value="XML"/>
+<MSHelp:Attr Name="DevLang" Value="XSL"/>
+<MSHelp:Attr Name="Technology" Value="XML"/>
+<MSHelp:Keyword Index="K" Term="cubeFace element"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>cubeFace Element</h1>
+<p>Specifies one of the textures used in a cubemap.</p>
+<pre class="syntax" xml:space="preserve">&lt;cubeFace
+   face = string
+   source = string
+   alphaSource = string
+   colorKey = string
+   filter = string
+/&gt;</pre>
+<h4>Required Attributes</h4>
+<dl id="idXML">
+<dt><b>face</b></dt>
+<dd><p>Specifies which face of the cube map is getting defined. Must be one of the following values:</p>
+						<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+							<tr>
+<td>XP</td>
+<td>Positive x-face (right side) of the cube map.</td>
+</tr>
+							<tr>
+<td>XN</td>
+<td>Negative x-face (left side) of the cube map.</td>
+</tr>
+							<tr>
+<td>YP</td>
+<td>Positive y-face (front face) of the cube map.</td>
+</tr>
+							<tr>
+<td>YN</td>
+<td>Negative y-face (back face) of the cube map.</td>
+</tr>
+							<tr>
+<td>ZP</td>
+<td>Positive z-face (top face) of the cube map.</td>
+</tr>
+							<tr>
+<td>ZN</td>
+<td>Negative z-face (bottom face) of the cube map.</td>
+</tr>
+						
+						</table>
+					</dd>
+<dt><b>source</b></dt>
+<dd><p>Source image file. For more details, see <a href="xbox_tool_xbrc.htm#remarks">Supported Image File Types</a>. If there is an alpha channel in the source bitmap, that alpha channel is preserved and output. If there is an alpha channel in the source bitmap and the <b>alphaSource</b> attribute is specified, the <b>alphaSource</b> bitmap will replace the alpha channel given in the source bitmap.</p>
+</dd>
+</dl>
+<h4>Optional Attributes</h4>
+<dl id="idXML">
+<dt><b>alphaSource</b></dt>
+<dd><p>Alpha channel source image file. For more details, see <b>Supported Image File Types</b>. The alpha channel is computed by converting the <b>alphaSource</b> image to a full 32-bit color image and taking the average of the red, blue, and green channels as the alpha channel.</p>
+</dd>
+<dt><b>colorKey</b></dt>
+<dd><p>Used to specify the color key the compiler should use to determine what colors to convert to alpha. By default, color key alpha component is zero and no color key operations are performed.</p>
+</dd>
+<dt><b>filter</b></dt>
+<dd><p>Specifies the filter used to resize the image.</p>
+<p>If this value is specified, it must contain one of the following flags:</p>
+
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>D3DX_FILTER_NONE</td>
+<td>No scaling or filtering will take place. Pixels outside the bounds of the source image are assumed to be transparent black.</td>
+</tr>
+<tr>
+<td>D3DX_FILTER_POINT</td>
+<td>Each destination pixel is computed by sampling the nearest pixel from the source image.</td>
+</tr>
+<tr>
+<td>D3DX_FILTER_TRIANGLE</td>
+<td>Every pixel in the source image contributes equally to the destination image. This is the slowest of the filters. This is the default filter if nothing is specified.</td>
+</tr>
+<tr>
+<td>D3DX_FILTER_LINEAR</td>
+<td>Each destination pixel is computed by sampling the four nearest pixels from the source image. This filter works best when the scale on both axes is less than two.</td>
+</tr>
+<tr>
+<td>D3DX_FILTER_BOX</td>
+<td>Each pixel is computed by averaging a 2&#0215;2(&#0215;2) box of pixels from the source image. This filter works only when the dimensions of the destination are half those of the source, as is the case with mipmaps.</td>
+</tr>
+</table>
+
+<p>In addition, zero or more of the following flags may be ORed in with one of the flags above.</p>
+
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>D3DX_FILTER_WRAP</td>
+<td>Pixels will be wrapped, not mirrored. This is the default behavior.</td>
+</tr>
+<tr>
+<td>D3DX_FILTER_MIRROR</td>
+<td>Specifying this flag is the same as specifying the D3DX_FILTER_MIRROR_U, D3DX_FILTER_MIRROR_V, and D3DX_FILTER_MIRROR_W flags.</td>
+</tr>
+<tr>
+<td>D3DX_FILTER_MIRROR_U</td>
+<td>Pixels off the edge of the texture on the u-axis should be mirrored, not wrapped.</td>
+</tr>
+<tr>
+<td>D3DX_FILTER_MIRROR_V</td>
+<td>Pixels off the edge of the texture on the v-axis should be mirrored, not wrapped.</td>
+</tr>
+<tr>
+<td>D3DX_FILTER_MIRROR_W</td>
+<td>Pixels off the edge of the texture on the w-axis should be mirrored, not wrapped.</td>
+</tr>
+<tr>
+<td>D3DX_FILTER_DITHER</td>
+<td>This flag indicates that the resulting image be dithered using a 4&#0215;4 ordered dither algorithm.</td>
+</tr>
+</table>
+						
+					</dd>
+</dl>
+<h4>Element Information</h4>
+<table>
+<tr>
+<td><b>Parent Elements</b></td>
+<td><a href="xdx_element_cubeMap.htm">cubeMap</a></td>
+</tr>
+<tr>
+<td><b>Child Elements</b></td>
+<td>None.</td>
+</tr>
+</table>
+<h4><a name="remarks"></a>Remarks</h4>For an example of how to use this element, see <a href="xdx_element_cubemap.htm#example_cubeface">Specifying the cube faces</a>.
+				
+				
+				<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

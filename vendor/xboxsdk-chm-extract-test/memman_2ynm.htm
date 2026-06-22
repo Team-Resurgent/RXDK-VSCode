@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IsBadReadPtr</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="IsBadReadPtr">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="IsBadReadPtr"/>
+<MSHelp:Keyword Index="F" Term="IsBadReadPtr"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_isbadreadptr"></A>IsBadReadPtr</H1>
+
+<P>The <B>IsBadReadPtr</B> function verifies that the title has read access to the specified range of memory. </P>
+
+<PRE class=syntax><B>BOOL IsBadReadPtr(
+  CONST VOID</B><I> </I><B>*</B><I>lp</I><B>,  </B>// memory address
+<B>  UINT_PTR</B><I> ucb</I>     // size of block
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>lp</I></DT>
+
+<DD>[in] Pointer to the first byte of the memory block. </DD>
+
+<DT><I>ucb</I></DT>
+
+<DD>[in] Specifies the size, in bytes, of the memory block. If this parameter is zero, the return value is zero. 
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the title has read access to all bytes in the specified memory range, the return value is zero.</P>
+
+<P>If the title does not have read access to all bytes in the specified memory range, the return value is nonzero. </P>
+
+<H4>Remarks</H4>
+
+<P>If the application is compiled as a debugging version and the title does not have read access to all bytes in the specified memory range, the function causes a first-chance exception, which may break into the debugger. Leaving the debugger, the function continues as usual and returns a nonzero value.  This behavior is by design, as a debugging aid.  The exception will cause a debugger break only if the debugger is configured to break on first-chance exceptions as well as unhandled exceptions.</P>
+
+<P>This function is typically used when working with pointers returned from third-party libraries, where you cannot guarantee the memory management behavior in that library.</P>
+
+<P>Threads are expected to cooperate in such a way that one will not free memory that the other needs. Use of this function does not negate the need to do this. If this is not done, the application may fail in an unpredictable manner.</P>
+
+<P>If the title has read access to some, but not all, of the bytes in the specified memory range, the return value is nonzero.</P>
+
+<P>In a preemptive multitasking environment, it is possible for some other thread to change the access to the memory being tested. Even when the function indicates that the title has read access to the specified memory, you should use structured exception handling when attempting to access the memory. Use of structured exception handling enables the system to notify the title if an access violation exception occurs, giving the title an opportunity to handle the exception. </P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p>
+
+<H4>See Also</H4>
+<P> 
+
+<a href="xbox_mt_xtl_sll_memory_management_functions.htm">Memory Management Functions</a> | 
+<A HREF="memman_4bxu.htm">IsBadCodePtr</a>,
+<A HREF="memman_4jxu.htm">IsBadStringPtr</a>,
+<A HREF="memman_3f1u.htm">IsBadWritePtr</a>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

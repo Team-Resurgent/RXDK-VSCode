@@ -1,0 +1,39 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XACTParamControl Sample</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XACTParamControl Sample"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XACTParamControl Sample</h1>
+	<p>The XACTParamControl sample demonstrates how to use the XACT parameter controls for managing sound content. This is done by using several samples of a car engine recorded at different RPMs, and then using the parameter controls to adjust the volume, pitch, and filter cutoff dynamically in-game.</p>
+	<p>Numerous situations arise in which a developer needs to exert additional control over game sounds. For instance, in a driving game, the sound of the engine needs to respond to dynamic values such as RPMs and gear. XACT provides several methods for accessing this more dynamic control method.</p>
+	<p>First of all, the content creator can group sounds into various categories. The developer can then, at run time, manipulate the volume and the pause/resume state of specific categories. Volume manipulation by means of a category (<a href="xbox_ixactengine_setmastervolume_dxaudio.htm">IXACTEngine::SetMasterVolume</a>) is generally reserved for the kinds of game "mixing" controls that are often exposed to the end user. Games should typically have relatively few categories, perhaps as simple as the corresponding user-exposed sliders often labeled: "FX," "Dialog," and "Music."</p>
+	<p>Categories should not typically be used for emulating distance attenuation. Also note that categories cannot be used to "amplify" content-authored attenuation. Category volume is applied additively with content-authored volumes, so the relative mix of sounds within a single category will remain intact even as that category's "global" volume is reduced. The pause/resume state for a category can be manipulated by means of <a href="xbox_ixactengine_globalpause_dxaudio.htm">IXACTEngine::GlobalPause</a>. Again, this is often useful when the player switches to a game menu, or otherwise pauses the game. (Perhaps everything is paused except for the musical score or the ambience.)</p>
+	<p>Run-time parameter controls (RPCs, also known as <i>sliders</i>) provide for more acute dynamic control of audio behavior. How a specific sound responds to an RPC's value is determined by the content author; it might crossfade between two waves, pitch shift the sound up or down, apply filtering, and so on. The RPC is then adjusted by the developer in response to game state (<a href="xbox_ixactengine_setparametercontrol_dxaudio.htm">IXACTEngine::SetParameterControl</a>). Categories are also exposed here, with the added benefit of sequencing parameter sweeps; that is, you can set any parameter to change to an arbitrary value smoothly over a specified amount of time.</p>
+	<p>Note that there is no concept of a default RPC value. In a cue instance's initial state, all tracks of a sound would be played without any RPC curves being applied. You can apply a value by means of <b>SetParameterControl</b> right after the cue starts playing, but there is always the chance that the wave might briefly play without your RPC settings. To avoid this, use the following steps to play any cues whose sounds use RPCs:</p>
+	<ol>
+		<li>Call <a href="xbox_ixactsoundbank_prepare_dxaudio.htm">IXACTSoundBank::Prepare</a> on the cue, which returns a cue instance (ppSoundCue).</li>
+		<li>Call <a href="xbox_ixactengine_setparametercontrol_dxaudio.htm">IXACTEngine::SetParameterControl</a> on this cue instance.</li>
+		<li>Call <a href="xbox_xactenginedowork_dxaudio.htm">XACTEngineDoWork</a>.</li>
+	</ol>
+<p>The cue instance is now ready to be played (by means of <a href="xbox_ixactsoundbank_play_dxaudio.htm">IXACTSoundBank::Play</a>) with your initial slider values applied.</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

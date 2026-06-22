@@ -1,0 +1,85 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>High-Level Shader Language (HLSL)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="High-Level Shader Language (HLSL)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>High-Level Shader Language (HLSL)</h1>
+<p>The High-Level Shader Language (HLSL) for Xbox allows developers to use a C-like language to generate vertex shaders.</p><p>HLSL supports the development of shaders from C-like functions. The language supports many standard language features such as functions, expressions, statements, standard data types, user-designed data types, and preprocessor directives.</p><p>The <a href="xbox_xfxc.htm">Xbox HLSL Compiler (XFXC)</a> is used to compile shader programs into the microcode format used by the Xbox game system.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;The targets supported by the compiler are "xvs_1_1" for a vertex shader and "xvsv_1_1" for a vertex shader that outputs a screen space vertex position (#pragma screenspace). The pixel shader target "xps_1_1" is currently unsupported.</p><h2><a name="IDAYYM2"></a>Semantics</h2>
+<p>Semantics are used to bind variables declared in HLSL code to vertex shader stream inputs and to constant registers declared in game code. They are also used to bind vertex shader output variables declared in HLSL code to pixel shader inputs. A constant register can be associated with a variable using the ": register(c<i>n</i>)" semantic, where <i>n</i> is the index of the constant register to associate. For example, a global variable containing the direction of an infinite light source that will be loaded into constant register 8 is declared as follows:</p>
+<pre class="clsCode">
+float3 LightDirection : register(c8);
+</pre>
+    <p>If the variable type is such that the value will span multiple registers, it is assumed that the associated registers begin with the index defined in the semantic and continue in a contiguous manner.  For example, the following matrix is associated with constant registers c0 through c3:</p>
+<pre class="clsCode">
+float4x4 WorldViewProj : register(c0);
+</pre>
+    <p>Vertex stream input semantics may similarly be declared using the ": register(v<i>n</i>)" semantic, where <i>n</i> ranges from 0 through 15. A vertex normal element mapped to v1 by a vertex shader declaration could be associated with the "Normal" input variable in the source code as follows:</p>
+<pre class="clsCode">
+VS_OUTPUT ShadeBlobVertex
+(
+   const float3 Normal   : register(v1)
+   ...
+)
+{
+   ...
+}
+</pre>
+    <p>Alternately, vertex stream inputs may also be associated using more familiar named semantics.  These semantics are as follows:</p><ul>
+	<li>POSITION</li>
+	<li>BLENDWEIGHT</li>
+	<li>NORMAL</li>
+	<li>DIFFUSE</li>
+	<li>SPECULAR</li>
+	<li>BACKDIFFUSE</li>
+	<li>BACKSPECULAR</li>
+	<li>FOG</li>
+	<li>TEXCOORD0</li>
+	<li>TEXCOORD1</li>
+	<li>TEXCOORD2</li>
+	<li>TEXCOORD3</li>
+</ul>
+<p>Use of one of these semantics with a variable will cause the variable to be associated with the stream input defined by the corresponding D3DVSDE_x defined in d3d8types.h (that is, BACKDIFFUSE corresponds to D3DVSDE_BACKDIFFUSE, which causes an association with v register 7).</p><p>Vertex shader outputs are associated with pixel shader inputs using familiarly named semantics as well. These semantics, along with their corresponding vertex shader output registers and pixel shader input registers, are as follows:</p><ul>
+	<li>POSITION - oPos</li>
+	<li>PSIZE - oPts</li>
+	<li>FOG - oFog</li>
+	<li>COLOR0 - oD0 / v0</li>
+	<li>COLOR1 - oD1 / v1</li>
+	<li>BACKCOLOR0 - oB0 / v0</li>
+	<li>BACKCOLOR1 - oB1 / v1</li>
+	<li>TEXCOORD0 - oT0 / t0</li>
+	<li>TEXCOORD1 - oT1 / t1</li>
+	<li>TEXCOORD2 - oT2 / t2</li>
+	<li>TEXCOORD3 - oT3 / t3</li>
+</ul>
+<h2><a name="IDAI1M2"></a>Explicit Constant Values</h2>
+<p>It is worth noting that any constants whose values are explicitly given in the source code will still be associated with constant registers through 'def' instructions in the generated vertex shader assembly. For example, the following source</p>
+<pre class="clsCode">
+ScaledRadius = Radius * 20.0f;
+Output.Position = float4(Input.Position * ScaledRadius, 1.0f);
+</pre>
+    <p>would lead to assembly code containing one or more instructions similar to the following:</p>
+<pre class="clsCode">
+def c[0], 1, 0, 0, 20
+</pre>
+    <p>Since the assembled vertex shader microcode does not store the values of constant registers declared using 'def', it is important that these values and their associated constant registers be preserved and correctly set in the game code. Since the ID3DXConstantTable interface and D3DXSHADER_CONSTANTTABLE are present only in DirectX 9.0, the best way to do this on Xbox is to pass a pointer to an XGBuffer into the <i>pConstants</i> parameter of <b>XGCompileShader</b> (or to use the /Fc option in the XFXC tool) and to save the returned buffer. Later, when the vertex shader is created in the game, take the contents of the <i>pConstants</i> buffer, append the desired vertex shader declaration, and pass the result as the new <i>pDeclaration</i> into <a href="_dx_idirect3ddevice8_createvertexshader_graphics.htm">CreateVertexShader</a>. In this way, all explicit constant values used in the HLSL source will then be applied before running the shader without ever having to track exactly what values were used or into which constant registers they were placed.</p><h2><a name="IDAE2M2"></a>Intrinsics</h2>
+<p>Intrinsic functions are currently unsupported.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

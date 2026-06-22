@@ -1,0 +1,160 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>D3DXLoadSurfaceFromFileInMemory</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="D3DXLoadSurfaceFromFileInMemory">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="D3DXLoadSurfaceFromFileInMemory"/>
+<MSHelp:Keyword Index="F" Term="D3DXLoadSurfaceFromFileInMemory"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_d3dxloadsurfacefromfileinmemory_graphicsd3dx"></A>D3DXLoadSurfaceFromFileInMemory</H1>
+
+<P>Loads a surface from a file in memory.</P>
+
+<PRE class=syntax><B>HRESULT D3DXLoadSurfaceFromFileInMemory(
+  LPDIRECT3DSURFACE8</B><I> pDestSurface</I><B>,</B>
+<B>  CONST PALETTEENTRY*</B><I> pDestPalette</I><B>,</B>
+<B>  CONST RECT*</B><I> pDestRect</I><B>,</B>
+<B>  LPCVOID </B><I>pSrcData</I><B>,</B>
+<B>  UINT</B><I> SrcData</I><B>,</B>
+<B>  CONST RECT*</B><I> pSrcRect</I><B>,</B>
+<B>  DWORD</B><I> Filter</I><B>,</B>
+  <B>D3DCOLOR</B> <I>ColorKey</I>,
+  <B>D3DXIMAGE_INFO*</B> <I>pSrcInfo</I>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>pDestSurface</I></DT>
+
+<DD>[in] Pointer to an <A HREF="_dx_idirect3dsurface8_graphics.htm">IDirect3DSurface8</A> interface. Specifies the destination surface, which receives the image.</DD>
+
+<DT><I>pDestPalette</I></DT>
+
+<DD>[in] Pointer to a <B>PALETTEENTRY</B> structure, the destination palette of 256 colors or NULL. See Remarks.</DD>
+
+<DT><I>pDestRect</I></DT>
+
+<DD>[in] Pointer to a <B>RECT</B> structure. Specifies the destination rectangle. Set this parameter to NULL to specify the entire surface.</DD>
+
+<DT><I>pSrcData</I></DT>
+
+<DD>[in] Pointer to the file in memory from which to load the surface.</DD>
+
+<DT><I>SrcData</I></DT>
+
+<DD>[in] Size of the file in memory, in bytes.</DD>
+
+<DT><I>pSrcRect</I></DT>
+
+<DD>[in] Pointer to a <B>RECT</B> structure. Specifies the source rectangle. Set this parameter to NULL to specify the entire image.</DD>
+
+<DT><I>Filter</I></DT>
+
+<DD>[in] A combination of one or more flags controlling how the image is filtered. Specifying D3DX_DEFAULT for this parameter is the equivalent of specifying D3DX_FILTER_TRIANGLE | D3DX_FILTER_DITHER. 
+
+<P>Each valid filter must contain exactly one of the following flags.
+
+
+<DL>
+<DT>D3DX_FILTER_BOX</DT>
+
+<DD>Each pixel is computed by averaging a 2&times;2(&times;2) box of pixels from the source image. This filter works only when the dimensions of the destination are half those of the source, as is the case with mipmaps.</DD>
+
+<DT>D3DX_FILTER_LINEAR</DT>
+
+<DD>Each destination pixel is computed by sampling the four nearest pixels from the source image. This filter works best when the scale on both axes is less than two.</DD>
+
+<DT>D3DX_FILTER_NONE</DT>
+
+<DD>No scaling or filtering will take place. Pixels outside the bounds of the source image are assumed to be transparent black.</DD>
+
+<DT>D3DX_FILTER_POINT</DT>
+
+<DD>Each destination pixel is computed by sampling the nearest pixel from the source image.</DD>
+
+<DT>D3DX_FILTER_TRIANGLE</DT>
+
+<DD>Every pixel in the source image contributes equally to the destination image. This is the slowest of the filters.</DD>
+</DL>
+
+
+<P>In addition, you can use the <B>OR</B> operator to specify zero or more of the following optional flags with a valid filter.
+
+
+<DL>
+<DT>D3DX_FILTER_MIRROR</DT>
+
+<DD>Specifying this flag is the same as specifying the D3DX_FILTER_MIRROR_U, D3DX_FILTER_MIRROR_V, and D3DX_FILTER_MIRROR_W flags.</DD>
+
+<DT>D3DX_FILTER_MIRROR_U</DT>
+
+<DD>Pixels off the edge of the texture on the u-axis should be mirrored, not wrapped.</DD>
+
+<DT>D3DX_FILTER_MIRROR_V</DT>
+
+<DD>Pixels off the edge of the texture on the v-axis should be mirrored, not wrapped.</DD>
+
+<DT>D3DX_FILTER_MIRROR_W</DT>
+
+<DD>Pixels off the edge of the texture on the w-axis should be mirrored, not wrapped.</DD>
+
+<DT>D3DX_FILTER_DITHER</DT>
+
+<DD>The resulting image must be dithered using a 4&times;4 ordered dither algorithm.</DD>
+</DL>
+</DD>
+
+<DT><I>ColorKey</I></DT>
+
+<DD>[in] <A HREF="_dx_d3dcolor_graphics.htm">D3DCOLOR</A> value to replace with transparent black, or 0 to disable the colorkey. This is always a 32-bit ARGB color, independent of the source image format. Alpha is significant and should usually be set to FF for opaque colorkeys Thus, for opaque black, the value would be equal to 0xFF000000.</DD>
+
+<DT><I>pSrcInfo</I></DT>
+
+<DD>[in, out] Pointer to a <A HREF="_dx_d3dximage_info_graphicsd3dx.htm">D3DXIMAGE_INFO</A> structure to be filled with a description of the data in the source image file, or NULL.
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is <A HREF="_dx_return_values_graphics.htm#_dx_d3d_ok_graphics">D3D_OK</A>.</P>
+
+<P>If the function fails, the return value can be one of the following values.</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TD width=100%><A HREF="_dx_return_values_graphics.htm#_dx_d3derr_invalidcall_graphics">D3DERR_INVALIDCALL</A></TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=100%><A HREF="_dx_return_values_graphicsd3dx.htm#_dx_d3dxerr_invaliddata_graphicsd3dx">D3DXERR_INVALIDDATA</A></TD>
+</TR>
+</TABLE><BR>
+
+<H4>Remarks</H4>
+
+<P>For details on <B>PALETTEENTRY</B>, see the Platform SDK. Note that as of Microsoft&#174; DirectX&#174; 8.0, the <I>peFlags</I> member of the <B>PALLETTEENTRY</B> structure does not function as documented in the Platform SDK. The <I>peFlags</I> member is now the alpha channel for 8-bit palletized formats.</P>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in D3dx8tex.h.<BR>
+<B>&nbsp;&nbsp;Import Library:</B> Use D3dx8.lib.</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

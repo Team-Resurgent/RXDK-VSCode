@@ -1,0 +1,115 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineOfferingIsNewContentAvailable</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineOfferingIsNewContentAvailable"/>
+<MSHelp:Keyword Index="F" Term="XOnlineOfferingIsNewContentAvailable"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineOfferingIsNewContentAvailable</h1>
+
+            <p>Indicates whether the calling title has new content offerings available.  This function can be called without first logging onto the Xbox <i>Live</i> service, and can thus be called by titles that are using the <a href="xbox_Live_Downloading_Manager.htm">Content Download Manager</a>.</p>
+
+        <pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineOfferingIsNewContentAvailable(</b>
+    <b>DWORD</b> <i>dwBitFilter</i><b>,</b>
+    <b>HANDLE</b> <i>hWorkEvent</i><b>,</b>
+    <b>PXONLINETASK_HANDLE</b> <i>phTask</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+            <dt><i>dwBitFilter</i></dt>
+                <dd>[in]  The offering filter flags. Only content offerings that have one or more of these title-specific bits set will be checked.</dd>
+            
+            
+            <dt><i>hWorkEvent</i></dt>
+                <dd>[in, optional]  Handle to an event that will be signaled when there is work to be done on this task.  This parameter can be NULL if no such event is required.</dd>
+            
+            
+            <dt><i>phTask</i></dt>
+                <dd>[out]  Pointer to a variable of type <b>XONLINETASK_HANDLE</b> that receives a task handle representing this request.  The handle can then be used in calls to <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> to perform work associated with this task.</dd>
+            
+            
+        </dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>If the function successfully creates the asynchronous task, the return value is S_OK.</p><h4><a name="remarks"></a>Remarks</h4>
+			<p>In order to initialize the network layer, the <a href="xonlinestartup.htm">XOnlineStartup</a> function must be called prior to calling <b>XOnlineOfferingIsNewContentAvailable</b>.  However, <b>XOnlineOfferingIsNewContentAvailable</b> can be called without first calling <a href="XOnlineLogon.htm">XOnlineLogon</a> to log onto the Xbox <i>Live</i> service; if the title is not already logged on, the necessary logon (and logoff) steps will be performed internally.</p>
+
+			
+            <p><b>XOnlineOfferingIsNewContentAvailable</b> creates an asynchronous task and returns a handle to that task in the <i>phTask</i> parameter.  In order to perform work on (and eventually complete) this asynchronous task, repeatedly call <b>XOnlineTaskContinue</b> with the task handle until that function returns a value other than XONLINETASK_S_RUNNING.</p>
+
+			<p>The return value from <b>XOnlineTaskContinue</b> indicates the results of the query:</p>
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>XONLINETASK_S_RUNNING</td>
+<td>The task is still processing the request.  Keep calling <b>XOnlineTaskContinue</b>.</td>
+</tr>
+<tr>
+<td>XONLINE_S_OFFERING_NEW_CONTENT</td>
+<td>New content matching the specified bit flags is available.</td>
+</tr>
+<tr>
+<td>XONLINE_S_OFFERING_NO_NEW_CONTENT</td>
+<td>No new content matching the specified bit flags is available.</td>
+</tr>
+<tr>
+<td>An error return value (XONLINE_E_xxx)</td>
+<td>An error occurred while processing the request. Generally, simply treat an error as an indication that no new content is available.  For debugging purposes, or for purposes of integrated error handling for a full-function Xbox <i>Live</i> title, possible error return values include those that can be returned by a failed <b>XOnlineLogon</b> call.  See the <b>XOnlineLogon</b> <a href="XOnlineLogon.htm#return">Return Values</a> for more information.</td>
+</tr>
+</table>
+            <p>After the task has completed, call <a href="XOnlineTaskClose.htm">XOnlineTaskClose</a> with the task handle in order to free associated resources.</p>
+
+            <p>The <i>hWorkEvent</i> parameter can be used to pass an event handle to the enumeration function.  That event handle will be signaled when there is work to be performed on the asynchronous task.  A secondary thread could be waiting on this event handle to know when asynchronous task work needs to be done, and call <b>XOnlineTaskContinue</b> to do so.  Thus, the secondary thread can avoid spinning on calls to <b>XOnlineTaskContinue</b> when no work needs to be done.</p>
+
+			<p>The definition of the term "new content" is content that the player has not previously seen. Therefore, this function returns XONLINE_S_OFFERING_NO_NEW_CONTENT when there is content that the player has previously seen but not downloaded. </p>
+
+			<p>The recommended use for this function is to determine quickly whether new content is available, and to indicate that availability to the user in some appropriate way.  However, titles should not prevent users from viewing or downloading available content when <b>XOnlineOfferingIsNewContentAvailable</b> indicates that no new content is available; users may wish to browse or download previous (possibly unpurchased) content.</p>
+
+			<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;<b>XOnlineOfferingIsNewContentAvailable</b> checks against a single region within the Xbox's region code, rather than each individual country. Thus, the title will receive false positives unless new content is offered to every country in a given region at one time.</p>
+
+			<p>Note that some caching is done when determining whether new content is available.  It may be up to three hours between the time that new content is posted to a server and the time that titles will see the content as available.</p>
+			
+		    <p>Titles using the <b>Content Download Manager</b> must link with the online libraries in order to call <b>XOnlineOfferingIsNewContentAvailable</b>.</p>
+
+
+
+        <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib (xonlines.lib for final testing and certification).</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="x_mt_xonline_functions.htm">Xbox Live Functions</a>,
+<a href="xbox_Live_Downloading_Manager.htm">Content Download Manager</a>,
+<a href="xbox_Live_Downloading_Finding.htm">Finding Content</a> |
+<a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a>,
+<a href="XOnlineTaskClose.htm">XOnlineTaskClose</a>,
+<a href="XOnlineOfferingEnumerate.htm">XOnlineOfferingEnumerate</a>
+</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

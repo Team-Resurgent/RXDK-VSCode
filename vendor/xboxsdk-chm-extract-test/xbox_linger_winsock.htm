@@ -1,0 +1,69 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>linger</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="linger">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="linger"/>
+<MSHelp:Keyword Index="F" Term="linger"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR></TR>
+</TABLE>
+
+<H1><A NAME="xbox_linger_winsock"></A>linger</H1>
+
+<P>The <B>linger</B> structure maintains information about a specific socket that specifies how that socket should behave when data is queued to be sent and the <A HREF="xbox_closesocket_winsock.htm"><B>closesocket</B></A> function is called on the socket.</P>
+
+<PRE class=syntax>struct linger {
+  u_short    l_onoff;
+  u_short    l_linger;
+};</PRE>
+
+<H4>Members</H4>
+
+<DL>
+<DT><B>l_onoff</B> </DT>
+
+<DD>Specifies whether a socket should remain open for a specified amount of time after a <B>closesocket</B> function call to enable queued data to be sent. </DD>
+
+<DT><B>l_linger</B></DT>
+
+<DD>Enabling SO_LINGER also disables SO_DONTLINGER, and vice versa. Note that if SO_DONTLINGER is DISABLED (that is, SO_LINGER is ENABLED), no time-out value is specified. In this case, the time-out used is implementation dependent. If a previous time-out has been established for a socket (by enabling SO_LINGER), this time-out value should be reinstated by the service provider.</DD>
+</DL>
+
+<H4>Remarks</H4>
+
+<P>To enable SO_LINGER, the title should set <B>l_onoff</B> to a nonzero value, set <B>l_linger</B> to zero or the desired time-out (in seconds), and call the <A HREF="xbox_setsockopt_winsock.htm"><B>setsockopt</B></A> function. To specify SO_DONTLINGER (that is, disable SO_LINGER) <B>l_onoff</B> should be set to zero and <B>setsockopt</B> should be called. Note that enabling SO_LINGER with a nonzero time-out on a nonblocking socket is not recommended.</P>
+
+<H4>Requirements</H4>
+<p>
+<b>Header: </b>Declared in winsockx.h, for include use Xtl.h.
+</p>
+
+
+<H4>See Also</H4>
+
+<P>
+<a href="xbox_winsock_overview_winsock.htm"><b>Winsock Overview</b></a>,
+<a href="xbox_winsock_structures_winsock.htm"><b>Winsock Structures</b></a> |
+<A HREF="xbox_setsockopt_winsock.htm"><B>setsockopt</B></A>,
+<A HREF="xbox_getsockopt_winsock.htm"><B>getsockopt</B></A>,<B>
+<A HREF="xbox_closesocket_winsock.htm"><B>closesocket</B></A></B>
+</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

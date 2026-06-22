@@ -1,0 +1,131 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XINPUT_MOUSE</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XINPUT_MOUSE"/>
+<MSHelp:Keyword Index="F" Term="XINPUT_MOUSE"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+    <body topmargin="0">
+        <table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+        <h1>XINPUT_MOUSE</h1>
+
+        
+        
+<p>Contains mouse state information and positional changes.</p>
+<p>To use <b>XINPUT_MOUSE</b>, define the DEBUG_MOUSE compiler define before including Xtl.h. Do not use <b>XINPUT_MOUSE</b> in shipping retail game titles.</p>
+
+
+	
+		
+
+<pre class="syntax">typedef struct _XINPUT_MOUSE{
+    BYTE bButtons;
+    char cMickeysX;
+    char cMickeysY;
+    char cWheel;
+} XINPUT_MOUSE, *PXINPUT_MOUSE;</pre>
+                    
+                
+            
+            
+                <h4><a name="members"></a>Members</h4>
+<dl>
+
+<dt><b>bButtons</b></dt>
+<dd>Indicates the mouse buttons that are currently pressed.  Can be a combination of the following flags:
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>XINPUT_DEBUG_MOUSE_LEFT_BUTTON</td>
+<td>The left mouse button.</td>
+</tr>
+<tr>
+<td>XINPUT_DEBUG_MOUSE_RIGHT_BUTTON</td>
+<td>The right mouse button.</td>
+</tr>
+<tr>
+<td>XINPUT_DEBUG_MOUSE_MIDDLE_BUTTON</td>
+<td>The middle mouse button (mouse wheel button).</td>
+</tr>
+<tr>
+<td>XINPUT_DEBUG_MOUSE_XBUTTON1</td>
+<td>The first extra mouse button (typically on the left side of the mouse).</td>
+</tr>
+<tr>
+<td>XINPUT_DEBUG_MOUSE_XBUTTON2</td>
+<td>The second extra mouse button (typically on the right side of the mouse).</td>
+</tr>
+</table>
+</dd>
+
+
+<dt><b>cMickeysX</b></dt>
+<dd>X-position delta since the mouse state was last queried.</dd>
+
+
+<dt><b>cMickeysY</b></dt>
+<dd>Y-position delta since the mouse state was last queried.</dd>
+
+
+<dt><b>cWheel</b></dt>
+<dd>Mouse wheel delta since the mouse state was last queried.</dd>
+
+
+</dl>
+                <h4><a name="remarks"></a>Remarks</h4>
+<p>The <b>bButtons</b> member indicates the current absolute state of the mouse buttons.</p>
+<p>The <b>cMickeysX</b>, <b>cMickeysY</b>, and <b>cWheel</b> members indicate relative deltas since the title last queried the mouse state with <a href="x_jsk_xinputgetstate.htm">XInputGetState</a>.  Mouse position changes are aggregated by the driver and then returned as one set of deltas when the title calls <b>XInputGetState</b>.  The delta values are capped at plus or minus 127, so if the title does not call <b>XInputGetState</b> frequently enough to detect all position changes, the maximum delta reported is plus or minus 127.</p>
+
+<p>To use <b>XINPUT_MOUSE</b>, #define DEBUG_MOUSE before including Xtl.h. Do not use <b>XINPUT_MOUSE</b> in shipping retail game titles.</p>
+
+<p>Debug mouse support is provided for development-time purposes (for example, clicking on characters in-game, bringing up context menus to set rendering modes, panning camera positions, and so on).  The debug mouse will work in either debug or release builds of the title, but the feature is marked as unapproved at all times and thus will cause a certification failure if included in a title submitted for certification.</p>
+
+<p>No user interface (a mouse pointer, for example) is provided for use with debug mouse support.  As it does with other Xbox input devices, the title associates UI with the device as desired or as necessary.</p>
+
+<p>There are no additional libraries (beyond XapiLib.lib or XapiLibd.lib) that a title must link with in order to obtain debug mouse support.</p>
+
+<p>To use debug mouse support in your title, specify from one to eight XDEVICE_TYPE_DEBUG_MOUSE devices when calling <a href="x_mt_xinitdevices.htm">XInitDevices</a>, and then use the <a href="x_jsk_xgetdevices.htm">XGetDevices</a>, <a href="x_jsk_xgetdevicechanges.htm">XGetDeviceChanges</a>, <a href="x_jsk_xinputopen.htm">XInputOpen</a>, <a href="x_jsk_xinputgetstate.htm">XInputGetState</a>, and <a href="x_jsk_xinputclose.htm">XInputClose</a> functions as you would with other Xbox device types.  Do not use any other input device functions (such as <a href="x_jsk_xinputsetstate.htm">XInputSetState</a> or <a href="x_jsk_xinputgetcapabilities.htm">XInputGetCapabilities</a>) with the debug mouse.</p>
+
+<p>A debug mouse can be connected to a console port using a debug keyboard dongle, or to an open USB port on a connected debug keyboard.  A debug mouse cannot be connected to an MU slot in a controller.</p>
+
+<p>Compatibility testing has been done for most major wired and wireless USB mice.  Some features (for example, the extra mouse buttons) may not work with all mice, especially wireless mice.</p>
+
+<p>The /DUMP <a href="xbox_jbh_tool_imagebld.htm">ImageBld</a> switch will report whether a title is using the debug mouse feature.  The feature will always be reported as unapproved.</p>
+
+
+				
+            
+                <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xbox.h, for include use Xtl.h.</p>
+            
+                <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="x_mt_xinitdevices.htm">XInitDevices</a>, <a href="x_jsk_xinputopen.htm">XInputOpen</a>, <a href="x_jsk_xinputgetstate.htm">XInputGetState</a>, <a href="x_jsk_xinput_state.htm">XINPUT_STATE</a>, <a href="x_jsk_xgetdevices.htm">XGetDevices</a>, <a href="x_jsk_xgetdevicechanges.htm">XGetDeviceChanges</a>
+</p>
+
+
+        <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+    </body>
+    </html>

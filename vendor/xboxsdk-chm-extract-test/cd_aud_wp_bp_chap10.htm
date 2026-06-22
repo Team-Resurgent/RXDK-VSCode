@@ -1,0 +1,236 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Programming with XACT</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Programming with XACT"/>
+<MSHelp:Keyword Index="K" Term="XACT programming, best practices"/>
+<MSHelp:Keyword Index="F" Term="Programming with XACT"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1 class="heading"><A NAME=""></A>Programming with XACT</H1>
+
+<p><i>By Scott Selfon, Audio Content Consultant, Xbox Advanced Technology Group</i></p>
+
+<h2>Introduction</h2>
+
+<p>The Xbox Audio Creation Tool (XACT) attempts to address several recurring problems in audio development on a console system. The primary goal is to provide a high-level sound management library that is optimized for the audio hardware of the Xbox&#174; video game system from Microsoft. To this end, XACT provides:</p>
+<ul>
+<li>Xbox-optimized asynchronous non-buffered sector-aligned audio streaming from the DVD and hard disk&#8212;or, in simpler terms, the ability to pull audio data from the disk without blocking the CPU.</li>
+<li>Primed (zero-latency) streaming. The very beginning of any sound can be read into memory so that the sound can be triggered immediately, with no latency. As the in-memory portion of the sound begins to play, the rest of the sound is smoothly streamed in from disk.</li>
+<li>Simplified jukebox-style interfaces to play user soundtracks and integrate game-supplied Microsoft&#174; Windows Media&#174; Audio (WMA) tracks.</li>
+<li>Real-time in-game auditioning, mixing, and editing of sounds. By using the instrumented version of the XACT library and the XACT authoring tool on the computer, you can adjust sounds while the game is played.</li>
+<li>Methods for composers and sound designers to create sequenced audio events and manipulate Xbox hardware parameters without needing the developer to implement them.</li>
+<li>Interfaces for developers to control audio data and Xbox resource management. These interfaces give developers complete control over what is allocated when.</li>
+</ul>
+<p>XACT is really composed of three connected parts:</p>
+<ol>
+<li><i>Runtime engine </i>(xacteng.lib). A highly optimized (currently roughly 27-KB) engine that exposes all of the run-time behaviors above&#8212;streaming, WMA user soundtracks, and so on.</li>
+<li><i>Audition engine </i>["instrumented"] (xactengi.lib, or for debug, xactengd.lib<sup>1</sup>). Beyond the run-time engine features discussed above, the audition engine adds support for real-time auditioning from the computer-side XACT authoring tool and the DSP Builder tool.<sup>2</sup> Sounds can be actively mixed, equalized, and edited while the game is running. Even if sounds are not being actively edited, the XACT authoring tool can be used to monitor resources and audio levels, and to display cue triggering events as they occur.</li>
+<li><i>Content authoring and auditioning tool</i> (XACT.exe). This is the tool used to create audio files that are used by the XACT engine. In addition to bundling waves into wave banks, the XACT tool provides a wealth of features exposing the Voice Processor pipeline, variability and weighting of content, and tools for in-game mixing, equalizing, and monitoring.</li>
+</ol>
+<p>This chapter of the best practices guide focuses primarily on the first two elements. It will walk through the various aspects of using the XACT library, managing resources, integrating XACT into a game engine, and other programmatic concepts. There is an analogous <a href="cd_aud_wp_bp_chap9.htm">Best Practices chapter</a> for composers and sound designers, which discusses authoring techniques and using XACT for in-game auditioning and mixing.</p>
+<h2>Before You Get Started: Dividing Up Responsibilities</h2>
+<p>When creating an audio solution for a game, it is important to understand which aspects are in the hands of the programmer and which are the responsibility of the composer or sound designer. To avoid confusion and potential responsibility "clashes," XACT attempts to provide a single way to perform most tasks. Properties and behaviors that are specified in content cannot generally be "overridden" programmatically, and conversely, the composer does not control resource management or dynamic pausing.</p>
+<p>When initiating a project, the sound designer and the programmer decide on important <em>cues,</em> also known as "triggers" or "sound cues," in the game. The composer will then create a <em>sound</em> (or perhaps multiple sounds, one of which will be chosen randomly to play) that that cue plays. Sounds are covered in the content authoring chapter of the Audio Best Practices Guide. For now, the programmer and the sound designer can go their separate ways.</p>
+<p>The programmer's responsibilities:</p>
+<ul>
+<li>Program cue play calls into the game.</li>
+<li>Manage resources (such as memory, free hardware voices, and content loading and unloading).</li>
+<li>Manage all dynamic sounds (pause/resume, 3D positioning, and so on).</li>
+</ul>
+<p>Meanwhile, the sound designer or composer:</p>
+<ul>
+<li>Bundles up all source wave data into one or more wave banks. 
+</li>
+<li>Builds each of the individual sounds. A sound consists of one or more events on a timeline, which might consist of playing waves, adjusting hardware envelopes, starting and stopping low frequency oscillators (LFOs), and sweeping filters&#8212;all possibly with variation. </li>
+<li>Creates cues in the XACT tool corresponding to each programmed cue. Each cue can be assigned one or more sounds, one of which is randomly chosen and played when the game calls for this cue. </li>
+</ul>
+<h2>Getting Everything Set Up</h2>
+<p>The XACT authoring tool and libraries are included with the Xbox Development Kit (XDK). Developers generally choose the <b>Full Installation</b> option for the XDK, but note that there is a <b>Minimum Installation</b> option that artists will generally choose to use, which will install all of the audio tools without requiring programming tools like Microsoft&#174; Visual Studio&#174;.</p>
+<p>One of the first things you should do, particularly if you intend to stream audio (or really any) data from the hard disk, is to set the cluster size of the utility region on the hard disk to 64 KB (the default is 16 KB). This can be done via the <b>/UDCLUSTER 65536</b> switch when using ImageBld, or via the Visual Studio .NET property page. With the number of file allocation table (FAT) entries reduced by 75 percent, the entire FAT can live in the file system cache, which helps reduce the potential for the FAT to fall out of the cache or get overwritten, saving extra hard disk seeks and reads. Note that use of the title or user regions will also impact cache usage.</p>
+<h2>An Introduction to XACT File Formats</h2>
+<p>XACT relies on two types of files for audio content: wave banks (*.xwb) and sound banks (*.xsb). <em>Wave banks</em> are just bundled wave data, formatted for optimal playback performance. For in-memory wave banks, waves are DWORD aligned. For streamed wave banks, the individual waves are sector aligned (512-byte boundaries for hard disk streaming, 2048-byte boundaries for DVD streaming). All of this data formatting is managed automatically in the XACT build process, based on settings specified by the content author. These settings can be changed easily enough, but you should communicate with your content creator as to what kind of in-memory budget you have for audio, as well as how much streaming bandwidth you can grant to audio during gameplay.</p>
+<p><em>Sound banks</em> are where waves and Xbox audio hardware settings are assembled on a timeline into <em>sounds</em> by the content creator. The content creator then assigns a <em>cue</em> to play a sound (or in some cases, pick a random sound from a list). The developer then plays and stops these cues based on game events. Beyond controlling cues, the developer can also manipulate some properties on a <em>category</em> level. Each sound can be assigned to a category by the content creator. The developer can then globally adjust the relative volume of categories as well as pause or resume them.</p>
+<p>While we're talking about file formats, let's also mention the XACT project file (*.xap). This is the file that contains all of the instructions for building the sound banks and wave banks for a project&#8212;every setting that the content creator has specified in the XACT authoring tool. Typically a developer will never have to actually read or edit this file. However, because the sound bank format changes each month, and the XACT library is kept in sync with the latest sound bank format, you should make sure to rebuild your sound banks with each month's new Xbox Title Libraries (XTL), even if the content is no longer being edited. The wave bank format is static, so rebuilding these files is generally unnecessary. The command line tool xactbld.exe allows you to rebuild sound banks (and, optionally, wave banks) from the XACT project file without needing to open the editing tool. It's quite common to integrate this into a game's automated build process, rather than needing to remember to manually rebuild once a month.<sup>3</sup></p>
+<h2>XACT Sound Sources</h2>
+<p>It is the composer's responsibility to understand and use whatever underlying sound and cue properties they need to get their audio triggers to make the noises they want. Conversely, for audio aspects that need to be controlled in real time in the game, the developer needs to understand several concepts that the composer generally does not need to be aware of.</p>
+<p>First and foremost, cues are going to be played onto <em>sound sources.</em> There are three types of sound sources:</p>
+<ol>
+<li><i>The default sound source.</i> Cues played here are routed to speakers and/or mixbins based on how their sounds were authored by the content creator. The developer does not control any run-time speaker assignments or individual speaker volumes, although they can still control volume on a category level (<b>IXACTEngine::SetMasterVolume</b>). 
+<p>Typical uses: user soundtracks; stereo, 4.0, or 5.1 music and ambience; pre-rendered cut scene audio; non-positioned dialog (for instance, center channel); sound-designer-authored speaker panning</p></li>
+<li><i>3D sound sources.</i> Created using the XACT_FLAG_SOUNDSOURCE_3D flag when calling <b>IXACTEngine::CreateSoundSource.</b> The sound source (along with any cues played on that sound source) can be dynamically 3D positioned by the developer, using the Xbox Head Relative Transfer Function (HRTF) algorithm. The developer can also adjust mixbin assignments and individual speaker volume manually. All cues will have proper distance-based attenuation and Doppler applied. 
+<p>Typical uses: 3D-positioned dialog, ambience "highlight" sounds, and sound effects</p></li>
+<li><i>2D sound sources. </i>Created using the XACT_FLAG_SOUNDSOURCE_2D flag when calling <b>IXACTEngine::CreateSoundSource.</b> The developer can dynamically manipulate the mixbin and volume assignments for the sound source.
+<p>Typical uses: software-implemented 3D speaker panning (such as that demonstrated in the Pan3D XDK sample) and certain uses of digital signal processor (DSP) effects programs (much less frequently used than other sound source types)</p></li>
+</ol>
+<p>With the exception of the default sound source, each sound source is actually a MIXIN (or, in some cases, an FXIN) buffer. All of the waves that compose a sound will be played onto their own hardware voices, which are then, using hardware submixing, mixed into a single MIXIN voice.<sup>4</sup> What does this mean to a programmer?</p>
+<ol>
+<li><i>Except for the default sound source, each 2D sound source uses an additional hardware voice.</i> This is above and beyond any actual waves playing onto that sound source. For 2D sound sources, a single extra voice is used.</li>
+<li><i>Each 3D sound source uses at least one additional hardware voice. </i>For 3D sound sources, every cue with different 3D properties that is played onto a sound source will allocate another 3D voice. Differences in rolloff (distance-based attenuation), Doppler factor, and so on will require "child" voices to be used to process these different settings. For this reason, we generally recommend that your content creator make sure that all sounds played onto a particular 3D sound source use identical 3D properties (which will only require the one MIXIN hardware voice).</li>
+<li><i>Except for the default sound source, sound sources can only play mono waves. </i>The XACT authoring tool actually enforces this for 3D-positioning properties (only mono waves will expose the properties), but definitely keep this in mind for any sounds that you intend to play on a non-default 2D sound source as well.</li>
+</ol>
+<p>While the sound source is created and controlled by the developer, it's generally a good idea to sit down with the content creator and decide what exactly each sound source should be. For instance, should other characters in the game have a single sound source (generally the position of their mouth), or should they use multiple sound sources (mouth, feet, and so on)? Similarly, should the sound for picking up a power-up be played onto the default sound source or 3D positioned?</p>
+<h2>XACT Notifications</h2>
+<p>One of the more important aspects of a sound engine is the ability to find out when certain events happen. For instance, if an animation needs to sync to playback of a sound from the game disc, we need to know when that sound will actually start playing, which might be up to hundreds of milliseconds after the cue was called. Or perhaps the content author has placed marker events in their sounds that should activate game physics or AI. In each of these cases, XACT notifications provide a method for getting timing information and other data back to the game for it to use.</p>
+<p>You can register for a notification by using <b>IXACTEngine::RegisterNotification.</b> In the registration, you can pass an event handle to trigger when the notification is received, or you can poll for notifications yourself via <b>IXACTEngine::GetNotification.</b> There are notifications when a streaming wave bank is primed, when a cue is ready to play, when a cue has started or finished playing, and numerous other events. Consult the XDK Help documentation for the full list.</p>
+<h2>Basic XACT Implementation</h2>
+<p>Now that we have a basic idea about cues and sound sources, we could create a simple XACT implementation along the lines of the XACTBasicSound sample in the XDK. Don't forget, if your content creator wants to be able to do real-time editing and mixing of the cues you trigger, you should compile your application using the instrumented version of the XACT library. Conversely, make sure that final builds or builds created for game performance profiling are created using the non-instrumented version of the XACT library.</p>
+<p>The nine basic steps for using XACT follow:</p>
+<ol>
+<li>Instantiate the XACT engine (<b>XACTEngineCreate</b>). Here you can specify how many 2D and 3D voices XACT should use, as well as how many notifications to allocate. Note that these voices are not pre-allocated<sup>5</sup> but are just a maximum number of waves and sound sources that XACT will use before it fails a play call.</li>
+<li>Load and register your wave bank(s) (<b>IXACTEngine::RegisterWaveBank</b> and/or <b>IXACTEngine::RegisterStreamedWaveBank</b>). For in-memory wave banks, the binary image can just be loaded into memory. For streamed wave banks, use <b>CreateFile</b> with FILE_FLAG_OVERLAPPED and FILE_FLAG_NO_BUFFERING. Remember that any zero-latency streamed waves (specified in content) will be automatically primed at this time, using your <i>dwPrimePacketSizeInMilliSecs</i> setting. When any non-primed waves are played, <i>dwPacketSizeInMilliSecs</i> will dictate how much of the waves are read into memory.</li>
+<li>Create your sound bank(s) (<b>IXACTEngine::CreateSoundBank</b>). As with in-memory wave banks, just load the sound bank into memory and point XACT at it.</li>
+<li>Create your sound sources (<b>IXACTEngine::CreateSoundSource</b>). Typically you'll create them all up front and manage them, rather than create and destroy them in response to the game. Presuming you're not using any 2D sound sources and you enforce the rule that cues played on a 3D sound source have the same 3D properties, you could create as many sound sources as the maximum number of 3D voices you specified in XACT.</li>
+<li>Look up the cue or cues that you want to play (<b>IXACTSoundBank::GetSoundCueIndexFromFriendlyName</b>). This step is actually optional; XACT can build a header file that enumerates all of the cue indices, which saves you the run-time string lookup table size (and corresponding search hit). Note that specific indices and index ordering might change while the sound bank is being edited by the content creator, so this optimization is generally reserved for when cues are stabilized, and new cues are no longer being created.</li>
+<li>Register for any notifications you want to handle (<b>IXACTEngine::RegisterNotification</b>). To keep things simple, you might just register for stop notifications (<i>eXACTNotification_Stop</i>) on your cues, so that you know when they finish playing.</li>
+<li>Play cues on your sound sources (<b>IXACTSoundBank::Play</b>). The simplest way to play cues is to use the XACT_FLAG_SOUNDCUE_AUTORELEASE flag. When the cue instance is finished playing, it automatically releases. Of course, if you have an infinitely looped cue or a cue that you plan to prematurely stop, the AUTORELEASE flag isn't really applicable; you will keep a handle on the cue instance and stop it.</li>
+<li>Manage any dynamic events as they occur:<br><br>
+<ol type="a">
+<li>Handle or flush pending notifications (<b>IXACTEngine::GetNotification</b> and/or <b>IXACTEngine::FlushNotification</b>) if you didn't pass in an event handle to <b>IXACTEngine::RegisterNotification.</b></li>
+<li>Globally pause or resume sound categories based on game state (<b>IXACTEngine::GlobalPause</b>).</li>
+<li>Manipulate 3D settings for your listener and sound sources, using the interfaces analogous to those presented in Microsoft&#174; DirectSound&#174;.</li></ol>
+</li>
+<li>In the main game loop, call <b>XACTEngineDoWork.</b> This call processes notifications and streams, runs XACT's sequencer, and also calls <b>DirectSoundDoWork</b> for lower-level functions (such as 3D positioning calculations and I3DL2 settings).
+Again, for sample code implementing of these steps, see the XACTBasicSound sample in the XDK.</li>
+</ol>
+<h2>Managing XACT Cues</h2>
+<p>As mentioned above, the easiest way to manage your "fire and forget" cues is to use the AUTORELEASE flag. Of course, you're not going to always want every cue to play to its natural conclusion. When you want to be able to manually stop a cue, it's generally recommended that you not use the AUTORELEASE flag. For such cues, you must always call stop (even if the cue's sound has reached its natural conclusion) to free the cue. Conversely, if you do decide to stop an AUTORELEASE cue, you should note that AUTORELEASE cues that have already stopped will cause an XACT assert if you stop them again. The reason for this is that when an AUTORELEASE cue instance stops, that instance pointer is freed. It's entirely possible that another cue could come along and start using that same pointer. If you now try to stop your old cue when it's already stopped, you'll unintentionally stop this new cue. </p>
+
+<p>So, if you want to stop any AUTORELEASE cue (looping or non-looping) before it finishes, you need to ensure that you never received a stop notification for that cue instance. You can ensure this by calling, every frame:</p>
+<ol>
+<li><b>IXACTEngine::GetNotification,</b> noticing any cues that have stopped of their own accord</li>
+<li><b>IXACTSoundBank::Stop</b> on whatever cues you want to stop (even those that were set to AUTORELEASE are fine here, so long as they did not already report back that they stopped)</li>
+<li><b>XACTEngineDoWork()</b></li>
+</ol>
+
+<p>Note that stopping a cue won't necessarily silence it immediately by default. The content creator may have specified a release envelope so that the sound smoothly tails off. If you want to override this behavior, use XACT_FLAG_SOUNDCUE_IMMEDIATE to bypass the release envelope.</p>
+
+<p>What happens if you attempt to play a cue and you're out of voices? The individual sounds that compose a cue can have a priority set by the content creator. If a lower priority sound is currently playing, it will be stopped and replaced by this higher priority cue. New cues also take precedence over already playing cues of the same priority, so if all of the existing cues are of the same priority as this new cue, the oldest playing cue will be stopped.</p>
+
+<h2>Managing XACT Sound Sources</h2>
+
+<p>XACT allows you to use sound sources in a manner similar to the "auto-release" method available for cue playback. Simply create your sound source (<b>IXACTEngine::CreateSoundSource</b>), play your cue or cues onto the sound source, and then immediately call <b>IXACTSoundSource::Release.</b> When the playing cues are stopped (either manually, or by reaching their natural conclusion), the sound source will free itself automatically.</p>
+
+<p>The next question is how to properly manage our 3D sound sources. We might allocate 50 or 60 3D sound sources for XACT to use, but most world environments will have many more possible emitters than this. Games will generally want to implement some way to manage sound source priority based on their own specific rules for what's important to hear. However, typical implementations will be based at least partially on simple distance/attenuation culling. </p>
+
+<p>To aid with sound source management, XACT exposes several readable properties on sound sources via <b>IXACTSoundSource::GetProperties.</b> You can check to see which sound sources have high priority cues (as specified by the content creator) playing on them, or look at the voice properties for this specific sound source, such as how attenuated its volume is.</p>
+
+<p>Now that you have some idea of which of our game's actual sound emitters you want to dedicate to the finite physical sound sources, you'll probably want an easy way to switch which emitters are being used. Creating and destroying sound sources is one method, but as with DirectSound, allocating and freeing hardware voices (or trying to grab a new sound source before this one is freed) might lead to a busy-wait state. Therefore, as an alternative to the auto-release method described above, you can choose to keep your existing sound sources around at all times. When you want to change which game emitters are being heard:</p>
+
+<ol>
+<li>See if any sound sources aren't already playing. You can keep a list, or use <b>IXACTSoundSource::GetStatus</b> to poll your sound sources. If none are available...</li>
+<li>Determine the sound source with the lowest priority via <b>IXACTSoundSource::GetProperties,</b> either based on priority of the cues playing on it or based on its current attenuation (DSVOICEPROPS values).</li>
+<li>Call <b>IXACTSoundSource::StopSoundCues</b> on the chosen sound source. This effectively stops all cues that might be playing on the sound source. The release envelope is used, so sounds currently playing may decay rather than stopping immediately. If you do want to stop the currently playing cues immediately, you should keep track of all cues playing on a sound source and stop each of them with the XACT_FLAG_SOUNDCUE_IMMEDIATE flag.</li>
+<li>Reposition this sound source and play your new cue(s) on it. Again, if you do this immediately, the decays on the previously playing cues might suddenly jump to the new position on the screen, but since the volume was presumably low based on #2, this may not be noticeable.</li>
+</ol>
+
+<p>Remember that when a cue is stopped, it might still continue to make sound for some time via a release envelope (unless you stop it using the XACT_FLAG_SOUNDCUE_IMMEDIATE flag). So even if all of the cues on a sound source are stopped, note that the sound source isn't actually freed until <b>IXACTSoundSource::GetStatus</b> reports that it is no longer active. If you are maintaining and reusing your sound sources, a typical implementation technique would be to put a sound source that's no longer in use at the end of a free sound source list. By the time you want to use that sound source again, any previously playing sound's envelopes will be more likely to have completed.</p>
+
+<h2>XACT and User Soundtracks</h2>
+
+<p>The XACT programming interfaces can also be used as a simplified way to access WMA soundtracks, both those supplied on the game disc and tracks created by the user in the Xbox Dashboard. Because soundtracks are accessed through a cue, all of the XACT cue functionality is available for soundtrack usage: fades, notifications, volume control via a category, and so on. XACT also implements basic shuffle and looping playback.</p>
+
+<p>Using XACT to access user soundtracks consists of a slightly different process than using regular cue playback. Rather than the cue being authored entirely by the content creator, the developer instructs a specific cue that it is going to play a list of WMA tracks (via <b>IXACTSoundBank::CreateWMAPlayList</b>). Because this overrides any sounds that the cue was using, the content creator will typically create an empty cue (perhaps called "PlayWMAMusic" or something like that) that the developer can use. The full process for using soundtracks with XACT is as follows:</p>
+
+<ol>
+<li>Content creator adds a cue to the sound bank, generally pointing at a sound with no events or waves associated with it. Useful things to author into the sound include:<br><br>
+<ol type="a">
+<li>A category assignment, which will allow for easier run-time control of the volume by the programmer.</li>
+<li>A mixbin event, which will specify that the music should be routed to a speaker configuration other than the front left and front right speakers. For instance, some games may route the music to the surround speakers, or more commonly, send to the front speakers at full volume and the surround speakers at 50 percent volume.</li></ol></li>
+<li>Developer instantiates the XACT engine, registers the corresponding sound bank (along with any other sound banks and wave banks used by the title), creates sound sources, and so on, as described in the above <b>Basic XACT Implementation</b> section.</li>
+<li>Determine the cue's index, either by looking it up (<b>IXACTSoundBank::GetSoundCueIndexFromFriendlyName</b>) or by using the optional XACT-generated header file.</li>
+<li>Register notifications for the cue as you would for other cues. For instance, we might register for <i>eXACTNotification_Start</i> so that we can calculate how much time has passed in the current track.</li>
+<li>Create a playlist that this cue will use (<b>IXACTSoundBank::CreateWmaPlayList</b>). Again, remember that this will "reroute" the cue, replacing any instructions authored by the content creator, so generally the source cue should be free of wave play events.</li>
+<li>Add your songs and soundtracks to the playlist (<b>IXACTWmaPlayList::Add</b>). The method has options for adding an entire directory of WMA files, individual WMA files, user soundtracks, or individual songs from a user soundtrack. WMA files contained within a wave bank are not supported.</li>
+<li>Play the cue on the default sound source (<b>IXACTSoundBank::Play</b>). Remember, sound sources other than the default sound source can play only mono waves.</li>
+<li>Presuming the sound was assigned a category by the content creator, you can adjust its volume via <b>IXACTEngine::SetMasterVolume</b> on that category.</li>
+</ol>
+
+<p>For an implementation of these steps, see the XActWMAPlaylist sample in the XDK.</p>
+
+<p>You can also control jukebox-style settings on the IXACTWmaPlayList object&#8212;advancing to the next or previous song, adding and removing WMA songs, and so on. Note that while most interfaces are asynchronous, getting track information (via <b>IXACTWmaPlayList::GetCurrentSongInfo</b> or <b>IXACTWmaPlayList::GetCurrentSongInfoEx</b>) may block in some situations. For more details, consult the XDK Help documentation.</p>
+
+<h2>Dynamic Audio Control</h2>
+
+<p>Numerous situations arise in which a developer needs to exert additional control over game sounds. For instance, in a driving game, the sound of the engine needs to respond to dynamic values such as RPMs and gear. XACT provides several methods for accessing this more dynamic control method.</p>
+
+<p>First of all, the content creator can group sounds into various <em>categories</em>. The developer can then, at run time, manipulate the volume and the pause/resume state of specific categories. Volume manipulation via a category (<b>IXACTEngine::SetMasterVolume</b>) is generally reserved for the kinds of game "mixing" controls that are often exposed to the end user. Games should typically have relatively few categories, perhaps as simple as the corresponding user-exposed sliders often labeled "FX," "Dialog," and "Music." Categories should <i>not</i> typically be used for emulating distance attenuation. Also note that categories cannot be used to "amplify" content-authored attenuation. Category volume is applied additively with content-authored volumes, so the relative mix of sounds within a single category will remain intact even as that category's "global" volume is reduced. The pause/resume state for a category can be manipulated via <b>IXACTEngine::GlobalPause.</b> Again, this is often useful when the player switches to a game menu (or otherwise pauses the game). Perhaps everything is paused except for the musical score or the ambience.</p>
+
+<p><em>Run-time parameter controls</em> (RPCs, also known as <em>sliders</em>) provide for more acute dynamic control of audio behavior. How a specific sound responds to a RPC's value is determined by the content author; it might crossfade between two waves, pitch shift the sound up or down, apply filtering, and so on. The RPC is then adjusted by the developer in response to game state (<b>IXACTEngine::SetParameterControl</b>). Categories are also exposed here, with the added benefit of sequencing parameter sweeps: you can set any parameter to change to an arbitrary value smoothly over a specified amount of time.</p>
+
+<p>Note that there is no concept of a "default" RPC value. In a cue instance's initial state, all tracks of a sound would be played without any RPC curves being applied. You can apply a value via <b>SetParameterControl</b> right after the cue starts playing, but there's always the chance that the wave might briefly play without your RPC settings. To avoid this, use this process to play any cues whose sounds use RPCs:</p>
+
+<ol>
+<li>Call <b>IXACTSoundBank::Prepare</b> on the cue, which returns you a cue instance (<i>ppSoundCue</i>).</li>
+<li>Call <b>IXACTEngine::SetParameterControl</b> on this cue instance.</li>
+<li>Call <b>XACTEngineDoWork.</b></li>
+</ol>
+
+<p>The cue instance is now ready to be played (via <b>IXACTSoundBank::Play</b>) with your initial slider values applied.</p>
+
+<h2>Debugging with XACT</h2>
+
+<p>When running a debug build of XACT, you can control error and warning messages in several ways. The <a href="xbox_xact_global_xactdebuglevel_dxaudio.htm">g_dwXACTDebugLevel</a> global variable dictates what kinds of messages you receive: errors, warnings, general information, and so on. This setting can be used in tandem with <a href="xbox_xact_global_xactdebugbreaklevel_dxaudio.htm">g_dwXactDebugBreakLevel</a>, which tells XACT at what level of information reporting the application should break into the debugger.</p>
+
+<p>You can also route the debug information to a location other than the debugger by implementing a callback that you point the <a href="xbox_xact_global_xactenginedebugoutputcallback_dxaudio.htm">g_pXACTEngineDebugOutputCallback</a> variable at. In this way, you could save an error log to a file and route important error messages to the game screen or to your own remote server.</p>
+
+<p>Resource use (number of free voices, streams, memory footprint, and so on) can be monitored by using the Audition Monitor in the XACT authoring tool. For more details, see <a href="cd_aud_wp_bp_chap9.htm">Authoring with the Xbox Audio Creation Tool (XACT)</a>. If the content creator is manually triggering sounds and cues from the authoring tool, the reported resource use may not accurately represent in-game resource use. Because of the fact that you as the developer allocated the memory for wave banks and sound banks, XACT of course doesn't report these. The memory use that the Audition Monitor displays will consist primarily of sound sources, cue instances, and the primed and playing buffers. You can use <b>XMemAlloc</b> or the custom allocator sample to see the exact allocations made by XACT as they occur.</p>
+
+<h2>XACT Optimizations</h2>
+
+<p>Depending on the kind of sound banks you use, one of the primary optimizations you can make to XACT content is to eliminate the use of friendly names entirely. This saves space in the actual sound bank file (and thus in the size of the binary image read into memory). It also saves the XACT engine the processing on that string to determine the cue index that the string refers to. To remove friendly names and use an enumerated header file instead, the content creator should:</p>
+
+<ol>
+<li>Clear the <b>Include cue friendly names</b> check box in the sound bank's property window.</li>
+<li>Choose <b>Build Project Header</b> in their build options screen when building the wave banks and sound banks.</li>
+</ol>
+
+<p>When determining the size of streaming packets, make sure that you don't stream any wave whose size is smaller than XACT's in-memory streaming footprint for that wave. The in-memory streaming footprint is:</p>
+
+<ul>
+<li>Twice the packet size for regular streamed waves.</li>
+<li>Three times the packet size for looping streamed waves.</li>
+<li>Three times the packet size for zero-latency streamed waves.</li>
+<li>Four times the packet size for looped zero-latency streamed waves.</li>
+</ul>
+
+<p>For instance, streaming an adaptive pulse code modulation (ADPCM) zero-latency wave off the hard disk will translate to at least 4608 bytes/packet * 3 packets, or roughly 15 KB. You can generally save packet size tweaking for late game tuning, in case you notice your streams are starving (breaking up) due to other hard disk or game disc activity. Good conservative numbers to start with are 50 msec for hard disk streaming and 500 msec for game disc streaming.</p>
+
+<p>When considering the balance between in-memory and streamed wave banks, note that several games have successfully streamed <i>all</i> of their sounds (music, dialog, and effects) from the hard disk. In fact, some titles have found it acceptable for even their quick twitch (for example, weapon) sounds to be streamed from the hard disk, without even using zero-latency streaming. </p>
+
+<h2>Wrap-Up </h2>
+
+<p>XACT attempts to present usable solutions for some of the most common challenges that audio developers and content creators face. Beyond presenting an Xbox hardware-optimized sound management system, XACT tries to allow the content creator and the developer to focus on what they know best: creating sound effects and programming real-time elements, respectively. The real-time audition component helps the content creator to experiment with, author, and mix content without needing to involve the full game build process. Conversely, the binary file formats, simplified user soundtrack integration, and optimized streaming behavior should hopefully make the developer's job of implementing audio that much easier. As always, if you have any questions, concerns, or comments about this or other Xbox tools, please contact <a href="mailto:content@xbox.com">content@xbox.com</a>. </p>
+<p>For more information about topics presented here, please consult other chapters of the <a href="cd_aud_wp_bp.htm">Xbox Audio Best Practices Guide</a>, the Xbox Development Kit Help documentation, or the white papers in the Audio Designer's Corner, or send an e-mail message to <a href="mailto:content@xbox.com">content@xbox.com</a>.</p>
+
+<br>
+<HR ALIGN="left" WIDTH="300">
+
+<p class="footnote"><sup>1</sup> In releases previous to the October 2002 XDK, xactengd.lib was not instrumented, and xactengid.lib was used if you desired a debug, instrumented XACT library. In current XDKs, the two libraries are both instrumented, and thus identical. </p>
+
+<p class="footnote"><sup>2</sup> In releases prior to the October 2002 XDK, separate code was needed to use DSP Builder for real-time auditioning. It has since been incorporated into the instrumented XACT libraries. For more details on using DSP Builder and authoring DSP effects programs, see the white paper <a href="cd_aud_wp_authoring.htm">Authoring and Auditioning Effects Programs</a>.</p>
+
+<p class="footnote"><sup>3</sup> For more information on XACT build integration, please see the white paper <a href="cd_aud_wp_automatingaudio.htm">Automating Xbox Audio Builds</a>.</p>
+
+<p class="footnote"><sup>4</sup> For more information on MIXIN and FXIN buffers, see the white paper <a href="cd_aud_wp_chaining.htm">Chaining, Submixing, and Multipass Effects</a>.</p>
+
+<p class="footnote"><sup>5</sup> Behavior in October and previous XDKs was to pre-allocate voices at the time that XACT was created.</p>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>
+

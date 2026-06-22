@@ -1,0 +1,284 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Implementing Multiple Listeners in a 3D Space</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Implementing Multiple Listeners in a 3D Space"/>
+<MSHelp:Keyword Index="F" Term="Implementing Multiple Listeners in a 3D Space"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1 class="heading"><A NAME=""></A>Do You Hear What I Hear?:<br>
+Implementing Multiple Listeners in a 3D Space</H1>
+
+<p><i>By Scott Selfon, Audio Content Consultant, Xbox Advanced Technology Group</i></p>
+
+<h2>Introduction</h2>
+
+<p>With the real-time 3D-positioning capabilities of the Xbox&#174; video game system from Microsoft, immersive gameplay for one player is fairly straightforward to implement. But doing so for multiple players on a single Xbox console is more complex. The
+game can use only a single set of speakers to represent 3D acoustic space for several
+people; in addition, Microsoft&#174; DirectSound&#174; only allows
+for implementation of a single "listener" object. This paper presents several
+alternatives, along with their pros and cons, for handling audio positioning in
+a multi-player title.</p>
+
+<h2>The Problem: Conflicting Positioning Information</h2>
+
+<p>From an audio positioning standpoint, one of the biggest
+difficulties with multiplayer games on a single game console is that every
+player is going to hear all the sounds the game plays, regardless of whom the
+sounds are intended for. There is no auditory isolation between players. This
+means that, except for one player, games will inherently give perceptually
+incorrect auditory positioning information. As a result, it is up to each player
+to distill from the "mix" of noises which are intended for him or her, versus
+those intended for another player. (One of the solutions outlined below
+actually distills sounds for each player, but at the expense of true
+positioning cues and "immersive" gameplay.)</p>
+
+<p>The classic example is two players facing each other with a
+sound source in front and between them:</p>
+<img src="images/listeners1.gif">
+
+
+<p>Player 1 perceives the sound as being to her left, while Player
+2 perceives the sound as being to his right. A game can choose to "frustrate"
+one of the two player's perceptions, or layer both perceptions and depend on each
+player to isolate sounds meant for his or her ears. This choice is up to the
+specific title, but several possible solutions are presented below, each of
+which will be subsequently discussed in more depth:</p>
+<ol>
+<li><i>Assign the sounds meant for each listener to one corresponding
+speaker.</i> For instance, sound intended for Player 1 could be played from the
+left speaker, and sound intended for player 2 could be played from the right
+speaker. This method removes all 3D positioning cues, but can still give each
+user distance and velocity information (based on volume and Doppler/pitch
+shift).</li>
+<li><i>Position all sound relative to every listener and play it back
+simultaneously.</i> Based on the diagram above, Player 1 hears sound to her
+right, and Player 2 hears sound to his left. One 3D voice is used for each
+position. The "mix" results in the sound being heard over both speakers. In
+this way, both players' perceptions are met, and each player can use visual
+cues to help isolate which sound is intended for him or her.</li>
+<li><i>Position all sounds relative to the closest listener only</i>. This
+is really a moderate optimization of Solution #2, above. In this scenario, each
+sound source will only use one 3D voice, and it will be positioned based on the
+listener who is closest. Assuming that Player 2 in the diagram above is
+marginally closer to the sound source, the sound will be played only in the
+right speaker.</li>
+</ol>
+
+
+<p>Although other alternatives can be used, these three configurations
+comprise the more basic solutions. Let's discuss the implementations, benefits,
+and drawbacks of each.</p><BR>
+
+<h2>Solution #1: One Speaker = One Listener</h2>
+
+<p>This solution "assigns" one output speaker to each player&#8212;the
+acoustic analog to using a split screen for visuals. Of course, this solution requires
+use of at least a stereo system, with better results achieved by using a Dolby&#174; Surround or Dolby&#174; Digital system. While Solution #1 seems fairly straightforward and logical for some kinds of titles, it is often somewhat difficult to pull off in practice.
+First, the game is somewhat dependent on both users sitting in a specific order.
+For example, suppose a player is sitting on the right side of the room and game
+sounds intended for him emanate from the left speaker. It might be less awkward
+and confusing for this player if intended game sounds emanated from the closer,
+right speaker. Secondly, under this scenario, it might be difficult to
+distinguish who a sound is really intended for. If one player has the center
+channel, other players depending on the left and right speakers might interpret
+some of the center sounds as intended for them (particularly if the home
+theater system uses a "phantom" center channel). Lastly, because players'
+attention will be divided between looking forward and listening backward, this
+scenario might be confusing for players depending on the surround channels for
+their audio data.</p>
+
+<img src="images/listeners2.gif">
+
+<p><i><b>Illustration</b>&nbsp;&nbsp; An example of an in-game configuration: Sound Source 5 is audible to both Players 1 and 2, but all other sounds are isolated (perhaps by a wall) to a single player.</i></p>
+
+<img src="images/listeners3.gif">
+
+<p><i><b>Illustration</b>&nbsp;&nbsp; A possible one-speaker-per-player implementation. All sounds heard by Player 1 emanate from the left speaker, while all sounds heard by Player 2 emanate from the right speaker.</i></p>
+
+<p>Implementation overview:</p>
+
+<ul>
+ <li>(Simple) Each sound source is routed to each player's assigned speaker mixbin (using a single hardware voice per sound). Then per mixbin volume is calculated for each frame (or at least fairly often), based on distance from each player.</li>
+ <li>(Advanced)
+     Each sound source is played on multiple hardware voices, one per player.
+     By using object velocity relative to each player, this method allows the developer
+     to implement both Doppler and attenuation with distance (as shown above). </li>
+</ul>
+
+<p>Benefits:</p>
+
+<ul>
+ <li>Doesn't require any 3D (HRTF) voices to implement.</li>
+ <li>Doesn't require orientation calculations.</li>
+</ul>
+
+<p>Drawbacks:</p>
+
+<ul>
+ <li>No HRTF performed&#8212;must manually determine pitch shifting (Doppler), volume, and so on.</li>
+ <li>No actual spatialization of sounds&#8212;every sound for a player emanates from a single position.</li>
+ <li>Each player ideally would have to be positioned relative to "their" speaker.</li>
+ <li>Potential for distraction for other players&#8212;sounds from behind players are intended for one user, sounds to the left are intended for another user, and so on.</li>
+ <li>Limited to two players for stereo, and one player for mono.</li>
+</ul>
+
+
+<h2>Solution #2: Virtual Listeners</h2>
+
+<p>This solution positions each sound source relative to each player
+(who then becomes a "virtual listener"). Each virtual listener's position and
+orientation are then transformed relative to the single actual DirectSound
+listener. The net result is a "composite" DirectSound listener that layers all
+of the sounds into a single mix.</p>
+
+<img src="images/listeners4.gif">
+
+<p><i><b>Illustration</b>&nbsp;&nbsp; Similar scenario to the Solution #1 configuration, except that the orientation is altered slightly to make overlaying more obvious. Again, Sound Source 5 is heard by both players, but other sounds are only heard by one player.</i></p><BR>
+
+<img src="images/listeners5.gif">
+
+<p><i><b>Illustration</b>&nbsp;&nbsp; The net result of folding down the "virtual listeners" to the actual single DirectSound listener. Note that Sound Source 5 is heard from two distinct positions.</i></p>
+
+<p>Implementation overview:</p>
+
+<ul>
+ <li>(Simple) One player ("virtual listener") is the actual DirectSound listener. All other
+     listeners, orientations, velocities, and sounds heard by the DirectSound
+     listener are transformed relative to this listener. A significant possible
+     disadvantage of this implementation is that your CPU hit will differ based
+     on which player moves. This occurs because *all* sounds must be
+     recalculated when the actual DirectSound listener moves.</li>
+ <li>(More Optimal) The actual DirectSound listener remains at the origin. All players
+     and their corresponding sounds are transformed and rotated relative to
+     this listener.</li>
+ <li>Sounds heard by multiple listeners must use a separate 3D voice and relative
+     position/velocity for each listener.</li>
+</ul>
+
+<p>Benefits:</p>
+
+<ul>
+ <li>3D-audio calculations (pitch bend, volume, etc.) do not need to be implemented by
+     developer.</li>
+ <li>Native support for HRTF ("3D"), as well as simple panned 2D voices (see XDK
+     "Pan3D" sample).</li>
+</ul>
+
+<p>Drawbacks:</p>
+
+<ul>
+ <li>Requires added calculations and transformations (from virtual listeners to actual
+     DirectSound listener).</li>
+ <li>Each sound source may require more than a single 3D voice depending on how many
+     listeners hear it and their orientations.</li>
+</ul>
+
+<h2>Solution #3: Virtual Listeners and Single Sound Source Positions</h2>
+
+<p>Similar to Solution #2, this solution transforms all virtual
+listeners to the single physical DirectSound listener. The primary difference
+is that rather than a sound source potentially using multiple 3D voices (one
+per player), the sound source is only heard by the listener positioned closest
+to the sound.</p><BR>
+
+<img src="images/listeners6.gif">
+
+<p><i><b>Illustration</b>&nbsp;&nbsp; Two sound sources, both of which can be heard by both players. One sound source is closer to Player 1 and the other is closer to Player 2.</i></p>
+
+<img src="images/listeners7.gif">
+
+<p><i><b>Illustration</b>&nbsp;&nbsp; Each sound source is played only for the player closest to the sound source. This configuration eliminates multiple instances of the two sounds at different positions.</i></p>
+
+<p>Implementation overview:</p>
+
+<ul>
+ <li >(Basic) Identical to Solution #2, except an additional check is made to see which
+     listener is closest to the sound source. The sound is then only played at
+     that single position.</li>
+ <li>(Advanced) If two or more listeners are roughly the same distance from the sound source, the implementation temporarily reverts to Solution #2 (using some kind of crossfade based on which listener is closer).
+ </li>
+</ul>
+
+<p>Benefits:</p>
+
+<ul>
+ <li>Only uses one 3D voice per sound source.</li>
+ <li>Benefits provided by Solution #2 (virtual listeners).</li>
+</ul>
+
+<p>Drawbacks:</p>
+
+<ul>
+ <li>Potential for discontinuity when the sound suddenly shifts position, or "jumps," so that it becomes closer to another player. This discontinuity can be mitigated by temporarily
+using multiple 3D voices to perform a crossfade at transitions between listeners.</li>
+
+ <li>Requires another calculation per sound source to determine which listener is
+     closest to the sound source.</li>
+</ul>
+
+<h2>Multiple Virtual Listener 3D Sample Implementation</h2>
+
+<p>The <a href="https://xds.xbox.com/download/multilistener.zip">attached sample</a>
+implements Solutions #2 and #3 using the Play3DSound sample as its source. By
+pressing <b>Y</b>, you can toggle between the algorithm for the closest
+listener and the algorithm for all listeners. </p>
+
+<p>This sample is shown below:</p>
+
+<img src="images/listeners8.jpg">
+
+<p><i><b>Illustration</b>&nbsp;&nbsp; (1) The blue triangles represent the virtual listeners. (2) The grey triangle locked at the center of the screen is the "actual" DirectSound listener (which remains stationary). (3) The red square represents the actual sound source position. (4) The grey squares are the transformed and rotated sound sources as they will be heard by the single actual DirectSound listener (based on the positions and orientations of the multiple virtual listeners).</i></p>
+
+<p>Note that for the sake of simplicity, implementation of Solution #3 in this sample is identical to Solution #2, except that listeners who aren't closest to the sound source are "muted" in Solution #3. This is, of course, far from optimal, as we're still using the
+multiple 3D voices and spending the processing time to transform and 3D-position them, only to turn around and mute them. </p>
+
+<p>A more complete implementation of Solution #3 would be to use only a single 3D voice. Then, before transforming the single 3D voice, we would determine which listener is closest to the sound source and ignore the others.</p>
+
+<p>The existing Play3DSound
+sample was tracking the angle of the listener's orientation in the X-Z plane.
+We translate the sound source to position it relative to the origin, and then
+rotate it based on the listener's angle. Again, this might be a somewhat
+simplified solution for titles whose listener orientation can move in all three
+axes, but is sufficient for many implementations.</p>
+
+<h2>Other Options and Wrap-Up</h2>
+
+<p>Of course, these are not
+the only possible solutions to the multiple-listener problem. Based on the
+specific title and audio implementation desired, a title could implement sounds
+so that some sounds are heard by all listeners, while others are only played by
+the listener closest to the sound source. Or, a title could combine the first
+two solutions by "biasing" sounds for Player 1 toward the left speaker (without
+sending sounds solely to the left speaker), and "biasing" sounds for Player 2
+toward the right speaker.</p>
+
+<p>While no solution can
+match having a separate, isolated listening space for each player, the layered
+virtual listener solution outlined above can provide adequate player feedback. In
+turn, this feedback can provide immersive directional auditory information to help
+influence and inform gameplay.</p>
+
+<p>For more information about
+topics presented in this paper, please consult other chapters of the <a href="cd_aud_wp_bp.htm">Xbox Audio
+Best Practices Guide</a>, the Xbox Development Kit documentation, and the white
+papers in the Audio Designer's Corner, or send an e-mail message to <a href="mailto:content@xbox.com">content@xbox.com</a>.</p>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>
+

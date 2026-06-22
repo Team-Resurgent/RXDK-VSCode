@@ -1,0 +1,77 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineContentInstallGetSize</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineContentInstallGetSize"/>
+<MSHelp:Keyword Index="F" Term="XOnlineContentInstallGetSize"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineContentInstallGetSize</h1>
+<p>Retrieves the full install size (in blocks) of a piece of downloaded content.</p><pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineContentInstallGetSize(</b>
+    <b>XONLINETASK_HANDLE</b> <i>hTask</i><b>,</b>
+    <b>DWORD</b> *<i>pdwTotalInstalledSizeInBlocks</i><b>,</b>
+    <b>DWORD</b> *<i>pdwAdditionalBlocksRequired</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+		<dt><i>hTask</i></dt>
+<dd>[in]  Task handle created by <a href="XOnlineContentInstall.htm">XOnlineContentInstall</a> (but before <a href="XOnlineTaskClose.htm">XOnlineTaskClose</a>).</dd>
+
+		<dt><i>pdwTotalInstalledSizeInBlocks</i></dt>
+<dd>[out]  Number of blocks required to install the content.</dd>
+
+		<dt><i>pdwAdditionalBlocksRequired</i></dt>
+<dd>[out]  Returns zero if the disk has enough space to install the content. If more disk space is required, this value returns the number of additional blocks needed to install the content. This value factors in the additional overhead for download, and parts of the content that are already installed. Because there is a download overhead, note that this value can be greater than the value returned in <i>pdwTotalInstalledSizeInBlocks</i>.</dd>
+	</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>Returns S_OK if the there is enough space, or S_FALSE, if additional disk space is required to install the content.</p><h4><a name="remarks"></a>Remarks</h4>
+		<p>There can be a delay before <b>XOnlineContentInstall</b> gets the install size from the server. If <b>XOnlineContentInstallGetSize</b> is called before the server returns the install size, both <i>pdwTotalInstalledSizeInBlocks</i> and <i>pdwAdditionalBlocksRequired</i> return zero, and the function returns S_OK.</p>
+		<p>The following is an example of using this function:</p>
+
+<pre class="clsCode">
+hr = XOnlineContentInstall( OfferingID, ... , &amp;hTask);
+do
+{
+   hr = XOnlineTaskContinue(hTask);
+   if (hr == HRESULT_FROM_WIN32(ERROR_DISK_FULL))
+   {
+      DWORD dwInstallSize, dwBlocksRequired;
+      hr = XOnlineContentInstallGetSize(hTask, &amp;dwInstallSize, &amp;dwBlocksRequired);
+      Assert(dwBlocksRequired &gt; 0);
+      XOnlineTaskClose(hTask);
+      DisplayDiskFullMessageWithRequiredBlockCount( dwBlocksRequired );
+      BootToDashMemoryArea( );
+   }
+} while (hr == XONLINETASK_S_RUNNING)
+</pre>
+    
+	<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p><a href="x_mt_xonline_functions.htm">Xbox Live Functions</a></p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

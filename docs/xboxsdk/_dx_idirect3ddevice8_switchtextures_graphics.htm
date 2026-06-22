@@ -1,0 +1,73 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirect3DDevice8::SwitchTexture</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="IDirect3DDevice8::SwitchTexture [C++]">
+<META NAME="MS-HKWD" CONTENT="SwitchTexture (IDirect3DDevice8) [C++]">
+<META NAME="MS-HKWD" CONTENT="SwitchTexture [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="SwitchTexture (IDirect3DDevice8)"/>
+<MSHelp:Keyword Index="K" Term="IDirect3DDevice8::SwitchTexture"/>
+<MSHelp:Keyword Index="F" Term="SwitchTexture"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_idirect3ddevice8_switchtexture_graphics"></A>IDirect3DDevice8::SwitchTexture</H1>
+
+<P>Switches a texture to a stage for a device.</P>
+
+<PRE class=syntax><B>HRESULT SwitchTexture(
+  DWORD</B><I> Stage</I><B>,</B>
+<B>  IDirect3DBaseTexture8*</B> <I>pTexture</I>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>Stage</I></DT>
+
+<DD>[in] Stage identifier to which the texture is set. Stage identifiers are zero-based. Devices can have up to four set textures, so the maximum value allowed for <I>Stage</I> is 3.</DD>
+
+<DT><I>pTexture</I></DT>
+
+<DD>[in] Pointer to an <A HREF="_dx_idirect3dbasetexture8_graphics.htm"><B>IDirect3DBaseTexture8</B></A> interface, representing the texture being set. For complex textures, such as mipmaps and cube textures, this parameter must point to the top-level surface. 
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the method succeeds, the return value is S_OK.</P>
+
+<H4>Remarks</H4>
+
+<P>This method is a restricted form of <a href="_dx_idirect3ddevice8_settexture_graphics.htm"><b>IDirect3DDevice8::SetTexture</b></a> and allows a texture to be changed in ten x86 instructions. The previous <b>IDirect3DDevice8::SetTexture</b> call for the corresponding stage must have been non-NULL. The new texture must have the same cubemap-ness and dimensionality as the corresponding previously set texture.  The texture cannot be a linear texture.</P>
+
+<p><b>IDirect3DDevice8::SwitchTexture</b> does no reference counting or lifetime management, so it is up to the caller to ensure that the texture still exists and is unchanged when the graphics processing unit (GPU) gets around to rendering it.  One method of doing this is to use <a href="_dx_idirect3ddevice8_insertfence_graphics.htm"><b>IDirect3DDevice8::InsertFence</b></a>.</p>
+
+<p>The state of <b>IDirect3DDevice8::SwitchTexture</b> is not queryable and is not recorded by state blocks.</p>
+
+<p><b>IDirect3DDevice8::SwitchTexture</b> has the same signature as <b>IDirect3DDevice8::SetTexture</b>, so <a href="_dx_idirect3ddevice8_settexture_graphics.htm"><b>D3DFixUp::SetTexture</b></a> can be used to do fix-ups of <b>IDirect3DDevice8::SwitchTexture</b> calls recorded in push-buffer resources.</p>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in D3d8.h.<BR>
+<B>&nbsp;&nbsp;Import Library:</B> Use D3d8.lib.</P>
+
+<H4>See Also</H4>
+
+<P><A HREF="_dx_idirect3ddevice8_gettexture_graphics.htm"><B>IDirect3DDevice8::GetTexture</B></A>, <A HREF="_dx_idirect3ddevice8_gettexturestagestate_graphics.htm"><B>IDirect3DDevice8::GetTextureStageState</B></A>, <a href="_dx_idirect3ddevice8_settexture_graphics.htm"><b>IDirect3DDevice8::SetTexture</b></a>, <A HREF="_dx_idirect3ddevice8_settexturestagestate_graphics.htm"><B>IDirect3DDevice8::SetTextureStageState</B></A></P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

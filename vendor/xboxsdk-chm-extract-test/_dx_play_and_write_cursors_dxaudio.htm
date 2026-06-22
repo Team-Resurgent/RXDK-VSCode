@@ -1,0 +1,34 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Play and Write Cursors</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Play and Write Cursors"/>
+<MSHelp:Keyword Index="F" Term="Play and Write Cursors"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H4><A NAME="_dx_play_and_write_cursors_dxaudio"></A>Play and Write Cursors</H4>
+
+<P>DirectSound maintains two pointers into the buffer: the play cursor and the write cursor. These positions are byte offsets into the buffer, not absolute memory addresses.</P>
+
+<P>The <A HREF="_dx_idirectsoundbuffer8_play_dxaudio.htm"><B>IDirectSoundBuffer8::Play</B></A> method always starts playing at the buffer's play cursor. When a buffer is created, the cursor position is set to zero. As a sound is played, the cursor moves and always points to the next byte of data to be output. When the buffer is stopped, the cursor remains at the next byte of data.</P>
+
+<P>The write cursor is the point after which it is safe to write data into the buffer. The block between the current play position and the current write position is already committed to be played, and cannot be changed safely.</P>
+
+<P>You might visualize the buffer as a clock face, with data written to it in a clockwise direction. The play position and the write position are like two hands sweeping around the face at the same speed, the write position always keeping a little ahead of the play position. If the play position points to the 1 and the write position points to the 2, it is only safe to write data after the 2. Data between the 1 and the 2 may already have been queued for playback by DirectSound and should not be touched.</P>
+
+<P>The write position moves with the play position, not with data written to the buffer. If you're streaming data, you are responsible for maintaining your own pointer into the buffer to indicate where the next block of data should be written.</P>
+
+<P>An application can retrieve the play and write cursors by calling the <A HREF="_dx_idirectsoundbuffer8_getcurrentposition_dxaudio.htm"><B>IDirectSoundBuffer8::GetCurrentPosition</B></A> method. The <A HREF="_dx_idirectsoundbuffer8_setcurrentposition_dxaudio.htm"><B>IDirectSoundBuffer8::SetCurrentPosition</B></A> method lets you move the play cursor. Applications do not control the position of the write cursor.</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

@@ -1,0 +1,83 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineMessageEnumerate</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineMessageEnumerate"/>
+<MSHelp:Keyword Index="F" Term="XOnlineMessageEnumerate"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineMessageEnumerate</h1>
+            <p>Retrieves a list of message summaries from the Xbox <i>Live</i> service.</p>
+        <pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineMessageEnumerate(</b>
+    <b>DWORD</b> <i>dwUserIndex</i><b>,</b>
+    <b>XONLINE_MSG_SUMMARY</b> *<i>pMsgSummaries</i><b>,</b>
+    <b>DWORD</b> *<i>pdwNumMsgSummaries</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+            <dt><i>dwUserIndex</i></dt>
+				<dd>[in]  Controller index (zero-based) of the player whose message list is to be enumerated.  The player 
+				must have been successfully logged on with a previous call to <a href="XOnlineLogon.htm">XOnlineLogon</a>.</dd>
+			
+            <dt><i>pMsgSummaries</i></dt>
+				<dd>[out]  Pointer to the list of message summaries. The maximum number of <a href="XONLINE_MSG_SUMMARY.htm">XONLINE_MSG_SUMMARY</a> 
+				structures is XONLINE_MAX_NUM_MESSAGES.</dd>
+			
+            <dt><i>pdwNumMsgSummaries</i></dt>
+				<dd>[out]  Pointer to a <b>DWORD</b> that receives the number of message 
+				summaries in the list.</dd>
+			
+        </dl>
+<h4><a name="return"></a>Return Values</h4>
+            
+                <p>Possible return values for <b>XOnlineMessageEnumerate</b> are as follows:</p>
+				<table>
+					<tr>
+						<th>Value</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>S_OK</td>
+						<td>The function succeeded.</td>
+					</tr>
+					<tr>
+						<td>XONLINE_S_MESSAGE_PENDING_SYNC</td>
+						<td>Returned when the message list is in the process of being retrieved (immediately after logon or when turning summary refresh back on). Pumping the logon task will eventually clear this state and S_OK will be returned.</td>
+					</tr>
+				</table>
+            
+        <h4><a name="remarks"></a>Remarks</h4>
+			<p>If a player does not have any messages, <b>XOnlineMessageEnumerate</b> will return S_OK and place zero in <i>pdwNumMsgSummaries</i>.</p>
+			<p>The <a href="XOnlineGetNotificationEx.htm">XOnlineGetNotificationEx</a> function will return the XONLINE_NOTIFICATION_STATE_FLAG_PENDING_SYNC flag while the message list is being retrieved. Titles can check that while pumping the logon task instead of waiting for <b>XOnlineMessageEnumerate</b> to return S_OK.</p>
+		<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+             <a href="XOnlineMessageSummary.htm">XOnlineMessageSummary</a>, <a href="XOnlineMessageDetails.htm">XOnlineMessageDetails</a>
+        </p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

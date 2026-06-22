@@ -1,0 +1,55 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Thread Local Storage</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Thread Local Storage"/>
+<MSHelp:Keyword Index="F" Term="Thread Local Storage"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR></TR>
+</TABLE>
+<!--**********************************-->
+
+<H3><A NAME="_win32_thread_local_storage"></A>Thread Local Storage</H3>
+
+<P>All threads share the virtual address space and the global variables of a title. The local variables used in a  function being executed by a thread are local to each thread that runs the function because they are allocated on each thread's own stack. However, the static or global variables used by that function have the same value for all threads. With thread local storage (TLS), you can create a unique copy of a variable for each thread. Using TLS, one thread allocates an index that can be used by any thread to retrieve that thread's unique copy of the data.</P>
+
+<P>Use the following steps to implement TLS: 
+
+<OL>
+	<LI>Use the <A HREF="prothred_986b.htm"><B>TlsAlloc</B></A> function (usually during title initialization) to allocate a TLS index. </LI>
+
+	<LI>For each thread that needs to use the TLS index, allocate dynamic storage, then use the <A HREF="prothred_8jl1.htm"><B>TlsSetValue</B></A> function to associate the index with a pointer to the dynamic storage. </LI>
+
+	<LI>When you need a thread to access its storage, specify the TLS index in a call to the <A HREF="prothred_6azp.htm"><B>TlsGetValue</B></A> function to retrieve the pointer. </LI>
+
+	<LI>When each thread no longer needs the dynamic storage that it has associated with a TLS index, it must free that storage. When all threads have finished using a TLS index, use the <A HREF="prothred_7ns5.htm"><B>TlsFree</B></A> function to free the index. </LI>
+</OL>
+
+<P>The constant TLS_MINIMUM_AVAILABLE defines the minimum number of TLS indexes available.</P>
+
+<P>Thread local storage is also often used by libraries in conjunction with thread notify routines (see <A href="x_jsk_xregisterthreadnotifyroutine.htm"><B>XRegisterThreadNotifyRoutine</B></A>).  Perform the initial TLS index allocation when the library is initializing, usually when <B>XRegisterThreadNotifyRoutine</B> is used to register the library for thread notifications.  When a new thread is created, the notification routine is notified.  In the notification routine (and also for the initial thread), dynamically allocate the needed memory, and use <A HREF="prothred_8jl1.htm"><B>TlsSetValue</B></A> with the TLS index (from the initial <B>TlsAlloc</B> call) to store the memory pointer at that TLS index. Then, within other functions in the library, use the TLS index in a call to <A HREF="prothred_6azp.htm"><B>TlsGetValue</B></A> to access the per-thread private data for the calling thread. When a thread detaches from the library, free the dynamically allocated memory.  When the library is unloaded (if it eventually is) call <A HREF="prothred_7ns5.htm"><B>TlsFree</B></A> to free the allocated TLS index.</P>
+
+<P>For an example illustrating the use of thread local storage, see <A HREF="prothred_9ixx.htm"><B>Using Thread Local Storage</B></A>. </P>
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

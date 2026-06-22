@@ -1,0 +1,95 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>XGSetPushBufferHeader</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XGSetPushBufferHeader"/>
+<MSHelp:Keyword Index="F" Term="XGSetPushBufferHeader"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="xgraphics_xgsetpushbufferheader"></A>XGSetPushBufferHeader</H1>
+
+<P>Creates an empty push-buffer resource.</P>
+
+<PRE class=syntax><B>VOID WINAPI XGSetPushBufferHeader(
+  UINT</B> <I>Size</I><B>,</B>
+<B>  BOOL</B> <I>RunUsingCpuCopy</I><B>,</B>
+<B>  IDirect3DPushBuffer8</B><I> *pPushBuffer</I><b>,
+  UINT</b> <i>Data</i>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>Size</I></DT>
+
+<DD>[in] Size of the push-buffer in bytes. The size must be a multiple of four bytes. Additionally, the size can minimally be 512 bytes, and must be at least as big as any single command recorded into the push-buffer (so if <a href="_dx_idirect3ddevice8_drawprimitiveup_graphics.htm"><b>IDirect3DDevice8::DrawPrimitiveUP</b></a> is called while recording, for example, <i>Size</i> must be at least as big as all the vertex data and the call overhead).  If the <i>Size</i> is not as large as any single command recorded into the push-buffer, Direct3D will overrun the end of the buffer while recording (no check is done on retail builds for this case so as not to slow down any of the Direct3D methods while not recording a push-buffer).  Typically, the size should be at least 1100 bytes.
+
+<p><i>Size</i> should also be at least as large as the total size of the push-buffer to be recorded.  However, even on retail builds, Direct3D is guaranteed not to overrun the end of the buffer while recording a push-buffer that is too big (subject to the constraint that no single command is larger than the size).  This permits <I>GetSize</I> to be called on a too-small push-buffer to get an exact, accurate size required.</p></DD>
+
+<DT><I>RunUsingCpuCopy</I></DT>
+
+<DD>[in] If TRUE, the push-buffer resource data is created in non-contiguous, cached memory, and D3DPUSHBUFFER_RUN_USING_CPU_COPY is set in the Common field of <a href="_dx_idirect3dpushbuffer8_graphics.htm"><b>IDirect3DPushBuffer8</b></a>. If FALSE, the push-buffer resource data is created in physically contiguous, write-combined memory.</dd>
+
+<DT><I>pPushBuffer</I></DT>
+
+<DD>[in, out] Address of the <b>IDirect3DPushBuffer8</b> interface, representing the push-buffer resource that is to be filled.</DD>
+
+<dt><i>Data</i></dt>
+
+<dd>[in] Offset to the data held by this resource.
+</dd>
+
+</DL>
+
+<H4>Return Values</H4>
+
+<P>None.</P>
+
+<h4>Remarks</h4>
+
+<p>In general, <i>RunUsingCpuCopy</i> should be FALSE when the push-buffer is large, because the push-buffer can be directly executed in-place by the GPU, which saves in CPU time and system bandwidth.  But <i>RunUsingCpuCopy</i> should be TRUE for small push-buffers, because the per-call overhead of <a href="_dx_idirect3ddevice8_runpushbuffer_graphics.htm"><b>IDirect3DDevice8::RunPushBuffer</b></a> is extremely high for the direct execution case.</p>
+
+<p>As with any Direct3D resource, <b>Release</b> should be called when finished with the push-buffer resource.</p>
+
+<p>All resources, including push-buffers, include a header that contains all of the information needed by the driver to process the resource and a data allocation that contains information used by the GPU. The resource headers are used only by the driver and so should be allocated from normal cached memory. The header contains all of the information needed by the driver to set up the hardware so that it can use the information stored in the data allocation.</p>
+
+<p>Unless the title is manually creating a resource, it is recommended that the title use <a href="_dx_idirect3ddevice8_createpushbuffer_graphics.htm"><b>IDirect3DDevice8::CreatePushBuffer</b></a>.</p>
+
+<p>After calling <b>XGSetPushBufferHeader</b>, it is necessary to call <a href="xbox_dxg_IDirect3DResource8_Register.htm"><b>IDirect3DResource8::Register</a></b> in order to register the memory address of the resource.</p>
+
+<p>The following code snippet shows how to register a manually created push-buffer resource.</p>
+
+<pre>IDirect3DPushBuffer8* pPushBuffer = new IDirect3DPushBuffer8;
+
+// Assume that dwSize is the size of the push-buffer, in bytes.
+XGSetPushBufferHeader( dwSize, FALSE, pPushBuffer, 0 );
+void *pData = D3D_AllocContiguousMemory( dwSize, D3DPUSHBUFFER_ALIGNMENT );
+pPushBuffer-&gt;Register( pData );</pre>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in xgraphics.h.<BR>
+<B>&nbsp;&nbsp;Import Library:</B> Use xgraphics.lib.</P>
+
+<h4>See Also</h4>
+
+<p><a href="_dx_pushbuffer_overview_graphics.htm"><b>Push-Buffer Overview</b></a></p>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

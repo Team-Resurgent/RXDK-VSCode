@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>DmRegisterPerformanceCounter</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="CreateFile">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="DmRegisterPerformanceCounter"/>
+<MSHelp:Keyword Index="F" Term="DmRegisterPerformanceCounter"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_createfile"></A>DmRegisterPerformanceCounter</H1>
+
+<P class="content">Registers a performance counter on the Xbox console.</P>
+
+<PRE class=syntax><b>DmRegisterPerformanceCounter(</B>
+	<B>LPCSTR</B> <I>szName</I><B>,</B> 
+	<B>DWORD</B>  <I>dwType</I><B>,</B> 
+	<B>PVOID</B>  <I>pv</I>
+	<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+
+<DT><I>szName</I></DT>
+<DD>Name of the counter.</DD>
+
+<DT><I>dwType</I></DT>
+<DD>Type of counter, as defined in <B>DM_COUNTINFO</B>.</DD>
+
+<DT><I>pv</I></DT>
+<DD>This parameter is set as either a pointer to a function meeting the signature specified above, a pointer to a 32-bit value, a pointer to a 64-bit value, or a pointer to a <B>DM_COUNTINFO</B> structure.</DD>
+
+</DL>
+
+<H4>Return Values</H4>
+
+<P class="content">Returns XBDM_NOERR if successful, an error value otherwise.</P>
+
+<H4>Creating and Registering a Performance Counter</H4>
+
+<P class="content">To write a performance counter, the developer first needs to make several decisions:</P>
+
+	<OL>
+		<LI>Is the counter synchronous or asynchronous?</LI>
+		<LI>Is the counter an event or value counter?</LI>
+		<LI>If the counter is a value counter, is it an absolute counter or a percentage counter?</LI>
+	</OL>
+
+<P class="content">The answers to the questions determine how to write the resulting counter.</P>
+
+
+<H4>Synchronous Counters</H4>
+
+<P class="content">A developer writing a synchronous counter must write a function with the following signature:</P>
+
+<PRE>HRESULT (__stdcall *PDM_COUNTPROC)(PLARGE_INTEGER,PLARGE_INTEGER);</PRE>
+
+<P class="content">This function will then be called by <b>DmQueryPerformanceCounter</b> (in the case of value counters) or indirectly by our timing thread (in the case of event-based counters). Developers should write synchronous counters when they don't need to worry about capturing values at specific time intervals or in response to system events.</P>
+
+<H4>Asynchronous Counters</H4>
+
+<P class="content">A developer writing an asynchronous counter supplies either a 32-bit address, 64-bit address, or an address to a <b>DM_COUNTDATA</b> structure, depending on the flags passed into <b>DmRegisterPerformanceCounter</b>. Developers should write asynchronous counters when they need to update their counter values at specific time intervals or in response to system events.</P>
+
+<H4>Event-based Versus Value-based</H4>
+
+<P class="content">The decision of whether to author an event-based or value-based counter depends largely on what you are trying to measure. Any data that needs to be examined with respect to time should be an event-based counter. Counters that measure information at the instant they are called should be value-based counters.</P>
+
+<H4>Value-based Counters: Absolute Versus Percentage</H4>
+
+<P class="content">An absolute counter returns only a raw value. Examples of value-based absolute counters are "Memory Available" or "Number of textures allocated".</P>
+
+<P class="content">A percentage counter returns a ratio between 0 and 1. An example of value-based percentage counter is "CPU usage".</P>
+
+<P class="content">Depending on which type of value counter you choose makes a difference in how you must return values in response to a <b>DmQueryPerformanceCounter</b> call. An absolute counter always returns a single 64-bit value for <b>CountType</b>; <b>RateValue</b> is undefined. A percentage counter always returns two 64-bit values, but only uses the bottom 32-bits of each.</P>
+
+
+<H4>Count Providers</H4>
+
+<P class="content">When registering a performance counter, one of the following types must be specified:</P>
+<ul>
+	<LI><B>DMCOUNT_ASYNC</B>&mdash;<i>pv</i> points to a <b>DM_COUNTDATA</b> structure that will be returned at query time.  The data provider is responsible for keeping the count data up-to-date. </li>
+	<LI><B>DMCOUNT_SYNC</B>&mdash;<i>pv</i> points to a <b>PDM_COUNTPROC</b> function, which for a PRATIO counter returns its numerator value in the first <b>LARGE_INTEGER</b> and its demoninator value in the second <b>LARGE_INTEGER</b>, and for all other types returns its data in the first <b>LARGE_INTEGER</b>.</li>
+	<LI><B>DMCOUNT_ASYNC32</B>&mdash;<i>pv</i> points to a <b>DWORD</b> which represents the value of the counter; for a PRATIO counter, pv points to an array of two <b>DWORD</b>s.</li>
+	<LI><B>DMCOUNT_ASYNC64</B>&mdash;<i>pv</i> points to a <b>LARGE_INTEGER</b> which represents the value of the counter; for a PRATIO counter, pv points to an array of two <b>LARGE_INTEGER</b>s.</li>
+</ul>
+<P class="content">For counters other than <B>DMCOUNT_ASYNC</B>, the low four bits specify the frequency, in 100-millisecond increments (from 100ms to 1sec) that the counter will be periodically queried to establish rate or progressive information.  If the frequency portion is zero, the counter will not be periodically queried, and rate or progressive information will be unavailable.</P>
+
+
+<H4>Win32 Performance Monitor Example</H4>
+
+<PRE>#include "windows.h"
+#include "xboxdbg.h"
+#include &lt;conio.h&gt;
+
+int main()
+	{
+	PDM_WALK_COUNTERS pdmwc;
+	DM_COUNTINFO dmci;
+	DM_COUNTDATA dmcd;
+
+	// An example of how to enumerate the available counters
+	pdmwc = NULL;
+	while (DmWalkPerformanceCounters(&amp;pdmwc, &amp;dmci) != XBDM_ENDOFLIST)
+		{
+		printf("Counter '%s', Type 0x%04x\n", dmci.Name, dmci.Type);
+		}
+	DmCloseCounters(pdmwc);
+
+	// An example of how to display the value of an event counter //
+	while (!_kbhit())
+		{
+		DmQueryPerformanceCounter("Frames", DMCOUNT_EVENT |
+                                                   DMCOUNT_FREQ1SEC |
+                                                   DMCOUNT_PERSEC, &amp;dmcd);
+
+		printf("%g fps\n", (double)dmcd.CountValue.QuadPart /
+                                  (double)dmcd.RateValue.QuadPart);
+
+		Sleep(1000);
+		}
+
+	return 0;
+	}</PRE>
+
+<h4>Requirements</h4>
+<p class="content">
+<b>Header:</b> Declared in XbDm.h
+<br><b>Import Library:</b> Use XbDm.lib
+</p>
+
+<!--
+<H4>See Also</H4>
+<P class="content"></P>
+-->
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

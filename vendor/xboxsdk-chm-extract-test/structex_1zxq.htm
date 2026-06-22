@@ -1,0 +1,62 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>AbnormalTermination</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="AbnormalTermination">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="AbnormalTermination"/>
+<MSHelp:Keyword Index="F" Term="AbnormalTermination"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_abnormaltermination"></A>AbnormalTermination</H1>
+
+<P>The <B>AbnormalTermination</B> function indicates whether the <B>__try</B> block of a termination handler terminated normally. The function can be called only from within the <B>__finally</B> block of a termination handler. </P>
+
+<P class=note><B>Note</B>&nbsp;&nbsp;The Microsoft C/C++ Optimizing Compiler interprets this function as a keyword, and its use outside the appropriate exception-handling syntax generates a compiler error. </P>
+
+<PRE class=syntax><B>BOOL AbnormalTermination(VOID);</B></PRE>
+
+<H4>Parameters</H4>
+
+<P>This function has no parameters. </P>
+
+<H4>Return Values</H4>
+
+<P>If the <B>__try</B> block terminated abnormally, the return value is nonzero.</P>
+
+<P>If the <B>__try</B> block terminated normally, the return value is zero. </P>
+
+<H4>Remarks</H4>
+
+<P>The <B>__try</B> block terminates normally only if execution leaves the block sequentially after executing the last statement in the block. Statements (such as <B>return</B>, <B>goto</B>, <B>continue</B>, or <B>break</B>) that cause execution to leave the <B>__try</B> block result in abnormal termination of the block. This is the case even if such a statement is the last statement in the <B>__try</B> block. </P>
+
+<P>Abnormal termination of a <B>__try</B> block causes the system to search backward through all stack frames to determine whether any termination handlers must be called. This can result in the execution of hundreds of instructions, so it is important to avoid abnormal termination of a <B>__try</B> block due to a <B>return</B>, <B>goto</B>, <B>continue</B>, or <B>break</B> statement. Note that these statements do not generate an exception, even though the termination is abnormal.</P>
+
+<P>To avoid abnormal termination, execution should continue to the end of the block. You can also execute the <B>__leave</B> statement. The <B>__leave</B> statement allows for immediate termination of the <B>__try</B> block without causing abnormal termination and its performance penalty. Check your compiler documentation to determine if the <B>__leave</B> statement is supported. </P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Excpt.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+
+</p><H4>See Also</H4>
+
+<P><A HREF="xbox_mt_xtl_sll_structured_exception_handling_overview.htm">Structured Exception Handling Overview</a>, <A HREF="xbox_mt_xtl_sll_structured_exception_handling_functions.htm">Structured Exception Handling Functions</a> </P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

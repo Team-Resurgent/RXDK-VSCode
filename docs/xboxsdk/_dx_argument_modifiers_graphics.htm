@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Argument Modifiers</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Argument Modifiers"/>
+<MSHelp:Keyword Index="F" Term="Argument Modifiers"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_argument_modifiers_graphics"></A>Argument Modifiers</H1>
+
+<P>The Direct3DX pixel shader assembler can take instruction arguments (operands) with modifier flags that affect the input argument before it is processed in the instruction. There are two types of input argument modifiers: color and alpha blending input argument modifiers and texture addressing input argument modifiers. </P>
+
+<P>The input argument modifiers are defined by the following table, where <I><B>r</B><SUB>n</SUB></I> is an input argument (register).</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=26%>Instruction</TH>
+<TH align=left width=13%>Syntax</TH>
+<TH align=left width=61%>Description</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=26%><A HREF="_dx_alpha_replicate_graphics.htm">Alpha Replicate</A></TD>
+<TD width=13%><I><B>r</B><SUB>n</SUB></I>.a</TD>
+<TD width=61%>Replicates the alpha channel to all colors.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=26%><A HREF="_dx_blue_replicate_graphics.htm">Blue Replicate</A></TD>
+<TD width=13%><I><B>r</B><SUB>n</SUB></I>.b</TD>
+<TD width=61%>Replicates the blue channel to the alpha channel.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=26%><A HREF="_dx_invert_graphics.htm">Invert</A></TD>
+<TD width=13%>1&minus;<I><B>r</B><SUB>n</SUB></I></TD>
+<TD width=61%>Complements y = 1.0 &minus; x. Unsigned x is required.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=26%><A HREF="_dx_negate_graphics.htm">Negate</A></TD>
+<TD width=13%>&minus;<I><B>r</B><SUB>n</SUB></I></TD>
+<TD width=61%>Negates the value y = &minus;x. Signed x is required.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=26%><A HREF="_dx_bias_graphics.htm">Bias</A></TD>
+<TD width=13%><I><B>r</B><SUB>n</SUB></I>_bias</TD>
+<TD width=61%>Shifts value down by &frac12;, y = (x&minus;0.5).</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=26%><A HREF="_dx_signed_scaling_graphics.htm">Signed Scaling</A></TD>
+<TD width=13%><I><B>r</B><SUB>n</SUB></I>_bx2</TD>
+<TD width=61%>Shifts value down and scales data by 2, y = 2*(x&minus;0.5).</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=26%><A HREF="_dx_saturation_graphics.htm">Saturate</A></TD>
+<TD width=13%><I><B>r</B><SUB>n</SUB></I>_sat</TD>
+<TD width=61%>Clamps the register value from zero to one.</TD>
+</TR>
+</TABLE><BR>
+
+<p>Input argument modifiers can be combined. For example, both &minus;<I><B>r</B><SUB>n</SUB></I>_bx2 (shift range from [0..1] to [&minus;1..1] and then negate) and &minus;<I><B>r</B><SUB>n</SUB></I>_bias (clamp negative <b>r</b><sub>n</sub> to 0.0, subtract 0.5, then negate) are allowed.</p>
+
+<P>For example, the <A HREF="_dx_lrp_graphics.htm">lrp</A> instruction can be implemented using input argument modifiers.</P>
+
+<PRE>; Using diffuse alpha to blend between r0 and t0
+lrp r0, v0.a, r0, t0
+; can be written (using more clocks) as:
+sub r0, r0, t0
+mad r0, t0, v0.a, r0
+</PRE>
+
+<P>Unlike vertex shaders, component swizzles are not supported by the pixel shader. The x, y, and z components are treated together as an RGB color component, and the w component is treated as alpha which can be routed separately. </P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

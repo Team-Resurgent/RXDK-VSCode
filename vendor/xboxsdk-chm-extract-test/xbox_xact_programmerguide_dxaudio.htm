@@ -1,0 +1,112 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XACT Programming Guide</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XACT Programming Guide"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XACT Programming Guide</h1>
+<p>This topic discusses the Xbox Audio Creation Tool (XACT) from the programmer's perspective. In brief, when programming with the XACT API, you must follow these three basic requirements:</p>
+<ol>
+				<li><p>The game title must link the appropriate XACT library file.</p>
+				<table>
+					<tr>
+						<th>Library Name</th>
+						<th>Approved Library</th>
+						<th>Instrumented (Supports Auditioning)</th>
+						<th>Contains Debug Information</th>
+						<th>Supports Link-Time Code Generation</th>
+					</tr>
+					
+					<tr>
+						<td>Xacteng.lib</td>
+						<td>Yes</td>
+						<td>No</td>
+						<td>No</td>
+						<td>No</td>																								
+					</tr>
+
+					<tr>
+						<td>Xactengd.lib</td>
+						<td>No</td>
+						<td>Yes</td>
+						<td>Yes</td>
+						<td>No</td>																								
+					</tr>
+					
+					<tr>
+						<td>Xactengltcg.lib</td>
+						<td>Yes</td>
+						<td>No</td>
+						<td>No</td>
+						<td>Yes</td>																								
+					</tr>
+
+					<tr>
+						<td>Xactengi.lib</td>
+						<td>No</td>
+						<td>Yes</td>
+						<td>No</td>
+						<td>No</td>																								
+					</tr>
+
+					<tr>
+						<td>Xactengid.lib</td>
+						<td>No</td>
+						<td>Yes</td>
+						<td>Yes</td>
+						<td>No</td>																								
+					</tr>
+				</table>
+
+					<p>For release builds, only xacteng.lib and xactengltcg.lib are approved. To take advantage of <a href="xbox_tool_vc7_cmdline.htm#link_time_code_generation">Link Time Code Generation</a>, titles must link to xactengltcg.lib.</p>
+					<p>Xacteng.lib is a release (non-instrumented) XACT library and does not support auditioning.</p>
+					<p>Xactengd.lib is a debug XACT library. This file is an instrumented version that supports auditioning and is functionally equivalent to xactengid.lib.</p>
+					<p>Xactengi.lib and xactengid.lib are instrumented XACT libraries (they support auditioning).</p>
+				</li>
+				<li>To create the engine, you must call <a href="xbox_xactenginecreate_dxaudio.htm">XACTEngineCreate</a>. This creates and initializes the XACT audio engine and needs to be called only once at the beginning of your application.
+
+<pre class="clsCode">
+XACT_RUNTIME_PARAMETERS Params;
+PXACTENGINE pEngine;
+
+memset(&amp;Params, 0, sizeof(Params));
+Params.dwMax2DHwVoices = 128;
+Params.dwMax3DHwVoices = 32;
+Params.dwMaxConcurrentStreams = 16;
+
+if ( SUCCEEDED( XACTEngineCreate(&amp;Params, &amp;pEngine) ) )
+{
+// Ready to do work
+}
+</pre>
+    </li>
+				<li>Your application must continuously call <a href="xbox_xactenginedowork_dxaudio.htm">XACTEngineDoWork</a>. Call this function early and often (such as during the main game loop). For more information, see the section on this function.</li>
+			</ol>
+<p>For more information about programming with the XACT API, see the <a href="xbox_mds_samp_aud_xactbasicsound.htm">XActBasicSound Sample</a>.</p><h2><a name="IDA4TYK"></a>Related Topics</h2>
+<p>For more information about XACT, see the following topics.</p><ul>
+				<li><a href="xbox_xact_overview_dxaudio.htm">XACT Overview</a></li>
+				<li><a href="xbox_xact_concepts_dxaudio.htm">XACT Concepts</a></li>
+				<li><a href="xbox_xact_authoring_dxaudio.htm">XACT Authoring Guide</a></li>
+				<li><a href="xbox_xact_xact_dxaudio.htm">XACT Graphical User Interface Commands</a></li>
+				<li><a href="xbox_xact_xactbld_dxaudio.htm">XACT (Xactbld) Command-Line Commands</a></li>
+		</ul>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

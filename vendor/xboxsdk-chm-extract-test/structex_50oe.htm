@@ -1,0 +1,62 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>GetExceptionInformation</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="GetExceptionInformation">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="GetExceptionInformation"/>
+<MSHelp:Keyword Index="F" Term="GetExceptionInformation"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_getexceptioninformation"></A>GetExceptionInformation</H1>
+
+<P>The <B>GetExceptionInformation</B> function retrieves a machine-independent description of an exception, and information about the machine state that existed for the thread when the exception occurred. This function can be called only from within the filter expression of an exception handler. </P>
+
+<P class=note><B>Note</B>&nbsp;&nbsp;The Microsoft C/C++ Optimizing Compiler interprets this function as a keyword, and its use outside the appropriate exception-handling syntax generates a compiler error. </P>
+
+<PRE class=syntax><B>LPEXCEPTION_POINTERS GetExceptionInformation(VOID);</B></PRE>
+
+<H4>Parameters</H4>
+
+<P>This function has no parameters. </P>
+
+<H4>Return Values</H4>
+
+<P>The return value is a pointer to an <A HREF="structex_1unm.htm">EXCEPTION_POINTERS</a> structure that contains pointers to two other structures: an <A HREF="structex_7do2.htm">EXCEPTION_RECORD</a> structure containing a description of the exception, and a <A HREF="debug_6fw2.htm">CONTEXT</a> structure containing the machine-state information.</P>
+
+<H4>Remarks</H4>
+
+<P>The filter expression (from which the function is called) is evaluated if an exception occurs during execution of the <B>__try</B> block, and it determines whether the <B>__except</B> block is executed. </P>
+
+<P>The filter expression can invoke a filter function. The filter function cannot call <B>GetExceptionInformation</B>. However, the return value of <B>GetExceptionInformation</B> can be passed as a parameter to a filter function. </P>
+
+<P>To pass the <B>EXCEPTION_POINTERS</B> information to the exception-handler block, the filter expression or filter function must copy the pointer or the data to safe storage that the handler can later access. </P>
+
+<P>In the case of nested handlers, each filter expression is evaluated until one is evaluated as EXCEPTION_EXECUTE_HANDLER or EXCEPTION_CONTINUE_EXECUTION. Each filter expression can invoke <B>GetExceptionInformation</B> to get exception information. </P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Excpt.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+
+<H4>See Also</H4>
+
+<P><A HREF="xbox_mt_xtl_sll_structured_exception_handling_overview.htm">Structured Exception Handling Overview</a>, <A HREF="xbox_mt_xtl_sll_structured_exception_handling_functions.htm">Structured Exception Handling Functions</a> |  <A HREF="debug_6fw2.htm">CONTEXT</a>, <A HREF="structex_1unm.htm">EXCEPTION_POINTERS</a>, <A HREF="structex_7do2.htm">EXCEPTION_RECORD</a>, <A HREF="structex_2fz9.htm">GetExceptionCode</a> </P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

@@ -1,0 +1,171 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineCompetitionCreateSingleElimination</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineCompetitionCreateSingleElimination"/>
+<MSHelp:Keyword Index="F" Term="XOnlineCompetitionCreateSingleElimination"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineCompetitionCreateSingleElimination</h1>
+            <p>Creates a single-elimination competition.</p>
+        <pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineCompetitionCreateSingleElimination(</b>
+    <b>DWORD</b> <i>dwUserIndex</i><b>,</b>
+    <b>DWORD</b> <i>dwTemplate</i><b>,</b>
+    <b>ULONGLONG</b> <i>qwTeamID</i><b>,</b>
+    <b>const XONLINE_COMP_SINGLE_ELIMINATION_ATTRIBUTES</b> *<i>pDefaultAttributes</i><b>,</b>
+    <b>DWORD</b> <i>dwNumAdditionalAttributes</i><b>,</b>
+    <b>const XONLINE_ATTRIBUTE</b> *<i>pAdditionalAttributes</i><b>,</b>
+    <b>HANDLE</b> <i>hWorkEvent</i><b>,</b>
+    <b>PXONLINETASK_HANDLE</b> <i>phTask</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+            <dt><i>dwUserIndex</i></dt>
+				<dd>[in]  Controller index (zero-based) of the player. The player must have been 
+				successfully logged on with a previous call to <a href="XOnlineLogon.htm">XOnlineLogon</a>.</dd>
+            
+			
+            <dt><i>dwTemplate</i></dt>
+				<dd>[in]  ID of the template describing the competition.</dd>
+			
+            <dt><i>qwTeamID</i></dt>
+				<dd>[in]  ID of the team on which the player competes. This parameter is used only when 
+				the <b>fTeamCompetition</b> member of the structure pointed to by the 
+				<i>pDefaultAttributes</i> parameter is TRUE. Otherwise, <i>qwTeamID</i> should 
+				be 0.</dd>
+            
+			
+            <dt><i>pDefaultAttributes</i></dt>
+				<dd>[in]  Address of an <a href="XONLINE_COMP_SINGLE_ELIMINATION_ATTRIBUTES.htm">XONLINE_COMP_SINGLE_ELIMINATION_ATTRIBUTES</a> structure that 
+				describes the competition.</dd>
+            
+			
+            <dt><i>dwNumAdditionalAttributes</i></dt>
+				<dd>[in]  Number of additional title-specific attributes contained in the array whose starting address is 
+				contained in the <i>pAdditionalAttributes</i> parameter.</dd>
+            
+			
+            <dt><i>pAdditionalAttributes</i></dt>
+				<dd>[in]  Starting address of an array of title-specific attributes associated with the competition.</dd>
+            
+			
+            <dt><i>hWorkEvent</i></dt>
+				<dd>[in, optional]  Handle of an event you want to associate with this task. If you do not 
+				want to assign an event, set this parameter to NULL.</dd>
+            
+			
+            <dt><i>phTask</i></dt>
+				<dd>[out]  Pointer to an <b>XONLINETASK_HANDLE</b> type. The handle is associated 
+				with the task started by <b>XOnlineCompetitionCreateSingleElimination</b>. The handle can then be 
+				used in calls to <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> to perform work associated with this task.</dd>
+			
+        </dl>
+<h4><a name="return"></a>Return Values</h4>
+            
+                <p>Returns S_OK if successful, or an error code otherwise. The error codes can include the 
+				following.</p>
+				<table>
+					<tr>
+						<th>Error Code</th> <th>Description</th>
+					</tr>
+					<tr>
+						<td>E_INVALIDARG</td>
+						<td>A required attribute is missing, or one or more of the parameters or attributes 
+						specified is invalid.</td>
+					</tr>
+				</table>
+            
+        <h4><a name="remarks"></a>Remarks</h4>
+			<p><b>XOnlineCompetitionCreateSingleElimination</b> is used to create a new single-elimination 
+			competition. Use <a href="xbox_tool_xlast_intro.htm">XLAST</a> to configure competitions. XLAST assigns a 
+			new template ID that must be specified in the <i>dwTemplate</i> parameter. Competitions consist of a 
+			combination of standard attributes, specified in the structure pointed to by the 
+			<i>pDefaultAttributes</i> parameter, and an optional list of custom attributes pointed to by 
+			the <i>pAdditionalAttributes</i> parameter.</p>
+
+			<p>If the <b>fIsTeamCompetition</b> flag of the structure pointed to by the 
+			<i>pDefaultAttributes</i> parameter is FALSE, the competition is "owned" by the player logged 
+			in at the controller index specified in <i>dwUserIndex</i>. Otherwise, it is owned by the team 
+			specified in <i>qwTeamId</i>. The owner of a competition has special rights, including the 
+			abiltiy to <a href="XOnlineCompetitionCancel.htm">cancel</a> the competition or 
+			<a href="XOnlineCompetitionManageEntrant.htm">eject entrants</a>. For a team-based competition, anyone on the 
+			team may perform the functions of an owner.</p>
+
+			<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;The player specified in <i>dwUserIndex</i> (or the team specified in <i>qwTeamId</i>) 
+			is not automatically enrolled in the competition. After the call to <a href="XOnlineCompetitionCreate.htm">XOnlineCompetitionCreate</a> completes 
+			successfully, the application should call <b>XOnlineCompetitionManageEntrant</b> to enroll the user or team.</p>
+
+			<p>You can also use <b>XLAST</b> to define custom attributes. The order of the 
+			list of attribute structures pointed to by <i>pAdditionalAttributes</i> must match the order 
+			listed in XLAST.</p>
+
+			<p>The <b>dwPrivateSlots</b> and <b>dwPublicSlots</b> members of the 
+			<b>XONLINE_COMP_SINGLE_ELIMINATION_ATTRIBUTES</b> structure pointed to by the 
+			<i>pDefaultAttributes</i> parameter specify the number of private and public entrants 
+			allowed in the competition, respectively. Private entrants are players or teams invited to join the 
+			competition, typically by the competition owner. For private entrants, the title must specify a 
+			<i>dwAction</i> of XONLINE_COMP_ACTION_JOIN_PRIVATE in the call to 
+			<b>XOnlineCompetitionManageEntrant</b> when joining the competition. If the number of private players 
+			exceeds the number specified in <i>dwPrivateSlots</i>, the private entrant is entered in a 
+			public slot. However, a public entrant cannot occupy a private slot. </p>
+
+			<p>If the number of private and public entrants in the competition is less than the number specified in the
+			<b>dwMinimumPlayers</b> member of the <b>XONLINE_COMP_SINGLE_ELIMINATION_ATTRIBUTES</b> 
+			structure as of the time specified in <b>ftRegistrationClose</b>, the competition is automatically canceled.</p>
+
+			<p>The <b>ftRoundOneStart</b> member of the <b>XONLINE_COMP_SINGLE_ELIMINATION_ATTRIBUTES</b> 
+			structure designates the scheduled time for the first round of the competition to start. Entrants may 
+			play the event before this time; this is simply a suggested time for the match to take place. </p>
+
+			<p>The <b>ftRoundOneEnd</b> member of the <b>XONLINE_COMP_SINGLE_ELIMINATION_ATTRIBUTES</b> 
+			structure specifies the time by which all players should have submitted scores for the first round 
+			matches. Any players who did not check in or submit scores risk forfeiting from the match and 
+			the competition.</p>
+
+			<p>The time difference between the <b>ftRoundOneStart</b> and <b>ftRoundOneEnd</b> 
+			members of the <b>XONLINE_COMP_SINGLE_ELIMINATION_ATTRIBUTES</b> structure must be of sufficient time to 
+			play a match game. </p>
+
+			<p>Rounds following the first round are scheduled based on <b>ftRoundOneStart</b> and the 
+			values specified for <b>Interval</b> and <b>UnitOrDayMask</b>. The duration of 
+			each subsequent round is the same as the duration specified for round one.</p>
+
+			<p>After <b>XOnlineTaskContinue</b> completes, call <a href="XOnlineCompetitionCreateGetResults.htm">XOnlineCompetitionCreateGetResults</a> to obtain 
+			the competition ID for the newly created competition.</p>
+			
+			<p>The Competition Name attribute must always be set as an additional attribute (it is not a member of the XLAST <b>DefaultAttribute</b> structure). It is used by the Alerts system to deliver the competition reminders. The template for Competition Reminder alert text requires that the competition name be specified. For example, where <i>TitleName</i> is the title name and <i>CompetitionName</i> is the competition name, your title might display this alert: "Your match in the <i>TitleName</i> competition, <i>CompetitionName</i>, starts soon."</p>
+
+			<p>The Competition Name attribute ID is 0x8011000E, which corresponds to the XLAST attribute att_competition_name. The corresponding variable name for this attribute in the competition code generated by XLAST is <i>pwszDisplayName</i>.</p>			
+
+		<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+			<a href="XOnlineCompetitionCreate.htm">XOnlineCompetitionCreate</a>
+		</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

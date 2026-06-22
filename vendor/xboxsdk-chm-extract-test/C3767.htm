@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Stock Text. Do not change.****-->
+<TITLE>Compiler Error C3767</TITLE>
+<!--**********************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="C3767"/>
+<MSHelp:Keyword Index="F" Term="C3767"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Stock Text. Do not change.****-->
+<H1 class="heading"><A NAME="c3767"></A>Compiler Error C3767</H1>
+<!--**********************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<P><B>'<I>function</I>' matching function is not accessible</B></P>
+
+<P>A friend function defined in class is not supposed to be treated as if it were 
+defined and declared in the global namespace scope. It can, however, be found by 
+argument-dependent lookup.</P>
+
+<p>In Visual Studio .NET, the compiler changed the way it looked up symbols. In some 
+cases, it would have automatically looked for symbols in a specified namespace. Now, it 
+will use argument-dependent lookup.</p>
+
+<P>The following example generates C3767.</P>
+
+<PRE class="code">// C3767.cpp
+namespace N
+{
+   class C
+   {
+      friend void FriendFunc()
+      {
+      }
+      friend void AnotherFriendFunc(C* c)
+      {
+      }
+   };
+}
+
+int main()
+{
+   using namespace N;
+   FriendFunc();   // C3767
+   C* pC = new C();
+   AnotherFriendFunc(pC);   // found via argument-dependent lookup
+}
+</pre>
+
+<p>For code that is valid in both the Visual Studio .NET 2003 and Visual Studio .NET 
+versions of Visual C++, declare the friend in class scope and define it in namespace scope.</p>
+
+<pre class = "code">// C3767b.cpp
+class MyClass
+{
+   int m_private;
+   friend void func();
+};
+
+void func()
+{
+   MyClass s;
+   s.m_private = 0;
+}
+
+int main()
+{
+   func();
+}
+</PRE>
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+
+</BODY>
+</HTML>

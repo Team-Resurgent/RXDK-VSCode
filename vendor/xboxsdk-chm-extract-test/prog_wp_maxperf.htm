@@ -1,0 +1,626 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Maximizing Xbox File Performance</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Maximizing Xbox File Performance"/>
+<MSHelp:Keyword Index="K" Term="file performance, maximizing"/>
+<MSHelp:Keyword Index="F" Term="Maximizing Xbox File Performance"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1 class="heading"><A NAME=""></A>Maximizing Xbox File Performance</H1>
+
+<p><i>By Michael Dougherty, Software Design Engineer, Xbox Advanced Technology Group</i></P>
+
+<H2>Introduction</h2>
+
+<p>This white paper describes efficient asynchronous non-buffered DMA (direct memory
+access) file I/O on the Xbox&#174; video game system from Microsoft&#174;. The asynchronous
+behavior assures that file I/O will not block the main thread, allowing for
+continuous game play. Using non-buffered DMA guarantees that the data is
+streamed directly to and from memory using the IDE controller, without wasting
+CPU cycles.</p>
+
+<h2>File System Review</h2>
+
+<p>A basic understanding of the Xbox file systems and hardware will help us understand the
+dos and don'ts of Xbox file I/O.</p>
+
+<h3>Sectors, Clusters, and Tracks</h3>
+
+<p>Media discs are divided radially into tracks, and tracks are further divided into sectors. The file system groups multiple sectors into clusters to reduce the number of
+addressable regions.</p>
+
+<p>All files begin on a cluster boundary and use an integer number of clusters.</p>
+
+<img src="images/maxper1.gif">
+
+<img src="images/maxperf2.gif">
+
+<p>Note that the DVD has one continuous "track" per layer that runs in a spiral fashion from
+the inner to the outer radius. However, in order to maintain consistency with
+hard disk terminology, the term "track" is used in reference to the location of
+data with respect to the radius of the DVD.</p>
+
+<p>The cluster size of the Xbox DVD is 2 KB. The sector size of the Xbox DVD is also 2
+KB (the DVD file system does not use a FAT table, so the number of addressable
+regions is not an issue). The Xbox hard disk has a sector size of 512 bytes. The
+Xbox hard disk partitions have a cluster size of 16 KB, with the exception of
+the utility partition. The utility partition can have a cluster size of 16 KB,
+32 KB, or 64 KB. You can specify the cluster size of the utility partition by
+using the UDCLUSTER flag when building your image (see the XBE Image Builder
+Tool documentation in the XDK).</p>
+
+<h3>IDE Controller</h3>
+<p>The Xbox Integrated Drive Electronics (IDE) controller is integrated into the MCPX (Media Communications Processor). The location of the MCPX in relation to the other Xbox components
+is shown below.</p>
+
+<img src="images/maxperf3.gif">
+<h3>DMA</h3>
+<p>Older file I/O models, such as PIO (programmed I/O), use the CPU to handle the mundane
+chores of file I/O. Direct memory access (DMA) uses the IDE controller to handle
+the I/O operation for us. After an I/O request is submitted to the IDE
+controller, the CPU is free to continue until it receives an interrupt from the
+IDE controller upon I/O completion.</p>
+
+<h3>Write-Behind and Read-Ahead</h3>
+
+<p>Read-ahead is designed to speed up media reads and is implemented in hardware on the media
+device as a cache. The basic idea is to read additional continuous data after a read with the hope that that data will soon be used. Reading continuous data (see FILE_FLAG_SEQUENTIAL_SCAN
+flag for CreateFile) avoids seek times and also best utilizes this cache. Write-behind
+is also implemented on the media device. Data to be written is temporarily stored so that the request can be resolved before the I/O has actually completed.</p>
+
+<h3>DVD</h3>
+
+<p>The Xbox uses 8.54-GB, dual-layer, single-sided DVDs. The different layers are accessed
+by re-focusing the read laser, which is a slow process. Only a subset of the 8.54 GB of data is addressable. Space is reserved for both security placeholders and for the video that is played when the game disc is placed in a standard DVD player. Also, the space near the edge of the disc is not used since it is less reliable. This leaves a total of 6.4 GB (3.2 GB per layer) available on the DVD for a title.</p>
+
+<p>Unlike on the hard disk, DVD data has the same density regardless of its position along
+the disc radius. This means that more data can be packed into the outer tracks since the tracks get longer as they move out along the disc radius. The Xbox DVD is also a constant angular velocity (CAV) device. These facts lead us to an important performance characteristic of the Xbox DVD: because more data can be read from the out tracks in a single constant angular rotation, reads from the outer tracks will be faster than reads from the inner tracks.</p>
+
+<h2>Performance Characteristics</h2>
+
+<p>A list of Xbox file I/O performance characteristics is provided below, along with definitions for specific terms used. These numbers represent the minimum performance
+expected from the Xbox. Due to cost reduction and availability, different Xbox consoles may have different media devices. As a result, the exact performance of individual boxes may vary. The values below represent the minimum performance levels:</p>
+
+
+<p>Xbox hard disk:</p>
+<table width="70%">
+<tr>  
+ <td>Average seek time:</td><td>&nbsp;</td>
+ <td>10 ms</td>
+</tr>
+<tr>  
+ <td>Full stroke seek time:</td><td>&nbsp;</td>
+ <td>30 ms</td>
+</tr>
+<tr>  
+ <td>Sustained data rate:</td><td>&nbsp;</td>
+ <td>12 MB/s</td>
+</tr></table>
+<p>Xbox DVD:</p>
+
+<table width="62%"><tr>  
+ <td>Average seek time:</td>
+ <td>&nbsp;</td>
+ <td>130 ms</td>
+</tr>
+<tr>  
+ <td>Full stroke seek time: </td>
+ <td>&nbsp;</td>
+ <td>300 ms</td>
+</tr>
+<tr>  
+ <td>Maximum inner track sustained data rate:</td>
+ <td>&nbsp;</td>
+ <td>2.7 MB/s</td>
+</tr>
+<tr>  
+ <td>Maximum outer track sustained data rate:</td>
+ <td>&nbsp;</td>
+ <td>6.9 MB/s</td>
+</tr>
+<tr>  
+ <td>Laser refocus time:</td>
+ <td>&nbsp;</td>
+ <td>0.1 s</td>
+</tr></table>
+
+
+<ul>
+<li>Seek time &ndash; time to move from the current read/write position to a new read/write position.</li>
+<li>Average seek time &ndash; time to seek across one third of the disk's radius.</li>
+<li>Full stroke seek time &ndash; time to seek from the inner-most to the outer-most track.</li>
+<li>Sustained data rate &ndash; data rate of reading/writing a continuous file.</li>
+<li>Laser refocus time &ndash; time it takes to refocus the laser in order to read from the other
+layer.</li>
+</ul>
+
+<p>As mentioned earlier, read-speed is dependent on the location of the data along
+the radius. Since the outer region of the disk is not used, the "available"
+outer track sustained data rate is slightly less than the maximum.</p>
+
+<p><span>Available Outer Track Data Rate = 6.4 MB/s</span></p>
+
+<h2>Xbox File System Details</h2>
+
+<h3>FATX</span></h3>
+
+<p>Xbox File Allocation Table (FATX) is the custom Xbox hard disk file system. While FATX is
+similar to FAT32 in several respects, FATX is optimized specifically for the Xbox.
+The FATX table is stored on the hard disk, and contains mappings from logical
+to physical clusters. Note that a larger cluster size will result in fewer FAT
+entries for a given file, which is one of the advantages of increasing your
+cluster size using the UDCLUSTER image builder flag. FATX directory contents
+are stored as a list, so opening a file is an O(N) operation.</p>
+
+<h3>GDFX</h3>
+
+<p>Xbox Game Disc Format (GDFX) is the Xbox custom DVD file system. Since all data stored on
+the DVD is continuous, the GDFX table does not contain any mappings from
+logical to physical clusters. GDFX directory contents are stored as a balance
+tree for a mastered disc, so opening a file is an O(logN) operation.</p>
+
+<h3>Xbox System Software File Cache</h3>
+
+<p>The file cache is used to store file data, file metadata, directory information, and hard
+disk physical-to-logical mappings. The Xbox system software file cache also acts as the
+storage area for buffered I/O operations (more below). The file cache is owned
+by the system software and resides in main memory. The file cache uses page size (4 KB)
+blocks that are assigned on a LRU basis. You can use <b>XGetFileCacheSize</b> and <b>XSetFileCacheSize</b> to get and set the file cache size. The default cache size is 64 KB.</p>
+
+<h3>I/O Request Packets and Preemption</h3>
+
+<p>All file I/O is done by sending I/O request packets (IRPs) down to the IDE controller. Each IRP contains the list of physical sectors and memory pages that data is to be
+transferred between. When the IDE controller receives the IRP, it uses DMA I/O
+to transfer data between the specified pages in memory and the specified
+sectors. In the case of non-buffered I/O, the memory pages are directly specified
+by the user. In the case of buffered I/O, some of the pages exist in the file
+cache and the system software handles the copy between the file cache pages and the user
+supplied memory.</p>
+
+<p>The maximum amount of data that can be read or written by a single packet is 128 KB.
+This number is derived from the maximum number of hard disk sectors that can be
+programmed into the IDE controller. The file system queues both DVD and hard
+disk I/O requests into the same FIFO. I/O requests are moved to the end of the
+FIFO after a 128-KB portion completes. Any new requests are queued into the
+FIFO, which is how preemption occurs.</p>
+
+<p>For example, let's say you have two outstanding I/O requests for the following: (1) 540
+KB of Z:\foo.dat, and (2) 283 KB of D:\bar.wma.  Both of these I/O requests will
+be in the FIFO.</p>
+
+<img src="images/maxperf4.gif">
+
+<p>After the IDE controller finishes the 128-KB request packet for foo.dat, it is re-queued
+and bar.wma receives its 128-KB request.</p>
+
+<img src="images/maxperf5.gif">
+
+<p>Now, let's say you submit another request of 1024 KB of U:\save.gam. The request is
+added to the FIFO.</p>
+
+<img src="images/maxperf6.gif">
+
+<p>After a
+couple more requests are completed, the FIFO will look like the following.</p>
+
+<img src="images/maxperf7.gif">
+
+<p>It
+appears as if we are ready to start working on 128 KB of save.gam. However, the
+logical-to-physical cluster mappings are not present in the file cache for U:\save.dat
+(surprise!). As a result, the file system must read a page from the FAT table.</p>
+
+<img src="images/maxperf8.gif">
+
+<p>After the
+FAT seek-and-read, the FIFO can continue.</p>
+
+<img src="images/maxperf9.gif">
+
+<p>After seven more I/O packet completions (assuming no more FAT misses), the FIFO will
+look like the following (you should be able to predict this state).</p>
+
+<img src="images/maxperf10.gif">
+
+<p>It is
+worth noting that unless you are careful, the preemptive nature of the FIFO can
+cause excessive seek times as it moves between 128-KB requests.</p>
+
+<p>If you
+understand how the FIFO portion of the file system works, you can exercise
+precise control over file I/O in order to minimize seek times and maximize
+throughput. This can be achieved by doing reads and writes of specific sizes
+and by accessing files in a specific order. You can use these control
+mechanisms to tailor the FIFO to your file I/O requirements.</p>
+
+<h3>File Searches</h3>
+
+<p>If
+possible, you should avoid creating deeply nested directories or excessive
+numbers of small files. Why? </p>
+
+<p>Assume that you want to open .\aaa\bbb\ccc\data.dat from the DVD, and the file
+cache is empty. Since directories are treated just like files, the file system
+must do several seeks and reads before it can open the file.  You can imagine
+the cost you will be paying for seeks if your directories are not adjacent to
+each other on the Xbox DVD.</p>
+
+<ol>
+<li>Seek to .\</li>
+<li>Open .\ and
+find aaa (an O(logN) search)</li>
+<li>Seek to bbb</li>
+<li>Open bbb and
+find ccc</li>
+<li>Seek to ccc</li>
+<li>Open ccc, and
+find data.dat</li>
+<li>Open data.dat</li>
+</ol>
+
+<p>At this
+point, the directory information should be cached. However, the cache may be
+wiped out by other file operations (which is highly likely if you are using
+buffered I/O).</p>
+
+<p>The Xbox hard
+disk file system activity is similar to the Xbox DVD case, except that
+directory searches are O(N). Seek times are much faster on the hard disk, but
+remember that if the files and directories are not located in the file cache, logical-to-physical
+cluster mappings for both must be read from the FAT. Also, the cluster mapping
+may be fragmented. As a result, many small seeks may be required to read a file
+or directory. If you sprinkle several FAT hits and fragmentation seeks into the
+above scenario, the performance will drop significantly.</p>
+
+<p>In both
+cases, using non-buffered I/O will help since the cached directory information
+and hard disk logical-to-physical cluster mappings are not wiped out by buffers
+allocated by the system software file cache.</p>
+
+<h2>Implementation</h2>
+
+<h3>Good General Practices</h3>
+
+<p>The <a href="whitepaper_storage_best_practice.htm">Xbox Storage Best Practices</a> white paper is an excellent resource for general practices. Additional detailed information is listed below:</p>
+
+<ul>
+<li>Use
+non-buffered I/O (FILE_FLAG_NO_BUFFERING). As mentioned earlier, using
+non-buffered I/O keeps your file cache open for file system metadata, directory
+information, and cluster mappings. There are also better things your CPU could
+be doing than copying file data between the file cache buffer and your supplied
+buffers.</li>
+<li>Pre-size files
+that you are going to write to by using <b>SetFilePointer</b> and <b>SetEndOfFile</b>.
+Pre-sizing helps keep files from becoming fragmented by intermittent cluster
+mappings. Also, it is better to request your allocation up-front in order to
+prevent tiny writes to the FAT table every time your writes must request more
+clusters.</li>
+<li>Use the
+utility partition. Reads from the Xbox hard disk are much faster than reads
+from the Xbox DVD, so using the utility partition as a cache for DVD data is a
+good thing. You can use asynchronous, non-buffered DMA to copy data from the
+DVD to the utility partition without affecting performance. You can also set
+the cluster size of your utility partition to enhance FAT performance. Also,
+since you get your own formatted partition, fragmentation is less likely to be
+a problem. There are three 750-MB utility partitions, handed out in LRU order,
+so the odds of having your utility partition intact between gameplay sessions
+is high.</li>
+<li>Avoid
+excessive numbers of files and deeply nested directory structures. As mentioned
+before, creating large numbers of files and deep directories causes excessive
+seeking and searching.</li>
+<li>To guard
+against hard disk corruption and hacking, use the signature calculation
+functions (<b>XCalculateSignatureBegin</b>, <b>XCalculateSignatureUpdate</b>, and
+<b>CalculateSignatureEnd</b>)on game critical data. Signatures don't have to be
+calculated for everything (such as raw texture and audio data), but validating headers
+and game play structures is always a good idea. It is also recommended that you
+have some way of clearing the partition in case the partition becomes
+corrupted. Lastly, you are encouraged to write your signature data last. That
+way, if the box is turned off during your caching operation, the signature will
+not exist (this is an easy check).</li>
+<li>Use xblayout
+to correctly lay out your DVD. If files are opened in a predetermined order, place
+them next to each other on the DVD. Files that need to be read quickly or frequently
+should be placed on the outer tracks where the data transfer rate is much
+higher. Files that are either used less frequently or that are not performance
+critical can be placed on the inner tracks.</li>
+<li>Use the native file functions. Your CPU has better
+     things to do than move stack pointers around and translate arguments. Also,
+     the benefits of non-buffered I/O are not exposed in the non native file I/O
+     functions.
+	 <br>
+
+	<pre>&lt;s&gt;fopen&lt;/s&gt;    CreateFile
+&lt;s&gt;fread&lt;/s&gt;    ReadFile
+&lt;s&gt;fwrite&lt;/s&gt;   WriteFile
+</pre></li></ul>
+	 
+
+
+<h3>Non-Buffered DMA</h3>
+
+<p>When you
+use non-buffered DMA (FILE_FLAG_NO_BUFFERING), you must obey certain alignment
+requirements. Reads and writes must be sector-aligned and sector-sized. You
+must set the file pointer to sector-aligned boundaries. Your target
+source/memory must also be DWORD-aligned. </p>
+
+<p>It is
+worth noting that a read past the end of the file is OK. The file system will
+return success, and the number of bytes read will be equal to the file size
+minus the last read file pointer position. You cannot use non-buffered I/O to write
+non-sector aligned data to the hard disk.</p>
+
+<p>The
+following code asserts the alignments for non-buffered I/O:</p>
+
+
+<pre>//---------------------------------------------------------------------
+// Name: Check_Alignment
+// Desc: Checks the alignment of file offset, read/write size, and 
+//       source/target memory for non buffered I/O.
+//---------------------------------------------------------------------
+#ifdef _DEBUG
+VOID Check_Alignment( HANDLE hFile, VOID* pBuffer,
+                      DWORD dwOffset, DWORD dwNumBytesIO )
+{
+    // Assert parameters.
+    assert( pBuffer );
+    assert( hFile != INVALID_HANDLE_VALUE );    
+
+    // Assert proper source/target memory alignment.
+    assert( (DWORD(pBuffer) &amp; 0x00000003) == 0 );
+
+    // Figure out whether this file is on the DVD or hard disk.
+    BY_HANDLE_FILE_INFORMATION Info;
+    GetFileInformationByHandle( hFile, &amp;Info );
+    DWORD dwDVDSerialNumber;
+    GetVolumeInformation( &quot;D:\\&quot;, NULL,
+                          0, &amp;dwDVDSerialNumber,
+                          NULL, NULL, NULL, 0 );
+
+    // Assert proper file offset and read/write size.
+    // The DVD and hard disk sector sizes will not change
+    // and are defined in Xbox.h.
+    if( Info.dwVolumeSerialNumber == dwDVDSerialNumber )
+    {
+        assert( dwOffset % XBOX_DVD_SECTOR_SIZE == 0 );         
+        assert( dwNumBytesIO % XBOX_DVD_SECTOR_SIZE == 0 ); 
+    }
+    else
+    {
+        assert( dwOffset % XBOX_HD_SECTOR_SIZE == 0 );       
+        assert( dwNumBytesIO % XBOX_HD_SECTOR_SIZE == 0 ); 
+    } 
+}
+#endif</pre>
+
+<p class="Note"><b><i>Note</i></b>&nbsp;&nbsp; Note that FILE_FLAG_RANDOM_ACCESS is ignored if you use FILE_FLAG_NO_BUFFERING. Non-buffered I/O doesn't use the file cache and FILE_FLAG_RANDOM_ACCESS is used to help the system software optimize its file cache use for random access.</p>
+
+<h3>Buffered DMA</h3>
+
+<p>If the FILE_FLAG_NO_BUFFERING flag is not used, the file system will still use DMA
+file I/O.  However, for some data, the file cache is used as the DMA I/O source
+or target.  The CPU is used to transfer the data between the user-supplied
+buffer and the file cache.</p>
+
+<p>For
+example, assume that you are using buffered I/O that has the alignment shown
+below to read a portion of a file on the Xbox DVD: </p>
+
+<img src="images/maxperf12.gif">
+
+<p>The following activity will take place in the file cache:</p>
+
+<ol>
+<li>Page N will be
+read into the file cache. The CPU will be used to copy the partial contents of
+page N to the user-supplied buffer.</li>
+<li>Using DMA, the
+intermediate M pages will be transferred to the user buffer without going
+through the file cache.</li>
+<li>Page N+M will
+be cached, and the partial contents of page N+M will be copied to the user
+buffer.</li>
+</ol>
+
+<p>If you
+keep your reads and writes page aligned and of page size while using buffered
+I/O, the file cache is not used for file data. Also note that a special case is
+coded into the file system that allows you to do a DVD/hard disk sector-aligned
+read beyond the end of a file (or at the end of a file if it lies on a sector
+boundary) to avoid caching the last page. For example, in the case illustrated
+below, no file system caching in done: </p>
+
+<img src="images/maxperf13.gif">
+
+<p>Note that if you perform a read beyond the end of a file, <b>ReadFile</b> will return success. Furthermore, the number of bytes read will be the actual end of the
+file minus the read-start position.</p>
+
+<p>The
+situation for writes is similar. However, any partial pages that are written
+that are not past the end of the file must first be read in before being
+modified and then written back out. In the above example, if partial page N+M
+is past the end of the file, it will not have to be first read in and modified
+before being written back out again. If page N+M is not past the end of the
+file, then it must be read in and modified before being written out again in
+order to preserve any data that was previously there.</p>
+
+<p>The above scenarios are ideal cases for buffered I/O. When using buffered I/O, if you
+specify the FILE_FLAG_RANDOM_ACCESS flag, read/write on a non-DWORD aligned file
+offset, or supply a buffer that's not on a DWORD aligned address, the file
+system will implement step 2 differently. Instead, every 4-KB page is mapped
+through the cache, and the CPU must do a copy between the user buffer and the
+file cache. The alignment checks are necessary because step 2 needs to follow
+the rules for non-buffered I/O.</p>
+
+<h3>Asynchronous I/O</h3>
+
+<p>There are two ways to get asynchronous I/O. Both methods have advantages and
+disadvantages:</p>
+
+<p>(1) Create a worker thread for asynchronous I/O.</p>
+
+<p>The nice
+part about this solution is that it correctly handles the blocking nature of <b>CreateFile</b>,
+<b>SetFilePointer</b><i>, </i><b>ReadFile</b>, and <b>WriteFile</b> (remember that
+these functions may block in order to pull the FAT, directory information, or
+file system metadata into the file cache).  Moving I/O into a worker thread
+prevents this from glitching the rendering thread. This worker thread
+automatically yields control to the main thread when waiting for I/O to complete.
+As a result, CPU use of the worker thread is extremely small.</p>
+
+<p>It is
+best to create the thread once (<b>CreateThread</b>), and use events (<b>CreateEvent</b><i>,
+</i><b>WaitForSingleObject</b>) to block the thread when there is no I/O to perform.</p>
+
+<pre>//---------------------------------------------------------------------
+//Name: IOProc
+//Desc: Thread proc for IO
+//---------------------------------------------------------------------
+DWORD WINAPI IOProc( LPVOID lpParameter )
+{
+    CThreadedLevelLoader* pLoader = (CThreadedLevelLoader*)lpParameter;
+    assert( pLoader );
+	
+    for( ; ; )
+
+    {
+        // Wait for the I/O event to be signaled.
+        WaitForSingleObject( pLoader-&gt;m_hEvent, INFINITE );
+
+        // If the loader has closed the thread, we are finished.
+        if( pLoader-&gt;KillThread() )
+            ExitThread( 0 );
+
+
+        // Open the current level.
+        // If we can't open files, we are in trouble, so in the
+        // release build, we just keep trying.
+        while( FAILED( pLoader-&gt;OpenLevel() ) )
+        {
+            // Break in the debug build to find out what the
+            // problem is.
+            assert( FALSE );
+        }
+
+        // Keep trying to load and cache the level until we are
+        // successful.
+        while( FAILED( pLoader-&gt;StreamLevel() ) );
+    }
+}</pre>
+<p>The disadvantage of using a thread is the memory overhead that is necessary. The thread size equals
+the size of the thread stack (12 KB minimum) plus the size of the thread object
+(13 KB minimum).</p>
+
+<img src="images/maxperf15.gif">
+
+<p>(2) Use overlapped I/O (FILE_FLAG_OVERLAPPED) to get asynchronous behavior without using a separate thread.</p>
+<p>You don't have to pay the extra memory required for threaded I/O, but you must take the following precautions:</p>
+<ul>
+<li><b>CreateFile</b> may block if the FAT table must
+be accessed. Consequently, your file handles should be created during
+non-critical times (such as start up).</li>
+<li>Using <b>SetFilePointer</b>
+to pre-size your files is also blocking, since the FAT table must be accessed. </li>
+<li>FAT accesses required for reads (if the cluster mappings are not in the file cache) will be
+done synchronously. The DVD file system does not have a FAT table, so
+overlapped reads for the DVD will always be asynchronous.</li>
+<li>If you use overlapped I/O, you must also specify no buffering (a requirement of the file system). If you really do have a need for buffered asynchronous I/O, you must
+use a worker thread.</li>
+</ul>
+
+<h3>File Layout</h3>
+
+<p>Using non-buffered I/O requires that your file layout be sector alignment friendly. Any
+data offsets that need to be accessed within the file should be on sector-aligned
+boundaries. Also, all files created using non-buffered I/O have a file size that
+is an integer number of the sectors size, so care must be taken to record the
+actual size of the relevant data in the file (versus using the file size).</p>
+
+<p>The best performance can be realized by setting up file data in an Xbox friendly format,
+and then reading this data directly into a continuous memory region. The data
+is read into physically continuous memory, and the <b>IDirectResource8::Register</b>
+function is used to set pointers within the data headers.</p>
+
+<p>It is recommended that you create register functions for your own data, which simply
+add the offset of the continuous region pointer to the offsets stored in the
+file. When using this method, be sure that the pages you allocate have the
+correct characteristics. Vertex buffers and textures usually go into write
+combining memory. Index buffers need to go into cached memory since the CPU is
+used to copy the indices into the push buffer. It is a good idea to lay these
+different regions out in the file, and then use non-buffered DMA to copy each
+region from the file into its corresponding continuous memory.</p>
+
+<p>Typically, some file data must be manipulated in memory. If this data is going to be in
+write-combing memory, remember that reads from write-combining memory are slow because
+the CPU's cache is not used. You can read the data into cached memory, however.
+Before using the data, use <b>XPhysicalProtect</b> to reset the page types to
+write-combing.</p>
+
+<h3>Streaming Audio and Video </h3>
+
+<p>As a final note, streaming audio and video is often where we find the most glitches
+in file I/O.</p>
+
+<p>Simultaneous reads from both the utility partition and the DVD can help avoid the excessive
+seek times that can result from many small reads to different areas of the same
+media device.</p>
+
+<p>If you need to concurrently read multiple audio or video streams from a single medial
+device, you can avoid large seek times by making sure the data is physically
+close together. This is achieved by using the layout tool on the DVD.
+Controlling file placement on the utility partition is a bit more difficult. The
+utility partition is formatted before your title receives it for the first time.
+As a result, pre-sizing the first file that you are going to write will reserve
+continuous clusters for the file up-front and prevent fragmentation. Subsequently,
+the next available continuous cluster will be assigned to the next file that
+you pre-size, placing the two files in close physical proximity on the hard
+disk. The physical location of several files on the utility partition can be
+controlled in this manner.</p>
+
+<h3>Source Code</h3>
+
+<p>Additional source code can be found in the FastLoad sample that is included in the XDK. FastLoad
+asynchronously streams in approximately 50 MB from the DVD using non-buffered
+I/O. FastLoad then caches the data on the hard disk utility region. It also
+simultaneously streams in and plays a WMA file. The sample shows how to use the
+UDCLUSTER image builder flag, as well as both the <b>XCalculateSignature</b>
+and <b>IDirect3DResource8::Register</b> APIs. In addition, both types of
+asynchronous I/O (threaded and overlapped) are demonstrated.</p>
+
+<h2>Conclusion</h2>
+
+<p>Taking advantage of the Xbox file system requires significant preparation and planning,
+and should not be left for the last minute. Dealing with fast file I/O upfront
+allows you to design your data structures and file formats correctly from the
+beginning, versus retrofitting a broken system. Also, minimizing or eliminating
+load times helps decrease both development and testing wait time.</p>
+
+<p>Nothing ruins a player's immersion in the game world as much as load screens. It's hard
+to suspend disbelief while watching a progress bar. With correct asynchronous
+non-buffered DMA, it is possible to have no perceptual load times. Huge worlds
+can be represented, with additional data being asynchronously loaded and saved
+as the player moves around the world. We expect that future Xbox games will
+realize this goal.</p>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

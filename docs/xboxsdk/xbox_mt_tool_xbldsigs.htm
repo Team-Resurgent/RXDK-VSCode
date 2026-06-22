@@ -1,0 +1,168 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XBldSigs Tool</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XBldSigs Tool"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+	<MSHelp:Keyword Index="K" Term="content metadata files, building with XBldSigs"/>
+	<MSHelp:Keyword Index="K" Term="signature DLLs, used in XBldSigs"/>	
+	</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XBldSigs Tool</h1>
+<p>The XBldSigs tool is used to build a content metadata file with computed signatures for the content data.</p><p>XBldSigs takes a collection of files and constructs a single metadata file that describes the content and contains content signatures.  This process of generating the signatures and other metadata with XBldSigs is for offline titles.  Xbox Live titles should use <a href="xbox_jbh_tool_online_buildcontent.htm">BuildOffer</a>.</p><p>See <a href="x_mt_storage_ov_signatures.htm">Content Signatures</a> for a discussion of the content signature scheme and how XBldSigs fits into that scheme.</p><h2><a name="IDA3SEV"></a>Usage</h2>
+<pre class="clsCode">
+USAGE: xbldsigs [options] dirroot
+</pre>
+    <table>
+<tr>
+<th>Option</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>-metadata:<i>filename</i></td>
+<td>Input metadata filename. Contains the name of the content and any other metadata necessary for the Xbox dashboard to display the content in the saved games area.  This file has the same format as a title's metadata file.  This argument is required.</td>
+</tr>
+<tr>
+<td>-titleid:<i>titleid</i></td>
+<td>Title ID. Determines which title's save area the content will be installed to. Generally this information will be ignored, because most
+installers will explicitly indicate the title ID for which the content is being
+installed, but some installers (<a href="xbox_lrf_tool_xbinstcont.htm">XbInstCont</a>, for example) may observe this title ID if one is not otherwise specified. The default is zero.</td>
+</tr>
+<tr>
+<td>-offerid:<i>offerid</i></td>
+<td>Offering ID (32 bits). Specifies the identifier of the content offering. The default is zero.</td>
+</tr>
+<tr>
+<td>-flags:<i>contentflags</i></td>
+<td>Content filter flags. Specify title-specific flags describing the content. These flags can be used during content enumeration to filter the returned content. The default is zero.</td>
+</tr>
+<tr>
+<td>-sigdll:<i>file.dll</i></td>
+<td>Signature DLL. This option can be used multiple times to specify multiply signature DLLs. The default is that no signature DLLs are used.</td>
+</tr>
+<tr>
+<td>-out:<i>file.xbx</i></td>
+<td>Output filename. If you do not specify a specific name, the default is <i>dirroot</i>\contentmeta.xbx. </td>
+</tr>
+</table>
+<p>The <i>dirroot</i> argument specifies the directory that is the root of the content and is the default location for the output metdata file.</p><p>The tool will scan all of the files under the <i>dirroot</i> directory and compute signature information for each file.  Signature information will be generated for each file by calling each one of the specified signature providers (the signature DLLs and the filelists), in order, until one of them indicates that it has calculated appropriate signature data for that file.  If none of the signature providers recognizes the file, that file will receive a single, non-literal signature over its entire contents.</p><p>The XBldSigs tool creates metadata files for offline content only. That is, content that is delivered from the title DVD.</p><h2><a name="IDAXUEV"></a>Signature DLLs</h2>
+<p>Signature DLLs provide title developers a way to determine how to partition file data into signatures without knowing beforehand what byte ranges are to be signed.  Each signature DLL implements a single function:</p>
+<pre class="clsCode">
+BOOL
+CALLBACK
+CalculateSignatures(
+	IN LPCSTR FileName,
+	IN LPBYTE FileContents,
+	IN DWORD FileSize
+);
+</pre>
+    <p>When a DLL returns TRUE, indicating that a file was processed, no further processing for that file occurs, and the tool moves to the next file.  If the DLL returns FALSE, indicating that the file was not processed, the tool will call the next DLL or file list in sequence for processing.</p><p>A single function is provided to the DLL for registration of signature information:</p>
+<pre class="clsCode">
+BOOL
+WINAPI
+XRegisterSignature(
+	IN DWORD IndexNumber,
+	IN DWORD Flags,
+	IN LPVOID SignatureData,
+	IN DWORD SignatureSize,
+	IN LPCSTR FileName,
+	IN DWORD FileOffset,
+	IN DWORD DataLength
+);
+</pre>
+    <p><i>IndexNumber</i> is the slot number in the signature table that this signature will occupy.  A value of -1 (0xFFFFFFFF) will cause <b>XRegisterSignature</b> to assign a slot number.  All literal signatures must precede all non-literal signatures.</p><p><i>Flags</i> is a combination of the following:
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+	<tr>
+<td>XSIG_FLAG_AUTOMATIC</td>
+<td>Indicates an automatic signature.</td>
+</tr>
+	<tr>
+<td>XSIG_FLAG_NAMED</td>
+<td>Indicates a named signature.</td>
+</tr>
+</table>
+</p><p><i>SignatureData</i> and <i>SignatureSize</i> specify the literal signature data to be inserted into the signature file.  They are ignored for non-literal signatures.</p><p><i>FileName</i>, <i>FileOffset</i>, and <i>DataLength</i> specify the data to be stored in the signature name table for named signatures.  A data length of zero means all of the data from the specified offset to EOF.  These arguments are ignored for anonymous literal signatures.  Anonymous non-literal signatures must include this information so the signature can be correctly calculated at installation time.</p><p>The return value is TRUE if the function succeeds, or FALSE if it fails.  <a href="errors_3uwi.htm">GetLastError</a> will be set if the function fails.</p><p>Signature DLLs are Win32 DLLs that should link with xcontent.lib and include xcontent.h.</p><p>Again, see <a href="x_mt_storage_ov_signatures.htm">Content Signatures</a> for a discussion of the content signature scheme and the types of signatures used in that scheme.</p><h2><a name="IDATWEV"></a>A Sample Signature DLL</h2>
+<p>This pseudocode would be used for a content file that has a single TOC at the beginning of the file which specifies the chunks of data that make up the remainder of the file.  It uses named, non-literal signatures:</p>
+<pre class="clsCode">
+BOOL CALLBACK CalculateSignatures(Name, Data, Size)
+{
+    FileExt = strstr(Name, ".abc");
+    if(!FileExt || FileExt[5] != 0)
+        return FALSE;
+
+    GetTOCInfo(Data, &amp;TOCData, &amp;TOCSize);
+    XRegisterSignature(-1, XSIG_FLAG_NAMED | XSIG_FLAG_AUTOMATIC, NULL, 0,
+        Name, 0, TOCSize);
+    for(index = 0; index &lt; TOCData.NumberOfSections; ++index) {
+        XRegisterSignature(-1, XSIG_FLAG_NAMED | XSIG_FLAG_AUTOMATIC, NULL, 0,
+            Name, TOCData.Sections[index].Offset,
+            TOCData.Sections[index].Size);
+    }
+
+    return TRUE;
+}
+</pre>
+    <p>This pseudocode might be used if the content consists of a single file, formatted as above.  It uses anonymous, non-literal signatures:</p>
+<pre class="clsCode">
+BOOL CALLBACK CalculateSignatures(Name, Data, Size)
+{
+    FileExt = strstr(Name, ".abc");
+    if(!FileExt || FileExt[5] != 0)
+        return FALSE;
+
+    GetTOCInfo(Data, &amp;TOCData, &amp;TOCSize);
+    XRegisterSignature(0, XSIG_FLAG_AUTOMATIC, NULL, 0, Name, 0, TOCSize);
+    for(index = 0; index &lt; TOCData.NumberOfSections; ++index) {
+        XRegisterSignature(index + 1, XSIG_FLAG_AUTOMATIC, 0, Name,
+            TOCData.Sections[index].Offset,
+            TOCData.Sections[index].Size);
+    }
+
+    return TRUE;
+}
+</pre>
+    <p>The code used by the tool if none of the signature DLLs or file lists processes a given file is simply:</p>
+<pre class="clsCode">
+XRegisterSignature(-1, XSIG_FLAG_NAMED | XSIG_FLAG_AUTOMATIC, NULL, 0, FileName, 0, 0);
+</pre>
+    <p>A title which includes all of the content signatures within the XBE itself might use a signature DLL such as this to generate an empty signature file:</p>
+<pre class="clsCode">
+BOOL CALLBACK CalculateSignatures(Name, Data, Size)
+{
+    return TRUE;
+}
+</pre>
+    <h2><a name="IDAHXEV"></a>File Lists (not yet supported)</h2>
+<p>A file list directs the tool to generate non-literal, named signatures over specific byte ranges within specific files.  The file list contains entries of the form:</p>
+<pre class="clsCode">
+filename: byteranges
+</pre>
+    <p><i>filename</i> is the name of the file (wildcards are permitted) for which the byte ranges apply.</p><p><i>byteranges</i> is a comma-separated list of byte ranges in the form "startbyte-endbyte", indicating a byte range within the file to be signed (endpoints are inclusive), or "startbyte-", implying EOF as the endpoint.  For example, "0-127,0x80-0xFF,0x100-" is a valid byte range.  Additionally, a byte range of "@size" means byte ranges of the specified size through the end of the file.</p><p>The first entry within the file which matches the name of the file being process will be the entry that's used to calculate the signatures.</p><p>An example of a file list is:</p>
+<pre class="clsCode">
+	Image.bmp: 0-
+	*.bmp: 0-127, 128-
+	*.xip: @0x10000
+</pre>
+    <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Creating Threads</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Creating Threads"/>
+<MSHelp:Keyword Index="F" Term="Creating Threads"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR></TR>
+</TABLE>
+<!--**********************************-->
+
+<H3><A NAME="_win32_creating_threads"></A>Creating Threads</H3>
+
+<P>The <A HREF="prothred_4084.htm"><B>CreateThread</B></A> function creates a new thread. The creating thread must specify the starting address of the code that the new thread is to execute. Typically, the starting address is the name of a function defined in the program code. This function takes a single parameter and returns a DWORD value. A title can have multiple threads simultaneously executing the same function. </P>
+
+<P>The following example demonstrates how to create a new thread that executes the locally defined function, ThreadFunc. </P>
+
+<PRE>#include &lt;xtl.h&gt;
+
+DWORD WINAPI ThreadFunc( LPVOID lpParam ) 
+{ 
+    char szMsg[80];
+
+    wsprintf( szMsg, "Parameter = %d.\r\n", *(DWORD*)lpParam ); 
+    OutputDebugString( szMsg );
+
+    return 0; 
+} 
+ 
+void main( void ) 
+{ 
+    DWORD dwThreadId, dwThrdParam = 1; 
+    HANDLE hThread; 
+
+	
+    hThread = CreateThread( 
+        NULL,                        // (this parameter is ignored)
+        0,                           // use default stack size  
+        ThreadFunc,                  // thread function 
+        &amp;dwThrdParam,                // argument to thread function 
+        0,                           // use default creation flags 
+        &amp;dwThreadId);                // returns the thread identifier 
+ 
+   // Check the return value for success. 
+   if (hThread == NULL) 
+   {
+      OutputDebugString( "CreateThread failed.\r\n" );
+   }
+   else 
+   {
+      OutputDebugString( "CreateThread succeeded.\r\n" );
+      CloseHandle( hThread );
+   }
+   
+   // Don't return from main
+   Sleep( INFINITE );
+} </PRE>
+
+<P>For simplicity, this example passes a pointer to a <B>DWORD</B> value as an argument to the thread function. This could be a pointer to any type of data or structure, or it could be omitted altogether by passing a NULL pointer and deleting the references to the parameter in ThreadFunc. </P>
+
+<P>It is risky to pass the address of a local variable if the creating thread exits before the new thread, because the pointer becomes invalid. Instead, either pass a pointer to dynamically allocated memory or make the creating thread wait for the new thread to terminate. Data can also be passed from the creating thread to the new thread using global variables. With global variables, it is usually necessary to synchronize access by multiple threads. For more information about synchronization, see <A HREF="prothred_3ng3.htm"><B>Synchronizing Execution of Multiple Threads</B></A>. </P>
+
+<P>In a title where a thread might create multiple threads to execute the same code, it is inconvenient to use global variables. For example, a title that enables the user to open several files at the same time can create a new thread for each file, with each of the threads executing the same thread function. The creating thread can pass the unique information (such as the file name) required by each instance of the thread function as an argument. You cannot use a single global variable for this purpose, but you could use a dynamically allocated string buffer. </P>
+
+<P>The creating thread can also use the arguments to <A HREF="prothred_4084.htm"><B>CreateThread</B></A> to specify the following: 
+
+<UL>
+	<LI>The initial stack size of the new thread.</LI>
+
+	<LI>A creation flag that specifies that the thread be created in a suspended state. When suspended, the thread does not run until the <A HREF="prothred_59no.htm"><B>ResumeThread</B></A> function is called. </LI>
+</UL>
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

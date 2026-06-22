@@ -1,0 +1,159 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>volumeTexture Element</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+<MSHelp:Attr Name="DevLang" Value="XML"/>
+<MSHelp:Attr Name="DevLang" Value="XSL"/>
+<MSHelp:Attr Name="Technology" Value="XML"/>
+<MSHelp:Keyword Index="K" Term="volumeTexture element"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>volumeTexture Element</h1>
+<p>The &lt;<b>volumeTexture</b>&gt; element describes a 3D texture.</p>
+<pre class="syntax" xml:space="preserve">&lt;volumeTexture
+   id = string
+   depth = integer
+   filter = string
+   format = string
+   height = integer
+   width = integer
+   levels = integer
+/&gt;</pre>
+<h4>Required Attributes</h4>
+<dl id="idXML">
+<dt><b>id</b></dt>
+<dd><p>Texture identifier used for referencing from a &lt;<a href="xdx_element_texturestate.htm">textureState</a>&gt; element. For more details, see <a href="xdx_id_attribute.htm">XDX id Attribute</a>.</p>
+</dd>
+<dt><b>depth</b></dt>
+<dd><p>Depth in texels of the output volume texture resource. This attribute must be a power of two between 1 and 512. If <b>depth</b> is 1, the volume texture will a 2D texture that looks like a 3D texture to Direct3D.</p>
+</dd>
+</dl>
+<h4>Optional Attributes</h4>
+<dl id="idXML">
+<dt><b>filter</b></dt>
+<dd><p>Specifies the filter used to resize the image.</p>
+<p>If this value is specified, it must contain one of the following flags:</p>
+
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>D3DX_FILTER_NONE</td>
+<td>No scaling or filtering will take place. Pixels outside the bounds of the source image are assumed to be transparent black.</td>
+</tr>
+<tr>
+<td>D3DX_FILTER_POINT</td>
+<td>Each destination pixel is computed by sampling the nearest pixel from the source image.</td>
+</tr>
+<tr>
+<td>D3DX_FILTER_TRIANGLE</td>
+<td>Every pixel in the source image contributes equally to the destination image. This is the slowest of the filters. This is the default filter if nothing is specified.</td>
+</tr>
+<tr>
+<td>D3DX_FILTER_LINEAR</td>
+<td>Each destination pixel is computed by sampling the four nearest pixels from the source image. This filter works best when the scale on both axes is less than two.</td>
+</tr>
+<tr>
+<td>D3DX_FILTER_BOX</td>
+<td>Each pixel is computed by averaging a 2&#0215;2(&#0215;2) box of pixels from the source image. This filter works only when the dimensions of the destination are half those of the source, as is the case with mipmaps.</td>
+</tr>
+</table>
+
+<p>In addition, zero or more of the following flags may be ORed in with one of the flags above.</p>
+
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>D3DX_FILTER_WRAP</td>
+<td>Pixels will be wrapped, not mirrored. This is the default behavior.</td>
+</tr>
+<tr>
+<td>D3DX_FILTER_MIRROR</td>
+<td>Specifying this flag is the same as specifying the D3DX_FILTER_MIRROR_U, D3DX_FILTER_MIRROR_V, and D3DX_FILTER_MIRROR_W flags.</td>
+</tr>
+<tr>
+<td>D3DX_FILTER_MIRROR_U</td>
+<td>Pixels off the edge of the texture on the u-axis should be mirrored, not wrapped.</td>
+</tr>
+<tr>
+<td>D3DX_FILTER_MIRROR_V</td>
+<td>Pixels off the edge of the texture on the v-axis should be mirrored, not wrapped.</td>
+</tr>
+<tr>
+<td>D3DX_FILTER_MIRROR_W</td>
+<td>Pixels off the edge of the texture on the w-axis should be mirrored, not wrapped.</td>
+</tr>
+<tr>
+<td>D3DX_FILTER_DITHER</td>
+<td>This flag indicates that the resulting image be dithered using a 4&#0215;4 ordered dither algorithm.</td>
+</tr>
+</table>
+						
+					</dd>
+<dt><b>format</b></dt>
+<dd><p>Format for the output texture. Must be a member of the <a href="_dx_d3dformat_graphics.htm">D3DFORMAT</a> enumeration; however, it cannot be a linear format or a depth/stencil format. If the output format is not specified, it will default to D3DFMT_A8R8G8B8.</p>
+</dd>
+<dt><b>height</b></dt>
+<dd><p>Height in texels of the output texture. Must be a power of two between 1 and 512. If this attribute is not specified, <b>height</b> will be the largest height of the included slices. If the height specified or calculated is not a power of two, or does not equal the source image height, the image height will be scaled to the next largest power of two.</p>
+</dd>
+<dt><b>width</b></dt>
+<dd><p>Width in texels of the output texture. Must be a power of two between 1 and 512. If this attribute is not specified, <b>width</b> will be the largest width of the included slices. If the width specified or calculated is not a power of two, or does not equal the source image width, the image width will be scaled to the next largest power of two.</p>
+</dd>
+<dt><b>levels</b></dt>
+<dd><p>Number of mipmap levels to automatically generate. Must be between 0 and 10. To generate mipmaps all the way down to 1&#0215;1, use 0. For RGB textures, mipmaps are generated using a triangular filter with dithering. For UVL textures, mipmaps are generated using a point filter with dithering. The filtering used to generate the mipmaps cannot be changed using the XDX file.</p>
+</dd>
+</dl>
+<h4>Element Information</h4>
+<table>
+<tr>
+<td><b>Parent Elements</b></td>
+<td><a href="xdx_element_xdx.htm">XDX</a></td>
+</tr>
+<tr>
+<td><b>Child Elements</b></td>
+<td><a href="xdx_element_volumeslice.htm">volumeSlice</a></td>
+</tr>
+</table>
+<h4><a name="examples"></a>Examples</h4>
+<dl><dt><a name="usage"></a><b>Simple usage</b></dt>
+<dd><p>The following example demonstrates how to use the &lt;<b>volumeTexture</b>&gt; element:</p>
+
+<pre class="clsCode">
+&lt;volumeTexture id="Leaf" width="256" height="256" depth="4" format="D3DFMT_DXT4" &gt;
+  &lt;volumeSlice slice="0" source="textures/leaf0.bmp" /&gt;
+  &lt;volumeSlice slice="1" source="textures/leaf1.bmp" /&gt;
+  &lt;volumeSlice slice="2" source="textures/leaf2.bmp" /&gt; 
+  &lt;volumeSlice slice="3" source="textures/leaf3.bmp" /&gt;
+&lt;/volumeTexture &gt;
+</pre>
+    
+						</dd>
+</dl>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

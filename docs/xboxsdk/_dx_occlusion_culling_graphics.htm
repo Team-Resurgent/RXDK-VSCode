@@ -1,0 +1,61 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Occlusion Culling</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Occlusion Culling"/>
+<MSHelp:Keyword Index="F" Term="Occlusion Culling"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Occlusion Culling</H1>
+<!--***********************************************************-->
+
+<!--****Intro paragraph. Should be a three or four sentence summary of the topic.****-->
+
+<h4>Z-Occlusion Culling</h4>
+
+<p>The Xbox GPU supports optional z-occlusion culling. This culling takes place right before the per-pixel pipelines run and is done in addition to any normal culling that occurs using D3DRS_ZENABLE. The z-occlusion culling occurs by testing multiple pixels at once, either rejecting them all, or letting them all pass. It is possible (very likely) that some of the pixels passed on are actually occluded. Although z-occlusion testing is on by default, it may be disabled (or enabled) using the D3DRS_OCCLUSIONCULLENABLE render state.</p> 
+
+<p>Normal per-pixel z-rejection must be enabled using D3DRS_ZENABLE before z-occlusion culling can take effect.</p>
+
+<p>When both per-pixel z-rejection and z-occlusion culling are enabled, the depth buffer is read twice, which can result in a bandwidth penalty for non-occluded pixels. This is generally more than balanced by the texture reads and pipeline processing saved by the z-occlusion culling, but it is nonetheless a potentially substantial cost. The more highly compressed a depth buffer is (using tiled memory), the more effective z-occlusion culling is at reducing memory bandwidth demands.</p>
+
+<p>Z-occlusion culling can be enabled for all packets (a 64-byte chunk of depth buffer) or for compressed packets only. The greater the depth complexity of a scene, the more likely it is that enabling fast-path occlusion culling for all packets will result in increased performance. By default, z-occlusion culling is enabled for all packets, but this can be modified using the D3DRS_DONTCULLUNCOMPRESSED render state. Note that when multisampling is enabled, the hardware automatically limits occlusion testing to compressed packets only, regardless of the render state set using D3DRS_DONTCULLUNCOMPRESSED.</p>
+
+<p class=note><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;With a 16-bit (D16) depth buffer, errors have been observed with z-occlusion culling turned on. Occasionally, pixels drawn at the same z-value as was previously in the depth buffer will be rejected even though the z comparison function is set to accept equal values. For example, when using two-pass rendering this would result in some pixels from the first pass showing through the second pass. If this occurs, known solutions are to turn D3DRS_OCCLUSIONCULLENABLE off or to use a 24-bit depth buffer.</p>
+
+<h4>Fast-Path Stencil-Occlusion Culling</h4>
+
+<p>The Xbox GPU also supports stencil-occlusion culling. Just as with the z-occlusion culling, stencil-occlusion culling occurs before the per-pipeline is run and is done by testing multiple pixels at once, either rejecting them all or letting them all pass. If a pixel is allowed to pass, there will be a re-read of the stencil values later in the pipeline. Stencil-occlusion culling is on by default, but it may be disabled (or enabled) using the D3DRS_STENCILCULLENABLE render state.</p>
+
+<p>For stencil-occlusion culling to take effect, normal stencil rejection must be enabled using D3DRS_STENCILENABLE, z-occlusion must be enabled using D3DRS_OCCLUSIONCULLENABLE, z-buffering must be on, and D3DRS_ZFUNC cannot be D3DCMP_ALWAYS.</p>
+
+<p>The render state D3DRS_DONTCULLUNCOMPRESSED applies to both stencil-occlusion and z-occlusion culling.</p>
+
+<p class=note><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;If both z-occlusion and stencil-occlusion culling are enabled at the same time, they will operate off of the same reads. It's not as if one read is needed for z culling and another for stencil culling; there is at most only one occlusion read per pixel, which is shared if both z and stencil occlusion are active.</p>
+
+
+<!--*******************************************************************************-->
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

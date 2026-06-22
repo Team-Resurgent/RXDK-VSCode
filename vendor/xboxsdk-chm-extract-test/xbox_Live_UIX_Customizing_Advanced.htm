@@ -1,0 +1,88 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Advanced UIX Customization</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Advanced UIX Customization"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Advanced UIX Customization</h1>
+<p>If skinning does not meet your needs, you can further customize UIX. The methods for doing so are presented in the following topics.</p><ul>
+<li><a href="#IDASQEV">UIX Customization Methods</a></li><li><a href="#IDACTEV">Comparing Customization Methods</a></li></ul>
+<h2><a name="IDASQEV"></a>UIX Customization Methods</h2>
+<p>In addition to basic skinning, UIX provides many techniques for customization. These include the following.</p><ul>
+<li><a href="#IDAZQEV">Changing UIX Sounds</a></li><li><a href="#IDAJREV">Changing UIX Fonts</a></li><li><a href="#IDAXREV">Replacing the UI Plug-in</a></li><li><a href="#IDAGSEV">Customizing Memory Management</a></li><li><a href="#IDASSEV">Doing It ALL Yourself</a></li></ul>
+<h3><a name="IDAZQEV"></a>Changing UIX Sounds</h3>
+<p>The default <a href="ITitleAudioPlugin.htm">ITitleAudioPlugin</a> uses an <a href="xbox_xact_dxaudio.htm">XACT</a> sound bank to play sounds in response to UI events.  The sounds in the bank can be customized by the content developer, and the associated UI event/sound mappings can be changed in the skin file.</p><h3><a name="IDAJREV"></a>Changing UIX Fonts</h3>
+<p>The default font used with Xbox Drop-in UI is a full Unicode font.  However, the font file is supplied by the title on the hard disk, so the title can choose to use a smaller or customized character set.  Additionally, by implementing <a href="ITitleFontRenderer.htm">ITitleFontRenderer</a>, the title has complete control over fonts and rendering.</p><h3><a name="IDAXREV"></a>Replacing the UI Plug-in</h3>
+<p>For more extensive UI customization, the title can provide its own implementation of the <a href="ITitleUIPlugin.htm">ITitleUIPlugin</a> interface.  Source code with a sample <b>ITitleUIPlugin</b> implementation is provided in the Xbox SDK (in Samples\Xbox\Networking\UIXPlugin).</p><h3><a name="IDAGSEV"></a>Customizing Memory Management</h3>
+<p>Because the engine and the default plug-ins use <a href="XMemAlloc.htm">XMemAlloc</a> (and related functions) for memory management, titles can override Drop-in UI memory management by providing custom memory allocation routines.  See <a href="XMemAlloc.htm">XMemAlloc</a> for more information.</p><h3><a name="IDASSEV"></a>Doing It ALL Yourself</h3>
+<p>Titles still have the option of not using Xbox Drop-in UI at all, providing a complete, custom Xbox <i>Live</i> implementation using the <a href="xbox_Live_References.htm">Xbox Live Library</a>.</p><h2><a name="IDACTEV"></a>Comparing Customization Methods</h2>
+<p>The following table compares the various components that are available for customization, the difficulty of customizing that component, the approximate risk level of violating TCRs when customizing that component, the cost of the default implementation provided by Xbox Drop-in UI, and other notes.</p><table>
+			<tr>
+				<th>Component</th>
+				<th>Difficulty</th>
+				<th>TCR Risks</th>
+				<th>Default Implementation Cost and Notes</th>
+			</tr>
+			<tr>
+				<td>Skinning (SkinBld tool)</td>
+				<td>Very Easy</td>
+				<td>Very Low</td>
+				<td>The default implementation uses reasonably small textures.  Titles can save memory by using even smaller textures or by using greater compression (but doing so may degrade appearance).</td>
+			</tr>
+			<tr>
+				<td>Replacing Strings (SkinBld tool)</td>
+				<td>Very Easy</td>
+				<td>Low</td>
+				<td>TCR risk is low, but make sure not to use banned words (such as "reboot").</td>
+			</tr>
+			<tr>
+				<td>Audio (<b>ITitleAudioPlugin</b>)</td>
+				<td>Easy</td>
+				<td>Low</td>
+				<td>Uses XACT.  If a title does not already use XACT, adding support requires about 48 KB of code and some run-time overhead.</td>
+			</tr>
+			<tr>
+				<td>Font File</td>
+				<td>Very Easy</td>
+				<td>Low</td>
+<td>ArialUni.TTF is 22 MB.  A smaller font file can be used (but if support for a given character set is removed, be sure to remove strings using those characters from the skin file so that a default, supported language will be used).</td>
+			</tr>
+			<tr>
+				<td>Font Renderer (<b>ITitleFontRenderer</b>)</td>
+				<td>Easy</td>
+<td>Low</td>
+				<td>Uses XFont.  A title can provide its own font renderer that uses pre-rasterized glyphs or some other implementation.</td>
+			</tr>
+			<tr>
+				<td>UI (<b>ITitleUIPlugin</b>)</td>
+				<td>Medium to Difficult</td>
+				<td>Medium</td>
+				<td>The default implementation has minimal memory impact, but does not support animations or 3D rendering.</td>
+			</tr>
+			<tr>
+				<td>UI Flow, Adding or Removing Buttons</td>
+				<td>Medium to Difficult</td>
+				<td>High</td>
+				<td>Xbox Drop-in UI does not currently provide options for customizing the general UI flow or adding or removing screen elements.  Support may be added in the future, but these type of customizations represent the greatest risk in terms of TCR compliance.</td>
+			</tr>
+		</table>
+<p>The default Xbox Drop-in UI implementation currently uses about 2 MB of memory, and, at maximum, slightly less than 4 MB (for a large friends list).  Title customizations may increase or decrease this amount.</p><p>The <a href="uix_customization_toc.htm">Drop-in UI Customization</a> reference contains information about the interfaces, structures, and enumerations used for plug-in customization.</p><p><a href="xbox_Live_UIX_Customizing_Skinning.htm">Skinning Xbox Drop-in UI</a> describes the skin file and the skinning process.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

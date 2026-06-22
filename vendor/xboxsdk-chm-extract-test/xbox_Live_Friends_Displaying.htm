@@ -1,0 +1,36 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Displaying a Friends List</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Displaying a Friends List"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Displaying a Friends List</h1>
+<p>Before Xbox <i>Live</i> titles can display the player's friends list, they must enumerate the items in the list. Titles use the <a href="XOnlineFriendsEnumerate.htm">XOnlineFriendsEnumerate</a> function to retrieve the contents of the friends list from the friends service. </p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;The <a href="XOnlineFriendsStartup.htm">XOnlineFriendsStartup</a> function must be called before calling <b>XOnlineFriendsEnumerate</b>.</p><p>After calling <b>XOnlineFriendsEnumerate</b>, titles call <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> until it returns XONLINETASK_S_RESULTS_AVAIL. Titles then invoke <a href="XOnlineFriendsGetLatest.htm">XOnlineFriendsGetLatest</a> to retrieve the most recent friends information. The <b>XOnlineFriendsGetLatest</b> function takes as a parameter the address of a buffer that receives an array of <a href="XONLINE_FRIEND.htm">XONLINE_FRIEND</a> structures. This array represents the friends list. The buffer should be large enough to contain MAX_FRIENDS number of <b>XONLINE_FRIEND</b> structures. The MAX_FRIENDS constant is defined in xonline.h. The friends list is sorted in the following order:</p><ol>
+	        <li>Received game invitations</li>
+	        <li>Sent game invitations</li>
+	        <li>Received friend requests</li>
+	        <li>Sent friend requests</li>
+	        <li>Friends who are online and playing the same title</li>
+	        <li>Friends who are online and playing a different title</li>
+	        <li>Friends who are offline</li>
+	    </ol>
+<p>Within each of the preceding categories, the entries are sorted alphabetically by gamertag.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Your title can also retrieve subsets of the friends list using the <a href="XOnlineFriendsGetLatestByFocus.htm">XOnlineFriendsGetLatestByFocus</a> or <a href="XOnlineFriendsGetLatestByRange.htm">XOnlineFriendsGetLatestByRange</a> functions.</p><p>Your title displays the preceding information with user interface elements implemented by you. The presentation style of the list is also largely up to you. The general functionality requires some form of list display that is sorted either by the title's or player's choosing. The user interface must display the friends list members and their current state information.</p><p>Typically, Xbox <i>Live</i> titles allow the player to access the friends list prior to the start of a game session, and also while a game session is paused. Titles do not need to enumerate the friends list during gameplay.</p><p>After displaying the initial friends listing, the title should continue to call <b>XOnlineTaskContinue</b> with the handle returned by <b>XOnlineFriendsEnumerate</b>. Continuing to pump the handle causes the friends service to process updates to the friends list that it receives from other Xbox consoles connected to the Xbox <i>Live</i> service. To refresh the displayed friends listing with these changes, the title should retrieve the updated list with another call to <b>XOnlineFriendsGetLatest</b>.</p><p>If the title is no longer displaying the friends list (because game play has started, for example), the title should call <a href="XOnlineFriendsEnumerateFinish.htm">XOnlineFriendsEnumerateFinish</a> and then <a href="XOnlineTaskClose.htm">XOnlineTaskClose</a> on the task handle returned by <b>XOnlineFriendsEnumerate</b>.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

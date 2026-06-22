@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Detecting Device Changes</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Detecting Device Changes"/>
+<MSHelp:Keyword Index="F" Term="Detecting Device Changes"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Detecting Device Changes</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<P>Over the course of the game, players may plug controllers, memory units, and other peripherals into and out of the Xbox.  The title must be able to detect and handle these occurrences.  The title could occassionally call <A HREF="x_jsk_xgetdevices.htm">XGetDevices</A> and compare the new bit mask to the old and compute the device changes from that.  However, there is a more efficient function to use that is designed for just this purpose: <A HREF="x_jsk_xgetdevicechanges.htm">XGetDeviceChanges</A>.  This function indicates device connection changes that have occurred since the last call to either <B>XGetDevices</B> or <B>XGetDeviceChanges</B>, and it is optimized to be called frequently (for example, in the game loop once every frame).  It returns FALSE if no device changes have occurred, and TRUE if any have. Thus, the title can simply check the return value to determine if it needs to deal with any device changes.</P>
+
+<P><B>XGetDeviceChanges</B> is also useful in that it indicates device removals and insertions, not just the current state of the devices.  For example, a controller could have been removed from and reinserted into port one between calls to <B>XGetDevices</B>. The calls to <B>XGetDevices</B> before and after the insertion and removal would return the same information (a controller in port one), with no indication that the controller had been removed and reinserted.  This information is important because open handles to devices become (and remain) invalid when a device is removed, even if the device is subsequently reinserted.  The old (invalid) device handle must be closed and a new device handle opened after the reinsertion.</P>
+
+<P><B>XGetDeviceChanges</B> returns two bit masks, one for insertions that have occurred and one for removals that have occurred, both of which are based on changes since the last call to either <B>XGetDevices</B> or <B>XGetDeviceChanges</B>.  So, continuing the example above, the controller removed from and reinserted into port one would show up in both bit masks returned by <B>XGetDeviceChanges</B>. The bit for port one will be set in the removal mask, indicating that the device was removed, and the bit for port one will also be set in the insertion mask, indicating that the device was inserted.  Given this information, a title should close the current device handle to that controller (because it is no longer valid) to free up the resources associated with it. The title should then open a new device handle in order to continue to receive input data from the controller.</P>
+
+Following is an example of a function that you could call from a game loop to check for any device changes that have occurred.  It continues the code example from the previous sections, where an array of device states was initialized by calling <B>XGetDevices</B> for each device type and then storing the return values in that array.  The first time the code calls the CheckDeviceChanges() function below, the <B>XGetDeviceChanges</B> call indicates any changes that have occurred since the initial call to <B>XGetDevices</B>.  In subsequent calls to CheckDeviceChanges(), the <B>XGetDeviceChanges</B> call indicates changes that have occurred since the previous call to <B>XGetDeviceChanges</B>.
+
+<pre>
+//
+// Check for and handle any device changes.
+//
+void CheckDeviceChanges( DEVICE_STATE *pdsDevices )
+{
+    DWORD dwInsert, dwRemove;
+    int i;
+
+    // Check each device type to see if any changes have occurred.
+    for( i = 0; i &lt; NUM_DEVICE_STATES; i++ )
+    {
+        if( XGetDeviceChanges( pdsDevices[i].pxdt, &amp;dwInsert, &amp;dwRemove ) )
+        {
+            // Call handler to service the insertion and/or removal.
+            HandleDeviceChanges( pdsDevices[i].pxdt, dwInsert, dwRemove );
+
+            // Update new device state.
+            pdsDevices[i].dwState &amp;= ~dwRemove;
+            pdsDevices[i].dwState |= dwInsert;
+        }
+    }
+}
+</PRE>
+
+<P>Note that the array of device states that was previously initialized is passed into this function.  When a title detects a device state change for a particular device type, it updates the stored connection state in the <I>dwState</I> member of the device state structure.  In this way, the title always knows the current connection state for each device type and can update it with any change.  The title must maintain this data globally and update it after any call to <B>XGetDeviceChanges</B>.  If the title later calls <B>XGetDeviceChanges</B> or <B>XGetDevices</B> and the global state information is not up to date, that information would become invalid. Furthermore, any subsequent calls to <B>XGetDeviceChanges</B> would not correct the problem, because only changes since the last call are reported.  For example, if a controller is removed and then some other module or function calls <B>XGetDeviceChanges</B>, that call to <B>XGetDeviceChanges</B> reports the controller removal.  If the global state information is not updated at that point, it will still show the controller as being present.  Future calls to <B>XGetDeviceChanges</B> would <I>not</I> indicate the controller removal, because nothing would have changed since the previous call to <B>XGetDeviceChanges</B>.  The removal would go unhandled and the global state information would remain invalid.</P>
+
+<P>An alternative to storing all device information in one global structure is to have separate sections of code dedicated to particular device types.  For example, suppose a code module is dedicated to memory unit handling.  The title could ignore memory unit insertions and removals and not track them in the global device state structure.  Instead, when saving a game (for example), the code that deals with memory units is loaded.  When loaded, that code calls <B>XGetDevices</B> to see all memory units currently in controller slots.  Then it could occassionally call <B>XGetDeviceChanges</B> to check for insertions and deletions for memory units only.  As long as this dedicated code is the only place that calls <B>XGetDeviceChanges</B> for the memory unit device type, there won't be the problem of missing device changes because <B>XGetDeviceChanges</B> was called somewhere else for that same device type.</P>
+
+
+<!--*******************************************************************************-->
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

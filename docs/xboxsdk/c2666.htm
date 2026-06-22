@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Stock Text. Do not change.****-->
+<TITLE>Compiler Error C2666</TITLE>
+<!--**********************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="C2666"/>
+<MSHelp:Keyword Index="F" Term="C2666"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Stock Text. Do not change.****-->
+<H1 class="heading"><A NAME="c2666"></A>Compiler Error C2666</H1>
+<!--**********************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<P><B>'<I>identifier</I>' : number overloads have similar conversions</B></P>
+
+<P>An overloaded function or operator is ambiguous. If you encounter this error while porting code from Visual C++ 2.0 or earlier, see <A HREF="ms-help://MS.VSCC/MS.MSDNVS/vccore/html/Technote.3a_.Improved_Conformance_to_ANSI_C.2b2b.htm">Technote: Improved Conformance to ANSI C++</A>.</P>
+
+<P><B>Possible cause</B>
+
+<UL>
+	<LI>Formal parameter lists are too similar to resolve ambiguity.</li>
+</UL>
+
+<P><B>Possible solution</B>
+
+<UL>
+	<LI>Explicitly cast one or more of the parameters.</li>
+</UL>
+
+<P><B>Example</B></P>
+
+<PRE class="code">void func( int, float ) {};
+void func( float, int ) {};
+func( 1, 1 );        // error, same conversion for each func
+func( 1, (float)1 )  // OK</PRE>
+
+<p>This error can also be generated when using binary operators together with 
+programmer-defined conversions to pointer types. For the binary operators &lt;, &gt;, &lt=, 
+and &gt;=, a passed parameter is now implicitly converted to the type of the operand if 
+the parameter's type contains a programmer-defined conversion operator that converts 
+to the type of the operand. There is a potential for ambiguity.</P>
+
+<p>For code that is valid in both the Visual Studio .NET 2003 and Visual Studio .NET, 
+call the class operator explicitly using function syntax.</p>
+
+<PRE class="code">// C2666b.cpp
+#include &lt;string.h&gt;
+#include &lt;stdio.h&gt;
+struct T
+{
+   T( const T&amp; copy )
+   {
+      m_str = copy.m_str;
+   }
+
+   T( const char* str )
+   {
+      m_str = new char[strlen( str )+1];
+      strcpy( m_str, str );
+   }
+
+   bool operator&lt;( const T&amp; RHS )
+   {
+      return m_str &lt; RHS.m_str;
+   }
+
+   operator char*() const
+   {
+      return m_str;
+   }
+
+   char* m_str;
+};
+
+int main()
+{
+   T str1( "ABCD" );
+   const char* str2 = "DEFG";
+
+   // Error - Ambiguous call to operator&lt;()
+   // Trying to convert str1 to char* and then call 
+   // operator&lt;( const char*, const char* )?
+   //  OR
+   // trying to convert str2 to T and then call
+   // T::operator&lt;( const T&amp; )?
+
+   if( str1 &lt; str2 )   // C2666
+   {
+      printf("str1 &lt; str2 \n");
+   }
+   // Try one of the following statements instead
+   if ( str1.operator &lt; ( str2 ) )   // Treat str2 as type T
+   {
+      printf("str1.operator &lt; ( str2 )\n");
+   }
+
+   if ( str1.operator char*() &lt; str2 )   // Treat str1 as type char*
+   {
+      printf("str1.operator char*() &lt; str2\n");
+   }
+}</pre>
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+
+</BODY>
+</HTML>

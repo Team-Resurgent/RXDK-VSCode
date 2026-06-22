@@ -1,0 +1,107 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XHV_RUNTIME_PARAMS</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XHV_RUNTIME_PARAMS"/>
+<MSHelp:Keyword Index="F" Term="XHV_RUNTIME_PARAMS"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+    <body topmargin="0">
+        <table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+        <h1>XHV_RUNTIME_PARAMS</h1>
+
+        
+        
+<p>Contains initialization parameters for the XHV engine.</p>
+
+	
+		
+
+<pre class="syntax">typedef struct _XHV_RUNTIME_PARAMS{
+    DWORD dwMaxRemoteTalkers;
+    DWORD dwMaxLocalTalkers;
+    DWORD dwMaxCompressedBuffers;
+    DWORD dwFlags;
+    DSEFFECTIMAGEDESC *pEffectImageDesc;
+    DWORD dwEffectsStartIndex;
+    DWORD dwOutOfSyncThreshold;
+    BOOL bCustomVADProvided;
+    BOOL bHeadphoneAlwaysOn;
+} XHV_RUNTIME_PARAMS, *PXHV_RUNTIME_PARAMS;</pre>
+                    
+                
+            
+            
+                <h4><a name="members"></a>Members</h4>
+<dl>
+			<dt><b>dwMaxRemoteTalkers</b></dt>
+				<p><dd>Maximum number of remote talkers. This value can range from 0 to 30 (XHV_MAX_REMOTE_TALKERS).</dd>
+				<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;This value represents the number of DirectSound voices that will be used. In addition, if loopback mode is enabled, an additional four voices will be used (one for each of the four controller ports).</p></p>
+			
+			<dt><b>dwMaxLocalTalkers</b></dt>
+				<dd>Maximum number of local talkers. This value can range from 1 to 4 (XHV_MAX_LOCAL_TALKERS).</dd>
+			
+			<dt><b>dwMaxCompressedBuffers</b></dt>
+				<dd>Maximum number of voice data packets to allocate for storage of encoded data. Each buffer holds 20ms of compressed audio data.</dd>
+			
+			<dt><b>dwFlags</b></dt>
+				<dd>This member is currently unused and must be zero.</dd>
+				
+			
+			<dt><b>pEffectImageDesc</b></dt>
+				<dd>Pointer to DSP effect image. This parameter can be NULL, but only if using Speech Recognition mode.  Required to be non-NULL if using Voice Chat or Loopback modes. See the <a href="IXHVEngine_EnableProcessingMode.htm">IXHVEngine::EnableProcessingMode</a> and <a href="XHVEngine_SetProcessingMode.htm">IXHVEngine::SetProcessingMode</a> methods for more information.</dd>
+			
+			<dt><b>dwEffectsStartIndex</b></dt>
+				<dd>Value indicating the starting index of the effects for headsets inside the DSP effect image.</dd>
+			
+			<dt><b>dwOutOfSyncThreshold</b></dt>
+				<p><dd>Maximum number of out-of-sync packets, received in a row, that XHV should discard before resetting.  If zero is specified, the default value of 10 packets is used.</dd>
+				
+<p>The optimal threshold value will vary from game to game, as the threshold needs to be greater than the number of out-of-sync packets a game could send under normal conditions.  That number varies depending on the game's framerate, network architecture, and so on.  For example, games sending packets at 10 Hz can generally use the default threshold of ten packets, because they would usually have no more than five stale packets in the network send buffer.  Games sending voice packets at 5 Hz, on the other hand, will need a larger threshold because they could easily have ten stale packets in the network send buffer, causing XHV to perform an improper reset.</p>
+
+<p>A packet is out of sync if it arrives too late (or too early) in the sequence of incoming packets to be properly processed along with the neighboring packets in the sequence.  The sync window is generally eight or nine packets wide.</p>
+
+</p>
+			
+			<dt><b>bCustomVADProvided</b></dt>
+				<dd>Indicates whether the title is performing custom voice activation detection (VAD) in its <a href="ITitleXHV_MicrophoneRawDataReady.htm">ITitleXHV::MicrophoneRawDataReady</a> callback.  Set to TRUE to perform custom VAD, FALSE to have the XHV engine perform VAD.</dd>
+			
+			<dt><b>bHeadphoneAlwaysOn</b></dt>
+				<dd>Indicates whether the title wants to have headphone output active while performing speech recognition.  Specifying TRUE enables headset output while in SR mode, but slightly increases CPU usage as down-sampling is performed on the output stream.</dd>
+			
+		</dl>
+                
+				
+            
+                <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xhv.h.</p>
+            
+                <h4><a name="seealso"></a>See Also</h4>
+<p>
+			<a href="XHVEngineCreate.htm">XHVEngineCreate</a>,
+			<a href="IXHVEngine_EnableProcessingMode.htm">IXHVEngine::EnableProcessingMode</a>,
+			<a href="XHVEngine_SetProcessingMode.htm">IXHVEngine::SetProcessingMode</a>,
+			<a href="ITitleXHV_MicrophoneRawDataReady.htm">ITitleXHV::MicrophoneRawDataReady</a>
+		</p>
+
+        <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+    </body>
+    </html>

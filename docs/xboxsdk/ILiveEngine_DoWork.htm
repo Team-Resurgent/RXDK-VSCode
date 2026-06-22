@@ -1,0 +1,88 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>ILiveEngine::DoWork</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="F" Term="DoWork"/>
+<MSHelp:Keyword Index="K" Term="DoWork (ILiveEngine)"/>
+<MSHelp:Keyword Index="K" Term="ILiveEngine::DoWork"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>ILiveEngine::DoWork</h1>
+<p>Performs work within the Xbox Drop-in UI engine, and informs the title of further steps to perform.</p><pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>DoWork(</b>
+    <b>DWORD</b> *<i>pDoWorkFlags</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+<dt><i>pDoWorkFlags</i></dt>
+<p><dd>[out]  Pointer to a <b>DWORD</b> variable that receives flags indicating further actions that must be performed by the title.  Can be a combination of the following values.</dd>
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>UIX_DOWORK_NEED_TO_RENDER</td>
+<td>The engine requires rendering; call <a href="ILiveEngine_Render.htm">ILiveEngine::Render</a>.</td>
+</tr>
+<tr>
+<td>UIX_DOWORK_NOTIFICATIONS</td>
+<td>The engine has received in-game notifications that must be processed by the title; call <a href="ILiveEngine_GetNotifications.htm">ILiveEngine::GetNotifications</a>.  These notifications are returned only if the title has explicitly requested that notifications be handled by the title rather than the engine.  See <b>Remarks</b> below.</td>
+</tr>
+<tr>
+<td>UIX_DOWORK_NEED_TO_REBOOT</td>
+<td>The engine needs to reboot (to perform an auto-update, for example, or to boot to the Xbox Dashboard so the player can create a new Xbox Live account).  The title should initiate a reboot by calling <a href="ILiveEngine_Reboot.htm">ILiveEngine::Reboot</a>.</td>
+</tr>
+<tr>
+<td>UIX_DOWORK_FEATURE_EXIT</td>
+<td>A feature has exited; call <a href="ILiveEngine_GetExitInfo.htm">ILiveEngine::GetExitInfo</a>.  This flag is also set when the network connection is lost, though no feature is active or exited.</td>
+</tr>
+<tr>
+<td>UIX_DOWORK_PROCESSING_INPUT</td>
+<td>Indicates that a feature is actively processing player input.  If this flag is set, controller input is going to an active feature and should not be processed by the title.  Otherwise, the title should process controller input normally.</td>
+</tr>
+</table>
+</p>
+
+</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>Returns S_OK if successful, an error code otherwise.</p>
+<h4><a name="remarks"></a>Remarks</h4>
+<p>Titles should call <b>DoWork</b> once per frame.</p>
+
+<p>Normally, the Xbox Drop-in UI engine handles in-game notifications automatically.  The UIX_DOWORK_NOTIFICATIONS flag will be returned only if the title has disabled automatic notification handling by calling <a href="ILiveEngine_SetProperty.htm">ILiveEngine::SetProperty</a> and setting UIX_PROPERTY_DISPLAY_NOTIFICATIONS to FALSE.  Otherwise, titles do not need to handle the UIX_DOWORK_NOTIFICATIONS flag.</p>
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Uix.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Uix.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="ILiveEngine_Render.htm">ILiveEngine::Render</a>,
+<a href="ILiveEngine_GetNotifications.htm">ILiveEngine::GetNotifications</a>,
+<a href="ILiveEngine_Reboot.htm">ILiveEngine::Reboot</a>,
+<a href="ILiveEngine_GetExitInfo.htm">ILiveEngine::GetExitInfo</a>,
+<a href="ILiveEngine_SetProperty.htm">ILiveEngine::SetProperty</a>
+</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

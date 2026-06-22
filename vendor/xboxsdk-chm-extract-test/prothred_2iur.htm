@@ -1,0 +1,47 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Multithreading Considerations</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Multithreading Considerations"/>
+<MSHelp:Keyword Index="F" Term="Multithreading Considerations"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR></TR>
+</TABLE>
+<!--**********************************-->
+
+<H3><A NAME="_win32_multithreading_considerations"></A>Multithreading Considerations</H3>
+
+<P>The recommended guideline is to use as few threads as possible, thereby minimizing context switching and the use of system resources &mdash; doing so can often improve performance. Multithreading has resource requirements and potential conflicts that need to be considered. The resource requirements are as follows: 
+
+<UL>
+	<LI>The system consumes memory for the context information required by threads. Therefore, the number of threads that can be created is limited by available memory.</LI>
+
+	<LI>Keeping track of a large number of threads consumes significant processor time. If there are too many threads, most of them will not be able to make significant progress.</LI>
+</UL>
+
+<P>Providing shared access to resources can create conflicts. To avoid them, synchronize access to shared resources. This is true for system resources (such as input and output devices) and for resources accessed by multiple threads (such as global variables). Failure to synchronize access properly can lead to problems such as <I>deadlock</I> and <I>race conditions</I>. The XTL provides a set of synchronization objects and functions you can use to coordinate resource sharing among multiple threads. For more information about synchronization, see <A HREF="prothred_3ng3.htm"><B>Synchronizing Execution of Multiple Threads</B></A>. Reducing the number of threads also makes it easier and more effective to synchronize resources.</P>
+
+<P>In many cases in the XTL, rather than using background worker threads, routines are exposed to titles that can be called to perform the necessary operations.  The <B>DoWork</B> and <B>DirectMusicDoWork</B> methods in DirectPlay and DirectMusic (respectively) are examples of such functions.  Titles can call these routines at appropriate places in their game loop (for example, while waiting on the GPU) in order to perform processing needed by those components.</P>
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

@@ -1,0 +1,178 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>VirtualFreeEx</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="VirtualFreeEx">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="VirtualFreeEx"/>
+<MSHelp:Keyword Index="F" Term="VirtualFreeEx"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_virtualfreeex"></A>VirtualFreeEx</H1>
+
+<P>The <B>VirtualFreeEx</B> function releases, decommits, or releases and decommits a region of memory within the virtual address space of the title. </P>
+
+<PRE class=syntax><B>BOOL VirtualFreeEx(
+  HANDLE</B><I> hProcess</I><B>,   </B>// handle to process
+<B>  LPVOID</B><I> lpAddress</I><B>,  </B>// starting address of memory region
+<B>  SIZE_T</B><I> dwSize</I><B>,     </B>// size of memory region
+<B>  DWORD</B><I> dwFreeType</I>   // operation type
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>hProcess</I></DT>
+
+<DD>[in] Ignored; use <B>GetCurrentProcess</B>.</DD>
+
+<DT><I>lpAddress</I></DT>
+
+<DD>[in] Pointer to the starting address of the region of memory to free. 
+
+<P>If the MEM_RELEASE value is used in the <I>dwFreeType</I> parameter, <I>lpAddress</I> must be the base address returned by the <A HREF="memman_8ptk.htm">VirtualAllocEx</a> function when the region was reserved. 
+</DD>
+
+<DT><I>dwSize</I></DT>
+
+<DD>[in] Specifies the size, in bytes, of the region of memory to free.
+
+<P>If the MEM_RELEASE value is used in the <I>dwFreeType</I> parameter, <I>dwSize</I> must be zero. The function frees the entire region that was reserved in the initial allocation call to <B>VirtualAllocEx</B>.
+
+
+<P>If the MEM_DECOMMIT value is used, the function decommits all memory pages that contain one or more bytes in the range from the <I>lpAddress</I> parameter to (<I>lpAddress</I>+<I>dwSize</I>). This means, for example, that a 2-byte region of memory that straddles a page boundary causes both pages to be decommitted. 
+
+
+<P>The function decommits the entire region that was reserved by <A HREF="memman_8ptk.htm">VirtualAllocEx</a> if the following three conditions are met:
+
+
+<UL>
+	<LI>MEM_DECOMMIT is used</LI>
+
+	<LI><I>lpAddress</I> is the base address returned by the <B>VirtualAllocEx</B> function when the region was reserved</LI>
+
+	<LI><I>dwSize</I> is zero </LI>
+</UL>
+
+
+<P>In this case, the entire region enters the reserved state. 
+</DD>
+
+<DT><I>dwFreeType</I></DT>
+
+<DD>[in] Specifies the type of free operation. This parameter must be one of the following values.
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=27%>Value</TH>
+<TH align=left width=73%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=27%>MEM_DECOMMIT</TD>
+<TD width=73%>The function decommits the specified region of pages. The pages enter the reserved state. 
+<P>The function does not fail if you attempt to decommit an uncommitted page. This means that you can decommit a range of pages without first determining their current commitment state.</P>
+</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=27%>MEM_RELEASE</TD>
+<TD width=73%>The function releases the specified region of pages. The pages enter the free state.
+<P>If you specify this value, <I>dwSize</I> must be zero, and <I>lpAddress</I> must point to the base address returned by the <A HREF="memman_8ptk.htm">VirtualAllocEx</a> function when the region was reserved. The function fails if either of these conditions is not met.</P>
+<P>If any pages in the region are currently committed, the function first decommits and then releases them.  The function does not fail if you attempt to release pages that are in different states, some reserved and some committed. This means that you can release a range of pages without first determining their current commitment state.</P>
+</TD>
+</TR>
+</TABLE><BR>
+
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is a nonzero value.</P>
+
+<P>If the function fails, the return value is zero. To get extended error information, call <A HREF="errors_3uwi.htm">GetLastError</a>. </P>
+
+<H4>Remarks</H4>
+
+<P>Each page of memory in a title's virtual address space is in one of the following states. </P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=18%>State</TH>
+<TH align=left width=82%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=18%>Free</TD>
+<TD width=82%>The page is neither committed nor reserved. The page is not accessible to the title. Attempting to read from or write to a free page results in an access violation exception.
+<P>You can use the <B>VirtualFreeEx</B> function to put reserved or committed memory pages into the free state. </P>
+</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=18%>Reserved</TD>
+<TD width=82%>The page is reserved. The range of addresses cannot be used by other allocation functions. The page is not accessible and has no physical storage associated with it.  Attempting to read from or write to a free page results in an access violation exception.
+<P>You can use the <B>VirtualFreeEx</B> function to put committed memory pages into the reserved state and to put reserved memory pages into the free state. </P>
+</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=18%>Committed</TD>
+<TD width=82%>The page is committed. Physical storage in memory is allocated for the page, and access is controlled by a protection code. 
+<P>The system initializes and loads each committed page into physical memory only at the first attempt to read from or write to that page. </P>
+
+<P>You can use the <A HREF="memman_8ptk.htm">VirtualAllocEx</a> function to put committed memory pages into either the reserved or free state. </P>
+</TD>
+</TR>
+</TABLE><BR>
+
+<P>The <B>VirtualFreeEx</B> function can perform the following operations: 
+
+<UL>
+	<LI>Decommit a region of committed or uncommitted pages. After this operation, the pages are in the reserved state.</LI>
+
+	<LI>Release a region of reserved pages. After this operation, the pages are in the free state.</LI>
+
+	<LI>Decommit and release a region of committed or uncommitted pages. After this operation, the pages are in the free state.</LI>
+</UL>
+
+<P>The <B>VirtualFreeEx</B> function can decommit a range of pages that are in different states, some committed and some uncommitted. This means that you can decommit a range of pages without first determining the current commitment state of each page. Decommitting a page releases its physical storage in memory.</P>
+
+<P>If a page is decommitted but not released, its state changes to reserved. You can subsequently call <A HREF="memman_8ptk.htm">VirtualAllocEx</a> to commit it, or <B>VirtualFreeEx </B>to release it. Attempting to read from or write to a reserved page results in an access violation exception. </P>
+
+<P>The <B>VirtualFreeEx</B> function can release a range of pages that are in different states, some reserved and some committed. This means that you can release a range of pages without first determining the current commitment state of each page.  The entire range of pages originally reserved by the <B>VirtualAllocEx</B> function must be released at the same time. </P>
+
+<P>If a page is released, its state changes to free, and it is available for subsequent allocation operations. Once memory is released or decommitted, you can never refer to that data again. Any information that may have been in that memory is gone forever. Attempting to read from or write to a free page results in an access violation exception. If you require information, do not decommit or free memory containing that information.</P>
+
+<P><B>VirtualFreeEx</B> is identical in functionality to <A HREF="memman_0dr9.htm">VirtualFree</a>.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p><H4>See Also</H4>
+<P> 
+
+<a href="xbox_mt_xtl_sll_memory_management_functions.htm">Memory Management Functions</a> | 
+<A HREF="memman_8ptk.htm">VirtualAllocEx</a></P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Stock Text. Do not change.****-->
+<TITLE>Compiler Error C2247</TITLE>
+<!--**********************************-->
+
+<<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="C2247"/>
+<MSHelp:Keyword Index="F" Term="C2247"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Stock Text. Do not change.****-->
+<H1 class="heading"><A NAME="c2247"></A>Compiler Error C2247</H1>
+<!--**********************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<P><B>'<I>Identifier</I>' not accessible because '<I>class</I>' uses '<I>specifier</I>' to inherit from '<I>class</I>'</B></P>
+
+<P><I>Identifier</I> is inherited from a class declared with <b>private</b> or <b>protected</b> access.</P>
+
+<P><B>Example</B>:</P>
+
+<PRE class="code">class A
+{
+public:
+   int i;
+};
+class B : private A {};    // B inherits a private A
+class C : public B {} c;   // so even though C's B is public
+int j = c.i;               // error, i not accessible</PRE>
+
+<p>This error can also be generated as a result of compiler conformance 
+work that was done for Visual Studio .NET 2003: access control with 
+protected members. A protected member (n) can only be accessed through a 
+member function of a class (B) that inherits from the class (A) of which 
+it (n) is a member.</p>
+
+<p>For code that is valid in both the Visual Studio .NET 2003 and Visual Studio 
+.NET versions of Visual C++, declare the member to be a <b>friend</b> of the type. 
+Public inheritance could also be used.</p>
+<pre class = "code">// C2247b.cpp
+// compile with: /LD
+class A
+{
+public:
+   void f();
+   int n;
+};
+
+class B: protected A
+{
+   // friend void A::f();
+};
+
+void A::f()
+{
+   B b;
+   b.n;   // C2247 uncomment friend in B to resolve
+}
+</pre>
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+
+</BODY>
+</HTML>

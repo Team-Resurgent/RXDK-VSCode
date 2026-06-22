@@ -1,0 +1,177 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Using DSP Effects Images with DirectMusic</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="Using DSP Effects Images with DirectMusic">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Using DSP Effects Images with DirectMusic"/>
+<MSHelp:Keyword Index="F" Term="Using DSP Effects Images with DirectMusic"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="xbox_using_dsp_effects_images_with_directmusic_dxaudio"></A>Using DSP Effects Images with DirectMusic</H1>
+
+
+
+<P>Currently, all titles that need to use effects (like chorus and reverb) must download a DSP effects image to the global processor of the Xbox Media Communications Processor (MCP).</P>
+
+<P>DirectMusic is expecting the following mixbins to be routed to the specified effect:</P>
+
+<TABLE>
+    <TR>
+		<TH>Mixbin</TH>
+        <TH>Effect</TH>
+	</TR>
+	<TR>
+		<TD>VPMIXBIN_FXSEND0</TD>
+        <TD>Reverberation</TD>
+	</TR>
+    <TR>
+		<TD>VPMIXBIN_FXSEND1</TD>
+        <TD>Chorus</TD>
+	</TR>
+    <TR>
+		<TD>VPMIXBIN_I3DL2SEND</TD>
+        <TD>I3DL2 Reverberation</TD>
+	</TR>
+</TABLE>
+
+<P>You can either generate your own DSP effects image or use the standard DSP effects image provided in the XDK.  The image (Dsstdfx.bin) is located in the \source\dsound\dsp\ directory of the XDK.  The associated .h file (Dsstdfx.h) is located in \xbox\include\ directory of the XDK.</P>
+
+<P>The following example shows the contents of an .ini file that could be used with the <A HREF="xbox_jbh_tool_xgpimage.htm"><B>XgpImage.exe</B></A> tool to generate the necessary DSP effects image. This .ini file expects the binary effect images (.scr files) and effect image's .ini files for the specified effects to be in the same directory as the .ini file. The full paths to the .scr and .ini files can be specified if they are in different directories.</P>
+
+<PRE>
+[MAIN]
+
+IMAGE_FRIENDLY_NAME=DEFAULT_GRAPH
+FX_NUMTEMPBINS=36
+
+GRAPH0=REVERB_CHAIN
+GRAPH1=MUSIC_REVERB_CHAIN
+GRAPH2=MUSIC_CHORUS_CHAIN
+
+[REVERB_CHAIN]
+FX0=REVERB
+FX1=XTALK
+
+
+[REVERB_CHAIN_FX0_REVERB]
+
+FX_MIXOUTPUT=1
+FX_DSPCODE=reverb24k.scr
+FX_DSPSTATE=reverb_Bathroom_24k_state.ini
+FX_NUMINPUTS=2
+FX_NUMOUTPUTS=35
+
+FX_INPUT0=VPMIXBIN_I3DL2SEND
+FX_INPUT1=VPMIXBIN_I3DL2SEND
+
+FX_OUTPUT0=GPMIXBIN_XTLK_FL
+FX_OUTPUT1=GPMIXBIN_XTLK_FR
+FX_OUTPUT2=GPMIXBIN_XTLK_BL
+FX_OUTPUT3=GPMIXBIN_XTLK_BR
+FX_OUTPUT4=GPTEMPBIN0
+FX_OUTPUT5=GPTEMPBIN1
+FX_OUTPUT6=GPTEMPBIN2
+FX_OUTPUT7=GPTEMPBIN3
+FX_OUTPUT8=GPTEMPBIN4
+FX_OUTPUT9=GPTEMPBIN5
+FX_OUTPUT10=GPTEMPBIN6
+FX_OUTPUT11=GPTEMPBIN7
+FX_OUTPUT12=GPTEMPBIN8
+FX_OUTPUT13=GPTEMPBIN9
+FX_OUTPUT14=GPTEMPBIN10
+FX_OUTPUT15=GPTEMPBIN11
+FX_OUTPUT16=GPTEMPBIN12
+FX_OUTPUT17=GPTEMPBIN13
+FX_OUTPUT18=GPTEMPBIN14
+FX_OUTPUT19=GPTEMPBIN15
+FX_OUTPUT20=GPTEMPBIN16
+FX_OUTPUT21=GPTEMPBIN17
+FX_OUTPUT22=GPTEMPBIN18
+FX_OUTPUT23=GPTEMPBIN19
+FX_OUTPUT24=GPTEMPBIN20
+FX_OUTPUT25=GPTEMPBIN21
+FX_OUTPUT26=GPTEMPBIN22
+FX_OUTPUT27=GPTEMPBIN23
+FX_OUTPUT28=GPTEMPBIN24
+FX_OUTPUT29=GPTEMPBIN25
+FX_OUTPUT30=GPTEMPBIN26
+FX_OUTPUT31=GPTEMPBIN27
+FX_OUTPUT32=GPTEMPBIN28
+FX_OUTPUT33=GPTEMPBIN29
+FX_OUTPUT34=GPTEMPBIN30
+
+[REVERB_CHAIN_FX1_XTALK]
+
+FX_MIXOUTPUT=1
+FX_DSPCODE=xtalk.scr
+FX_DSPSTATE=xtalkstate.ini
+FX_NUMINPUTS=4
+FX_NUMOUTPUTS=4
+FX_INPUT0=VPMIXBIN_XTLK_FL
+FX_INPUT1=VPMIXBIN_XTLK_FR
+FX_INPUT2=VPMIXBIN_XTLK_BL
+FX_INPUT3=VPMIXBIN_XTLK_BR
+
+FX_OUTPUT0=GPMIXBIN_FRONTLEFT
+FX_OUTPUT1=GPMIXBIN_FRONTRIGHT
+FX_OUTPUT2=GPMIXBIN_BACKLEFT
+FX_OUTPUT3=GPMIXBIN_BACKRIGHT
+
+[MUSIC_REVERB_CHAIN]
+FX0=REVERB
+
+
+[MUSIC_REVERB_CHAIN_FX0_REVERB]
+
+FX_MIXOUTPUT=1
+FX_DSPCODE=minirvb.scr
+FX_DSPSTATE=minirvbstate.ini
+FX_NUMINPUTS=1
+FX_NUMOUTPUTS=8
+
+FX_INPUT0=VPMIXBIN_FXSEND0
+
+FX_OUTPUT0=GPMIXBIN_FRONTLEFT
+FX_OUTPUT1=GPMIXBIN_FRONTRIGHT
+FX_OUTPUT2=GPMIXBIN_BACKLEFT
+FX_OUTPUT3=GPMIXBIN_BACKRIGHT
+FX_OUTPUT4=GPTEMPBIN0
+FX_OUTPUT5=GPTEMPBIN1
+FX_OUTPUT6=GPTEMPBIN2
+FX_OUTPUT7=GPTEMPBIN3
+
+[MUSIC_CHORUS_CHAIN]
+FX0=CHORUS
+
+[MUSIC_CHORUS_CHAIN_FX0_CHORUS]
+
+FX_MIXOUTPUT=1
+FX_DSPCODE=chorus_stereo.scr
+FX_DSPSTATE=chorusstate_stereo.ini
+FX_NUMINPUTS=3
+FX_NUMOUTPUTS=2
+FX_INPUT0=VPMIXBIN_FXSEND1
+FX_INPUT1=VPMIXBIN_FXSEND1
+FX_INPUT2=VPMIXBIN_FXSEND2
+
+FX_OUTPUT0=GPMIXBIN_FRONTLEFT
+FX_OUTPUT1=GPMIXBIN_FRONTRIGHT
+</PRE>
+
+<P>For more information on creating DSP effects images, see the <A HREF="xbox_creating_a_dsp_effects_image_dxaudio.htm"><B>Creating a DSP Effects Image</B></A> tutorial.</P>
+
+<P>After the DSP effects image has been generated, the title must download the effects image to the global processor in the Xbox MCP.  For information on how to do this, see the <A HREF="xbox_downloading_images_to_the_global_processor_dxaudio.htm"><B>Downloading Images to the Global Processor</B></A> tutorial.</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

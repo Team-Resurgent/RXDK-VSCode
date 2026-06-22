@@ -1,0 +1,159 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirectMusicSegmentState8::GetObjectInPath</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="IDirectMusicSegmentState8::GetObjectInPath [C++]">
+<META NAME="MS-HKWD" CONTENT="GetObjectInPath (IDirectMusicSegmentState8) [C++]">
+<META NAME="MS-HKWD" CONTENT="GetObjectInPath [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="GetObjectInPath (IDirectMusicSegmentState8)"/>
+<MSHelp:Keyword Index="K" Term="IDirectMusicSegmentState8::GetObjectInPath"/>
+<MSHelp:Keyword Index="F" Term="GetObjectInPath"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_idirectmusicsegmentstate8_getobjectinpath_dxaudio"></A>IDirectMusicSegmentState8::GetObjectInPath</H1>
+
+<P>Retrieves an interface for an object in the audiopath on which this segment state is playing.</P>
+
+<PRE class="syntax"><B>HRESULT GetObjectInPath(</B>
+    <B>DWORD</B> <I>dwPChannel</I>,
+    <B>DWORD</B> <I>dwStage</I>,
+    <B>DWORD</B> <I>dwBuffer</I>,
+    <B>REFGUID</B> <I>guidObject</I>,
+    <B>DWORD</B> <I>dwIndex</I>,
+    <B>REFGUID</B> <I>iidInterface</I>,
+    <B>void</B> <I>**ppObject</I>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>dwPChannel</I></DT>
+
+<DD>Performance channel to search, or DMUS_PCHANNEL_ALL to search all channels. The first channel is numbered 0. See Remarks.</DD>
+
+<DT><I>dwStage</I></DT>
+<DD>Stage in the path. Can be one of the following values.</DD>
+
+<DL>
+<DT>DMUS_PATH_AUDIOPATH</DT>
+    <DD>Get the audiopath on which the segment state is playing.</DD>
+
+<DT>DMUS_PATH_AUDIOPATH_GRAPH</DT>
+    <DD>Get the audio path's tool graph.</DD>  
+    
+<DT>DMUS_PATH_AUDIOPATH_TOOL</DT>
+    <DD>Look in the tool graph of the audio path.</DD>
+
+<DT>DMUS_PATH_BUFFER</DT>
+    <DD>Get a DirectSound buffer.</DD>
+
+<DT>DMUS_PATH_PERFORMANCE</DT>
+    <DD>Get the performance.</DD>
+    
+<DT>DMUS_PATH_PERFORMANCE_GRAPH</DT>
+    <DD>Get the performance's tool graph.</DD>
+<DT>DMUS_PATH_PERFORMANCE_TOOL</DT>
+    <DD>Look in the tool graph of the performance.</DD>
+
+<DT>DMUS_PATH_SEGMENT</DT>
+    <DD>Get the segment that associated with this segment state.</DD>
+<DT>DMUS_PATH_SEGMENT_GRAPH</DT>
+    <DD>Get the segment's tool graph.</DD>
+<DT>DMUS_PATH_SEGMENT_TOOL</DT>
+    <DD>Look in the tool graph of the segment.</DD>
+</DL>
+
+
+<DT><I>dwBuffer</I></DT>
+
+<DD>Value that contains the index of the buffer if <I>dwStage</I> is DMUS_PATH_BUFFER, otherwise this value should be zero.</DD>
+
+<DT><I>guidObject</I></DT>
+
+<DD>Class identifier of the objector GUID_All_Objects to search for an object of any class.  This parameter is ignored if only a single class of object can exist at the stage specified by <I>dwStage</I>, and can be set to GUID_NULL.</DD>
+
+<DT><I>dwIndex</I></DT>
+
+<DD>Index of the object in the list of matching objects. Set to 0 to find the first matching object. If <I>dwStage</I> is DMUS_PATH_BUFFER or DMUS_PATH_MIXIN_BUFFER, this parameter is ignored, and the buffer index is specified by <I>dwBuffer</I>.</DD>
+
+<DT><I>iidInterface</I></DT>
+
+<DD>Identifier of the desired interface, such as IID_IDirectMusicGraph.</DD>
+
+<DT><I>ppObject</I></DT>
+
+<DD>Address of a variable that receives a pointer to the requested interface.
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the method succeeds, the return value is S_OK or DMUS_S_GARBAGE_COLLECTED. See <A HREF="_dx_garbage_collection_dxaudio.htm"><B>Garbage Collection</B></A>.</P>
+
+<P>If it fails, the method can return one of the following error values.</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TD width=100%><A HREF="_dx_directmusic_return_values_by_name_dxaudio.htm#_dx_dmus_e_not_found_dxaudio"><B>DMUS_E_NOT_FOUND</B></A></TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=100%><A HREF="_dx_directmusic_return_values_by_name_dxaudio.htm#_dx_e_invalidarg_dxaudio"><B>E_INVALIDARG</B></A></TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=100%><A HREF="_dx_directmusic_return_values_by_name_dxaudio.htm#_dx_e_nointerface_dxaudio"><B>E_NOINTERFACE</B></A></TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=100%><A HREF="_dx_directmusic_return_values_by_name_dxaudio.htm#_dx_e_outofmemory_dxaudio"><B>E_OUTOFMEMORY</B></A></TD>
+</TR>
+</TABLE><BR>
+
+<H4>Remarks</H4>
+
+<P>The value in <I>dwPChannel</I> must be 0 for any stage that is not channel-specific. Objects in the DMUS_PATH_BUFFER stage are channel-specific and can be retrieved by setting a channel number or DMUS_PCHANNEL_ALL in <I>dwPChannel</I>.</P>
+
+<P>The precedence of the parameters in filtering out unwanted objects is as follows:
+
+<OL>
+	<LI><I>dwStage</I>.</LI>
+
+	<LI><I>guidObject</I>. If this value is not GUID_All_Objects, only objects whose class identifier equals <I>guidObject</I> are searched. However, this parameter is ignored when only a single class of object can exist at the specified stage.</LI>
+
+	<LI><I>dwPChannel</I>. If the stage is channel-specific and this value is not DMUS_PCHANNEL_ALL, only objects on the channel are searched.</LI>
+
+	<LI><I>dwBuffer</I>. This is used only if <I>dwStage</I> is DMUS_PATH_BUFFER or DMUS_PATH_MIXIN_BUFFER.</LI>
+
+	<LI><I>dwIndex</I>. Note that tracks in segments created by DirectMusic Producer are not necessarily in the same order as they were in that application.</LI>
+</OL>
+
+<P>If a matching object is found but the interface specified by <I>iidInterface </I>cannot be obtained, the method fails.</P>
+
+<P>Unlike other stages, when calling <B>IDirectMusicSegmentState8::GetObjectInPath</B> with the DMUS_PATH_BUFFER stage, you must provide the address of an <B>IDirectSoundBuffer</B> interface pointer.  Do not cast this pointer to an <B>IUnknown</B> and call methods on the <B>IUnknown</B> interface.</P>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in dmusici.h.</P>
+
+<H4>See Also</H4>
+
+<P><A HREF="_dx_idirectmusicaudiopath8_getobjectinpath_dxaudio.htm"><B>IDirectMusicAudioPath8::GetObjectInPath</B></A>, <A HREF="_dx_retrieving_objects_from_an_audiopath_dxaudio.htm"><B>Retrieving Objects from an Audiopath</B></A></P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

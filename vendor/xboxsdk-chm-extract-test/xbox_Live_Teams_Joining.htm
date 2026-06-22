@@ -1,0 +1,28 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Joining Teams and Recruiting Players</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Joining Teams and Recruiting Players"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Joining Teams and Recruiting Players</h1>
+<p>Players must always be invited to join a team. Only those on the team with sufficient privileges can add a new player to a given team. Typically, the person with the required privileges is the creator of the team. The team creator can grant other members team administrator privileges.</p><p>To recruit a player, the team creator can send an invitation to the new player. This means your game will need to use the <a href="xbox_Live_Messaging.htm">Messaging service</a> to enable players to make such requests. The new player can then accept or reject the invitation. Alternately, the new player can send a message asking to be admitted. If the team leader, or other team member with sufficient privileges, decides to add the new player, they can send a recruitment request to the new player. Send recruitment requests by calling <a href="XOnlineTeamMemberRecruit.htm">XOnlineTeamMemberRecruit</a> or <a href="XOnlineTeamMemberRecruitByName.htm">XOnlineTeamMemberRecruitByName</a>.</p><p>Whenever your title receives a recruitment message, it should enable the player to accept the invitation, reject the invitation for now, or reject the invitation forever. To do so, it should invoke the <a href="XOnlineTeamMemberAnswerRecruit.htm">XOnlineTeamMemberAnswerRecruit</a> function.</p><p>It is possible for a player to receive more than one invitation at one time from the same team member. Your title should ignore all but the first invitation. Also, if a team member sends a team recruitment invitation and then kicks the invitee off the team before acceptance, then your title will not find an invitation in the incoming messages. If a team member sends an invitation, and then another players kicks the invitee off the team, the message will be in the incoming messages even though it cannot be accepted. </p><p>When a player is being asked to join a team, your title can give the player information about the team by calling <a href="XOnlineTeamEnumerate.htm">XOnlineTeamEnumerate</a>. This asynchronous task passes a task handle back to your program through the <b>XOnlineTeamEnumerate</b> function's <i>phTask</i> parameter. Your title must call <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> to let the Xbox <i>Live</i> service know that it is still connected and waiting for results. <b>XOnlineTaskContinue</b> eventually indicates that the results are ready. At that time, your title calls <a href="XOnlineTeamEnumerateGetResults.htm">XOnlineTeamEnumerateGetResults</a> to obtain the results. It can also call <a href="XOnlineTeamGetDetails.htm">XOnlineTeamGetDetails</a> for more detailed information about the team. It then invokes <a href="XOnlineTaskClose.htm">XOnlineTaskClose</a> to close the task. As a separate task, your title can call
+<a href="XOnlineTeamMembersEnumerate.htm">XOnlineTeamMembersEnumerate</a> and <a href="XOnlineTeamMembersEnumerateGetResults.htm">XOnlineTeamMembersEnumerateGetResults</a> to get more specific information about the team members. </p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Each gamertag can be used to join up to 8 teams per title.</p><p>To remove a player from a team, your title calls the <a href="XOnlineTeamMemberRemove.htm">XOnlineTeamMemberRemove</a>. It must pass in the controller index of the player, the <a href="xuid.htm">XUID</a> of the team, and <b>XUID</b> of the player to be removed. The team member being removed does not have to be logged in at the time of removal. Only team members with sufficient privileges can remove team members.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

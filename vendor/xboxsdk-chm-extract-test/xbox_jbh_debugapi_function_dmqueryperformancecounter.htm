@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>DmQueryPerformanceCounter</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="CreateFile">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="DmQueryPerformanceCounter"/>
+<MSHelp:Keyword Index="F" Term="DmQueryPerformanceCounter"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_createfile"></A>DmQueryPerformanceCounter</H1>
+
+<P class="content">Polls the specified performance counter for its current value.</P>
+
+<!--;begin_xboxdbg-->
+<PRE class=syntax><b>DMHRAPI DmQueryPerformanceCounter(</b> <I>// Defined in xboxdbg.h</I>
+	<B>LPCSTR</B> <I>szName</I><B>,</B> 
+	<B>DWORD</B> <I>dwType</I><B>,</B> 
+	<B>PDM_COUNTDATA</B> <I>pData</I>
+	<B>);</B></PRE>
+<!--;begin_xbdm-->
+<PRE class=syntax><b>DMHRAPI DmQueryPerformanceCounterHandle(</b> <I>// Defined in xbdm.h</I>
+	<B>HANDLE</B> <I>hCounter</I><B>,</B> 
+	<B>DWORD</B> <I>dwType</I><B>,</B> 
+	<B>PDM_COUNTDATA</B> <I>pData</I>
+	<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+
+<DT><I>hCounter</I></DT>
+<DD>Counter handle.  Must be a handle returned by a previous call to <a href="xbox_jbh_debugapi_function_dmopenperformancecounter.htm">DmOpenPerformanceCounter</a>.</DD>
+
+<DT><I>szName</I></DT>
+<DD>Counter name. The XboxDbg version of this function does not use handles because it performs stateless operations.</DD>
+
+<DT><I>dwType</I></DT>
+<DD>Counter type.  This parameter must be one of the following values.
+<table>
+<tr><th>Value</th><th>Meaning</th></tr>
+<tr><td>DMCOUNT_VALUE</td><td>A value counter.</td></tr>
+<tr><td>DMCOUNT_EVENT</td><td>An event rate counter.</td></tr>
+<tr><td>DMCOUNT_PRATIO</td><td>A progressive ratio counter.</td></tr>
+</table>
+</DD>
+
+<DT><I>pData</I></DT>
+<DD>Pointer to a <a href="xbox_jbh_debugapi_struct_DM_COUNTDATA.htm">DM_COUNTDATA</a> structure that receives the counter data.</DD>
+
+</DL>
+
+<H4>Return Values</H4>
+
+<P class="content">Returns XBDM_NOERR if successful, an error value otherwise.</P>
+
+<H4>Querying Performance Counters on the Xbox Development System</H4>
+
+<P class="content">On the Xbox development system, users are able to perform two activities:</P>
+	<OL>
+		<LI>Enumerate the list of running performance counters on an Xbox target system using <B>DmWalkPerformanceCounters</B> and <B>DmCloseCounters</B>.</LI>
+		<LI>Query a running performance counter for its value using <B>DmQueryPerformanceCounter</B>.</LI>
+	</OL>
+
+<H4>Querying Performance Counters on the Xbox Target System</H4>
+
+<P class="content">On the Xbox target system, the running application can also enumerate and query the values of running counters. This is useful if a running application would like to keep its own collection of metrics in order to do its own performance analysis. On the target system side, the APIs for enumeration and query are similar, but geared for higher performance (since response times will not be slowed by network latency). Users will use the following API calls to enumerate and query performance counters on the Xbox target system:</P>
+
+	<UL>
+		<LI><B>DmWalkPerformanceCounters</B></LI>
+		<LI><B>DmCloseCounters</B></LI>
+		<LI><B>DmOpenPerformanceCounter</B></LI>
+		<LI><B>DmQueryPerformanceCounter</B></LI>
+		<LI><B>DmClosePerformanceCounter</B></LI>
+	</UL>
+
+<h4>Requirements</h4>
+<p class="content">
+<b>Header:</b> Declared in XbDm.h and XboxDbg.h (see function prototypes above)
+<br><b>Import Library:</b> Use XbDm.lib for target system code; and XboxDbg.lib for development system code.
+</p>
+
+<!--
+<H4>See Also</H4>
+<P class="content"></P>
+-->
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

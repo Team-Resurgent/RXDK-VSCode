@@ -1,0 +1,211 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XNQOSINFO</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XNQOSINFO"/>
+<MSHelp:Keyword Index="F" Term="XNQOSINFO"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+    <body topmargin="0">
+        <table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+        <h1>XNQOSINFO</h1>
+
+        
+        
+<p>
+            Contains the results from a quality of service (QoS) probe to a 
+            particular host.
+        </p>
+
+	
+		
+
+<pre class="syntax">typedef struct{
+    BYTE bFlags;
+    BYTE bReserved;
+    WORD cProbesXmit;
+    BYTE cProbesRecv;
+    WORD cbData;
+    BYTE *pbData;
+    WORD wRttMinInMsecs;
+    WORD wRttMedInMsecs;
+    DWORD dwUpBitsPerSec;
+    DWORD dwDnBitsPerSec;
+} XNQOSINFO, ;</pre>
+                    
+                
+            
+            
+                <h4><a name="members"></a>Members</h4>
+<dl>
+
+
+            <dt><b>bFlags</b></dt>
+
+                <dd>
+                    Combination of the following flags. <table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+                        <tr>
+<td>XNET_XNQOSINFO_COMPLETE</td>
+<td>
+                            This flag is set when the QoS values in this structure are final
+                        </td>
+</tr>
+                        <tr>
+<td>XNET_XNQOSINFO_TARGET_CONTACTED </td>
+<td>
+                            This flag is set as soon as the QoS probe successfully contacts the remote host. 
+                            If this flag is set, the title is able to open a socket to the remote host 
+                            because the QoS mechanism uses the same NAT traversal algorithm as the key-exchange 
+                            mechanism. If this flag is not set, the QoS probe did not receive any response 
+                            from the remote host. Possible reasons are that the host is down, has released 
+                            its QoS listener (see <a href="xbox_XNetQosListen_xsnl.htm">XNetQosListen</a>), has unregistered its 
+                            session ID, or is behind a NAT that is not allowing the connection.
+                        </td>
+</tr>
+                        <tr>
+<td>XNET_XNQOSINFO_TARGET_DISABLED</td>
+<td>
+                            This flag is set if the QoS probe received a "go away" response from the remote 
+                            host.
+                        </td>
+</tr>
+                        <tr>
+<td>XNET_XNQOSINFO_DATA_RECEIVED</td>
+<td>
+                            This flag is set if the remote host returns a title-specific data block. The 
+                            size of the data returned is specified by the <b>cbData</b> member. 
+                            The <b>pbData</b> member points to the returned data.
+                        </td>
+</tr>
+                    </table>
+
+
+                </dd>
+
+            
+
+            <dt><b>bReserved</b></dt>
+                <dd>
+                    This member is reserved.
+                </dd>
+            
+
+
+
+            <dt><b>cProbesXmit</b></dt>
+                <dd>
+                    Number of probes transmitted.
+                </dd>
+            
+
+
+
+            <dt><b>cProbesRecv</b></dt>
+
+                <dd>
+                    Number of probe responses received.
+                </dd>
+
+            
+
+
+            <dt><b>cbData</b></dt>
+
+                <dd>
+                    Number of bytes in the data block pointed to by the <b>pbData</b> 
+                    member. This member is zero if the remote host did not return a data block.
+                </dd>
+
+            
+
+
+            <dt><b>pbData</b></dt>
+
+                <dd>
+                    Pointer to a title-specific data block that was returned by the remote host in 
+                    the probe response packet. This member is NULL if the remote host did not return 
+                    a data block.
+                </dd>
+
+            
+
+
+            <dt><b>wRttMinInMsecs</b></dt>
+
+                <dd>
+                    Minimum roundtrip time in milliseconds.
+                </dd>
+
+            
+
+
+            <dt><b>wRttMedInMsecs</b></dt>
+
+                <dd>
+                    Median roundtrip time in milliseconds.
+                </dd>
+
+            
+
+
+            <dt><b>dwUpBitsPerSec</b></dt>
+
+                <dd>
+                    Average upstream bandwidth in bits per second.
+                </dd>
+
+            
+
+            <dt><b>dwDnBitsPerSec</b></dt>
+
+                <dd>
+                    Average downstream bandwidth in bits per second.
+                </dd>
+
+            
+
+
+
+
+        </dl>
+                <h4><a name="remarks"></a>Remarks</h4>
+            The <b>dwUpBitsPerSec</b> and <b>dwDnBitsPerSec</b> member are estimates only. 
+            A title should not restrict the number of players in a game session based on these values.
+        
+				
+            
+                <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Winsockx.h.</p>
+            
+                <h4><a name="seealso"></a>See Also</h4>
+            <p>
+                <a href="xbox_secure_network_library_structures_xsnl.htm">Xbox Secure Network Library Structures</a> | <a href="xbox_XNetQosLookup_xsnl.htm">XNetQosLookup</a>,
+                <a href="xbox_XNQOS_xsnl.htm">XNQOS</a>
+            </p>
+        
+
+        <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+    </body>
+    </html>

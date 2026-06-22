@@ -1,0 +1,93 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Visual C++ 7.1 Command-Line Compiler</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Visual C++ 7.1 Command-Line Compiler"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+  <MSHelp:Keyword Index="K" Term="command-line compiler for Visual C++ 7.1"/>
+  <MSHelp:Keyword Index="K" Term="optimization settings for VC++ 7.1 compiler"/>
+  <MSHelp:Keyword Index="K" Term="Link Time Code Generation"/>
+  <MSHelp:Keyword Index="K" Term="inlining, cross-module"/>
+  <MSHelp:Keyword Index="K" Term="interprocedural register allocations"/>
+  <MSHelp:Keyword Index="K" Term="cross-module inlining"/>
+  <MSHelp:Keyword Index="K" Term="Thread Local Storage (TLS) displacement"/>
+  <MSHelp:Keyword Index="K" Term="TLS displacement"/>
+  <MSHelp:Keyword Index="K" Term="F1 Help in Visual C++ 7.1"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Visual C++ 7.1 Command-Line Compiler</h1>
+<p>This section provides information regarding the Microsoft&reg; 
+		Visual C++&reg; 7.1 (VC7.1) command-line compiler included in this version of the 
+		Xbox Development Kit (XDK). The tools described in this section are subject to 
+		change in later versions of the XDK.</p><h2><a name="IDA5J2K"></a>Optimizations</h2>
+<p>A commonly asked question is "What are the best optimization settings for 
+			the VC++ 7.1 compiler?"</p><p>For Visual C++ 7.1 code optimization on an Xbox console, use -GB/-G6 
+			(GB now maps to G6). For speed optimization, the recommended settings are -O2 -GL 
+			-Gr. For aliasing, you can use -Oa or -Ow. Note that if your program uses a 
+			linked list, do not use these settings. Also note that the majority of aliasing 
+			problems disappear with Link Time Code Generation.</p><h2><a name="link_time_code_generation"></a>Link Time Code Generation</h2>
+<p>Most compiler optimizations are limited to a single file being compiled. 
+			Using Link Time Code Generation (LTCG), you can apply optimizations to an 
+			entire program at once by specifying /GL on the compiler and /LTCG on the 
+			linker when doing release builds. Link Time Code Generation offers the 
+			following benefits:</p><dl>
+			<dt><b>Increased Frame Rate</b></dt>
+			<dd>In-house testing has shown that using LTCG results in a 5&#8211;10 
+			percent increase in frame rate.</dd>
+
+			<dt><b>Custom Calling Convention</b></dt>
+			<dd>A calling convention is a protocol describing how parameters are pushed 
+			onto the stack and then later, popped off it. Link Time Code Generation 
+			enables the optimizer to utilize unused registers to pass parameters instead 
+			of using the stack like a regular calling convention.</dd>
+
+			<dt><b>Cross-Module Inlining</b></dt>
+			<dd>Regular optimizers limit the inlining of functions to a single module. 
+			Using LTCG, the compiler/linker will attempt to insert function code inline 
+			with the caller (even if it's in a different module) instead of making a 
+			function call. To use this, you need to use the /Ob2 compiler option (which 
+			is on by default when using /O1 or /O2 switches) to tell the compiler that 
+			it should inline as much as it can.</dd>
+
+			<dt><b>Thread Local Storage (TLS) Displacement</b></dt>
+			<dd>Using LTCG, the compiler and linker now pick the most frequently used 
+			TLS variables and specifically allocate them in first, instead of just 
+			assigning them in order. This means the code generator can use byte and word 
+			instructions more easily. This saves three bytes per TLS reference.</dd>
+
+			<dt><b>Interprocedural Register Allocations</b></dt>
+			<dd>Normally, certain registers are considered scratch. If we know that the 
+			function doesn't modify the scratch register, it can just leave it alone as 
+			opposed to reloading it.</dd>
+
+			<dt><b>Improved Memory Disambiguation</b></dt>
+			<dd>If no addressing operator is applied to global variables, the 
+			linker/compiler can more aggressively optimize how the global variables are 
+			handled.</dd>
+		</dl>
+<h2><a name="IDAQL2K"></a>F1 Help</h2>
+<p>The Visual C++ IDE now attempts to determine whether a selected keyword is 
+			an Xbox keyword (or an MSDN keyword) when F1 is pressed in the editor. If the 
+			keyword is a valid Xbox keyword, the Xbox Help file is opened and the topic 
+			corresponding to the selected keyword is displayed. If the selected keyword is 
+			not an Xbox keyword, MSDN is launched as you would normally expect.</p><p>To disable this feature, rename [XDK install path]\Doc\XboxSDK.kwd to 
+			XboxSDK.kwd.bak. Once you've disabled this feature, the Visual C++ IDE should 
+			behave as if it were unmodified.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

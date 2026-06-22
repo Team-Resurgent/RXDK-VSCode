@@ -1,0 +1,78 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Code Scrambler Tool (XCodeScr)</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Code Scrambler Tool (XCodeScr)"/>
+<MSHelp:Keyword Index="K" Term="XCodeScr tool"/>
+<MSHelp:Keyword Index="K" Term="scramble DSP program binaries"/>
+<MSHelp:Keyword Index="K" Term="porting code to Xbox"/>
+<MSHelp:Keyword Index="K" Term="DSP algorithms, porting to Xbox"/>
+<MSHelp:Keyword Index="F" Term="Code Scrambler Tool (XCodeScr)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Code Scrambler Tool (XCodeScr)</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<P class="content">The XCodeScr tool scrambles individual DSP program binaries before distribution.</P>
+
+<PRE>USAGE: xcodescr key infile outfile</PRE>
+
+<TABLE class="tblcontrols">
+<!--**Stock Text. Do not change.****-->
+<TR VALIGN="top"><TH align=left width=25%>Option</TH><TH align=left width=75%>Description</TH></TR>
+<!--**Use this set of tags for a row. Copy and paste for additional rows.**-->
+<TR><td><em>key</em></td>     <td>Private key to use for scrambling. This must be an 8-character ASCII string.</td></TR>
+<TR><td><em>infile</em></td>  <td>Input file to be scrambled. This may be any file, but is typically a GP DSP program binary image, the result of running a Motorola 56300 DSP assembler.</td></TR>
+<TR><td><em>outfile</em></td> <td>Output file. This may be any file, but is typically a GP DSP program binary image. By convention, the output extension is ".scr".</td></TR>
+<TR><td>-?</td>      <td>Display usage.</td></TR>
+</TABLE>
+
+<H3 class="overview">Overview</H3>
+
+<P class="content">The nature of the DSP instruction set and the generally small size of a program with GP DSP audio effects make it trivial to disassemble a straight binary image of such a program and reverse-engineer its algorithms. It is unlikely, therefore, that third-party vendors of these programs would risk porting their code over for use with Xbox without some guarantee of protection. To encourage these vendors to support the Xbox and make their DSP algorithms available to Xbox developers (and thereby increase the audio quality of Xbox titles), vendors must be able to scramble individual DSP program images.</P>
+
+<H3 class="overview">Details of Usage</H3>
+
+<P class="content">The DSPBuilder and XGPImage tools use the DSP code images scrambled by XCodeScr instead of raw DSP binary images. The output from <a href="xbox_tool_dsp_builder_dxaudio.htm">DSPBuilder</a> and <a href="xbox_jbh_tool_xgpimage.htm">XGPImage</a> consist of fixed-up, re-scrambled DSP images, using the DSP program's original private key. Upon DSP program download by Microsoft&#174 DirectSound&#174, the image file is unscrambled and the DSP program is executed on the GP DSP.</P>
+
+<P class=note><B>Note</B>&nbsp;&nbsp;For DSPBuilder, .ini files are required for parameter states, to generate headers, and so on.</p>
+
+<UL>
+  <LI>DSP developer develops and debugs DSP program using Motorola 56300 DSP assembler and creates a binary output image (.bin).</li>
+  <LI>DSP developer runs XCodeScr program to create a scrambled DSP program image (.scr), using a private key known only to the DSP developer.</li>
+  <LI>DSP developer makes DSP program in scrambled form (.scr) available to Xbox developers.</li>
+  <LI>Xbox developer integrates .scr into their title by using DSPBuilder or XGPImage to build a DSP image including the scrambled DSP program.</li>
+  <LI>Output image produced by DSPBuilder or XGPImage is used by Xbox title, using the <a href="xbox_idirectsound8_downloadeffectsimage_dxaudio.htm">IDirectSound8::DownloadEffectsImage</a> method.</li>
+</UL>
+
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

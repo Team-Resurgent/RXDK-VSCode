@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Standard Audiopaths</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Standard Audiopaths"/>
+<MSHelp:Keyword Index="F" Term="Standard Audiopaths"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H3><A NAME="_dx_standard_audiopaths_dxaudio"></A>Standard Audiopaths</H3>
+
+<P>If your application does not play exclusively on audiopaths created from audiopath configuration objects, you must create one or more standard audiopaths.</P>
+
+<P>Standard audiopaths are identified by the values passed in the <I>dwType</I> parameter of <A HREF="_dx_idirectmusicperformance8_createstandardaudiopath_dxaudio.htm"><B>IDirectMusicPerformance8::CreateStandardAudioPath</B></A> or in the <I>dwDefaultPathType</I> parameter of <A HREF="_dx_idirectmusicperformance8_initaudio_dxaudio.htm"><B>IDirectMusicPerformance8::InitAudioX</B></A>. </P>
+
+<P>The audiopaths defined by DirectMusic manage the flow of synthesizer output through combinations of standard buffers. The following table lists the standard audiopaths, and describes whether or not the audio data is sent directly to a mixbin. Audiopaths not sent directly to one or more mixbins utilize an additional DirectSound buffer for submixing. In addition to mono voices, some audiopaths support stereo, four channel and six channel waves. The table also shows how many channels a source wave may contain.</P>
+
+<TABLE>
+<TR VALIGN="top">
+<TH align=left width=62%>Audiopath Type</TH>
+<TH align=left width=18%>Uses an additional mixin buffer?</TH>
+<TH align=left width=18%>Wave channels supported</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=62%>DMUS_APATH_DYNAMIC_3D</TD>
+<TD width=18%>Yes</TD>
+<TD width=18%>1</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=62%>DMUS_APATH_DYNAMIC_MONO</TD>
+<TD width=18%>Yes</TD>
+<TD width=18%>1</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=62%>DMUS_APATH_MIXBIN_5DOT1</TD>
+<TD width=18%>No</TD>
+<TD width=18%>1, 2, 6</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=62%>DMUS_APATH_MIXBIN_5DOT1_ENV</TD>
+<TD width=18%>No</TD>
+<TD width=18%>1</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=62%>DMUS_APATH_MIXBIN_5DOT1_MUSIC</TD>
+<TD width=18%>No</TD>
+<TD width=18%>1, 2, 4</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=62%>DMUS_APATH_MIXBIN_QUAD</TD>
+<TD width=18%>No</TD>
+<TD width=18%>1, 2, 4</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=62%>DMUS_APATH_MIXBIN_QUAD_ENV</TD>
+<TD width=18%>No</TD>
+<TD width=18%>1</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=62%>DMUS_APATH_MIXBIN_QUAD_MUSIC</TD>
+<TD width=18%>No</TD>
+<TD width=18%>1, 2, 6</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=62%>DMUS_APATH_MIXBIN_STEREO_EFFECTS</TD>
+<TD width=18%>No</TD>
+<TD width=18%>1, 2, 4</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=62%>DMUS_APATH_SHARED_STEREO</TD>
+<TD width=18%>No</TD>
+<TD width=18%>1, 2</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=62%>DMUS_APATH_SHARED_STEREOPLUSREVERB</TD>
+<TD width=18%>No</TD>
+<TD width=18%>1, 2</TD>
+</TR>
+</TABLE>
+
+<P><A HREF="_dx_idirectsoundbuffer8_dxaudio.htm"><B>IDirectSoundBuffer8</B></A> is available for any audiopaths that use an additional DirectSound buffer (in other words, it does not send its content directly to a mixbin). For example, you would be able to access a <b>IDirectSoundBuffer8</b> interface on a DMUS_APATH_DYNAMIC_MONO audiopath, but not on a DMUS_APATH_SHARED_STEREO audiopath.</P>
+
+<P>To obtain an interface to the DirectSound buffer for types DMUS_APATH_DYNAMIC_3D and DMUS_APATH_DYNAMIC_MONO, call <B>GetObjectInPath</B>  with <I>dwStage</I> set to DMUS_PATH_BUFFER and <I>dwBuffer</I> set to 0.</P>
+
+<!-- Omitted - DMUS_APATH_SHARED_STEREOPLUSREVERB audiopaths don't have additional buffers
+<P>For DMUS_APATH_SHARED_STEREOPLUSREVERB, the Stereo buffer is shared among multiple audiopaths. It is a sink-in buffer, meaning that it accepts data directly from the synthesizer, not from other buffers. The Reverb buffer is also a shared sink-in buffer. Unlike the Stereo buffer, it accepts a mono input from the synthesizer and converts the data to stereo format.</P>
+-->
+
+<P>For more information on obtaining interfaces, see <A HREF="_dx_retrieving_objects_from_an_audiopath_dxaudio.htm"><B>Retrieving Objects from an Audiopath</B></A>.</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

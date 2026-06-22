@@ -1,0 +1,69 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Setting Up a Projection Matrix</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Setting Up a Projection Matrix"/>
+<MSHelp:Keyword Index="F" Term="Setting Up a Projection Matrix"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_setting_up_a_projection_matrix_graphics"></A>Setting Up a Projection Matrix</H1>
+
+<P>The following ProjectionMatrix sample function&#8212;written in C++&#8212;takes four input parameters that set the front and back clipping planes, as well as the horizontal and vertical field of view angles. This code parallels the approach discussed in the <A HREF="_dx_what_is_the_projection_transformation_graphics.htm">What Is the Projection Transformation?</A> topic. The fields of view should be less than pi radians.</P>
+
+<PRE>D3DMATRIX 
+ProjectionMatrix(const float near_plane, // Distance to near clipping 
+                                         // plane
+                 const float far_plane,  // Distance to far clipping 
+                                         // plane
+                 const float fov_horiz,  // Horizontal field of view 
+                                         // angle, in radians
+                 const float fov_vert)   // Vertical field of view 
+                                         // angle, in radians
+{
+    float    h, w, Q;
+ 
+    w = (float)1/tan(fov_horiz*0.5);  // 1/tan(x) == cot(x)
+    h = (float)1/tan(fov_vert*0.5);   // 1/tan(x) == cot(x)
+    Q = far_plane/(far_plane - near_plane);
+ 
+    D3DMATRIX ret;
+    ZeroMemory(&amp;ret, sizeof(ret));
+
+    ret(0, 0) = w;
+    ret(1, 1) = h;
+    ret(2, 2) = Q;
+    ret(3, 2) = -Q*near_plane;
+    ret(2, 3) = 1;
+    return ret;
+}   // End of ProjectionMatrix
+</PRE>
+
+<P>After you create the matrix, you must set it in a call to the <A HREF="_dx_idirect3ddevice8_settransform_graphics.htm">IDirect3DDevice8::SetTransform</A> method, specifying D3DTRANSFORMSTATE_PROJECTION in the first parameter.</P>
+
+<P>The Direct3DX utility library provides the following functions to help you set up your projections matrix.
+
+<UL>
+	<LI><A HREF="_dx_d3dxmatrixperspectivelh_graphicsd3dx.htm">D3DXMatrixPerspectiveLH</A></LI>
+
+	<LI><A HREF="_dx_d3dxmatrixperspectiverh_graphicsd3dx.htm">D3DXMatrixPerspectiveRH</A></LI>
+
+	<LI><A HREF="_dx_d3dxmatrixperspectivefovlh_graphicsd3dx.htm">D3DXMatrixPerspectiveFovLH</A></LI>
+
+	<LI><A HREF="_dx_d3dxmatrixperspectivefovrh_graphicsd3dx.htm">D3DXMatrixPerspectiveFovRH</A></LI>
+
+	<LI><A HREF="_dx_d3dxmatrixperspectiveoffcenterlh_graphicsd3dx.htm">D3DXMatrixPerspectiveOffCenterLH</A></LI>
+
+	<LI><A HREF="_dx_d3dxmatrixperspectiveoffcenterrh_graphicsd3dx.htm">D3DXMatrixPerspectiveOffCenterRH</A></LI>
+</UL>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

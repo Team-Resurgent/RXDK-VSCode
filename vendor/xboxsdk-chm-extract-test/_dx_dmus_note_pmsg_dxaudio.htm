@@ -1,0 +1,149 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>DMUS_NOTE_PMSG</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="DMUS_NOTE_PMSG  [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="DMUS_NOTE_PMSG"/>
+<MSHelp:Keyword Index="F" Term="DMUS_NOTE_PMSG"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_dmus_note_pmsg_dxaudio"></A>DMUS_NOTE_PMSG</H1>
+
+<P>Contains message data for a MIDI note.</P>
+
+<PRE class="syntax">typedef struct DMUS_NOTE_PMSG {
+    DMUS_PMSG_PART
+    MUSIC_TIME mtDuration;
+    WORD       wMusicValue;
+    WORD       wMeasure;
+    short      nOffset;
+    BYTE       bBeat;
+    BYTE       bGrid;
+    BYTE       bVelocity;
+    BYTE       bFlags;
+    BYTE       bTimeRange;
+    BYTE       bDurRange;
+    BYTE       bVelRange;
+    BYTE       bPlayModeFlags;
+    BYTE       bSubChordLevel;
+    BYTE       bMidiValue;
+    char       cTranspose;
+} DMUS_NOTE_PMSG;
+</PRE>
+
+<DL>
+<DT><B>DMUS_PMSG_PART</B></DT>
+
+<DD>Macro for common message members. See <A HREF="_dx_dmus_pmsg_dxaudio.htm"><B>DMUS_PMSG</B></A>.</DD>
+
+<DT><B>mtDuration</B></DT>
+
+<DD>Duration of the note.</DD>
+
+<DT><B>wMusicValue</B></DT>
+
+<DD>Description of the note. In most play modes, this is a packed array of 4-bit values, as follows:
+
+<DL>
+<DT>Octave</DT>
+
+<DD>In the range from &#8211;2 through 14. The note is transposed up or down by the octave times 12.</DD>
+
+<DT>Chord position</DT>
+
+<DD>In the range from 0 through 15, although it should never be above 3. The first position in the chord is 0.</DD>
+
+<DT>Scale position</DT>
+
+<DD>In the range from 0 through 15. Typically it is only from 0 through 2, but it is possible to have a one-note chord and have everything above the chord be interpreted as a scale position. </DD>
+
+<DT>Accidental</DT>
+
+<DD>In the range from &#8211;8 through 7, but typically in the range from &#8211;2 through 2. This represents an offset that takes the note out of the scale. </DD>
+</DL>
+
+
+<P>In the fixed-play modes, the music value is a MIDI note value in the range from 0 through 127.
+</DD>
+
+<DT><B>wMeasure</B></DT>
+
+<DD>Measure in which this note occurs.</DD>
+
+<DT><B>nOffset</B></DT>
+
+<DD>Offset from the <A HREF="g.htm#_dx_grid_glos" CLASS="POPUP"><B>grid</B></A> at which this note occurs, in music time.</DD>
+
+<DT><B>bBeat</B></DT>
+
+<DD>Beat (in measure) at which this note occurs.</DD>
+
+<DT><B>bGrid</B></DT>
+
+<DD>Grid offset from the beat at which this note occurs.</DD>
+
+<DT><B>bVelocity</B></DT>
+
+<DD>Note <A HREF="v.htm#_dx_velocity_glos" CLASS="POPUP"><B>velocity</B></A>.</DD>
+
+<DT><B>bFlags</B></DT>
+
+<DD>See <A HREF="_dx_dmus_notef_flags_dxaudio.htm"><B>DMUS_NOTEF_FLAGS</B></A>.</DD>
+
+<DT><B>bTimeRange</B></DT>
+
+<DD>Range by which to randomize time.</DD>
+
+<DT><B>bDurRange</B></DT>
+
+<DD>Range by which to randomize duration.</DD>
+
+<DT><B>bVelRange</B></DT>
+
+<DD>Range by which to randomize velocity.</DD>
+
+<DT><B>bPlayModeFlags</B></DT>
+
+<DD>Play mode determining how the music value is related to the chord and subchord. For a list of values, see <A HREF="_dx_dmus_playmode_flags_dxaudio.htm"><B>DMUS_PLAYMODE_FLAGS</B></A>.</DD>
+
+<DT><B>bSubChordLevel</B></DT>
+
+<DD>Subchord level that the note uses. See <A HREF="_dx_dmus_subchord_dxaudio.htm"><B>DMUS_SUBCHORD</B></A>.</DD>
+
+<DT><B>bMidiValue</B></DT>
+
+<DD>MIDI note value, converted from <B>wMusicValue</B>.</DD>
+
+<DT><B>cTranspose</B></DT>
+
+<DD>Transposition to add to <B>bMidiValue</B> after conversion from <B>wMusicValue</B>.
+</DD>
+</DL>
+
+<H4>Remarks</H4>
+
+<P>When the output tool receives a message with DMUS_NOTEF_NOTEON in <B>bFlags</B>, it sends a MIDI note-on message to the synthesizer. It then clears the DMUS_NOTEF_NOTEON flag, adds <B>mtDuration</B> to the time stamp, and requeues the message so that the note is turned off at the appropriate time.</P>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in dmusici.h.</P>
+
+<H4>See Also</H4>
+
+<P><A HREF="_dx_idirectmusicperformance8_sendpmsg_dxaudio.htm"><B>IDirectMusicPerformance8::SendPMsg</B></A>, <A HREF="_dx_music_values_and_midi_notes_dxaudio.htm"><B>Music Values and MIDI Notes</B></A></P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

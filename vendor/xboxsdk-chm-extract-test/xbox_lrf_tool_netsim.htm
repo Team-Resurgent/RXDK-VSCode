@@ -1,0 +1,518 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Network Simulator (NetSim)</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Network Simulator (NetSim)"/>
+<MSHelp:Keyword Index="K" Term="NetSim tool"/>
+<MSHelp:Keyword Index="K" Term="packet loss, simulating with NetSim"/>
+<MSHelp:Keyword Index="K" Term="latency, simulating with NetSim"/>
+<MSHelp:Keyword Index="K" Term="bandwidth problems, simulating with NetSim"/>
+<MSHelp:Keyword Index="K" Term="simulate network conditions"/>
+<MSHelp:Keyword Index="K" Term="hysteresis, simulating with NetSim"/>
+<MSHelp:Keyword Index="K" Term="drop rate, simulating with NetSim"/>
+<MSHelp:Keyword Index="K" Term="drop burst, simulating with NetSim"/>
+<MSHelp:Keyword Index="F" Term="Network Simulator (NetSim)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1><A NAME=""></A>Network Simulator (NetSim)</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<!--****Intro paragraph. Should be a three or four sentence summary of the topic.****-->
+<P class="intro">The Network Simulator tool simulates bad network behavior for
+testing online connectivity. Because testing is typically performed on a local
+area network (LAN), realistic network behavior usually does not occur in the
+testing environment. The NetSim tool solves this problem by performing network
+address translation (NAT) between Xbox clients and the Xbox <i>Live</i> service, at
+the same time introducing packet loss, latency, and bandwidth limitations.</P>
+<!--*********************************************************************************-->
+
+<PRE>USAGE: netsim</PRE>
+
+<p class="note"><B><i>Note</i></B>&nbsp;&nbsp;&nbsp;For additional information on 
+NetSim installation and configuration, see the 
+<a HREF="whitepaper_NetSim.htm">Using the Xbox Network Conditions Simulator</a>
+whitepaper.</p>
+
+
+<H3 class="overview">Overview</H3>
+
+<p class="content">In much the same role served by ordinary NAT software or
+hardware, the Network Simulator serves as the default gateway between clients
+and the Internet. Xbox consoles send packets to NetSim at its internal address,
+then NetSim passes the packets on to the Internet through an external IP
+address. Unlike ordinary NAT implementations, NetSim does not pass the packets 
+through unaltered. Instead, it simulates the following:</p>
+
+<ul>
+  <li>Latency, by waiting to send packets</li>
+  <li>Packet loss, by dropping a certain percentage of
+      packets</li>
+  <li>Limited bandwidth, by restricting how much data is
+      transmitted each second</li>
+</ul>
+
+<p class="content">The other major difference between NetSim and a typical NAT
+implementation is that NetSim can handle multiple internal IP addresses. The
+Network Simulator separates individual client Xbox consoles from each other by
+putting them on separate subnets. This separation forces packet flow through the
+development system running NetSim, rather than routing those packets directly
+between consoles. Because NetSim is handling all the packets between Xbox
+consoles, it has the opportunity to change the network conditions between those
+consoles. NetSim also has the opportunity to change network conditions between
+the Xbox consoles and the rest of the Internet.</p>
+
+<p class="content">The NetSim tool uses VLAN, a virtual NIC driver, to simulate
+the existence of multiple network cards (each of which has its own IP) on the
+development system. Only one network adapter is required to run NetSim.</p>
+
+<p class="content">In order for NetSim to handle traffic from Xbox consoles,
+those consoles must be connected to Xbox <i>Live</i>. There are two scenarios in which
+NetSim works:</p>
+
+<ul>
+  <li>The Xbox console is connected to the Online Service and is communicating
+      with the Online Service (authorization or offerings, for example).</li>
+  <li>The Xbox console is connected to the Online Service and is communicating
+      with another Xbox connected to the Online Service (via matchmaking, for
+      example).</li>
+</ul>
+
+<p class="content">The NetSim tool cannot handle network traffic from an Xbox
+console that is connecting directly to a PC, nor can it handle network
+communications between two Xbox consoles that are connected to each other with
+a system link cable.</p>
+
+
+<h3 class="overview">Installation</h3>
+
+<p class="content">Because not every game title supports Xbox <i>Live</i>, the Xbox
+Development Kit installer does not automatically install Network Simulator. To
+install NetSim, click <b>Programs</b> on the <b>Start</b> menu, then click <b>Microsoft Xbox SDK</b> folder, and then click the <b>Setup Microsoft Network Simulation Tool for Xbox</b>
+shortcut. Follow the installer's instructions to install NetSim. To run
+NetSim, click the <b>Network Simulation Tool for Xbox</b> shortcut (located
+in the <b>Programs</b> folder of the <b>Start</b> menu).</p>
+
+
+<h3 class="overview">Configuring Xbox Consoles to use NetSim</h3>
+
+<p class="content">The NetSim tool can support up to 256 client Xbox consoles.
+This limitation derives from the IP range (10.0.0.2 to 10.0.255.2) that client
+consoles can have. Be sure to assign each Xbox console a unique IP address in
+this range; use the <b>Title IP address</b> field in the XDK Launcher <b>Network
+Settings</b> screen. For each client whose IP is 10.0.x.2, that client's
+<b>Gateway</b> and <b>Primary DNS</b> should be configured to 10.0.x.1. Each
+client's <b>Subnet mask</b> should be 255.255.255.0, which forces all packets
+through NetSim before going anywhere else (such as another Xbox console
+on the same network). Other fields in the <b>Network Settings</b> screen are not
+required by NetSim.</p>
+
+
+<h3 class="overview">User Interface</h3>
+
+<p class="content">The NetSim user interface serves as a control panel for
+starting and stopping the tool's modification of packets, as well as a place to
+experiment with different network scenarios. The NetSim user interface is
+pictured below:</p>
+
+<p class="content"><img src="images/xbox_tool_netsim_ui.jpg" width="663"
+height="684" alt="" border="0"></p>
+
+<p class="content">By default, NetSim passes packets without modification,
+behaving much like a traditional NAT program. To apply configuration settings
+and make NetSim modify its handling of data packets, click <b>Simulate network settings</b>. The
+NetSim tool applies any settings you have adjusted, either through the user
+interface or by loading a configuration file with <b>Load Settings File</b>.</p>
+
+<p>To return NetSim to unmodified packet handling, click <b>Stop simulation</b>. To close
+NetSim, click <b>EXIT</b>.</p>
+
+<p class="content">To load a configuration file, click <b>Load Settings
+File</b>. The NetSim tool displays a standard file dialog box, from which you
+can choose a configuration file. (See the <a href="#configuring">Configuring
+NetSim</a> section, below, for more information about the format of NetSim
+configuration files.)</p>
+
+<p class="content">The two list boxes on the right half of the NetSim display show the
+current settings that NetSim will use. Keep in mind that these settings may
+differ from what is displayed elsewhere in the NetSim user interface. Once NetSim is running, only the
+setting displayed in these list boxes will affect the operation of NetSim.</p>
+
+<p class="content">If you want to try out bandwidth, hysteresis, latency, drop rate, or drop burst
+without taking the time to add those settings to a configuration file, you can
+use the NetSim user interface to quickly experiment with different scenarios.</p>
+
+<p class="content">For bandwidth and hysteresis, enter values in the <b>Host Settings</b> panel. To apply the 
+settings only to the specified IP address, click <b>Apply</b>. To apply the settings to 
+every IP address listed in the right half of the <b>Host Settings</b> panel, click <b>Apply All</b>.</p>
+
+<p class="content">Although the user interface uses the term "Additional Latency", the latency value specified
+in the user interface replaces the latency value specified in any loaded configuration file.</p>
+
+<p class="content">For latency, drop rate, and drop burst settings, enter values in the 
+<b>Route Settings</b> panel. To apply the settings only to the route specified by <b>IP Address #1</b> and 
+<b>IP Address #2</b>, click <b>Apply</b>. To apply the settings to all the routes listed in the 
+right half of the <b>Route Settings</b> panel, click <b>Apply All</b>.</p>
+
+<p class="content">To simulate a delay caused by key-exchange at the start of the session, 
+in the <b>Other Settings</b> panel, in the <b>Key-Exchange Delay</b> text box, enter the amount of time for the delay.</p>
+
+<p class="content">Definitions of the settings in the user interface are described in the <a href="#configuring">Configuring NetSim</a>
+section, below.</p>
+
+<p class="note"><B>Note</B>&nbsp;&nbsp;&nbsp;Key-exchange delays currently cannot be set 
+in a configuration file. This feature will be added in a future release.</p>
+
+<p class="content">To revert NetSim to its original, blank state, select <b>Reset Settings</b>. The NetSim tool discards all settings you have loaded
+through <b>Load Settings File</b>, or that you have adjusted by selecting either <b>Apply</b> or <b>Apply All</b>.</p>
+
+<p class="content">To enable logging of NetSim activity to a file, select the
+<b>Enable logging</b> check box, and then specify the name of an output file in the 
+text box. Selecting the button to the right of the text box displays a File-Open 
+dialog box, which can be used to specify the log file. If no file is specified or if the NetSim
+is unable to open the file, no logging will take place.</p>
+
+
+<h3 class="overview"><a name="configuring">Configuring NetSim</a></h3>
+
+<p class="content">The Network Simulator takes its configuration
+information from three places:
+
+<ul>
+  <li><code>netsim.ini</code>, a text file that must reside in the same
+      directory as the <code>netsim.exe</code> executable. The Network
+      Simulator will not run if <code>netsim.ini</code> is not present.</li>
+  <li>An optional configuration file that you load by selecting <b>Load
+      Settings File</b>. By convention, configuration files have a
+      <code>.cfg</code> extension. However, configuration files may have any file name because they are simply text files.
+      The <code>CONFIG</code> subdirectory of the NetSim installation directory
+      contains sample configuration files.</li>
+  <li>Parameters specified through NetSim's user interface. The user interface
+      for NetSim is intended for trying out individual settings quickly,
+      without having to go through the effort of adding lines to a
+      configuration file.</li>
+</ul>
+
+<p class="content">The <code>netsim.ini</code> file contains required NAT
+settings that let NetSim know what IP addresses are assigned to the Xbox
+consoles, as well as the development system that is running NetSim.</p>
+
+<p class="content">In addition to the NAT settings in <code>netsim.ini</code>,
+you may optionally load a configuration file that contains information to
+control how NetSim alters the flow of data. A <code>.cfg</code> file may
+contain four different flow control settings:</p>
+
+<ul>
+  <li>Latency</li>
+  <li>Bandwidth</li>
+  <li>Drop rate</li>
+  <li>Drop burst</li>
+</ul>
+
+<p class="note"><B>Note</B>&nbsp;&nbsp;&nbsp;You can add comments to
+<code>netsim.ini</code> or to the <code>.cfg</code> file by preceding the
+comments with a semicolon (<code>;</code>). The Network Simulator ignores
+everything on a line from a semicolon to the end of that line.</p>
+
+
+<h4 class="subheading2">NAT Settings</h4>
+
+<p class="content">Network address translation settings are a required part of
+the configuration file. The first NAT tag, <b>NetworkInterface.Xbox</b>, controls
+the range of virtual IP addresses available to local Xbox consoles:</p>
+
+<pre>[NetworkInterface.Xbox] 
+Ip=10.0.0.1       ; Starting IP for interior IPs assigned to client connections.
+IpEnd=10.0.255.1  ; Ending IP for interior IPs assigned to client connections.</pre>
+
+<p class="content">The <code>Ip</code> parameter defines the first IP address in the
+range available for Xbox consoles. <code>IpEnd</code> defines the last IP
+address in the range.</p>
+
+<p class="note"><B>Note</B>&nbsp;&nbsp;&nbsp;The IP address range may only
+include addresses of the form 10.0.x.1, where x is between 0 and 255,
+inclusive.</p>
+
+<p class="note"><B>Note</B>&nbsp;&nbsp;&nbsp;If two computers running NetSim
+are on the same subnet, and they both allocate the same range of IP addresses
+for Xbox consoles, the first copy of NetSim to be started locks out the second.
+If you need to run more than one copy of NetSim on the same subnet, make sure
+each copy's <b>NetworkInterface.Xbox</b> section is configured to use a
+different range of IP addresses.</p>
+
+<p class="content">The second NAT tag, <b>NetworkInterface.Internet</b>, defines the
+external network settings for the development system on which NetSim runs.
+<b>NetworkInterface.Internet</b> is optional; if you omit this NAT tag, the
+Network Simulator attempts to configure the Internet interface via DHCP. If you
+wish to explicitly set the development system's external network settings, use
+the <b>NetworkInterface.Internet</b> tag:</p>
+
+<pre>[NetworkInterface.Internet] 
+Ip=157.56.11.124        ; Static IP address of this interface.
+IpMask=255.255.254.0    ; Subnet mask of this interface.
+IpGateway=157.56.10.1   ; Gateway of this interface.
+DNSServer=157.54.5.109  ; DNS Server of this interface.</pre>
+
+<p class="content">Set <code>Ip</code> to the static IP address
+of the development system, <code>IpMask</code> to the system's subnet mask,
+<code>IpGateway</code> to the system's gateway address, and
+<code>DNSServer</code> to the DNS server used by the system.</p>
+
+
+<h4 class="subheading2">Latency</h4>
+
+<p class="content">The <b>Latency</b> tag defines a delay that will be applied to packets
+transmitted by NetSim. Latency settings are optional, and the configuration
+file may contain more than one <b>Latency</b> tag. The first tag is
+<b>Latency.1</b>, followed by <b>Latency.2</b>, and so on. Numbers following
+the <b>Latency</b> tag must be sequential. The following example shows a
+<b>Latency</b> tag:</p>
+
+<pre>[Latency.1]
+val=200
+src=10.0.13.2
+dst=10.0.54.2</pre>
+
+<p class="content">Use the <code>val</code> parameter to specify a latency in
+milliseconds. Depending on
+the presence and values of the <code>src</code> and <code>dst</code>
+parameters, this latency applies to network traffic differently.
+
+<p class="content">Four possible scenarios are available:</p>
+
+<ul>
+  <li><p class="content">Both <code>src</code> and <code>dst</code> are
+      present. In this case, the latency value applies only to network traffic
+      from the source IP (<code>src</code>) to the destination IP
+      (<code>dst</code>). In the example above, all packets traveling between
+      the Xbox consoles at 10.0.13.2 and 10.0.54.2 are delayed by 200
+      milliseconds.</p>
+  </li>
+  <li><p class="content">Only <code>src</code> is present. In this case, all
+      network traffic from the indicated IP address is delayed. For example,
+      the following <b>Latency</b> tag delays by 500 milliseconds all traffic from the Xbox
+      console at 10.0.128.2:</p>
+
+<pre>[Latency.2]
+val=500
+src=10.0.128.2</pre>
+
+  </li>
+  <li><p class="content">Only <code>dst</code> is present. In this case, all
+      network traffic to the indicated IP address is delayed.
+  </li>
+  <li><p class="content">Neither <code>src</code> nor <code>dst</code> are
+      present. In this case, all traffic that NetSim handles is affected. The
+      following example applies 100 milliseconds of latency to all packets
+      flowing through NetSim:</p>
+
+<pre>[Latency.3]
+val=100</pre>
+
+  </li>
+</ul>
+
+
+<h4 class="subheading2">Bandwidth</h4>
+
+<p class="content">The optional <b>Bandwidth</b> tag allows you to limit the
+bandwidth of packet transmission for a particular Xbox console. You may specify
+more than one <b>Bandwidth</b> tag by giving them unique numbers:
+<b>Bandwidth.1</b> for the first tag, <b>Bandwidth.2</b> for the second, and so
+on. Numbers following the <b>Bandwidth</b> tag must be sequential. The
+following is a sample bandwidth tag:</p>
+
+<pre>[Bandwidth.1]
+addr=10.0.13.2
+in=64
+out=40
+inhyst=1
+outhyst=1</pre>
+
+<p class="content">The <code>addr</code> parameter specifies the IP address of
+the Xbox console whose bandwidth should be limited. The other three parameters
+specify the speeds to which communication is limited (bandwidth limitations are
+all expressed in kilobits per second). Use <code>in</code> to limit the speed of
+data coming into the Xbox console; use <code>out</code> to limit the speed of
+data leaving the Xbox console. The above example limits incoming data to the
+Xbox console at 10.0.13.2 to 64 kbps. The above example restricts data leaving 10.0.13.2
+to 40 kbps. 
+
+
+<p class="content">The <code>inhyst</code> and <code>outhyst</code> values specify incoming and 
+outgoing hysteresis in seconds. 
+NetSim attempts to smooth packet throughput to match a given bandwidth. 
+To do this, it either delays or drops packets that arrive too quickly.
+The hysteresis value determines the exact point at which NetSim 
+starts dropping packets instead of delaying them.
+The value specifies a time limit in seconds before which
+data that exceeds the bandwidth limitation is delayed and after which
+data that exceeds the bandwidth limitation is dropped. If the bandwidth 
+specified by the <code>in</code> value is exceeded for longer than the time 
+specified by <code>inhyst</code>, the excess data is lost. Similarly for <code>out</code>
+and <code>outhyst</code>. </p>
+
+<p class="content">
+To give a concrete example of hysteresis, assume the bandwidth limit is 64 kbit/sec 
+and the hysteresis value is 2 seconds.  Say the first packet encountered 
+is 128 kbit in length.  In this case, this packet will fill the entire 2-second hysteresis 
+window.  If the next packet is 64 kbit in length, this second packet will be either dropped 
+or delayed, depending on when it is encountered.  If the second packet is encountered 
+less than one second after the first packet, the second packet will be dropped because 
+queuing it would overflow the 2-second hysteresis window. If the second packet is encountered more 
+than one second after the 128 kbit packet, the second packet will fit in the window. 
+As a result, the second packet is queued and sent some time after 
+the 128 kbit packet has been transmitted. (The 128 kbit packet is transmitted 2 seconds 
+after it was received.)
+</p>
+
+
+<h4 class="subheading2">Drop Rate</h4>
+
+<p class="content">The <b>Droprate</b> tag is optional, and it specifies a
+percentage of packets that should be dropped from the transmission stream. You
+may specify more than one <b>Droprate</b> tag by adding a number to the end of
+each tag: <b>Droprate.1</b> is the first tag, <b>Droprate.2</b> is the second tag,
+and so on. Numbers following the <b>Droprate</b> tag must be sequential. The
+following example shows a <b>Droprate</b> tag:</p>
+
+<pre>[Droprate.1]
+val=2
+src=10.0.14.2
+dst=10.0.230.2</pre>
+
+<p class="content">The <code>val</code> parameter represents the percentage of
+packets that should be dropped. Depending on the values of the <code>src</code>
+and <code>dst</code> parameters, NetSim drops packets from different
+connections.</p>
+
+<ul>
+  <li><p class="content">If both <code>src</code> and <code>dst</code> are
+      present, NetSim drops packets only from the data flow between the source
+      address (<code>src</code>) and the destination address
+      (<code>dst</code>). The preceding example drops two percent of the
+      packets that pass from 10.0.14.2 to 10.0.230.2.</p>
+  </li>
+  <li><p class="content">If only <code>src</code> is specified, NetSim drops
+      packets from all traffic leaving that particular Xbox console. For
+      example, the following <b>Droprate</b> tag instructs NetSim to toss out
+      30 percent of the packets leaving the Xbox console at 10.0.119.2:</p>
+
+<pre>[Droprate.2]
+val=30
+src=10.0.119.2</pre>
+
+  </li>
+  <li><p class="content">If only <code>dst</code> is specified, NetSim drops
+      packets from all traffic entering that particular Xbox console.</p>
+  </li>
+  <li><p class="content">If neither <code>src</code> nor <code>dst</code> are
+      specified, NetSim applies the packet drop percentage to all traffic that
+      passes through NetSim. The following example introduces five percent
+      packet loss to all data flowing through NetSim:</p>
+
+<pre>[Droprate.3]
+val=5</pre>
+
+  </li>
+</ul>
+
+
+<h4 class="subheading2">Drop Burst</h4>
+
+<p class="content">The optional <b>Dropburst</b> tag simulates sudden bursts of
+packet loss over specified intervals. You may specify more than one
+<b>Dropburst</b> tag by giving them unique numbers: <b>Dropburst.1</b> for the
+first tag, <b>Dropburst.2</b> for the second, and so on. Numbers following the
+<b>Dropburst</b> tag must be sequential. The following is a sample drop burst
+tag:</p>
+
+<pre>[Dropburst.1]
+val=2
+duration=10
+startin=30
+repeatcount=200
+repeatdelay=1
+src=10.0.42.2
+dst=10.0.8.2</pre>
+
+<p class="content">The <code>val</code> parameter specifies the percentage of
+packets that NetSim will drop, and <code>duration</code> specifies the length
+(in seconds) of the interval during which NetSim will drop packets.</p>
+
+<p>The <code>startin</code> parameter sets the number of seconds to wait before
+starting the first drop burst interval. The <code>repeatcount</code> parameter
+specifies how many intervals to perform, and <code>repeatdelay</code> specifies
+how many seconds should elapse between each interval.</p>
+
+<p>Depending on the values of the <code>src</code> and <code>dst</code>
+parameters, NetSim creates drop bursts on different connections, as
+follows:</p>
+
+<ul>
+  <li><p class="content">If both <code>src</code> and <code>dst</code> are
+      present, NetSim drops packets only from the data flow between the source
+      address (<code>src</code>) and the destination address
+      (<code>dst</code>). The preceding example drops two percent of the
+      packets that pass from 10.0.42.2 to 10.0.8.2 during a 10 second interval,
+      an interval which occurs every 100 seconds.</p>
+  </li>
+  <li><p class="content">If only <code>src</code> is specified, NetSim drops
+      packets from all traffic leaving that particular Xbox console. For
+      example, the following <b>Dropburst</b> tag instructs NetSim to perform a
+      15 second burst, during which NetSim tosses out
+      30 percent of the packets, leaving the Xbox console at 10.0.119.2:</p>
+
+<pre>[Dropburst.2]
+val=30
+duration=15
+src=10.0.119.2</pre>
+
+  </li>
+  <li><p class="content">If only <code>dst</code> is specified, NetSim simulates
+      a drop burst only on traffic entering that particular Xbox console.</p>
+  </li>
+  <li><p class="content">If neither <code>src</code> nor <code>dst</code> are
+      specified, NetSim applies the drop burst setting to all traffic that
+      passes through NetSim. The following example introduces drop bursts five
+      seconds long, during which five percent of the packets passing through
+      NetSim are lost.</p>
+
+<pre>[Dropburst.3]
+val=5
+duration=5</pre>
+
+  </li>
+</ul>
+
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2002 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

@@ -1,0 +1,59 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XMountSecondaryUtilityDrive</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XMountSecondaryUtilityDrive"/>
+<MSHelp:Keyword Index="F" Term="XMountSecondaryUtilityDrive"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XMountSecondaryUtilityDrive</h1>
+<p>Mounts the title's secondary utility storage region. A hard disk partition is selected using the current LRU mechanism and assigned to the title for use as temporary storage and caching of game data on the N: drive.</p><pre class="syntax" xml:space="preserve"><b>BOOL</b> <b>XMountSecondaryUtilityDrive(</b><b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<p>None.</p>
+<h4><a name="return"></a>Return Values</h4>
+<p>If the function succeeds, the return value is TRUE.</p>
+<p>If the function fails, the return value is FALSE. To get extended error information, call <a href="errors_3uwi.htm">GetLastError</a>.</p>
+<h4><a name="remarks"></a>Remarks</h4>
+<p>This function is used to mount an extra hard disk partition that can be used for temporary scratch space, caching data from the game DVD, or any other transitory functionality as desired by the title.</p>
+
+<p>After successfully mapping the utility region, the hard disk partition is available to the title through the N:\ drive.</p>
+
+<p><b>XMountSecondaryUtilityDrive</b> has some differences from the <a href="x_jsk_xmountutilitydrive.htm">XMountUtilityDrive</a> function:</p>
+<ul>
+	<li>The game cannot specify whether the alternate utility drive is formatted before it is mounted. It will always be formatted before it is mounted.</li>
+	<li>The data stored on the N: drive has no guarantee to be preserved or remounted if still available. The partition used by a title for the Z: drive will be automatically remounted if still available but this does not apply to the N: drive.</li>
+	<li>There are no flags in the XBE header for the N: drive. It must be mounted/unmounted at run time. It will always be formatted before being mounted.</li>
+	<li>The /UDCLUSTER parameter for the <a href="xbox_jbh_tool_imagebld.htm">XBE Image Builder Tool</a> will apply to both utility partitions. It is not possible to specify a separate cluster size for the N: drive.</li>
+	<li>The N: drive cannot be mounted if the Z: drive is not already mounted. The function will halt if the Z: is not mounted.</li>
+	<li>If the <b>XMountSecondaryUtilityDrive</b> function is called when the N: drive is already mounted, the function will halt.</li>
+</ul>
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xbox.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xapilib.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p><a href="x_jsk_storage_functions.htm">Storage Functions</a></p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>texm3x3tex</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="texm3x3tex">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="texm3x3tex"/>
+<MSHelp:Keyword Index="F" Term="texm3x3tex"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_texm3x3tex_graphics"></A>texm3x3tex</H1>
+
+<P>Returns the result of the final 3&times;3 matrix multiply.</P>
+
+<PRE class=syntax>texm3x3tex   tDest, tSrc0
+</PRE>
+
+<DL>
+<DT><B>tDest</B></DT>
+
+<DD>Destination register, holding the result of the operation.</DD>
+
+<DT><B>tSrc0</B></DT>
+
+<DD>Temporary source register, specifying the input argument.
+</DD>
+</DL>
+
+<H4>Remarks</H4>
+
+<P>The <B>texm3x3tex</B> instruction is used as the final of three instructions representing a 3&times;3 matrix multiply operation performed in a pixel shader's texture declaration. The result of this instruction will contain the resulting transformed vector. The input argument to this declaration should be the input to the matrix multiply. Texture coordinates assigned to this stage are used as a row of the matrix.</P>
+
+<P>The 3&times;3 matrix is comprised of the texture coordinates of this and the two preceding stages. The resulting three-component vector is then used to index into the texture assigned at this stage (either a cube texture or a volume texture) to produce the final color. No texture colors are sampled from the preceding two stages, and any operator assigned to them is overridden by this one.</P>
+
+<PRE>tex t0             ; Define t0 as a standard 3-vector.
+texm3x3pad t1, t0  ; Perform first row of matrix multiply.
+texm3x3pad t2, t0  ; Perform second row of matrix multiply.
+texm3x3tex t3, t0  ; Perform third row of matrix multiply.
+
+dp3 r0, t0, v0     ; Compute lighting intensity for diffuse
+                   ; using v0.
+</PRE>
+
+<P>A bump (normal) map should be set on stage 0, and cube texture should be set on stage 3. Any textures set at stages 1 or 2 are ignored.</P>
+
+<P>Texture coordinate set 0 positions the bump map. Texture coordinate sets 1, 2, and 3 are the rows of the 3&times;3 matrix.</P>
+
+<P>Note that this instruction has an unnamed input that is the assigned texture that corresponds to this texture stage.</P>
+
+<p>This instruction actually performs a dot product between the texture coordinates of the current stage and the output value from the specified input stage. Color values are unsigned integers in the range 0x0 to 0xff, but through the use of input modifiers, these values can be interpreted as signed numbers.</p>
+
+<p>If the _bx2 input modifier is applied to the specified input argument, the color values are mapped to signed numbers using the formula</p>
+
+<blockquote>( ColorValue &#8211; 0x80 ) / 127.0f </blockquote>
+
+<p>So,</p>
+
+<ul>	
+<li>0x0 is mapped to &#8211;1.007874016f (&#8211;128 / 127),</li>
+<li>0x1 is mapped to &#8211;1.0f,</li>
+<li>0x80 is mapped to 0.0f, and</li>
+<li>0xff is mapped to 1.0f.</li>
+</ul>
+
+<p>If there is no input modifier applied to the specified input argument, the color values are mapped to the range zero to one using the formula</p>
+
+<blockquote>ColorValue / 255.0f</blockquote>
+
+<p>So,</p>
+
+<ul>
+<li>0x0 is mapped to 0.0f, and</li>
+<li>0xff is mapped to 1.0f.</li>
+</ul>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

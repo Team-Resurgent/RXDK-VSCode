@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>DSSTREAMDESC</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="DSLFODESC  [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="DSSTREAMDESC"/>
+<MSHelp:Keyword Index="F" Term="DSSTREAMDESC"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="xbox_jc_dsstreamdesc_dxaudio"></A>DSSTREAMDESC</H1>
+
+<P>Describes a sound stream.</P>
+
+<PRE class="syntax">typedef struct _DSSTREAMDESC{
+    DWORD dwFlags;
+    DWORD dwMaxAttachedPackets;
+    LPWAVEFORMATEX lpwfxFormat;
+    LPFNXMEDIAOBJECTCALLBACK lpfnCallback;
+    LPVOID lpvContext;
+    LPCDSMIXBINS lpMixBins;
+} DSSTREAMDESC, *LPDSSTREAMDESC; 
+</PRE>
+
+<H4>Members</H4>
+
+<DL>
+<DT><B>dwFlags</B></DT>
+    <DD>Value indicating stream attributes. Can be the following:</DD>
+    <DL>
+		<TABLE border=0 cellpadding=5 cols=1 frame=below rules=rows>
+
+		<TR VALIGN="top">
+		<TH class=blue width=30%><B>Value</B></TD>
+		<TH class=blue width=70%><B>Description</B></TD>
+		</TR>
+
+		<TR VALIGN="top">
+		<TD class=blue width=30%>DSSTREAMCAPS_CTRL3D</TD>
+		<TD class=blue width=70%>The stream will be a 3D HRTF stream.  Can only be set for streams with a mono format.</TD>
+		</TR>
+		
+		<TR VALIGN="top">
+		<TD class=blue width=30%>DSSTREAMCAPS_MUTE3DATMAXDISTANCE</TD>
+		<TD class=blue width=70%>The stream is muted and no rolloff calculations are performed if the distance from the listener meets or exceeds the stream's MaxDistance value.</TD>
+		</TR>
+
+		<TR VALIGN="top">
+		<TD class=blue width=30%>DSSTREAMCAPS_LOCDEFER</TD>
+		<TD class=blue width=70%>The stream will not allocate a hardware voice until it is played.</TD>
+		</TR>
+
+		<TR VALIGN="top">
+		<TD class=blue width=30%>DSSTREAMCAPS_NOCOALESCE</TD>
+		<TD class=blue width=70%>The stream will not coalesce data packets when writing to the hardware. Normally, if multiple packets have been queued for playback, DirectSound will attempt to coalesce them into one packet before mapping them into the hardware. Because of this, all coalesced packets will complete at exactly the same time. Therefore, if more accurate completion notifications are desired, create the stream using this flag.</TD>
+		</TR>
+		
+		<TR VALIGN="top">
+		<TD class=blue width=30%>DSSTREAMCAPS_ACCURATENOTIFY</TD>
+		<TD class=blue width=70%>This flag is similar to the DSSTREAMCAPS_NOCOALESCE flag except that it also completes packets from the stream's interrupt deferred procedure call (DPC) instead of from <b>DoWork</b>.</TD>
+		</TR>
+		</TABLE>
+    </DL>
+
+<DT><B>dwMaxAttachedPackets</B></DT>
+    <DD>Maximum count of packets that will be simultaneously submitted to the stream.</DD>
+
+<DT><B>lpwfxFormat</B></DT>
+    <DD>Address of a <A HREF="_dx_waveformatex_dxaudio.htm"><B>WAVEFORMATEX</B></A> structure that describes the stream format.</DD>
+    
+<DT><B>lpfnCallback</B></DT>
+    <DD>Address of the packet completion callback routine.</DD>
+
+<DT><B>lpvContext</B></DT>
+    <DD>Address of a buffer containing the packet completion callback context.</DD>
+
+<dt><b>lpMixBins</b></dt>
+    <dd>Address of a <a href="xbox_dsmixbins_dxaudio.htm">DSMIXBINS</a> structure that contains the output mixbin identifiers and volume pairs. Can be set to NULL, which specifies that the default mixbin volume pairs are used. (See <a href="xbox_mixbin_constants_dxaudio.htm#xbox_mixbin_constants_dxaudio_combo">Mixbin Volume Pair Combinations</a> for more information about the default mixbin volume pairs.)</dd>
+
+<!-- OMIT: 
+<DT><B>dwMixBinMask</B></DT>
+    <DD>Value that specifies the stream output mixbin assignments. Can be a combination of one to eight of the <A HREF="xbox_mixbin_constants_dxaudio.htm#xbox_mixbin_constants_dxaudio_values">Mixbin Values</A>. Can be set to zero to specify the default mixbins (all speakers for mono waves; front speakers for stereo waves; front and back speakers for 4-channel waves; and all speakers for 6-channel waves). </DD>
+
+-->
+</DL>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in Dsound.h.</P>
+
+<H4>See Also</H4>
+
+<P><A HREF="_dx_waveformatex_dxaudio.htm"><B>WAVEFORMATEX</B></A></P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

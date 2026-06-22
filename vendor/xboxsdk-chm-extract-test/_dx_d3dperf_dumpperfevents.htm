@@ -1,0 +1,119 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>D3DPERF_DumpPerfEvents</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="D3DPERF_DumpPerfEvents"/>
+<MSHelp:Keyword Index="F" Term="D3DPERF_DumpPerfEvents"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>D3DPERF_DumpPerfEvents</h1>
+<p>Displays a subset of the Direct3D performance events currently stored in the perf-event buffer.</p>
+<pre class="syntax" xml:space="preserve"><b>void WINAPI</b> <b>D3DPERF_DumpPerfEvents(</b><b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<p>None.</p>
+<h4><a name="return"></a>Return Values</h4>None.<h4><a name="remarks"></a>Remarks</h4>
+		<p>The set of data displayed can be controlled using the <b>D3DPerfEventSpewFrameStart</b> and <b>D3DPerfEventSpewFrameCount</b> members of the <a href="_dx_d3dperf_graphics.htm">D3DPERF</a> structure</p>
+		<p>The output might look like the following:</p>
+
+<pre class="clsCode">
+  Event                  CpuStart   CpuTime  GpuStart  GpuTime  CpuPut   Data Gpu%
+  Kickoff                       0      1683         0        0  113320      0
+     *** FrameMove ***
+  User0                     12705    106084   1900673   109887  113376   6176
+  DrawIndexedVertices      108691      6869   1947551    54773  115132   3924   54/86
+  DrawIndexedVertices      123267    278445   2216913  1471443  120420  86052
+</pre>
+    
+
+<p>In the output above, FrameMove is a user-defined performance event that was inserted by the title using <a href="_dx_d3dperf_insertperfeventheader.htm">D3DPERF_InsertPerfEventHeader</a>. The User0 event was inserted using code such as:</p>
+
+
+<pre class="clsCode">
+D3DPERFEvent *pD3DPerfEvent = D3DPERF_PerfEventStart( D3DPERFEvent_User0, TRUE );
+...
+D3DPERF_PerfEventEnd( pD3DPerfEvent, TRUE );
+</pre>
+    
+
+<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;The header and user event above could have been inserted using a single call to <a href="_dx_d3dperf_blocktimer.htm">D3DPERF_BlockTimer</a>.</p>
+
+<p>The following table describes the meaning of each of the column headers in the <b>D3DPERF_DumpPerfEvents</b> output:</p>
+
+<table>
+<tr>
+<th>Column</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td>CpuStart</td>
+<td>Time at which the CPU started processing the event, measured in CPU cycles since the start of the <b>D3DPERF_DumpPerfEvents</b> spew.</td>
+</tr>
+
+<tr>
+<td>CpuTime</td>
+<td>Amount of time the CPU spent processing the event, measured in CPU cycles.</td>
+</tr>
+
+<tr>
+<td>GpuStart</td>
+<td>Time at which the GPU started processing the event, measured in CPU cycles since the start of the D3DPERF_DumpPerfEvents spew. Note that 'CpuStart' and 'GpuStart' are on the same time scale, so a given time T represents the same wall-clock time in both columns.</td>
+</tr>
+
+<tr>
+<td>GpuTime</td>
+<td>Amount of time the GPU spent processing the event, measured in CPU cycles.</td>
+</tr>
+
+<tr>
+<td>CpuPut</td>
+<td>Offset at which CPU was writing into push buffer at start of event, measured relative to start of push buffer.</td>
+</tr>
+
+<tr>
+<td>Gpu%</td>
+<td>Percentage of time the GPU front-end and back-end was busy between the start of the last event and the start of this event. If the GPU has not been sampled enough times since the last event, no value will be output, and those samples will be considered along with the next event.</td>
+</tr>
+</table>
+
+<p>Instead of manually calling <b>D3DPERF_DumpPerfEvents</b>, a title can set the D3DPERF_DUMP_FPS_PERFEVENTS flag in the <b>m_dwDumpFPSInfoMask</b> field of the <b>D3DPERF</b> struct. That will cause <a href="_dx_d3dperf_dumpframerateinfo_graphics.htm">D3DPERF_DumpFrameRateInfo</a> to also call <b>D3DPERF_DumpPerfEvents</b> after it displays its other performance information.</p>
+
+<p><b>D3DPERF_DumpPerfEvents</b> uses the following members in the <a href="_dx_d3dperf_graphics.htm">D3DPERF</a> structure when determining what information to output:</p>
+<ul>
+<li><b>D3DPerfEventSpewFrameStart</b></li>
+<li><b>D3DPerfEventSpewFrameCount</b></li>
+<li><b>m_DumpPerfCycleTimesThresholdCpu</b></li>
+<li><b>m_DumpPerfCycleTimesThresholdGpu</b></li>
+</ul>
+<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Calling <a href="_dx_d3dperf_startcountingperfevent.htm">D3DPERF_StartCountingPerfEvent</a> will initialize <b>D3DPerfEventSpewFrameStart</b> and <b>D3DPerfEventSpewFrameCount</b> but does not modify the other two members. <b>m_DumpPerfCycleTimesThresholdCpu</b> and <b>m_DumpPerfCycleTimesThresholdGpu</b> will be zero unless the title sets to something else.</p>
+
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in D3d8perf.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use D3d8i.lib or d3d8d.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p><a href="_dx_d3dperf_startcountingperfevent.htm">D3DPERF_StartCountingPerfEvent</a>, <a href="_dx_d3dperf_perfeventstart.htm">D3DPERF_PerfEventStart</a></p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

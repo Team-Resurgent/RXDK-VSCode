@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Stock Text. Do not change.****-->
+<TITLE>Compiler Warning (level 4) C4347</TITLE>
+<!--**********************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="C4347"/>
+<MSHelp:Keyword Index="F" Term="C4347"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Stock Text. Do not change.****-->
+<H1 class="heading"><A NAME="c4347"></A>Compiler Warning (level 4) C4347</H1>
+<!--**********************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<P><b>behavior change: '<i>function template</i>' is called instead of '<i>function</i>'</b></P>
+
+<P>In Visual Studio .NET, if you had a template function, and a nontemplate 
+function with the same name as the template function, the compiler incorrectly treated 
+the nontemplate function as a specialization of the template function. </p>
+
+<p>For code that works the same in all versions of Visual C++, add the statement 
+template&lt;&gt; above the nontemplate function, making it a real explicit 
+specialization.</p>
+
+<p>This warning is off by default.</p>
+
+<p>The following sample generates C4347:</p>
+
+<pre class = "code">// C4347.cpp
+// compile with: /W4 /EHsc
+#pragma warning (default : 4347)
+#include &lt;iostream&gt:
+using namespace std;
+
+template &lt;typename T&gt:
+void f(T t)
+{
+   cout &lt;&lt; "in void f(T t), t = " &lt;&lt; t &lt;&lt; endl;
+}
+
+// template &lt;&gt:
+void f(int i)
+{   // C4347 uncomment template&lt;&gt;
+   cout &lt;&lt; "in void f(int i), i = " &lt;&lt; i &lt;&lt; endl;
+}
+
+int main()
+{
+   f(5);       // regular function call
+   f&lt;int&gt:(5);  // calls implicit instantiation
+}</pre>
+
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+
+</BODY>
+</HTML>

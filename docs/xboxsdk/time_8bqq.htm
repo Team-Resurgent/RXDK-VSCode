@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>TIME_ZONE_INFORMATION</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="TIME_ZONE_INFORMATION">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="TIME_ZONE_INFORMATION"/>
+<MSHelp:Keyword Index="F" Term="TIME_ZONE_INFORMATION"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_time_zone_information_str"></A>TIME_ZONE_INFORMATION</H1>
+
+<P>The <B>TIME_ZONE_INFORMATION</B> structure specifies information specific to the time zone. </P>
+
+<PRE class=syntax>typedef struct _TIME_ZONE_INFORMATION { 
+    LONG       Bias; 
+    WCHAR      StandardName[ 32 ]; 
+    SYSTEMTIME StandardDate; 
+    LONG       StandardBias; 
+    WCHAR      DaylightName[ 32 ]; 
+    SYSTEMTIME DaylightDate; 
+    LONG       DaylightBias; 
+} TIME_ZONE_INFORMATION, *PTIME_ZONE_INFORMATION; </PRE>
+
+<H4>Members</H4>
+
+<DL>
+<DT><B>Bias</B></DT>
+
+<DD>Specifies the current bias, in minutes, for local time translation on this computer. The bias is the difference, in minutes, between Coordinated Universal Time (UTC) and local time. All translations between UTC and local time are based on the following formula: 
+
+<PRE>UTC = local time + bias 
+ </PRE>
+
+
+<P>This member is required. 
+</DD>
+
+<DT><B>StandardName</B></DT>
+
+<DD>Specifies a null-terminated string associated with standard time on this system software. For example, this member could contain "EST" to indicate Eastern Standard Time.  This string can be empty. Do not display this string on the screen because it is just a token and it is not localized. When combined with the other information in the TIME_ZONE_INFORMATION structure, the token can be used to uniquely identify the time zone for the purpose of displaying a localized time zone name string.</DD>
+
+<DT><B>StandardDate</B></DT>
+
+<DD>Specifies a <A HREF="time_6sfm.htm">SYSTEMTIME</a> structure that contains a date and local time when the transition from daylight saving time to standard time occurs on this system software. If this date is not specified, the <B>wMonth</B> member in the <B>SYSTEMTIME</B> structure must be zero. If this date is specified, the <B>DaylightDate</B> value in the <B>TIME_ZONE_INFORMATION</B> structure must also be specified. 
+
+<P>To select the correct day in the month, set the <B>wYear</B> member to zero, the <B>wDayOfWeek</B> member to an appropriate weekday, and the <B>wDay</B> member to a value in the range 1 through 5. Using this notation, the first Sunday in April can be specified, as can the last Thursday in October (5 is equal to "the last"). 
+</DD>
+
+<DT><B>StandardBias</B></DT>
+
+<DD>Specifies a bias value to be used during local time translations that occur during standard time. This member is ignored if a value for the <B>StandardDate</B> member is not supplied. 
+
+<P>This value is added to the value of the <B>Bias</B> member to form the bias used during standard time. In most time zones, the value of this member is zero. 
+</DD>
+
+<DT><B>DaylightName</B></DT>
+
+<DD>Specifies a null-terminated string associated with daylight saving time on this system software. For example, this member could contain "PDT" to indicate Pacific Daylight Time.  This string can be empty. Do not display this string on the screen because it is just a token and it is not localized. When combined with the other information in the TIME_ZONE_INFORMATION structure, the token can be used to uniquely identify the time zone for the purpose of displaying a localized time zone name string.</DD>
+
+<DT><B>DaylightDate</B></DT>
+
+<DD>Specifies a <A HREF="time_6sfm.htm">SYSTEMTIME</a> structure that contains a date and local time when the transition from standard time to daylight saving time occurs on this system software. If this date is not specified, the <B>wMonth</B> member in the <B>SYSTEMTIME</B> structure must be zero. If this date is specified, the <B>StandardDate</B> value in the <B>TIME_ZONE_INFORMATION</B> structure must also be specified. 
+
+<P>To select the correct day in the month, set the <B>wYear</B> member to zero, the <B>wDayOfWeek</B> member to an appropriate weekday, and the <B>wDay</B> member to a value in the range 1 through 5. Using this notation, the first Sunday in April can be specified, as can the last Thursday in October (5 is equal to "the last"). 
+</DD>
+
+<DT><B>DaylightBias</B></DT>
+
+<DD>Specifies a bias value to be used during local time translations that occur during daylight saving time. This member is ignored if a value for the <B>DaylightDate</B> member is not supplied. 
+
+<P>This value is added to the value of the <B>Bias</B> member to form the bias used during daylight saving time. In most time zones, the value of this member is &#8211;60. 
+
+</DD>
+</DL>
+
+<h4>Requirements</h4>
+
+<p>
+<B>Header: </B>Declared in Winbase.h; include Xtl.h.</P>
+
+<H4>See Also</H4>
+<P>
+
+<a href="xbox_mt_xtl_sll_time_structures.htm">Time Structures</a> | 
+<A HREF="time_3lim.htm">GetTimeZoneInformation</a>,
+<A HREF="time_6sfm.htm">SYSTEMTIME</a>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

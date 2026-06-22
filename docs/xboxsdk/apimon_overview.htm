@@ -1,0 +1,99 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>API Monitor Overview</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="API Monitor Overview"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+  <MSHelp:Keyword Index="K" Term="spoofing"/>
+  <MSHelp:Keyword Index="K" Term="validate called functions with API Monitor"/>
+  <MSHelp:Keyword Index="K" Term="TCR compliance, verifying with API Monitor"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>API Monitor Overview</h1>
+<p>API Monitor is a tool that consists of two programs: the test suite 
+		execution application and the suite designer application. Together, these two 
+		programs provide Xbox application developers with the following capabilities.</p><ul>
+			<li><b>Validate and Monitor Called Functions</b>. The suite 
+			execution application validates that all of the API functions in the test suite 
+			are called by the specified Xbox program. In addition, it enables you to 
+			monitor the frequency and duration of calls to those functions.</li>
+		
+			<li><b>Inject Faults</b>. The API Monitor tool can intercept calls to 
+			functions in test suites and return the value specified by the suite. This enables 
+			you to inject faults into your Xbox program and thereby execute code paths 
+			intended for error handling.</li>
+			
+			<li><b>Verify Compliance with Technical Certification Requirements 
+			(TCRs)</b>. The Microsoft Xbox TCRs 
+			specify that your Xbox application must call certain functions in the Xbox 
+			libraries. They also specify that your Xbox handle certain error codes 
+			gracefully. With the ability to monitor calls to API functions and to inject 
+			faults, you can verify that your program meets all relevant TCRs.</li>
+			
+			<li><b>Design and Execute Test Suites</b>. By splitting the API 
+			Monitor tool into two programs, Microsoft gives your developers the ability to 
+			provide test suites to testers that testers cannot alter. Developers, who may be 
+			more knowledgeable about TCRs and game internals, can design the tests. They can 
+			be executed by testers who may have considerably less background in software 
+			development.</li>
+		</ul>
+<p>To inject faults, test error handling, and verify compliance with TCRs,  
+		API Monitor uses <i>call spoofing</i>. With this technique, API 
+		Monitor intercepts calls to API functions and returns the value specified in 
+		the test suite. Testers can then validate that source code designed to handle error 
+		codes executes as specified by the TCRs.</p><p>To spoof a function call, select the desired <b>Category</b> and
+		<b>API</b>, and then choose the appropriate <b>Action</b> from:
+		<b>Spoof Call Once</b>, <b>Spoof Call Always</b>,
+		<b>Spoof Task Once</b>, or <b>Spoof Task Always</b>. Selecting the 
+		<b>Spoof Call Once</b> option spoofs the <b>Return Value</b>
+		only on the very first call to the function that appears in the <b>API</b> column.
+		<b>Spoof Call Always</b> spoofs the specified <b>Return Value</b>
+		for all	calls to the function in the <b>API</b> column.</p><p>In addition to spoofing function calls, API Monitor can also spoof tasks. Task spoofing enables 
+		the testing of asynchronous calls that return task handles, namely the <b>XOnline</b> 
+		series of API functions. Because task spoofing is done on asynchronus calls, it does not cause 
+		the return value specified in a given test to be returned when the asynchronous function completes. 
+		Instead, the asynchronous function returns a task handle. The title then makes calls to "pump" the task 
+		handle for status for results. </p><p>Choosing <b>Spoof Task Once</b> for an <b>XOnline</b> function 
+		causes the specified <b>Return Value</b> to be returned on the first call to 
+		pump the task handle. <b>Spoof Task Always</b> spoofs the specified
+		<b>Return Value</b> on every call that pumps the task handle. For example, invoking the 
+		function <a href="XOnlineLogon.htm">XOnlineLogon</a> with the action <b>Spoof Task Always</b> causes 
+		<a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> to return an error when it is passed the logon task handle obtained 
+		by <b>XOnlineLogon</b>. You do not need to add a spoof for the <b>XOnlineTaskContinue</b> function 
+		in this case; API Monitor handles this for you by passing a spoofed task handle to the original
+		<b>XOnlineLogon</b> call.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;If you set API Monitor to <b>Spoof Task Once</b>, you will not 
+		get a specific message stating when the task was spoofed. In such cases, API 
+		Monitor always injects the return value you specify the first time your program 
+		pumps the task handle. The only indication you get that the call was spoofed is 
+		in the <b>Calls</b> column of the API Monitor 
+		<b>Selected APIs</b> box. If the value in the <b>Calls</b> 
+		column is greater than zero, the task was spoofed.</p><p>API functions are divided into three categories.</p><ul>
+		<li><b>Winbase</b> &#8211; Includes common functions such as
+		<b>GetLastError</b>
+		and <b>GlobalAlloc</b>.</li>
+		<li><b>Xbox</b> &#8211; Lists functions in the Xbox library.</li>
+		<li><b>XOnline</b> &#8211; Specifies functions related to Xbox
+		<i>Live</i>.</li>
+		</ul>
+<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Before using API Monitor, it is highly recommended that 
+		you use the <a href="xbox_jbh_tool_remote_xbsetcfg.htm">Remote Configuration 
+		tool (XbSetCfg)</a> with the <b>-t</b> option to synchronize the 
+		time on your development Xbox with the time on your host development PC.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

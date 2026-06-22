@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Stock Text. Do not change.****-->
+<TITLE>Compiler Error C2668</TITLE>
+<!--**********************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="C2668"/>
+<MSHelp:Keyword Index="F" Term="C2668"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Stock Text. Do not change.****-->
+<H1 class="heading"><A NAME="c2668"></A>Compiler Error C2668</H1>
+<!--**********************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<P><B>'<I>function</I>' : ambiguous call to overloaded function</B></P>
+
+<P>The specified overloaded function call could not be resolved. You may want to explicitly cast one or more of the parameters.</P>
+
+<P>You can also get this error through template use. If, in the same class, you have a regular member function and a templated member function with the same signature, the templated one must come first. This is a limitation of the current implementation of Visual C++.</P>
+
+<P>See Knowledge Base article Q240869 for more information on partial ordering of function templates.</P>
+
+<P>If you are building an ATL project containing a COM object supporting ISupportErrorInfo, see Knowledge Base article Q243298.</P>
+
+<P><B>Example</B></P>
+
+<PRE class="code">struct A {};
+struct B : A {};
+struct X {};
+struct D : B, X {};
+
+void func( X, X );
+void func( A, B );
+D d;
+void main()
+{
+   func( d, d );        // error, D has an A, B, and X 
+   func( (X)d, (X)d );  // OK, uses func( X, X )
+}</PRE>
+
+<P>The following declaration provides another way to resolve this error.</p>
+
+<PRE class="code">// C2668b.cpp
+// compile with: /EHsc /LD
+#include &lt;iostream&gt;
+
+class TypeA
+{
+public:
+   TypeA(int value)
+   {
+   }
+};
+
+class TypeB
+{
+   TypeB(int intValue);
+   TypeB(double dbValue);
+};
+
+class TestCase
+{
+public:
+   void AssertEqual(long expected, long actual, std::string conditionExpression = "");
+};
+
+class AppTestCase : public TestCase
+{
+public:
+   // to resolve this C2668, uncomment the following line
+   // using TestCase::AssertEqual;
+   void AssertEqual(const TypeA expected, const TypeA actual, std::string conditionExpression = "");
+   void AssertEqual(const TypeB expected, const TypeB actual, std::string conditionExpression = "");
+};
+
+class MyTestCase : public AppTestCase
+{
+   void TestSomething()
+   {
+      int actual = 0;
+      AssertEqual(0, actual, "Value");   // C2668
+   }
+};
+</pre>
+
+<p>This error can also be generated as a result an ambiguous conversion on the type cast of 
+the constant 0.</p>
+
+<p>Conversion on a cast using the constant 0 is ambiguous since int requires a conversion both to 
+long and to void*. To resolve this error, cast 0 to the exact type of the function parameter it is 
+being used for so that no conversions need to take place. The following example demonstrates code is 
+valid in the Visual Studio .NET 2003 and Visual Studio .NET versions of Visual C++. </p>
+
+<pre class="code">// C2668c.cpp
+#include "stdio.h"
+
+void f(long)
+{
+   printf("in f(long)\n");
+}
+
+void f(void*)
+{
+   printf("in f(void*)\n");
+}
+
+int main()
+{
+   f((int)0);   // C2668
+   // try the following line instead
+   f((long)0);
+   f((void*)0);   // OK
+}</pre>
+
+
+Additionally, this error can occur because the CRT now has float and double forms of all math functions.
+<pre class = "code">// C2668d.cpp
+#include &lt;math.h&gt;
+
+int main()
+{
+   int i = 0;
+   float f;
+   f = cos(i);   // C2668
+   // try the following line instead
+   // f = cos((float)i);
+}
+</pre>
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+
+</BODY>
+</HTML>

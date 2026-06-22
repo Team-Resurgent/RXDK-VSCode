@@ -1,0 +1,42 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XBR::ApplyVertexShaderConstants (XbView)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XBR::ApplyVertexShaderConstants (XbView)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XBR::ApplyVertexShaderConstants (XbView)</h1>
+<pre class="clsCode">
+HRESULT ApplyVertexShaderConstants( VertexShader *pVertexShader, 
+                                    bool *pbStreamDeclaration );
+</pre>
+    <p>This function is called by <a href="xbview_xbr_setvertexshaderresource.htm">XBR::SetVertexShaderResource</a>. It sets all of the vertex shader constants defined by the XDX file for this vertex shader by parsing the vertex shader declaration token stream for the vertex shader.</p><p>Several of the vertex shader constants are reserved for internal use:</p><ul>
+<li>c-37 and c-38 are reserved by Direct3D for screen-space mapping.</li>
+<li>c4 is the diffuse light color.</li>
+<li>c5 is the specular light color.</li>
+<li>c6 is the ambient light color.</li>
+<li>c12 through c14 is the world-to-object-space matrix.</li>
+</ul>
+<p>Constants c15 through c96 and all of the negative constants except for c-37 and c-38 are used for skinning. Each bone matrix is 4&#0215;3 and so needs only three constants (recalling that each vertex shader constant is made up of four floats.) </p><p>There is an array of <a href="xbview_frameconstant.htm">FrameConstant</a> values, which does the mapping from the Bone IDs to vertex shader constants. As the function iterates over the token stream, it finds the vertex shader constant to set. Once it knows the constant you want to set, it iterates through all of the <b>FrameConstant</b> values in the array and looks for a match between the vertex shader constant to set and <b>m_bConstantRegister</b> plus <b>m_bConstantRange</b>. In other words, if the constant you want to set falls into the range defined by <b>m_bConstantRegister</b> and <b>m_bConstantCount</b>, you know that the frame node ID is given by <b>m_strFrameId</b> and the skin you want to influence is given by <b>m_strSkinId</b>. Using these IDs, look up the Bone, inverse Rest, and World-to-Object-space matrices from the resource file. The inverse Rest matrix (written out as the inverse in the XDX file and doesn't need to be inverted here for that reason) is the node named by the <b>m_strFrameId</b> member and is always of the form "Bone_Offset&lt;boneName&gt;."  The Bone matrix is the node named by <b>m_strFrameId</b> with the first 10 characters stripped off (that is, the "Bone_Offset" part). The skin mesh World-to-Object-space matrix is also needed so that you can move the vertices into world space for skinning. You also need the inverse of this matrix. Set the vertex shader constant to the concatenation of:</p>
+<pre class="clsCode">
+WorldToObjectSpaceMatrix * InverseRestMatrix * BoneMatrix * ObjectToWorldSpaceMatrix
+</pre>
+    <p>The weights and vertex shader constants needed for skinning are stored with the vertices and the actual skinning is done in the vertex shader. </p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

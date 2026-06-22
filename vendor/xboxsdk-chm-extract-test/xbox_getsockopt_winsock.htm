@@ -1,0 +1,356 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>getsockopt</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="getsockopt">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="getsockopt"/>
+<MSHelp:Keyword Index="F" Term="getsockopt"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="xbox_getsockopt_winsock"></A>getsockopt</H1>
+
+<P>Retrieves a socket option.</P>
+
+<PRE class="syntax"><B>int getsockopt(</B>
+    <B>SOCKET</B> <I>s</I>,
+    <B>int</B> <I>level</I>,
+    <B>int</B> <I>optname</I>,
+    <B>char FAR</B> <I>*optval</I>,
+    <B>int FAR</B> <I>*optlen</I>
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>s</I></DT>
+
+<DD>[in] Descriptor identifying a socket.</DD>
+
+<DT><I>level</I></DT>
+
+<DD>[in] Level at which the option is defined; the supported levels are SOL_SOCKET and IPPROTO_TCP.</DD>
+
+<DT><I>optname</I></DT>
+
+<DD>[in] Socket option for which the value is to be retrieved.</DD>
+
+<DT><I>optval</I></DT>
+
+<DD>[out] Pointer to the buffer in which the value for the requested option is to be returned.</DD>
+
+<DT><I>optlen</I></DT>
+
+<DD>[in/out] Pointer to the size of the <I>optval</I> buffer.
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If no error occurs, <B>getsockopt</B> returns zero. Otherwise, a value of SOCKET_ERROR is returned, and a specific error code can be retrieved by calling <A HREF="xbox_wsagetlasterror_winsock.htm">WSAGetLastError</A>.</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=34%>Error code</TH>
+<TH align=left width=66%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=34%>WSANOTINITIALISED</TD>
+<TD width=66%>A successful <A HREF="xbox_wsastartup_winsock.htm">WSAStartup</A> call must occur before using this function.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=34%>WSAEINPROGRESS</TD>
+<TD width=66%>A blocking call is in progress, or the service provider is still processing a callback function.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=34%>WSAEINVAL</TD>
+<TD width=66%>The <I>level</I> parameter is unknown or invalid.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=34%>WSAENOPROTOOPT</TD>
+<TD width=66%>The option is unknown or unsupported by the indicated protocol family. </TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=34%>WSAENOTSOCK</TD>
+<TD width=66%>The descriptor is not a socket.</TD>
+</TR>
+</TABLE><BR>
+
+<H4>Remarks</H4>
+
+<P>The <B>getsockopt</B> function retrieves the current value for a socket option associated with a socket of any type, in any state, and stores the result in <I>optval</I>. Options can exist at multiple protocol levels, but they are always present at the uppermost socket level. Options affect socket operations, such as the packet routing.</P>
+
+<P>The value associated with the selected option is returned in the buffer <I>optval</I>. The integer pointed to by <I>optlen</I> should originally contain the size of this buffer; on return, it will be set to the size of the value returned. For SO_LINGER, this will be the size of a <A HREF="xbox_linger_winsock.htm">LINGER</A> structure. For most other options, it will be the size of an integer.</P>
+
+<P>The title is responsible for allocating any memory space pointed to directly or indirectly by any of the parameters it specified.</P>
+
+<P>If the option was never set with <A HREF="xbox_setsockopt_winsock.htm">setsockopt</A>, then <B>getsockopt</B> returns the default value for the option.</P>
+
+<P>The following options are supported for <B>getsockopt</B>. The Type column identifies the type of data addressed by <I>optval</I>.</P>
+
+<P><I>level</I> = SOL_SOCKET</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=31%>Value</TH>
+<TH align=left width=22%>Type</TH>
+<TH align=left width=47%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>SO_ACCEPTCONN</TD>
+<TD width=22%>BOOL</TD>
+<TD width=47%>A TCP socket is listening.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>SO_BROADCAST</TD>
+<TD width=22%>BOOL</TD>
+<TD width=47%>Socket is configured for the transmission of broadcast messages.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>SO_DONTLINGER</TD>
+<TD width=22%>BOOL</TD>
+<TD width=47%>If TRUE, the SO_LINGER option is disabled.</TD>
+</TR>
+
+
+<TR VALIGN="top">
+<TD width=31%>SO_EXCLUSIVEADDRUSE</TD>
+<TD width=22%>BOOL</TD>
+<TD width=47%>The socket is bound for exclusive access.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>SO_REUSEADDR</TD>
+<TD width=22%>BOOL</TD>
+<TD width=47%>The socket can be bound to an address which is already in use.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>SO_LINGER</TD>
+<TD width=22%>structure <A HREF="xbox_linger_winsock.htm">LINGER</A></TD>
+<TD width=47%>Returns the current linger options.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>SO_RCVBUF</TD>
+<TD width=22%>int</TD>
+<TD width=47%>Buffer size for receives.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>SO_SNDBUF</TD>
+<TD width=22%>int</TD>
+<TD width=47%>Buffer size for sends.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>SO_TYPE</TD>
+<TD width=22%>int</TD>
+<TD width=47%>The type of the socket (for example, SOCK_STREAM).</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>SO_RCVTIMEO</TD>
+<TD width=22%>int</TD>
+<TD width=47%>Receives time-out.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>SO_SNDTIMEO</TD>
+<TD width=22%>int</TD>
+<TD width=47%>Sends time-out.</TD>
+</TR>
+
+
+</TABLE><BR>
+
+<P><I>level</I> = IPPROTO_TCP</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=31%>Value</TH>
+<TH align=left width=22%>Type</TH>
+<TH align=left width=47%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>TCP_NODELAY</TD>
+<TD width=22%>BOOL</TD>
+<TD width=47%>Disables the Nagle algorithm for send coalescing.</TD>
+</TR>
+</TABLE><BR>
+
+<P>Calling <B>getsockopt</B> with an unsupported option will result in an error code of <A HREF="xbox_winsock_error_codes_winsock.htm#_win32_wsaenoprotoopt_2">WSAENOPROTOOPT</A> being returned from <A HREF="xbox_wsagetlasterror_winsock.htm">WSAGetLastError</A>.
+
+<DL>
+<DT>SO_LINGER</DT>
+
+<DD>SO_LINGER controls the action taken when unsent data is queued on a socket and a <B>closesocket</B> is performed. See <A HREF="xbox_closesocket_winsock.htm">closesocket</A> for a description of the way in which the SO_LINGER settings affect the semantics of <B>closesocket</B>. The title gets the current behavior by retrieving a <A HREF="xbox_linger_winsock.htm">LINGER</A> structure (pointed to by the <I>optval</I> parameter).</DD>
+
+<DT>SO_RCVBUF and SO_SNDBUF</DT>
+
+<DD>A title can request different send and receive buffer sizes (larger or smaller). The call to <A HREF="xbox_setsockopt_winsock.htm">setsockopt</A> can succeed even if the implementation did not provide the whole amount requested. A title must call this function with the same option to check the buffer size actually provided.</DD>
+
+<DT>SO_REUSEADDR</DT>
+
+<DD>By default, a socket cannot be bound (see <A HREF="xbox_bind_winsock.htm">bind</A>) to a local address that is already in use. On occasion, however, it can be necessary to reuse an address in this way. Because every connection is uniquely identified by the combination of local and remote addresses, there is no problem with having two sockets bound to the same local address as long as the remote addresses are different. To inform the Winsock provider that a <A HREF="xbox_bind_winsock.htm">bind</A> on a socket should not be disallowed because the desired address is already in use by another socket, the title should set the SO_REUSEADDR socket option for the socket before issuing the <B>bind</B>. Note that the option is interpreted only at the time of the <B>bind</B>: it is therefore unnecessary (but harmless) to set the option on a socket that is not to be bound to an existing address, and setting or resetting the option after the <B>bind</B> has no effect on this or any other socket.</DD>
+
+<DT>TCP_NODELAY</DT>
+
+<DD>Always used on Xbox.</DD>
+</DL>
+
+<P>BSD options not supported for <B>getsockopt</B> are:</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=35%>Value</TH>
+<TH align=left width=17%>Type</TH>
+<TH align=left width=48%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>SO_DEBUG</TD>
+<TD width=17%>BOOL</TD>
+<TD width=48%>Debugging is enabled. </TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>SO_DONTROUTE</TD>
+<TD width=17%>BOOL</TD>
+<TD width=48%>Does not route: sends directly to interface.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>SO_ERROR</TD>
+<TD width=17%>int</TD>
+<TD width=48%>Retrieves and clears the error status.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>SO_KEEPALIVE</TD>
+<TD width=17%>BOOL</TD>
+<TD width=48%>Sends keep-alives.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>SO_OOBINLINE</TD>
+<TD width=17%>BOOL</TD>
+<TD width=48%>Receives OOB data in the normal data stream.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>SO_RCVLOWAT</TD>
+<TD width=17%>int</TD>
+<TD width=48%>Receives low watermark.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>SO_SNDLOWAT</TD>
+<TD width=17%>int</TD>
+<TD width=48%>Sends low watermark.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>TCP_MAXSEG</TD>
+<TD width=17%>int</TD>
+<TD width=48%>Receives TCP maximum-segment size.</TD>
+</TR>
+</TABLE><BR>
+
+<P>Other options not supported for <B>getsockopt</B> are:</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=35%>Value</TH>
+<TH align=left width=17%>Type</TH>
+<TH align=left width=48%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>SO_CONDITIONAL_ACCEPT</TD>
+<TD width=17%>BOOL</TD>
+<TD width=48%>Enables sockets to delay the acknowledgment of a connection.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>SO_GROUP_ID</TD>
+<TD width=17%>GROUP</TD>
+<TD width=48%>Reserved. </TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>SO_GROUP_PRIORITY</TD>
+<TD width=17%>int</TD>
+<TD width=48%>Reserved.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>SO_MAX_MSG_SIZE</TD>
+<TD width=17%>unsigned int</TD>
+<TD width=48%>Maximum size of a message for message-oriented socket types (for example, SOCK_DGRAM). Has no meaning for stream oriented sockets.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>SO_OPENTYPE</TD>
+<TD width=17%>BOOL</TD>
+<TD width=48%>Changes whether or not overlapped sockets are created by default.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>SO_PROTOCOL_INFO</TD>
+<TD width=17%>structure</TD>
+<TD width=48%>Description of protocol information for protocol that is bound to this socket.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>PVD_CONFIG</TD>
+<TD width=17%>varies</TD>
+<TD width=48%>An opaque data structure object from the service provider associated with socket <I>s</I>.</TD>
+</TR>
+</TABLE>
+
+<H4>Requirements</H4>
+<p>
+<b>Header: </b>Declared in winsockx.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xnet.lib for titles that only support system link play, XOnline.lib for titles that support online play. Use the secure versions of the library file (Xnets.lib or XOnlines.lib) for final testing.
+</p>
+
+
+<H4>See Also</H4>
+
+<P>
+<a href="xbox_winsock_overview_winsock.htm">Winsock Overview</A>,
+<a href="xbox_winsock_functions_winsock.htm">Winsock Functions</A> |
+  <A HREF="xbox_setsockopt_winsock.htm">setsockopt</A>, <A HREF="xbox_socket_winsock.htm">socket</A>, <A HREF="xbox_wsagetlasterror_winsock.htm">WSAGetLastError</A>, <A HREF="xbox_wsasetlasterror_winsock.htm">WSASetLastError</A> </P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

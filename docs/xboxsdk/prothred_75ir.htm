@@ -1,0 +1,51 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Scheduling Priorities</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Scheduling Priorities"/>
+<MSHelp:Keyword Index="F" Term="Scheduling Priorities"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR></TR>
+</TABLE>
+<!--**********************************-->
+
+<H3><A NAME="_win32_scheduling_priorities"></A>Scheduling Priorities</H3>
+
+<P>Each thread is assigned a scheduling priority. The base priority level of a thread can be one of the following values:</P>
+
+<P class=indent1>THREAD_PRIORITY_IDLE<BR>
+THREAD_PRIORITY_LOWEST<BR>
+THREAD_PRIORITY_BELOW_NORMAL<BR>
+THREAD_PRIORITY_NORMAL<BR>
+THREAD_PRIORITY_ABOVE_NORMAL<BR>
+THREAD_PRIORITY_HIGHEST<BR>
+THREAD_PRIORITY_TIME_CRITICAL</P>
+
+<P>All threads are created using THREAD_PRIORITY_NORMAL. This means that the thread priority is the same as the process priority class. After you create a thread, use the <A HREF="prothred_9f5l.htm"><B>SetThreadPriority</B></A> function to adjust its priority relative to other threads. </P>
+
+<P>A typical strategy is to set background threads, particularly those that are processor intensive, to THREAD_PRIORITY_BELOW_NORMAL or THREAD_PRIORITY_LOWEST, to ensure that they can be preempted when necessary. However, if you have a thread waiting for another thread with a lower priority to complete some task, be sure to block the execution of the waiting high-priority thread. To do this, use a <A HREF="synchro_5vqr.htm"><B>wait function</B></A>, or the <A HREF="prothred_7jxs.htm"><B>Sleep</B></A>, <A HREF="prothred_0o8o.htm"><B>SleepEx</B></A>, or <A HREF="prothred_30h0.htm"><B>SwitchToThread</B></A> functions. This is preferable to having the thread execute a loop. Otherwise, the title may become deadlocked, because the thread with lower priority is never scheduled.</P>
+
+<P>To determine the current priority level of a thread, use the <A HREF="prothred_9uk9.htm"><B>GetThreadPriority</B></A> function. </P>
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

@@ -1,0 +1,141 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Xbox Save Game Corruption Tool (XbSGCorrupt)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Xbox Save Game Corruption Tool (XbSGCorrupt)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+  <MSHelp:Keyword Index="K" Term="XbSGCorrupt"/>
+  <MSHelp:Keyword Index="K" Term="certification testing for corrupt save game files"/>
+  <MSHelp:Keyword Index="K" Term="save game files, corrupt copies of"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Xbox Save Game Corruption Tool (XbSGCorrupt)</h1>
+<p>The Xbox Save Game Corruption (XbSGCorrupt) tool produces corrupted copies of a specified save game file for use in testing how a game title deals with corrupted data.</p><h2><a name="IDAYAEV"></a>Usage</h2>
+<pre class="clsCode">
+USAGE: xbsgcorrupt [options] savegamefile [destination]
+</pre>
+    <table>
+  <tr>
+<th>Option</th>                     <th>Meaning</th>
+</tr>
+  <tr>
+<td>/Help or /?</td>                <td>Display usage message.</td>
+</tr>
+  <tr>
+<td>/NoLogo</td>                    <td>Suppress copyright notice.</td>
+</tr>
+  <tr>
+<td>/Verbose</td>                   <td>Print details about what
+      XbSGCorrupt is doing to the save game file.</td>
+</tr>
+  <tr>
+<td>/HeaderNULLBodyZeroLength</td>  <td>Make a 24-byte file consisting of
+      NULLs. (This option is skipped if <i>savegamefile</i> is less than 24 bytes in
+      length.)</td>
+</tr>
+  <tr>
+<td>/HeaderZeroLength</td>          <td>Remove the first 24 bytes from
+      the file. (This option is skipped if <i>savegamefile</i> is less than 24 bytes in
+      length.)</td>
+</tr>
+  <tr>
+<td>/HeaderNULL</td>                <td>Place NULLs in the first 24 bytes
+      of the file. (This option is skipped if <i>savegamefile</i> is less than 25 bytes
+      in length.)</td>
+</tr>
+  <tr>
+<td>/HeaderFileSizeWrong</td>       <td>Change the contents of the first
+      4 bytes of the file. (This option is skipped if <i>savegamefile</i> is less than 4
+      bytes in length.)</td>
+</tr>
+  <tr>
+<td>/HeaderHashWrong</td>           <td>Change the contents of bytes 4
+      through 19 (zero index). (This option is skipped if <i>savegamefile</i> is less than 24 bytes
+      in length.)</td>
+</tr>
+  <tr>
+<td>/BodyZeroLength</td>            <td>Truncates the file to 24 bytes in
+      length. (This option is skipped if <i>savegamefile</i> is less than 25 bytes in length.)</td>
+</tr>
+  <tr>
+<td>/BodyAddHead</td>               <td>Insert 4 random bytes at a point 24 bytes
+      into the file. (This option is skipped if <i>savegamefile</i> is less than 24 bytes
+      in length.)</td>
+</tr>
+  <tr>
+<td>/BodyInsert</td>                <td>Insert 4 bytes randomly between
+      the 24th byte and the end of the file. (This option is skipped if
+      <i>savegamefile</i> is less than 25 bytes in length.)</td>
+</tr>
+  <tr>
+<td>/BodyRandomChange</td>          <td>Randomly change 4 consecutive
+      bytes between the 24th byte and the end of the file. (This option is
+      skipped if <i>savegamefile</i> is less than 28 bytes in length.)</td>
+</tr>
+  <tr>
+<td>/FilePeriodicChange</td>        <td>Randomly change 4 consecutive
+      bytes for every 16 KB of the file. (This option is skipped if <i>savegamefile</i>
+      is less than 16,384 bytes in length.)</td>
+</tr>
+  <tr>
+<td>/FileAddTail</td>               <td>Add 10 MB to the end of the file.</td>
+</tr>
+  <tr>
+<td>/FileZeroLength</td>            <td>Make a zero length file. (This
+      option is skipped if <i>savegamefile</i> is already a zero length file.)</td>
+</tr>
+  <tr>
+<td>/RemoveHashAtTail</td>          <td>Remove the last 20 bytes from the
+      file. (This option is skipped if <i>savegamefile</i> is less than 20 bytes in length.)</td>
+</tr>
+</table>
+<p>If you specify more than one corruption option on the command line,
+XbSGCorrupt creates multiple corrupted copies of the original file. Each copy
+is located in its own subdirectory of the destination directory specified on
+the command line. The corrupted save game file itself has the same file name as
+the original file. As an example, consider the following command line:</p>
+<pre class="clsCode">
+xbsgcorrupt /BodyInsert /BodyRandomChange SaveGame1.dat c:\corrupt
+</pre>
+    <p>Assuming that SaveGame1.dat is at least 24 bytes long, the preceding command
+line produces the following files:</p>
+<pre class="clsCode">
+c:\corrupt\BodyInsert\SaveGame1.dat
+c:\corrupt\BodyRandomChange\SaveGame1.dat
+</pre>
+    <p>Without any options specified, XbSGCorrupt acts as if all the options have been
+specified, producing corrupt save games for every option that makes sense with
+the supplied save game file. Not all options are valid with a particular file;
+depending on the contents and length of the save game file, XbSGCorrupt may
+skip some options.</p><p>If no destination directory is specified, XbSGCorrupt writes its output to
+subdirectories of the current directory. If the destination directory specified
+does not exist, XbSGCorrupt creates it.</p><h2><a name="IDAZEEV"></a>Remarks</h2>
+<p>The XbSGCorrupt tool is intended for corrupting save games for certification
+testing. Use the following steps to test how your game title deals with corrupt
+save game files:</p><ol>
+  <li>Using XbCp or the Shell Extension (Xbox Neighborhood), copy a save game file from the Xbox Development Kit to your development
+      system.</li>
+  <li>Run XbSGCorrupt on the save game file to produce one or more corrupted
+      versions of the save game file.</li>
+  <li>Copy each corrupt save game file back to the Xbox console, and then load each in
+      the game to perform certification testing.</li>
+</ol>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

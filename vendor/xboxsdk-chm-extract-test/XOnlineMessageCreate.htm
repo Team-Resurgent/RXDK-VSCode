@@ -1,0 +1,216 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineMessageCreate</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineMessageCreate"/>
+<MSHelp:Keyword Index="F" Term="XOnlineMessageCreate"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineMessageCreate</h1>
+            <p>Creates a new message to send.</p>
+        <pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineMessageCreate(</b>
+    <b>BYTE</b> <i>bMsgType</i><b>,</b>
+    <b>WORD</b> <i>wNumProperties</i><b>,</b>
+    <b>WORD</b> <i>wExpectedValuesSize</i><b>,</b>
+    <b>ULONGLONG</b> <i>qwMessageContext</i><b>,</b>
+    <b>DWORD</b> <i>dwMessageFlags</i><b>,</b>
+    <b>WORD</b> <i>wExpireMinutes</i><b>,</b>
+    <b>XONLINE_MSG_HANDLE</b> *<i>phMsg</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+            <dt><i>bMsgType</i></dt>
+				<p><dd>[in]  Type of message to send. Valid values for this parameter are shown in the 
+				following table.</dd>
+				<table>
+					<tr>
+						<th>Message Type</th>
+						<th>Required Context</th>
+						<th>Required Properties</th>
+						<th>Required Flags</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>XONLINE_MSG_TYPE_TITLE_CUSTOM</td>
+						<td>Defined by title.</td>
+						<td>Defined by title.</td>
+						<td>Defined by title.</td>
+						<td>Creates a custom message whose format is defined by the title.</td>
+					</tr>
+					<tr>
+						<td>XONLINE_MSG_TYPE_FRIEND_REQUEST</td>
+						<td>0</td>
+						<td>N/A</td>
+						<td>N/A</td>
+						<td>Creates an invitation that will be sent to a member of the player's friends list.</td>
+					</tr>
+					<tr>
+						<td>XONLINE_MSG_TYPE_GAME_INVITE</td>
+						<td>Competition or Team ID</td>
+						<td>XONLINE_MSG_PROP_SESSION_ID</td>
+						<td>XONLINE_MSG_FLAG_TEAM_CONTEXT or XONLINE_MSG_FLAG_COMP_CONTEXT</td>
+						<td>Creates an invitation to participate in a game.</td>
+					</tr>
+					<tr>
+						<td>XONLINE_MSG_TYPE_TEAM_RECRUIT</td>
+						<td>Team ID</td>
+						<td>N/A</td>
+						<td>XONLINE_MSG_FLAG_TEAM_CONTEXT</td>
+						<td>Creates an invitation to join the player's team.</td>
+					</tr>
+					<tr>
+						<td>XONLINE_MSG_TYPE_COMP_REMINDER</td>
+						<td>Competition Event ID</td>
+						<td>XONLINE_MSG_PROP_COMP_NAME, XONLINE_MSG_PROP_COMP_EVENT_START</td>
+						<td>XONLINE_MSG_FLAG_TEAM_CONTEXT</td>
+						<td>Creates a reminder that a player is scheduled to participate in a competition.</td>
+					</tr>
+					<tr>
+						<td>XONLINE_MSG_TYPE_COMP_REQUEST</td>
+						<td>Competition ID</td>
+						<td>XONLINE_MSG_PROP_COMP_NAME, XONLINE_MSG_PROP_COMP_START, 
+						XONLINE_MSG_PROP_COMP_REG_CLOSE</td>
+						<td>XONLINE_MSG_FLAG_TEAM_CONTEXT</td>
+						<td>Creates a request to participate in a competition.</td>
+					</tr>
+					<tr>
+						<td>XONLINE_MSG_TYPE_LIVE_MESSAGE</td>
+						<td>0</td>
+						<td>XONLINE_MSG_PROP_SYSTEM_TEXT</td>
+						<td>N/A</td>
+						<td>
+<p>Creates a message sent by the Xbox <i>Live</i> service.</p><p>It is valid to use this type when receiving an <a href="XONLINE_MSG_SUMMARY.htm">XONLINE_MSG_SUMMARY</a> structure. It is not valid to use this type when calling <b>XOnlineMessageCreate</b>.</p></td>
+					</tr>
+				</table>
+				</p>
+			
+            <dt><i>wNumProperties</i></dt>
+				<dd>[in]  Number of properties that will be assigned to the message using <a href="XOnlineMessageSetProperty.htm">XOnlineMessageSetProperty</a>.</dd>
+            
+			
+            <dt><i>wExpectedValuesSize</i></dt>
+				<dd>[in]  Expected size of the message buffer. Must be less than XONLINE_MAX_MESSAGE_DETAILS. If the 
+				expected size is not known in advance, specify a size of 0. In this case, the default message 
+				buffer size is used.</dd>
+            
+			
+            <dt><i>qwMessageContext</i></dt>
+				<p>
+					<dd>[in]  Information about the message context. Message context is required for most message types. See the 
+					<i>Required Context</i> column of the table above for more information.</dd>
+				</p>
+			
+            <dt><i>dwMessageFlags</i></dt>
+				<p><dd>[in]  One or more message flags from the following table.</dd>
+				<table>
+					<tr>
+						<th>Message Flag</th> 	<th>Description</th>
+					</tr>
+					<tr>
+						<td>XONLINE_MSG_FLAG_REQUIRED</td>
+						<td>The receiver is required to read this message.</td>
+					</tr>
+					<tr>
+						<td>XONLINE_MSG_FLAG_RECOMMENDED</td>
+						<td>It is recommended that the receiver read this message.</td>
+					</tr>
+					<tr>
+						<td>XONLINE_MSG_FLAG_HAS_VOICE</td>
+						<td>The message contains a voice attachment.</td>
+					</tr>
+					<tr>
+						<td>XONLINE_MSG_FLAG_HAS_TEXT</td>
+						<td>The message contains text.</td>
+					</tr>
+					<tr>
+						<td>XONLINE_MSG_FLAG_READ</td>
+						<td>
+<p>The receiver read this message.</p><p>It is valid to use this flag when calling functions such as <a href="XOnlineMessageSetFlags.htm">XOnlineMessageSetFlags</a> and <a href="XOnlineMessageDetails.htm">XOnlineMessageDetails</a>. It is not valid to use this flag when calling <b>XOnlineMessageCreate</b>.</p></td>
+					</tr>
+					<tr>
+						<td>XONLINE_MSG_FLAG_NON_EXPORTABLE</td>
+						<td>This message should be displayed only on Xbox consoles. It should not be visible on 
+						Windows-based versions of the game.</td>
+					</tr>
+					
+					<tr>
+						<td>XONLINE_MSG_FLAG_TEAM_CONTEXT</td>
+						<td>This message's context refers to a team ID.</td>
+					</tr>
+					<tr>
+						<td>XONLINE_MSG_FLAG_COMP_CONTEXT</td>
+						<td>This message's context refers to a competition event ID.</td>
+					</tr>
+					<tr>
+						<td>XONLINE_MSG_FLAGS_TITLE_RESERVED</td>
+						<td>This is a mask for title-specific flags associated with the message.</td>
+					</tr>
+					<tr>
+						<td>XONLINE_MSG_FLAG_MARKETING</td>
+						<td>
+<p>This message is marketing-related. This flag is used on publisher-sent messages.</p></td>
+					</tr>
+				</table>
+				</p>
+			
+            <dt><i>wExpireMinutes</i></dt>
+				<dd>[in]  Number of minutes that the message is valid. After this time limit passes, the 
+				message expires. For message types other than XONLINE_MSG_TYPE_TITLE_CUSTOM, titles should set this 
+				parameter to 0 to use an appropriate default expiration.</dd>
+            
+			
+            <dt><i>phMsg</i></dt>
+				<dd>[out]  Pointer to an <b>XONLINE_MSG_HANDLE</b> structure. Upon return, this structure contains 
+				the message created by this function.</dd>
+            
+			
+        </dl>
+<h4><a name="return"></a>Return Values</h4>
+            
+                <p>Returns S_OK if successful, an error code otherwise.</p>
+            
+        <h4><a name="remarks"></a>Remarks</h4>
+			<p>You can use the constant XONLINE_MSG_FLAGS_TITLE_RESERVED to set or clear the most 
+			significant byte of a <b>DWORD</b> containing a flag. You can then store your own custom value 
+			there. Title-specific flags should not be used for message types other than XONLINE_MSG_TYPE_TITLE_CUSTOM. </p>
+			
+			<p>It is important to note that the XONLINE_MSG_HANDLE received through the <i>phMsg</i> 
+			parameter can be used in only one send operation at a time. Also, memory for the handle should not be 
+			freed until the send operation has completed.</p>
+			
+			<p>The message should be passed to <b>XOnlineMessageSetProperty</b> to add the desired properties. Next, 
+			it should be passed to the sending function appropriate to the message type, such as 
+			<a href="XOnlineGameInviteSend.htm">XOnlineGameInviteSend</a> for XONLINE_MSG_TYPE_GAME_INVITE or <a href="XOnlineMessageSend.htm">XOnlineMessageSend</a> for 
+			XONLINE_MSG_TYPE_TITLE_CUSTOM. </p>
+		<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+             <a href="XOnlineMessageDelete.htm">XOnlineMessageDelete</a>
+        </p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

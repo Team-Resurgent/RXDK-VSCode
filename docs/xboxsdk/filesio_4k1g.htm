@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>CreateIoCompletionPort</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="CreateIoCompletionPort">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="CreateIoCompletionPort"/>
+<MSHelp:Keyword Index="F" Term="CreateIoCompletionPort"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_createiocompletionport"></A>CreateIoCompletionPort</H1>
+
+<P>The <B>CreateIoCompletionPort</B> function can associate an instance of an opened file with a newly created or an existing input/output (I/O) completion port, or it can create an I/O completion port without associating it with a file.</P>
+
+<P>Associating an instance of an opened file with an I/O completion port lets an application receive notification of the completion of asynchronous I/O operations involving that file. </P>
+
+<PRE class=syntax><B>HANDLE CreateIoCompletionPort (
+  HANDLE</B><I> FileHandle</I><B>,              </B>// handle to file
+  <B>HANDLE</B> <I>ExistingCompletionPort</I><B>,</B>  // handle to I/O completion port
+<B>  ULONG_PTR</B><I> CompletionKey</I><B>,        </B>// completion key
+<B>  DWORD</B><I> NumberOfConcurrentThreads </I>// number of threads to execute concurrently
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>FileHandle</I></DT>
+
+<DD>[in] Handle to a file opened for overlapped I/O completion. You must specify the FILE_FLAG_OVERLAPPED flag when using the <A HREF="filesio_7wmd.htm">CreateFile</A> function to obtain the handle.
+
+<P>If <I>FileHandle</I> specifies INVALID_HANDLE_VALUE, <B>CreateIoCompletionPort</B> creates an I/O completion port without associating it with a file. In this case, the <I>ExistingCompletionPort</I> parameter must be NULL and the <I>CompletionKey</I> parameter is ignored.
+</DD>
+
+<DT><I>ExistingCompletionPort</I></DT>
+
+<DD>[in] Handle to the I/O completion port. 
+
+<P>If this parameter specifies an existing completion port, the function associates it with the file specified by the <I>FileHandle</I> parameter. The function returns the handle of the existing completion port; it does not create a new I/O completion port. 
+
+
+<P>If this parameter is NULL, the function creates a new I/O completion port and associates it with the file specified by <I>FileHandle</I>. The function returns the handle to the new I/O completion port.
+</DD>
+
+<DT><I>CompletionKey</I></DT>
+
+<DD>[in] Per-file completion key that is included in every I/O completion packet for the specified file. </DD>
+
+<DT><I>NumberOfConcurrentThreads</I></DT>
+
+<DD>[in] Maximum number of threads that the system software allows to concurrently process I/O completion packets for the I/O completion port. If this parameter is zero, the system allows as many concurrently running threads as there are processors in the system.
+
+<P>Although any number of threads can call the <A HREF="filesio_071v.htm">GetQueuedCompletionStatus</A> function to wait for an I/O completion port, each thread is associated with only one completion port at a time. That port is the port that was last checked by the thread. 
+
+
+<P>When a packet is queued to a port, the system first checks how many threads associated with the port are running. If the number of threads running is less than the value of <I>NumberOfConcurrentThreads</I>, then one of the waiting threads is allowed to process the packet. When a running thread completes its processing, it calls <B>GetQueuedCompletionStatus</B> again, at which point the system can allow another waiting thread to process a packet. 
+
+
+<P>The system also allows a waiting thread to process a packet if a running thread enters any wait state. When the thread in the wait state begins running again, there may be a brief period when the number of active threads exceeds the <I>NumberOfConcurrentThreads </I>value. However, the system quickly reduces the number by not allowing any new active threads until the number of active threads falls below the specified value.
+
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is the handle to the I/O completion port that is associated with the specified file. </P>
+
+<P>If the function fails, the return value is NULL. To get extended error information, call <A HREF="errors_3uwi.htm">GetLastError</A>.</P>
+
+<H4>Remarks</H4>
+
+<P>The I/O system can be instructed to send I/O completion notification packets to I/O completion ports, where they are queued. The <B>CreateIoCompletionPort</B> function provides this functionality. </P>
+
+<P>After an instance of an open file is associated with an I/O completion port, it cannot be used in the <A HREF="filesio_0660.htm">ReadFileEx</A> function. It is best not to share such an associated file through a call to the <A HREF="handobj_2pyd.htm">DuplicateHandle</A> function. Operations performed with such duplicate handles generate completion notifications.</P>
+
+<P>When you perform an I/O operation with a file handle that has an associated I/O completion port, the I/O system sends a completion notification packet to the completion port when the I/O operation completes. The I/O completion port places the completion packet in a first-in-first-out queue. Use the <A HREF="filesio_071v.htm">GetQueuedCompletionStatus</A> function to retrieve these queued I/O completion packets.</P>
+
+<P>Threads can use the <A HREF="filesio_33g3.htm">PostQueuedCompletionStatus</A> function to place I/O completion notification packets in a completion port's queue. By doing so, you can use the port to receive communications from other threads, in addition to receiving I/O completion notification packets from the I/O system.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p>
+
+<H4>See Also</H4>
+<P>
+
+<A HREF="xbox_mt_xtl_sll_file_io_functions.htm">File I/O Functions</A> | 
+<A HREF="filesio_7wmd.htm">CreateFile</A>,
+<A HREF="handobj_2pyd.htm">DuplicateHandle</A>,
+<A HREF="filesio_071v.htm">GetQueuedCompletionStatus</A>,
+<A HREF="filesio_33g3.htm">PostQueuedCompletionStatus</A>,
+<A HREF="filesio_0660.htm">ReadFileEx</A>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

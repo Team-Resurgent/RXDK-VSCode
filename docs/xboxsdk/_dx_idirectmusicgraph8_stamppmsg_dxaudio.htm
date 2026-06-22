@@ -1,0 +1,73 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirectMusicGraph8::StampPMsg</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="IDirectMusicGraph8::StampPMsg [C++]">
+<META NAME="MS-HKWD" CONTENT="StampPMsg (IDirectMusicGraph8) [C++]">
+<META NAME="MS-HKWD" CONTENT="StampPMsg [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="StampPMsg (IDirectMusicGraph8)"/>
+<MSHelp:Keyword Index="K" Term="IDirectMusicGraph8::StampPMsg"/>
+<MSHelp:Keyword Index="F" Term="StampPMsg"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_idirectmusicgraph8_stamppmsg_dxaudio"></A>IDirectMusicGraph8::StampPMsg</H1>
+
+<P>Stamps a message with a pointer to the next tool that is to receive it. After processing a message, a tool must call this method.</P>
+
+<PRE class=syntax><B>HRESULT StampPMsg(
+  DMUS_PMSG* </B><I>pPMSG</I>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>pPMSG</I></DT>
+
+<DD>Address of a structure that contains the message to stamp. This structure is of a type derived from <A HREF="_dx_dmus_pmsg_dxaudio.htm"><B>DMUS_PMSG</B></A>.
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the method succeeds, the return value is S_OK or <A HREF="_dx_directmusic_return_values_by_name_dxaudio.htm#_dx_dmus_s_last_tool_dxaudio"><B>DMUS_S_LAST_TOOL</B></A>. See Remarks.</P>
+
+<P>If it fails, the method can return <A HREF="_dx_directmusic_return_values_by_name_dxaudio.htm#_dx_e_pointer_dxaudio"><B>E_POINTER</B></A>.</P>
+
+<H4>Remarks</H4>
+
+<P>On entry, the <B>pTool</B> member of the <A HREF="_dx_dmus_pmsg_dxaudio.htm"><B>DMUS_PMSG</B></A> part of the message structure points to the current tool. <B>StampPMsg</B> uses this member to determine the current tool to find the next tool in the graph. A value of NULL represents the first tool in the graph.</P>
+
+<P>The object pointed to by the <B>pGraph</B> member represents the graph that contains the tool. This is stamped inside <B>StampPMsg</B>, along with the tool itself, and can change while the message travels from the segment state to the performance because there can be multiple toolgraphs. </P>
+
+<P>The value of <B>dwType</B> equals the media type of the message, and is also used to find the next tool. The media types supported are those returned by the <A HREF="_dx_idirectmusictool8_getmediatypes_dxaudio.htm"><B>IDirectMusicTool8::GetMediaTypes</B></A> method.</P>
+
+<P>This method calls <B>Release</B> on the current <B>IDirectMusicTool8</B> pointed to by <B>pTool</B>, replaces it with the next tool in the graph and calls <B>AddRef</B> on the new tool. It also flags the message with the correct delivery type, according to what type the next tool returns in its <A HREF="_dx_idirectmusictool8_getmsgdeliverytype_dxaudio.htm"><B>IDirectMusicTool8::GetMsgDeliveryType</B></A> method. This flag determines when the message is delivered to the next tool.</P>
+
+<P>Tools should not call <B>StampPMsg</B> until all other tasks have been performed. When audiopaths are in use, <B>StampPMsg</B> can have the effect of changing the value in the <B>dwPChannel</B> member of the message structure. A tool that uses this value cannot rely on it if <B>StampPMsg</B> has already been called </P>
+
+<P>The implementations of this method in the DirectMusicSegmentState and DirectMusicPerformance objects always return S_OK on success. The implementation in DirectMusicGraph returns DMUS_S_LAST_TOOL if there is no tool other than the output tool waiting to receive the message.</P>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in dmusici.h.</P>
+
+<H4>See Also</H4>
+
+<P><A HREF="_dx_directmusic_tools_dxaudio.htm"><B>DirectMusic Tools</B></A></P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

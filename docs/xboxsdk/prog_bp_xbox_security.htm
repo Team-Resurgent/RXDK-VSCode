@@ -1,0 +1,269 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Xbox Security Best Practices</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="security best practices"/>
+<MSHelp:Keyword Index="K" Term="cheaters, detecting"/>
+<MSHelp:Keyword Index="K" Term="hackers, preventing"/>
+<MSHelp:Keyword Index="K" Term="detect cheating"/>
+<MSHelp:Keyword Index="K" Term="game cheats"/>
+<MSHelp:Keyword Index="K" Term="prevent a hacker"/>
+<MSHelp:Keyword Index="K" Term="best practices, Xbox security"/>
+<MSHelp:Keyword Index="F" Term="Xbox Security Best Practices"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<h1>Xbox Security Best Practices</h1>
+
+<p><i>By Pete Isensee, Development Lead, Xbox Advanced Technology Group</i></p>
+
+<p>The Xbox&#174; video game system from Microsoft&#174; provides many more security measures than the average PC. From anti-piracy features to built-in network security, the Xbox console automatically handles many issues that PC game developers have to face. The Xbox Development Kit (XDK) also provides cryptographically secure signing technology for protecting game content.</p>
+
+<p>Not everything can be done automatically, however. A secure file system on the hard disk, for example, would have significant performance implications. Similarly, there's no reason to inflict arbitrary performance hurdles on texture and audio content that doesn't require high levels of security.</p>
+
+<p>These issues are all part of designing games. For example, just as developers and designers must consider how to reduce cheating and its impact on other players, they must also avoid common security errors. In fact, much of the burden of security falls on the shoulders of game designers and developers. Security is only as strong as its weakest link, and this weakest link is often the game implementation or design. This white paper describes what developers and designers can do to protect game assets, keep cheating from affecting gameplay, and maintain the integrity of the console.</p>
+
+<h2>Hard Disk</h2>
+
+<p>The Xbox hard disk (HD) is the primary target for attackers. TCRs require that all data on the HD be signed, with the exception of the utility data region (Z:). However, we recommend that you also sign Z: data if it wouldn't adversely affect performance. Avoid signing WMA files, texture data, or other streaming data.</p>
+
+<p>With the exception of save games and other user data, always sign HD content with non-roamable signatures (see XCALCSIG_FLAG_NON_ROAMABLE) or Xbox <i>Live</i>&#8482; signatures (XCALCSIG_FLAG_ONLINE). Signatures for downloaded content are always non-roamable.</p>
+
+<p>Even signed files on the Xbox HD are not immune from hackers. Employ standard secure-coding practices to many types of files read from the HD, including saved games, profiles, configuration files, manifests, game world data, and other custom data formats. Streaming audio, standard graphics formats, and other standard resource files do not require validation, since the Xbox system software automatically handles invalid audio and texture data.</p>
+
+<p>More information on signing content is available in the <a href="prog_wp_content_signing.htm">Xbox Content Signing Options</a> white paper.</p>
+
+<h2>Memory Units</h2>
+
+<p>Memory units (MUs) are also an easy target for attacks. Xbox Technical Certification Requirements (TCRs) require that all data on MUs be signed. Use the <b>XCalculateSignature</b> family of functions to sign saved games and profiles on MUs.</p>
+
+<p>Even correctly signed MU files, particularly roamable files, are vulnerable to hackers. You should employ standard secure coding practices to all data read from memory units. See the <a href="#_Writing_Secure_Code">Writing Secure Code</a> section for details.</p>
+
+<h2>Cheating</h2>
+
+<p>Perhaps the most overlooked entry points for cheaters and hackers are flaws in the game design or game code. Two examples will make this clear:</p>
+
+<p><b>Example 1</b> &#8211; Consider any game that provides game pause functionality. This is a natural thing to want in a game. Players should have the ability to take a break and come back to the same place. Suppose the game also records scores to Xbox <i>Live</i> at the end of each multiplayer session. Cheating is likely unless the designer and developer have answered questions like: How are scores affected if one of the players in a <i>Live</i> session pauses the game indefinitely? Should the pause feature have a timeout? What happens if one of the players pauses specifically at key points in the game, preventing the other players from accomplishing their goals? Should there be a pause feature at all in multiplayer modes? Should the players have to agree to pause? If these questions haven't been answered and implemented in the game, players could use easily the pause feature to artificially inflate their scores.</p>
+
+<p><b>Example 2</b> &#8211; <i>MotoGP</i> is an existing Xbox game designed to simulate motorcycle racing. In <i>MotoGP</i>, players could "cheat" by racing backwards. Players that were losing and had no chance to catch up could simply turn their motorcycle around and try to crash into other players. Although the backward racers weren't cheating in a technical sense, they had exploited a game feature in a way that the game designers had not
+predicted.</p>
+
+<p>There is virtually no way to predict what players might do in a game. It's human nature to find clever ways of capitalizing on game features to create new and unexpected modes of fun. Many players find it fun to foil their opponents in unusual ways.</p>
+
+<p>Best practices for finding game cheats:</p>
+
+<ul>
+<li>Make sure your beta timeframe is long enough for testers to truly exploit the game in
+unexpected ways.</li>
+
+<li>Assign testers to play the game with the intent to win at all costs, using any means at their disposal. For instance, try removing the controller in the middle of the session. Try disconnecting from the network.</li>
+
+<li>It's common practice to test games by playing the "sweet path." Encourage testers to stray often from the sweet path. Probe all the hidden corners of the game world. Do the things that aren't intuitive but could be allowed within the context of the game. Drive backward. Wear night vision goggles during the day. Use the flamethrower underwater. Shoot your teammates instead of shooting the opposing team. Cheating within the framework of the game always involves the unexpected, so test the unexpected.</li>
+</ul>
+
+<p>There will inevitably be ways to cheat in your game. Don't pretend there won't be. Here are some best practices for reducing game cheats:</p>
+
+<ul>
+<li>Build a system into the game that penalizes cheaters. The best systems rely on social feedback mechanisms to identify cheaters. For instance, Xbox <i>Live</i> uses feedback to identify players who have unacceptable Gamertags or abuse voice chat. Players with abnormally high negative feedback can be identified and banned from the service. See the <b>XOnlineFeedbackSend</b> API.</li>
+
+<li>One of the most common in-game methods for reducing cheating is a voting system. If the
+majority of players decide that another player is cheating, they can vote to remove that player from the session. Keep in mind that voting systems can be exploited, too. When voting is misused, it can keep users from playing your game at all.</li>
+
+<li>Give the session host and only the host the authority to ban players from the session. This system allows hosts to establish any kind of game they want. If the host wants to allow the underwater flamethrower cheat, he or she can.</li>
+
+<li>Detect cheating when and if you can. For instance, if your game records statistics, keep
+an eye out for unusually large or small values. A racer recording a time of 15 seconds on a track that takes your best testers 2 minutes is very likely to have discovered a cheat.</li>
+
+<li>Don't record the scores of cheaters. Cheaters exploit games to gain personal satisfaction. Deny them the satisfaction.</li>
+
+<li>Inform other players if you detect cheating. Not only can the non-cheating players quit the session and move on to a better session, they can optionally use the built-in Xbox <i>Live</i> feedback mechanism to report the cheating player.</li>
+
+<li>Consider recording multiplayer session starts by writing an Xbox <i>Live</i>&#8211;signed cookie to disk. Erase the cookie when the session is complete. If the game detects cookies at startup, update the player's statistics to indicate that sessions were dropped.</li>
+
+<li>Consider using an ELO-style rating system. ELO rankings encourage a more thoughtful and
+balanced game design in terms of statistics.</li>
+</ul>
+
+<h2>Loading Dynamic Code</h2>
+
+<p>Xbox game executables (XBEs) are secure due to the public key cryptographic signature in the XBE header. If your game uses dynamically loaded code, store that code in XBE sections. XBE sections are automatically protected by the XBE signature. Use the <b>ImageBld /INSERTFILE</b> command to add sections to the game XBE. You can dynamically load those blocks of code within the game using the <b>XLoadSection</b> routine.</p>
+
+<p>Avoid other methods of loading dynamic code. For instance, storing x86 code on the Xbox hard disk can be particularly dangerous. Attackers can easily modify files on the hard disk.
+Even if the files have been signed, a malicious user can locate the signing keys and resign the modified code. If a modified file is loaded by your game, your game could execute malicious code. Games that load code using any method other than XBE sections risk failing Xbox certification.</p>
+
+<p>Some games include script files, AI parameters, statistics formulas, and other similar data in downloadable content. Because this content actually affects the nature of the gameplay, it's quite similar to dynamic code, but typically has much less security risk than x86 assembly. For downloadable content, be sure to follow the standard guidelines for verifying content signatures before using the data.</p>
+
+<h2>Mod Chips</h2>
+
+<p>Xbox automatically detects modified consoles during Xbox <i>Live</i> sign-in. Modified consoles are not allowed online. Developers of offline games are not required to either detect or react to modified consoles. The basic philosophy about modded boxes is that
+"Microsoft is concerned so you don't have to be." Microsoft has a team of engineers dedicated to researching and resolving security issues, and we will continue to improve the resiliency of the hardware and software. There's no reason to go out of your way to hide values in memory or use the standard tricks that PC developers use to hinder players using trainers or other cheating software.</p>
+
+<h2>Network Traffic and Voice</h2>
+
+<p>Xbox network traffic is automatically encrypted and authenticated. Don't add your own encryption or checksum techniques.</p>
+
+<p>Because Xbox uses secure network transmission technology, the console could be used by criminal elements for secure voice communications. To prevent this, voice data must be sent in the clear using the VDP (voice and data) protocol. All other game data must be sent in encrypted form using UDP, TCP, or the game data portion of VDP. Make sure that the only traffic you send in the VDP voice data section is voice.</p>
+
+<p>Although Xbox packets are quite secure from prying eyes and from modification, there are other ways to attack networked games. One way hackers can attack an Xbox game is to block or
+selectively block packets. For instance, if an attacker can guess that certain size packets or packets sent on a specific port indicate a particular type of data, your game could be vulnerable. Prefer sending all data on a single port (port 1000). You may also consider methods for randomly adjusting packet size.</p>
+
+<p>Another way hackers can attack Xbox games is by packet flooding their opponent. If the packet flood is large enough, it can affect the target by reducing their incoming bandwidth from other consoles or game servers. Games can do very little about this type of attack other than allow games to continue to work well even under low-bandwidth/high-latency
+scenarios. An attacker is more likely to focus on games that don't work well under such scenarios than a game that has some flexibility in terms of network conditions.</p>
+
+<p>While the Xbox network stack provides an excellent first defense against malicious attacks, there is no perfect security. Developers should not assume that network buffers are
+specific lengths or contain data in a certain format. Use secure coding practices whenever accessing external data, whether that data is coming from the hard disk or the network.</p>
+
+<h2>Xbox Live</h2>
+
+<p>Fortunately, there is very little developers need to do to maintain the integrity of Xbox <i>Live</i> other than use the network and online APIs and abide by Technical Certification Requirements.</p>
+
+<p>One vulnerable point of attack is Xbox <i>Live</i> accounts. Account information (see the <b>XONLINE_USER </b>structure) can be stored on the Xbox hard disk or Memory Units. Account information is signed and authenticated, and relevant string portions of the structure are
+guaranteed to be zero-terminated when returned by online APIs, but there is sensitive information in the struct. The "reserved" portion of this structure contains the player's account credentials. Games should never transmit or store a player's passcode or credentials.</p>
+
+<p>To protect your game players, do not ask for, store, or transmit social security numbers, credit card numbers, email addresses, names, ages, gender, home addresses, or any other information that could be used to physically identify a player. If players want to share that information, they can do so using voice chat.</p>
+
+<p>The area most fraught with security implications is transmitting content that has ever been read from the Xbox hard disk (player-created maps, team emblems, ghost races, etc.). A hacker could introduce modified content that is then distributed to thousands of consoles. To protect against this outcome, any content read or written to the Xbox hard disk that could ever be transmitted and stored on either the <i>Live</i> service or another Xbox console should be signed with a <i>Live</i> signature. Additional information on signing content is available in the <a href="prog_wp_content_signing.htm">Xbox Content Signing Options</a> white paper.</p>
+
+<h2>Xbox Live Statistics</h2>
+
+<p>Games that record statistics are open invitations to attackers and potential cheaters. Players will go to amazing lengths to get the best score, and if there is any possible way to get the best score by cheating, you can be sure that it will be exploited.</p>
+
+<ul>
+<li>Identify quitters and players who drop out of sessions. Record statistics that identify
+people who don't play well with others. Make those statistics available in the game so players can choose who they play with.</li>
+
+<li>Don't record bogus scores. A player who records 10 million frags in a two-minute session is cheating. Use thresholds to determine whether the statistics should even be recorded at all.</li>
+
+<li>Identify cheaters. Use Xbox <i>Live</i> leaderboards to your advantage. Record statistics
+that identify people who have attempted to record invalid scores. Set up matchmaking queries so that players can avoid playing with cheaters.</li>
+
+<li>Consider using hidden leaderboards to record statistics that can be analyzed to find possible cheaters, including things like distance traveled, maximum speed, and so on. Because these stats are not visible to players, it will be harder for players to detect or circumvent them.</li>
+</ul>
+
+<h2><a name="_Writing_Secure_Code"></a>Writing Secure Code</h2>
+
+<p>In comparison to most programmers, Xbox developers have it pretty easy when it comes to security. However, secure coding practices are still important on Xbox, particularly when dealing with data coming from the hard disk or Memory Units. It's not enough to sign and
+authenticate data. Developers should assume that even authenticated data could contain hacked content. This is particularly important with roamable data, since it's easy for hackers to re-sign roamable content, but there's no reason to stop there. Assume that all content coming from the hard disk, MUs, or the network is potentially bogus and take the proper steps.</p>
+
+<p>For instance, a common coding practice is reading strings from files. Consider a save game format that has the player's name stored in a section of the save game file:</p>
+
+<pre>    CHAR strPlayerName[32];
+    ReadFile( hFile, pSaveGame, dwFileSize, &amp;dwBytesRead, NULL );
+    strcpy( strPlayerName, pSaveGame );
+
+    // ...</pre>
+
+<p>This code exhibits a classic security flaw&#8212;a buffer overrun. This save game could be modified to include a player name string longer than 32 bytes. <b>Strcpy</b> would happily write that string into strPlayerName <i>and beyond</i>, blindly overwriting the program stack. A naively modified save file would simply cause the game to crash or behave
+erratically when the save was loaded. However, a malicious hacker could embed custom code into the save file that would cause the title to jump to and execute code of the hacker's choosing.</p>
+
+<p>Beware of any function that accepts an unchecked buffer, like <b>strcpy</b>, <b>strcat</b>, <b>sprintf</b>, and <b>scanf</b>. The table below shows some alternative solutions to dangerous functions.</p>
+
+<table>
+ <tr>
+  <th>Insecure function</th>
+  <th>Alternative</th>
+ </tr>
+ <tr>
+  <td><b>strcpy</b>, <b>strncpy</b></td>
+  <td><b>lstrcpyn</b></td>
+ </tr>
+ <tr>
+  <td><b>strcat</b></td>
+  <td><b>strncat</b></td>
+ </tr>
+ <tr>
+  <td><b>sprintf</b></td>
+  <td><b>_snprintf</b></td>
+ </tr>
+ <tr>
+  <td><b>scanf</b></td>
+  <td>Use limiters like %20s in the format specifier.</td>
+ </tr>
+ <tr>
+  <td>operator &gt;&gt;</td>
+  <td>Restrict input size by using cin.width.</td>
+ </tr>
+</table>
+
+<p>Note that <b>strncpy</b>, <b>strncat</b>, and <b>_snprintf</b>, while safer than their completely insecure cousins, are not perfect replacements. For instance, none of these functions guarantees that the resulting string will be null-terminated. Consider creating your own safe functions to perform these tasks.</p>
+
+<p>Use the compiler to help you avoid buffer overrun exploits. Microsoft&#174; Visual Studio&#174; .NET includes a compiler flag, /GS, that enables buffer overrun detection. Code compiled with /GS includes security cookies on the stack. At run-time, if the security cookie's value is incorrect because the stack was overwritten by an exploit, the game will simply terminate. The /GS flag is designed to be used in final retail builds of games. For debug builds, the /RTC1 option will detect stack smashing, so there's no reason to have /GS on while debugging. /GS was designed to have a minimal performance penalty (less than 2% CPU). The option can be turned off for specific modules where performance is critical. Keep in mind, however, that the use of the /GS option would have prevented hackers from being able to exploit certain Xbox games that have buffer overruns. Turn off the option at your own risk, and only if you have verified that the option
+significantly degrades performance.</p>
+
+<p>A common developer security mantra is "don't trust input." On Xbox, you can trust game disc content and controller input. Everything else, from hard disk data to network data, is crackable. Always assume that data from these devices could be bogus, even if it is properly
+signed.</p>
+
+<h2>Who Can You Trust?</h2>
+
+<p>All security is imperfect, but at the end of the day, you have to pick your battles and decide where to focus your coding efforts. As a game developer, you can trust the following:</p>
+
+<ul>
+<li><b>XBEs</b>. XBEs are signed with RSA public keys. The private key is not on the console, nor is it ever transmitted.</li>
+
+<li><b>Autoupdates</b>. Autoupdate XBEs are also signed with RSA public keys.</li>
+
+<li><b>Game Disc</b>. The game disc is read only.</li>
+
+<li><b>Xbox <i>Live</i>&#8211;signed content</b>. If the Xbox <i>Live</i> signature is valid, the content is trusted. The security is not as good as RSA, but it's much better than other content signatures.</li>
+
+<li><b>XOnline...GetResults</b>. Data returned from Xbox <i>Live</i> is authenticated and guaranteed to have null-terminated strings.</li>
+
+<li><b>XONLINE_USER</b> data from the Xbox HD. This data is authenticated and
+guaranteed to have null-terminated strings.</li>
+</ul>
+
+<p>Do not trust:</p>
+
+<ul>
+<li><b>MUs</b>. All content on Memory Units is suspect.</li>
+
+<li><b>Save games</b>. Save games are generally signed with roamable signatures. To an attacker, a roamable signature is trivial to recreate.</li>
+
+<li><b>Non-roamable content</b>. An attacker can easily recreate non-roamable signatures. This content is not safe.</li>
+
+<li><b>Downloaded content</b>. Downloaded content has the same security level as
+non-roamable content.</li>
+
+<li><b>Network packets</b>. Network packets are generally quite secure due to automatic encryption, authentication, and secure key exchange. In theory, however, a motivated hacker could emulate an Xbox using a PC or run unsigned code on an Xbox that emulated a game. That pseudo-Xbox title could then send packets that would correctly authenticate on other consoles, and could take advantage of a buffer overrun in the games' network code.</li>
+</ul>
+
+<p>For untrusted data, assume the worst. Use secure coding practices to avoid buffer overruns.</p>
+
+<h2>References</h2>
+
+<p>The following list includes some useful references (inclusion does not imply endorsement by Microsoft):</p>
+
+<ul>
+<li>Hargreaves, Shawn, <i><a href="http://www.gamasutra.com/features/20030710/hargreaves_pfv.htm" target="blank">MotoGP Online: An Xbox Live Launch Title Developed in Seven Weeks</a></i>.</li>
+
+<li>Howard, Michael, <i>Writing Secure Code</i>, Microsoft Press, 2002.</li>
+
+<li>Kirmse, Andrew, <i><a href="http://www.gamasutra.com/features/19970707/security.htm" target="blank">Security in Online Games</a></i>.</li>
+
+<li>Kreimeier, Bernd, <i><a href="http://www.gamasutra.com/features/20000209/kreimeier_pfv.htm" target="blank">Rising from the Ranks: Rating for Multiplayer Games</a></i>.</li>
+
+<li>Moses, Asher, <i><a
+href="http://www.tomshardware.com/game/20030517/cheating-01.html" target="blank">Cheating: Multiplayer Gaming's Achilles' Heel?</a></i></li>
+
+<li>Pritchard, Matt, <i><a href="http://www.gamasutra.com/features/20000724/pritchard_pfv.htm" target="blank">How to Hurt the Hackers: The Scoop on Internet Cheating and How You Can Combat It</a></i>.</li>
+
+<li><a href="prog_wp_content_signing.htm">Xbox Content Signing Options</a> white paper.</li>
+
+<li><a href="prog_wp_xbox_security_architecture.htm">Xbox Security Architecture</a> white paper.</li>
+</ul>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

@@ -1,0 +1,41 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Recording State in a Push-Buffer</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="Recording State in a Push-Buffer [Graphics]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Recording State in a Push-Buffer"/>
+<MSHelp:Keyword Index="F" Term="Recording State in a Push-Buffer"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_recording_state_in_a_pushbuffer_graphics"></A>Recording State in a Push-Buffer</H1>
+
+<p>While recording a push-buffer, there are many instances in which more state is recorded into the push-buffer than is specified by the function. For example, the hardware combines both the D3DRS_MULTISAMPLEANTIALIAS and D3DRS_MULTISAMPLEMASK states into one register. So if the following is called while recording a push-buffer:</p>
+
+<blockquote>
+<pre>pDevice->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, TRUE);</pre>
+</blockquote>
+
+<p>both the state of D3DRS_MULTISAMPLEANTIALIAS and D3DRS_MULTISAMPLEMASK are recorded. Consequently, in this example, it is not possible to set D3DRS_MULTISAMPLEMASK to some value before executing the push-buffer and have it apply to the entire push-buffer, even though D3DRS_MULTISAMPLEMASK was never set while the push-buffer was recorded.</p>
+
+<p>The net effect is that in the strictest case, push-buffers must effectively be executed with exactly the same state set at <a href="_dx_idirect3ddevice8_runpushbuffer_graphics.htm"><b>IDirect3DDevice8::RunPushBuffer</b></a> time as was set when <a href="_dx_idirect3ddevice8_beginpushbuffer_graphics.htm"><b>IDirect3DDevice8::BeginPushBuffer</b></a> was first called to begin the recording; otherwise unpredictable behavior will result. In practice, since extra push-buffer state is only recorded in related state bundles, there is typically a large amount of state that can effectively be inherited at run time for bundles where none of the state was changed. An example of this is when only a <a href="_dx_idirect3ddevice8_drawindexedprimitive_graphics.htm"><b>IDirect3DDevice8::DrawIndexedPrimitive</b></a> call is recorded into a push-buffer: since no state is changed in the push-buffer, the push-buffer can effectively inherit all the state from the caller.</p>
+
+<p>In a related caveat, Direct3D does not track any state that is changed by a push-buffer. So the caller is responsible for ensuring that the state of the hardware is consistent with what Direct3D expects it to be after the push-buffer (or multiple push-buffers) is executed. For example, if the push-buffer sets D3DRS_MULTISAMPLEANTIALIAS during the course of its execution, either the push-buffer itself should reset it back or the caller should call <b>IDirect3DDevice8::SetRenderState</b> and manually reset the render state after executing the push-buffer. Failure to do this may result in invalid state being inherited when subsequent Direct3D commands are invoked (for example, Direct3D may not realize that some state needs to be reset).
+</p>
+
+<h4>See Also</h4>
+
+<p><a href="_dx_pushbuffer_resources_graphics.htm"><b>Push-Buffer Resources</b></a>, <a href="_dx_fixups_graphics.htm"><b>Fix-ups</b></a></p>
+
+<DIV CLASS="footer" ID="footer">Unpublished work. &#169 2000 Microsoft Corporation. All rights reserved.</DIV>
+</BODY>
+</HTML>

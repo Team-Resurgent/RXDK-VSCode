@@ -1,0 +1,64 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Downloading Game Clips</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Downloading Game Clips"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Downloading Game Clips</h1>
+<p>The following steps illustrate how to download game clips from Xbox <i>Live</i>. This particular example is for ghost races, but the same sequence of funtion calls applies to all uses of game clips.</p><ol>
+                    <li><p>Create <a href="XONLINE_STAT_SPEC.htm">XONLINE_STAT_SPEC</a> structures that can 
+                    contain <a href="XONLINE_STAT.htm">XONLINE_STAT</a>s with any of three new reserved IDs:</p>
+                    	<ul>
+                        	<li>The remote file reference of the download</li>
+                        	<li>The size uncompressed</li>
+                        	<li>The size compressed</li>
+                    	</ul>
+					</li>
+                    <li>Call <a href="XOnlineStatRead.htm">XOnlineStatRead</a> or <a href="XOnlineStatLeaderEnumerate.htm">XOnlineStatLeaderEnumerate</a>.</li>
+                    <li>Pump the task to completion.</li>
+                    <li><p>Call <a href="XOnlineStatReadGetResult.htm">XOnlineStatReadGetResult</a> or 
+						<a href="XOnlineStatLeaderEnumerateGetResults.htm">XOnlineStatLeaderEnumerateGetResults</a>:</p>
+                        <ul>
+                            <li>
+                                <p>The title must pass in a buffer large enough for all the remote file references 
+                                   requested. The title can calculate this size as follows:</p>
+                                
+                                <p>(<i>Number of users</i> &#0215; (<i>Size of remote file reference</i> + <i>Size of nickname</i>)</p>
+                            </li>
+                            <li>The title can display information stored in the stats server about the 
+                            download. For example, is there a download for this item? What is its size (compressed, 
+                            uncompressed)? Is there any other title-specific information?</li>
+                        </ul>
+                    </li>
+                    <li>Typically, the title displays an icon indicating that the user can download 
+                    a replay for a particular statistic.</li>
+                    <li><p>If the user chooses to download the replay</p>
+                        <ol>
+                            <li>Call <a href="XOnlineStorageDownload.htm">XOnlineStorageDownload</a> with the remote file reference. (This 
+                            does the download and any associated installing.)</li>
+                            <li>Pump the task to completion.</li>
+                            <li>Optionally call <a href="XOnlineStorageGetProgress.htm">XOnlineStorageGetProgress</a> to find out how the 
+                            upload is going and to display a progress bar.</li>
+                        </ol>
+                    </li>
+                </ol>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

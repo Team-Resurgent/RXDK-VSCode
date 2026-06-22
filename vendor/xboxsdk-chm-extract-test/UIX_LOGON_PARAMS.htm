@@ -1,0 +1,88 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>UIX_LOGON_PARAMS</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="UIX_LOGON_PARAMS"/>
+<MSHelp:Keyword Index="F" Term="UIX_LOGON_PARAMS"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+    <body topmargin="0">
+        <table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+        <h1>UIX_LOGON_PARAMS</h1>
+
+        
+        
+<p>Logon parameters for the logon feature.  This structure is passed in <i>pFeatureParams</i> when calling <a href="ILiveEngine_StartFeature.htm">ILiveEngine::StartFeature</a> with UIX_LOGON_FEATURE.</p>
+
+	
+		
+
+<pre class="syntax">typedef struct _UIX_LOGON_PARAMS{
+    SIZE_T StructSize;
+    UIX_LOGON_TYPE LogonType;
+    DWORD LogonUserCount;
+    DWORD LogonServiceIDs[UIX_MAX_LOGON_SERVICES];
+    XONLINE_LOGON_STATE *pLogonState;
+    XONLINE_ACCEPTED_GAMEINVITE *pGameInvite;
+} UIX_LOGON_PARAMS, *PUIX_LOGON_PARAMS;</pre>
+                    
+                
+            
+            
+                <h4><a name="members"></a>Members</h4>
+<dl>
+<dt><b>StructSize</b></dt>
+<dd>Size of the structure.  Must be set to the structure size before calling <b>ILiveEngine::StartFeature</b>.</dd>
+<dt><b>LogonType</b></dt>
+<dd><a href="UIX_LOGON_TYPE.htm">UIX_LOGON_TYPE</a> value specifying the type of logon to perform.</dd>
+<dt><b>LogonUserCount</b></dt>
+<p><dd>Maximum number of simultaneously logged on players (1, 2, or 4).  Logon feature will select the correct screen layouts based on this value.  For UIX_LOGON_TYPE_SILENT, <b>LogonUserCount</b> must be one (1).</dd>
+</p>
+<dt><b>LogonServiceIDs</b></dt>
+<dd>Array of <b>DWORD</b> values specifying the service identifiers of services to log on to.  Service identifiers must be placed in the array starting at index zero and be consecutively specified, with no gaps.  A value of zero (XONLINE_INVALID_SERVICE) signifies the end of the requested services.  For the list of valid service identifiers, see <a href="XOnlineLogon.htm">XOnlineLogon</a>.</dd>
+
+<dt><b>pLogonState</b></dt>
+<dd>Pointer to an <a href="XONLINE_LOGON_STATE.htm">XONLINE_LOGON_STATE</a> structure containing a saved logon state to use for the logon.  Valid only with <b>LogonType</b> UIX_LOGON_TYPE_RETRIEVED_STATE; otherwise, this member should be set to NULL.</dd>
+<dt><b>pGameInvite</b></dt>
+<dd>Pointer to an <a href="XONLINE_ACCEPTED_GAMEINVITE.htm">XONLINE_ACCEPTED_GAMEINVITE</a> structure containing a game invitation to use for the logon.  Valid only with <i>LogonType</i> UIX_LOGON_TYPE_RETRIEVED_GAME_INVITE; otherwise, this member should be set to NULL.</dd>
+</dl>
+                <h4><a name="remarks"></a>Remarks</h4>
+<p>Initialize the structure to zero and set <b>StructSize</b> to the size of the structure before calling <b>ILiveEngine::StartFeature</b>.</p>
+
+<p>Communication tickets are obtained for the services specified in <b>LogonServiceIDs</b>, enabling subsequent secure communications with those services (and those services only).</p>
+
+
+
+
+				
+            
+                <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Uix.h.</p>
+            
+                <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="ILiveEngine_StartFeature.htm">ILiveEngine::StartFeature</a>,
+<a href="XOnlineLogon.htm">XOnlineLogon</a>
+</p>
+
+        <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+    </body>
+    </html>

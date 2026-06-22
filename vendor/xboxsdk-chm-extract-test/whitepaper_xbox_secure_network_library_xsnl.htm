@@ -1,0 +1,645 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Xbox Secure Network Library</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="Xbox Secure Network Library">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Xbox Secure Network Library"/>
+<MSHelp:Keyword Index="K" Term="Secure Network Library (SNL)"/>
+<MSHelp:Keyword Index="K" Term="network security"/>
+<MSHelp:Keyword Index="K" Term="nonce"/>
+<MSHelp:Keyword Index="K" Term="system link play"/>
+<MSHelp:Keyword Index="K" Term="host an online game"/>
+<MSHelp:Keyword Index="K" Term="connect to an online game"/>
+<MSHelp:Keyword Index="K" Term="online games, connecting to and hosting"/>
+<MSHelp:Keyword Index="K" Term="protocols, UDP vs. TCP"/>
+<MSHelp:Keyword Index="K" Term="UDP compared with TCP"/>
+<MSHelp:Keyword Index="K" Term="TCP compared with UDP"/>
+<MSHelp:Keyword Index="K" Term="XNET library versions"/>
+<MSHelp:Keyword Index="K" Term="random number generation"/>
+<MSHelp:Keyword Index="K" Term="generate a random number"/>
+<MSHelp:Keyword Index="F" Term="Xbox Secure Network Library"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="whitepaper_xbox_secure_network_library_xsnl"></A>Xbox Secure Network Library</H1>
+
+
+
+
+<P><I>By Pete Isensee, Software Design Engineer, Xbox Advanced Technology Group</I></P>
+
+<P>Network security is paramount to the success of multiplayer games. A single effective exploit of a game can affect thousands of players. As network gaming becomes more common, the stakes get higher. The number of players willing to cheat increases, and the threat of cheating becomes a critical factor in game design. The creators of the Xbox video game system from Microsoft take these issues very seriously. Secure communication is one of the foundations of the Xbox.</P>
+
+<P>The <A HREF="xbox_secure_network_library_xsnl.htm">Xbox Security Network Library (SNL)</A> handles all Xbox communication, whether that communication is Xbox to Xbox or Xbox to server. The Xbox SNL is based on the <A HREF="xbox_mt_winsock.htm">Winsock API</A>, with one very important difference: it's cryptographically secured. Packets are encrypted and stamped with authenticating hash values. When an Xbox receives a packet, the packet can be verified against the hash value. If any data has been changed in transit, the packet will fail authentication and will be thrown away. This solves the issues of packet tampering at a very low level. Games themselves don't need to support any additional mechanism for preventing these types of game cheats.</P>
+
+<P>Converting existing Winsock code to use the Xbox Security Network Library is a matter of calling some new initialization functions and establishing a secure connection. Once a connection has been established, the standard Winsock calls apply.</P>
+
+<P>The code snippets below are based on the WinsockPeer sample in the Xbox SDK, a simple peer-to-peer Xbox game. See the WinsockPeer code for the full implementation of the concepts shown. In the code examples, error checking has been removed for clarity. Your game should check for and handle errors appropriately.</P>
+
+<H2><A NAME="whitepaper_xbox_secure_network_library_xsnl_checking_connection_status"></A>Checking the Xbox Connection Status</H2>
+
+<P>Xbox titles must allow the player to play a network multiplayer game only when the Xbox is physically connected to another Xbox via an Xbox System Link Cable or connected to a hub. A title can detect a valid physical connection by calling <A HREF="xbox_xnetgetethernetlinkstatus_xsnl.htm">XNetGetEthernetLinkStatus</A>. This function can be safely invoked prior to calling any network initialization routines. If the function returns zero, the Xbox is not connected. Otherwise the Xbox is connected, and additional information about the connection is provided in the return value.</P>
+
+<PRE>
+BOOL IsXboxConnected()
+{
+   DWORD dwStatus = XNetGetEthernetLinkStatus();
+   return( dwStatus != 0 );
+}
+</PRE>
+
+<P>To meet Xbox Technical Certification Requirements (TCRs), the connection status must be checked in the main game loop at least once per second, and the game must display appropriate UI informing the player that the network cable was disconnected. <B>XNetGetEthernetLinkStatus</B> is very fast, on the order of three to four microseconds.</P>
+
+<H2><A NAME="whitepaper_xbox_secure_network_library_xsnl_initializing"></A>Initializing the Xbox Network Library</H2>
+
+<P>Once the connection status has been verified, the game can initialize the Xbox SNL. There are two initialization routines required: <A HREF="xbox_xnetstartup_xsnl.htm">XNetStartup</A> and the standard Winsock <A HREF="xbox_wsastartup_winsock.htm">WSAStartup</A>. For the default Xbox SNL parameters, call <B>XNetStartup</B> with NULL.</P> 
+
+<PRE>
+// Default Xbox SNL initialization
+INT err = XNetStartup( NULL );
+</PRE>
+
+<P>To customize the parameters, use the <A HREF="xbox_xnetstartupparams_xsnl.htm">XNetStartupParams</A> structure. Set the first field to the size of the structure (used for versioning). To obtain a default parameter, set that parameter to zero. The default settings are documented in the Winsockx.h header file.</P>
+
+<PRE>
+// Change receive buffer size to 32 K (default is 16 K)
+// All other parameters will be set to default values
+XNetStartupParams xnsp;
+ZeroMemory( &amp;xnsp, sizeof(xnsp) );
+xnsp.cfgSizeOfStruct = sizeof(xnsp);
+xnsp.cfgSockDefaultRecvBufsizeInK = 32;
+INT err = XNetStartup( &amp;xnsp );
+</PRE>
+
+<P>Once the Xbox SNL has been successfully initialized, call <B>WSAStartup</B> to do the standard Winsock initialization. The Xbox allows all versions of Winsock up through 2.2 (that is, 1.0, 1.1, 2.0, 2.1, and 2.2), although it technically supports only and exactly what is specified in the Xbox network documentation, not necessarily the Winsock functional specification.</P>
+
+<PRE>
+// Init Winsock
+WSADATA wsaData;
+INT err = WSAStartup( MAKEWORD(2,2), &amp;wsaData );
+</PRE>
+
+<P>The network library can be shut down and removed from memory by calling <A HREF="xbox_wsacleanup_winsock.htm">WSACleanup</A> and then <A HREF="xbox_xnetcleanup_xsnl.htm">XNetCleanup</A>.</P>
+
+<H2><A NAME="whitepaper_xbox_secure_network_library_xsnl_system_link_play"></A>System Link Play</H2>
+
+<P>Xbox system link play is in effect when any of the following are true:</P>
+
+<UL>
+<LI>An Xbox is directly connected to another Xbox using the system link cable. A system link cable is simply an Ethernet crossover cable.</LI> 
+<LI>An Xbox is connected to an Ethernet hub (bridge) with an Ethernet cable. To meet TCRs, a maximum of 16 Xbox consoles can communicate with each other via a hub.</LI>
+<LI>An Xbox is connected to a local area network (LAN). Up to 16 Xbox consoles on the same subnet can communicate with each other. The Xbox does not support communication across different subnets. The Xbox does not officially support LAN play. In other words, LAN play will work for many players (those on the same subnet), but not necessarily all players (those on different subnets).</LI>
+</UL>
+
+<P>In general, system link play describes an Xbox that is "connected" but not on the Internet. Because games running in system link mode don't have access to any external servers, including DNS or Xbox servers, they must advertise and discover their own game sessions. The following sections describe how games can support system link play. Many of these techniques will also apply to Internet games, but this paper focuses specifically on system link play.</P>
+
+<H2><A NAME="whitepaper_xbox_secure_network_library_xsnl_finding_a_game"></A>Finding a Game</H2>
+
+<P>Once a game has verified its connection status and initialized the SNL, it can discover if any Xbox consoles are hosting game sessions. With system link play, there are no external servers that track game sessions, so the only way to discover active game sessions is to send a message to all connected Xbox consoles via an Ethernet broadcast.</P>
+
+<P>To create a broadcast socket, create a UDP socket and set the SO_BROADCAST option. The following code creates a broadcast socket.</P>
+
+<PRE>
+// Create UDP socket
+SOCKET sBrd = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
+
+// Set broadcast option
+BOOL bBroadcast = TRUE;
+INT err = setsockopt( sBrd, SOL_SOCKET, SO_BROADCAST,
+                      (const char*)&amp;bBroadcast,
+                      sizeof( bBroadcast ) );
+</PRE>
+
+<P>Use this socket to broadcast a game discovery message. This message can contain any useful information about the requesting client, but it will typically have only two important pieces of data:</P>
+
+<UL>
+<LI>A message ID. If multiple types of messages are issued on the same port, the message ID is used to distinguish the message payloads. If the only messages issued on a given port are game discovery messages, then the port itself is the identifier and the message ID is not required.</LI>
+<LI>A nonce used to uniquely identify the client. A nonce is a random number used for a single transaction. When an active game session is discovered, the host cannot reply directly to us, because we don't have a secure channel established yet. The host must instead broadcast a response to all connected Xbox consoles. To distinguish between our game discovery request and other requests, the host replies with the same nonce that it received. Use a nonce of at least 8 bytes to minimize the chance of duplicates.</LI>
+</UL>
+
+<PRE>
+// Game discovery message payload
+struct FindGame
+{
+   BYTE ID;
+   BYTE Nonce[8];
+};
+</PRE>
+
+<P>The Xbox API includes a function that can be used to generate nonces called <A HREF="xbox_xnetrandom_xsnl.htm">XNetRandom</A>. For details on this function, see the section entitled <A HREF="#whitepaper_xbox_secure_network_library_xsnl_random_number">Random Number Generation</A>.</P>
+
+<PRE>
+// Generate nonce and fill out discovery message payload
+FindGame findGame;
+findGame.ID = MSG_FIND_GAME;
+INT err = XNetRandom( findGame.Nonce, sizeof(findGame.Nonce) );
+</PRE>
+
+<P>Now the game discovery request can be issued by broadcasting the message to all connected Xbox consoles.</P>
+
+<P>The following code shows how to issue a broadcast game discovery message. Use the broadcast socket created above. The port number you choose for broadcast messages is entirely up to the game. Any port number in the range 1 through 65535 is valid.</P>
+
+<PRE>    
+// Create broadcast address
+SOCKADDR_IN saSendTo;
+saSendTo.sin_family = AF_INET;
+saSendTo.sin_addr.s_addr = INADDR_BROADCAST;
+saSendTo.sin_port = htons( GAME_BROADCAST_PORT );
+
+// Broadcast the message to all system link Xbox consoles
+INT err = sendto( sBrd, (const char*)(&amp;findGame),
+                  sizeof(findGame), 0,
+                  (const sockaddr*)(&amp;saSendTo), 
+                  sizeof(SOCKADDR_IN) );
+</PRE>
+
+<P>The discovery phase must last no longer than three seconds (a system link TCR). If no responses have been received within that time, no game hosts are available and the title should display an appropriate message.</P>
+
+<P>If a response is received, it will contain information about the game host that will allow a secure connection to be established. Multiple responses may be received, indicating that there are multiple game hosts on the network. The Xbox SNL ensures that a title will only send messages to and receive messages from other Xbox consoles running the same game. Details about the host response are given in the next section.</P>
+
+<H2><A NAME="whitepaper_xbox_secure_network_library_xsnl_hosting"></A>Hosting a Game</H2>
+
+<P>Hosting a game requires the same networking startup sequence as described above. To host a game, a title must additionally acquire its Xbox address and create a session key that uniquely identifies the game.</P>
+
+<P>An Xbox address is called an XNADDR. The <A HREF="xbox_xnaddr_xsnl.htm">XNADDR</A> structure contains the information required to completely and uniquely identify any Xbox on either a system link network or on the Internet, even if that Xbox is communicating through network address translation (NAT). The component of the <B>XNADDR</B> structure used by system link play is the Ethernet media access control (MAC) address of the Xbox.</P>
+
+<P>To acquire the Xbox address, call <A HREF="xbox_xnetgettitlexnaddr_xsnl.htm">XNetGetTitleXnAddr</A>. This call is asynchronous, because it requires a few seconds to acquire the IP address. When linking with the current version of the secure library (XNETS.LIB), this call is synchronous, because it only acquires the Ethernet MAC address, but in future online releases, this function will also acquire the IP address, so it's important to check the return value and handle the XNET_GET_XNADDR_PENDING condition.</P>
+
+<PRE>
+XNADDR xnHostAddr;
+DWORD dwStatus;
+do
+{
+   // Repeat while pending; OK to do other work in this loop
+   dwStatus = XNetGetTitleXnAddr( &amp;xnHostAddr );
+} while( dwStatus == XNET_GET_XNADDR_PENDING );
+
+// Error checking
+if( dwStatus == XNET_GET_XNADDR_NONE )
+   return FALSE;
+</PRE>
+
+<P>To create a session identifier, call <A HREF="xbox_xnetcreatekey_xsnl.htm">XNetCreateKey</A> and <A HREF="xbox_xnetregisterkey_xsnl.htm">XNetRegisterKey</A>. The <B>XNetCreateKey</B> function generates an XNKID/XNKEY pair by filling both structures with random numbers. See the section <a href="#whitepaper_xbox_secure_network_library_xsnl_random_number">Random Number Generation</a> for more details. The <B>XNetRegisterKey</B> function informs the network stack to "listen" for incoming requests from other Xbox consoles that are using the same session key.</P>
+ 
+<PRE>
+XNKID xnHostKeyID;
+XNKEY xnHostKey;
+INT err = XNetCreateKey( &xnHostKeyID, &xnHostKey );
+err = XNetRegisterKey( &xnHostKeyID, &xnHostKey );
+</PRe>
+
+<P>When a game session is finished, call <A HREF="xbox_xnetunregisterkey_xsnl.htm">XNetUnregisterKey</A> to stop accepting packets from any Xbox that is using the matching XNKID/XNKEY session.</P>
+
+<P>Once the title has acquired its Xbox address and has registered a session, it's ready to accept game discovery messages and reply with information about the game. The following code creates a socket that listens for broadcast messages.</P>
+ 
+<PRE>
+// Create UDP socket
+SOCKET sLBrd = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
+
+// Bind to INADDR_ANY
+SOCKADDR_IN sa;
+sa.sin_family = AF_INET;
+sa.sin_addr.s_addr = INADDR_ANY;
+sa.sin_port = htons( GAME_BROADCAST_PORT );
+INT err = bind( sLBrd, (const sockaddr*)( &sa ),
+                sizeof( SOCKADDR_IN ) );
+
+// Make socket non-blocking
+DWORD dwNonBlocking = 1;
+err = ioctlsocket( sLBrd, FIONBIO, &dwNonBlocking );
+</PRE>
+
+<P>In the main game loop, check to see if any game discovery messages have been sent from other Xbox consoles.</P>
+ 
+<PRE>
+// See if any game discovery broadcasts have been received
+FindGame findGame;
+INT iBytes = recv( sLBrd, (char*)(&findGame), 
+                           sizeof(findGame), 0 );
+if( iBytes != SOCKET_ERROR && iBytes == sizeof(findGame) )
+{
+   if( findGame.ID == MSG_FIND_GAME )
+      // reply with "game found" message
+}
+</PRE>
+
+<P>Game clients need four important pieces of information to verify the discovery message, display useful information about the session, and establish a secure connection to the game host:</P>
+
+<OL>
+<LI>The nonce received from the client must be sent back so that the client can verify that this response is meant for him. A secure connection between the host and the client hasn't been established yet, so the host must reply with a broadcast message. In order to distinguish the message, the client must compare the nonce it generated with the nonce it receives back from the host. If the nonces match, the message was meant for the client. If not, the client must ignore the message, because it was meant for a different Xbox console.</LI>
+<LI>The session name. If the client displays this name in the list of sessions that can be joined, the session name must be broadcast. The name must be a non-technical descriptive name for the session (system link TCR).</LI>
+<LI>The XNKID/XNKEY pair of the host session. This data will enable a secure session to be established between the host and the client.</LI>
+<LI>The XNADDR of the host. This address will allow messages to be sent directly to the host rather than broadcast to all Xbox consoles.</LI>
+</OL>
+
+<PRE>
+// Game found message payload
+struct GameFound
+{
+   BYTE   ID;           // message ID
+   WCHAR  GameName[32]; // generated by host
+   BYTE   Nonce[8];     // copy of nonce from client
+   XNKID  KeyID;        // from XNetCreateKey()
+   XNKEY  Key;          // from XNetCreateKey()
+   XNADDR HostAddr;     // from XNetGetTitleXnAddr()
+};
+
+// Fill out game found message
+GameFound gameFound;
+gameFound.ID = MSG_GAME_FOUND;
+lstrcpynW( gameFound.GameName, gameName, 32 );
+CopyMemory( gameFound.Nonce, findGame.Nonce, 8 ); // from client
+CopyMemory( &amp;gameFound.KeyID, &amp;xnHostKeyID, sizeof(XNKID) );
+CopyMemory( &amp;gameFound.Key, &amp;xnHostKey, sizeof(XNKEY) );
+CopyMemory( &amp;gameFound.HostAddr, &amp;xnHostAddr, sizeof(XNADDR) );
+</PRE>
+
+<P>The following code shows a typical response by the host to a game discovery message. This message is sent using the same style of broadcast socket that the client used to send the discovery message. Broadcast messages are always encrypted.</P>
+
+<PRE>
+// Create broadcast address using INADDR_BROADCAST
+SOCKADDR_IN saSendTo;
+saSendTo.sin_family = AF_INET;
+saSendTo.sin_addr.s_addr = INADDR_BROADCAST;
+saSendTo.sin_port = htons( GAME_BROADCAST_PORT );
+
+// Broadcast the message to all system link Xbox consoles
+INT err = sendto( sBrd, (const char*)(&amp;gameFound), 
+                  sizeof(gameFound), 0,
+                  (const sockaddr*)(&amp;saSendTo),
+                  sizeof(SOCKADDR_IN));
+</PRE>
+
+<P>Depending on the type of game, additional information could well be included in this message, including the name of the hosting player, the number of players currently in the game, and game statistics.</P>
+
+<H2><A NAME="whitepaper_xbox_secure_network_library_xsnl_connecting"></A>Connecting to a Game</H2>
+
+<P>The client that issued the discovery request can wait up to three seconds to get the list of available hosts (system link TCR). The discovery response is received using the same style of listening socket that the host used when listening for discovery messages. Ignore messages with non-matching nonces, because they are intended for other Xbox consoles that are running the same game and also happen to be in game discovery mode.</P>
+
+<PRE>
+// See if any hosts have responded to game discovery
+GameFound gameFound;
+INT iBytes = recv( sLBrd, (char*)(&amp;gameFound), 
+                           sizeof(gameFound), 0 );
+if( iBytes != SOCKET_ERROR && iBytes == sizeof(gameFound) )
+{
+   if( gameFound.ID == MSG_GAME_FOUND &&
+       memcmp( &amp;gameFound.Nonce, findGame.Nonce, 8 ) == 0 )
+   {
+      // add the session info to the list of sessions
+   }
+}
+</PRE>
+
+<P>Depending on the type of game and the number of sessions, a title may automatically select a session or present the list of sessions and allow the player to choose. Once a session has been selected, the client must register the game's session keys and translate the host XNADDR to an Internet address (IN_ADDR) that can be used to communicate directly with the host. The <B>XNetRegisterKey</B> function informs the network stack to "listen" for incoming messages from other Xbox consoles that are using the same session key.</P>
+
+<PRE>
+INT err = XNetRegisterKey( &amp;gameFound.KeyID, &amp;gameFound.Key );
+</PRE>
+
+<P>The <A HREF="xbox_xnetxnaddrtoinaddr_xsnl.htm">XNetXnAddrToInAddr</A> function converts an Xbox XNADDR to an IP address that is usable by Winsock to communicate directly with that Xbox. The translation requires the session key ID. Be aware that this IN_ADDR is not a "real" IP address. It has the format 0.x.y.z. If an IN_ADDR is transmitted to another Xbox or a PC, the target Xbox/PC cannot use the IN_ADDR, because it is useful only in the context of the Xbox that converted the address. One way to think of the IN_ADDR is as a "handle" to the actual XNADDR. The Xbox SNL knows how to convert this handle into the XNADDR.</P>
+
+<PRE>
+IN_ADDR inHost;
+INT err = XNetXnAddrToInAddr ( &amp;gameFound.HostAddr,
+                               &amp;gameFound.KeyID, &amp;inHost );
+</PRE>
+
+<P>Now both the host and the client have registered the same session key and the client knows the host's unique Xbox address. Now the client can send messages directly to the host. No more broadcast messages are required. The port number you choose for non-broadcast messages is entirely up to the game. Any port number in the range 1 through 65535 is valid. Here's an example of how the client might issue a "join game" message to the host.</P>
+
+<PRe>
+struct JoinGame
+{
+   BYTE ID;              // message ID
+   WCHAR PlayerName[32]; // name of player that wants to join
+};
+
+// Generate the message payload
+JoinGame joinGame;
+joinGame.ID = MSG_JOIN_GAME;
+lstrcpynW( joinGame.PlayerName, playerName, 32 );
+
+// Talk directly with the host
+SOCKADDR_IN saSendTo;
+saSendTo.sin_family = AF_INET;
+saSendTo.sin_addr = inHost; // from XNetXnAddrToInAddr
+saSendTo.sin_port = htons( GAME_DIRECT_PORT );
+
+// Send message directly to host
+INT err = sendto( s, (const char*)(&amp;joinGame), 
+                  sizeof(joinGame), 0,
+                  (const sockaddr*)(&amp;saSendTo),
+                  sizeof(SOCKADDR_IN));
+</PRE>
+
+<P>From this point on, all messages sent between the player and the host can be sent using standard socket calls. The Xbox SNL automatically handles the underlying key exchanges, authentication and encryption of the messages. Any message that has been tampered with or is otherwise bogus will be detected and ignored by the Secure Network Library and will never be propagated to the game.</P>
+
+<H2><A NAME="whitepaper_xbox_secure_network_library_xsnl_allowing_players_to_join"></A>Allowing Players To Join</H2>
+
+<P>When the host game is allowing players to join, it must listen for join messages. Join messages are sent directly from a client Xbox to the host Xbox, so the host Xbox can determine where the message originated. This allows the host to determine the XNADDR of the client. In the game loop, check to see if any join messages have been sent from other Xbox consoles. Note the use of <A HREF="xbox_recvfrom_winsock.htm">recvfrom</A> to determine the source of the message.</P>
+
+<PRE>
+// See if any game join requests have been received.
+// Socket s has been bound to INADDR_ANY, GAME_DIRECT_PORT.
+JoinGame joinGame;
+SOCKADDR_IN saFrom;
+INT iSize = sizeof( SOCKADDR_IN );
+INT iBytes = recvfrom( s, (char*)(&amp;joinGame), sizeof(joinGame), 
+                       0, (sockaddr*)(&amp;saFrom), &amp;iSize );
+if( iBytes != SOCKET_ERROR &amp;&amp; iBytes == sizeof(joinGame) )
+{
+   if( joinGame.ID == MSG_JOIN_GAME )
+      // handle join game message (see below)
+}
+</PRE>
+
+<P>At this point, we have a valid "join game" message and we have some information about the Xbox who sent the message. Specifically, we have the IN_ADDR of the source Xbox. Again, this IP address is not a "real" IP address. The host can continue to use this IN_ADDR to communicate with the client Xbox for the duration of the session, but if the host wants to send this Xbox address to other Xbox consoles, the IN_ADDR must be translated to an XNADDR. To translate an IN_ADDR to an XNADDR, use <A HREF="xbox_xnetinaddrtoxnaddr_xsnl.htm">XNetInAddrToXnAddr</A>. The last parameter of the function is the optional XNKID that can be used to retrieve the session key ID associated with the address. In this case, the host already knows the session key ID, so we pass NULL.</P>
+
+<PRE>
+XNADDR xnClient;
+INT err = XNetInAddrToXnAddr( saFrom.sin_addr, &amp;xnClient, NULL );
+</PRE>
+
+<P>It's up to the title to decide how to handle join requests. If the game is already full, it will most likely issue a "join failed" response. If the join is allowed, the game will respond with a "join approved" message. It may also send additional information about the game and other players in the game.</P>
+
+<H2><A NAME="whitepaper_xbox_secure_network_library_xsnl_distributing_xbox_addresses"></A>Distributing Xbox Addresses</H2>
+
+<P>System link games can choose whatever policy they wish when it comes to player communication. The host can act as the server and all communication can happen between the host and each player (client-server model), or the host can distribute the addresses of all of the Xbox consoles participating in the game and each player can communicate directly with the other players (peer-to-peer model).</P>
+
+<P>To distribute Xbox addresses, the host typically sends the XNADDR of each existing player when a new player joins the game. After that, whenever a new player joins, the host sends the XNADDR of the new player to each existing player.</P>
+
+<P>When a game receives notification of a new player XNADDR, it translates the XNADDR to an IN_ADDR using <B>XNetXnAddrToInAddr</B> and the game session key ID (XNKID). After the translation, the title can throw away the XNADDR (unless it intends to forward the address to another Xbox) and use the IN_ADDR for all future communication.</P>
+
+<P>Never send an IN_ADDR on the wire, because it is useless outside of the Xbox that owns it. Each Xbox must do its own translation of XNADDRs to IN_ADDRs, because each Xbox network stack has its own local table of XNADDRs / IN_ADDRs.</P>
+
+<H2><A NAME="whitepaper_xbox_secure_network_library_xsnl_handling_disconnects"></A>Handling Player Disconnects</H2>
+
+<P>Game developers that write networked PC games often assume that the way a player leaves a networked game is via the UI, which typically invokes a standard termination of sockets (for example, <A HREF="xbox_shutdown_winsock.htm">shutdown</A>, <A HREF="xbox_closesocket_winsock.htm">closesocket</A>, or <A HREF="xbox_wsacleanup_winsock.htm">WSACleanup</A>).</P>
+
+<P>On the Xbox, the ways a player will commonly leave a networked game are by turning off the Xbox or rebooting into a different game. Therefore a game should never rely on a socket getting closed to indicate that a player has left the game.</P>
+
+<P>There are two common methods for detecting when a player has left or a connection has been dropped. One way is to periodically send the other players an "are you there?" message (ping) and see if they respond. Another method is for every player to periodically broadcast an "I'm here" message (heartbeat). Each player keeps track of the other player's heartbeats, and when players don't hear a heartbeat in a fixed period of time, they assume that player left. The <a href="xbox_jbh_samp_net_winsockpeer.htm">WinsockPeer sample</a> in the Xbox SDK uses the heartbeat method, sending heartbeats three times per second and timing out players who haven't sent a heartbeat for two or more seconds.</P>
+
+<H2><A NAME="whitepaper_xbox_secure_network_library_xsnl_udp_vs_tcp"></A>UDP vs. TCP</H2>
+
+<P>The Xbox SNL supports both UDP and TCP protocols. Both protocols are always authenticated and encrypted. UDP is a connectionless, unreliable protocol. UDP packets may arrive out of order, and they may never arrive at all. UDP packets are smaller than TCP packets and generally exhibit better performance. Broadcast messages by definition require UDP. TCP is a connection-oriented, reliable protocol. TCP packets are re-sent if they cannot be delivered and are guaranteed to arrive in the order they were sent. TCP packets are larger than UDP packets.</P>
+
+<P>For system link play, it's uncommon to see UDP packet loss or packet out-of-order issues. UDP is also a better protocol choice for performance reasons. Most multiplayer games choose UDP for these reasons, and many games create their own "reliable UDP" protocols on top of UDP. If performance is not an essential game requirement but reliable packets are key, choose TCP.</P>
+
+<H2><A NAME="whitepaper_xbox_secure_network_library_xsnl_lib_versions"></A>XNet Library Versions</H2>
+
+<P>There are four different versions of the Xbox SNL library, described below. In general, development work will take place using XNET.LIB or XNETD.LIB, and shipping titles will use XNETS.LIB.</P>
+
+<H3><A NAME="whitepaper_xbox_secure_network_library_xsnl_xnet_xnetd"></A>XNET and XNETD Developer Libraries</H3>
+
+<UL>
+<LI>XNETD version includes debugging information, assertions, symbols, and so on. XNET version does not have debugging enabled.</LI>
+<LI>Use these libraries for games in development.</LI>
+<LI>Allows remote debugging of the game.</LI>
+<LI>Allows communication with PCs and other untrusted hosts if XNET_STARTUP_BYPASS_SECURITY is specified in <B>XNetStartup</B>.</LI>
+<LI>Enables unencrypted packets if XNET_STARTUP_BYPASS_ENCRYPTION is specified in <B>XNetStartup</B>.</LI>
+<LI><A HREF="xbox_xnetgetdebugxnaddr_xsnl.htm">XNetGetDebugXnAddr</A> returns the debugger IP address in the <B>ina</B> field of the <B>XNADDR</B>.</LI>
+<LI><A HREF="xbox_xnetgettitlexnaddr_xsnl.htm">XNetGetTitleXnAddr</A> returns the title IP address in the <B>ina</B> field of the <B>XNADDR</B>.</LI>
+</UL>
+
+<H3><A NAME="whitepaper_xbox_secure_network_library_xsnl_xnetsd"></A>XNETSD Secure Library</H3>
+<UL>
+<LI>Includes debugging information, assertions, symbols, and so on.</LI>
+<LI>Use this library for final debugging stages of game or security testing.</LI>
+<LI>Allows remote debugging of the game.</LI>
+<LI>Does not allow communication with untrusted machines, with the exception of the debugger, even if XNET_STARTUP_BYPASS_SECURITY is specified in <B>XNetStartup</B>.</LI>
+<LI>Always transmits encrypted packets, even if XNET_STARTUP_BYPASS_ENCRYPTION is specified in <B>XNetStartup</B>.</LI>
+<LI><B>XNetGetDebugXnAddr</B> returns the debugger IP address in the <B>ina</B> field of the <B>XNADDR</B>.</LI>
+<LI>The <B>ina</B> field of the <B>XNADDR</B> returned by <B>XNetGetTitleXnAddr</B> is empty.</LI>
+</UL>
+
+<H2><A NAME="whitepaper_xbox_secure_network_library_xsnl_xnets"></A>XNETS Secure Libraries</H2>
+<UL>
+<LI>Use this library for shipping titles. Titles must link with this library to pass system link TCRs.</LI>
+<LI>Does not allow remote debugging; must use hard disk logging or other methods for debugging.</LI>
+<LI>Does not allow communication with PCs, even if XNET_STARTUP_BYPASS_SECURITY is specified in <B>XNetStartup</B>.</LI>
+<LI>Always transmits encrypted packets, even if XNET_STARTUP_BYPASS_ENCRYPTION is specified in <B>XNetStartup</B>.</LI>
+<LI><B>XNetGetDebugXnAddr</B> returns XNET_GET_XNADDR_NONE.</LI>
+<LI>The <B>ina</B> field of the <B>XNADDR</B> returned by <B>XNetGetTitleXnAddr</B> is empty.</LI>
+</UL>
+
+<H2><A NAME="whitepaper_xbox_secure_network_library_xsnl_comm_with_dev_sys"></A>Communicating with Development Systems</H2>
+
+<P>By default, an Xbox console may communicate with another Xbox console only using secure communication. All versions of the XNet libraries support secure communication between Xbox consoles. However, if you are linking with the XNet developer libraries (either XNETD.LIB or XNET.LIB), you can also communicate with "untrusted" devices, including PC development systems. To enable communication to untrusted hosts, set the XNET_STARTUP_BYPASS_SECURITY parameter when calling <B>XNetStartup</B>.</P>
+
+<PRE>
+XNetStartupParams xnsp;
+ZeroMemory( &amp;xnsp, sizeof(xnsp) );
+xnsp.cfgSizeOfStruct = sizeof(xnsp);
+xnsp.cfgFlags = XNET_STARTUP_BYPASS_SECURITY;
+INT err = XNetStartup( &amp;xnsp );
+</PRE>
+
+<P>On Xbox development systems, the Xbox IP address is available on the main menu of the XDK Launcher. There are two IP addresses, because the Xbox has two network stacks. You can toggle through the addresses by pressing the Black button on the controller. The "D" address is the address of the debug stack. The debug stack is used by XBDM for remote debugging. Microsoft&reg; Visual Studio&reg; uses this IP address to communicate with the Xbox during remote debugging. The "T" address is the address of the title stack. The title stack is used by games for game networking. The Xbox title IP address can be retrieved programmatically by games linked with the developer library by accessing the XNADDR <B>ina</B> field from the XNADDR returned by <B>XNetGetTitleXnAddr</B>. The debug address can be similarly found using <B>XNetGetDebugXnAddr</B>.</P>
+
+<P>From the PC side, an application may call <B>DmGetAltAddress</B> to retrieve the title IP address for the Xbox. For more details, see the <A HREF="xbox_jbh_debugapi_intro.htm">Debugger API</A> section in the Xbox Development Kit documentation.</P>
+
+<P>The code shown above will compile and link successfully with the Xbox secure libraries (XNETS.LIB and XNETSD.LIB), but the XNET_STARTUP_BYPASS_SECURITY parameter will be ignored, and connections to untrusted hosts will fail. The ina field of the XNADDR returned by <B>XNetGetTitleXnAddr</B> will also be empty.</P>
+
+<P>When linking with XNETSD.LIB, the debugging version of the secure library, only XBDM (debugger) communication is allowed to untrusted hosts. In other words, <B>XNetGetDebugXnAddr</B> will return the IP address of the debug stack when linking with XNETSD.LIB, but <B>XNetGetTitleXnAddr</B> will not return a valid IP address when linking with either XNETSD.LIB or XNETS.LIB.</P>
+
+<H2><A NAME="whitepaper_xbox_secure_network_library_xsnl_random_number"></A>Random Number Generation</H2>
+
+<P>For maximum security, use the <A HREF="xbox_xnetrandom_xsnl.htm">XNetRandom</A> function whenever you need to generate nonces or other random data sent on the wire. All random keys (including XNKID/XNKEY pairs), nonces, and encryption initialization vectors created by the Xbox SNL are generated using this function. <B>XNetRandom</B> uses an algorithm for generating random bits based on RFC 1750 (Randomness Recommendations for Security; see <A HREF="http://www.faqs.org/rfcs/rfc1750.html" target="blank">http://www.faqs.org/rfcs/rfc1750.html</A>). Randomness is not based on predictable pseudo-random mathematical number generators. Instead, randomness is generated using a combination of random input sources, including physical sources of entropy such as hard disk seek time. This technique creates cryptographically strong random bits that prevent an adversary from guessing keys, nonces, or other generated values.</P>
+
+<!--
+
+
+<H2><A NAME="whitepaper_xbox_secure_network_library_xsnl_auth"></A>Authentication</H2>
+
+<P>All Xbox network traffic is authenticated. The authentication algorithm is an industry standard keyed message authentication code based on a one-way hash function. The hash is generated by the sender and included in each Xbox packet. The receiver generates a corresponding hash based on the incoming packet data and compares it with the hash that was sent. If the hashes don't match, the packet has been tampered with and is ignored. The Xbox SNL never propagates invalid packets to the title level. The authentication mechanism inhibits common network cheats, such as packet spoofing, buffer overruns, and other packet tampering.</P>
+
+<H2><A NAME="whitepaper_xbox_secure_network_library_xsnl_encrypt"></A>Encryption</H2>
+
+<P>All Xbox network traffic is encrypted. Broadcast packets are encrypted with a title-specific key. Packets sent directly from one Xbox to another are encrypted with a unique key known only by the pair. The encryption phase occurs prior to the authentication phase so that the hash is based on the encrypted bits. The encryption method is based on an industry standard symmetric encryption cipher. Xbox-to-Xbox traffic uses one form of industry-standard symmetric encryption and Xbox-to-server traffic uses a more robust industry-standard algorithm. All encryption and decryption is handled automatically by the Xbox SNL. Any packet received by an Xbox that fails the decryption phase is considered invalid and never propagates to the title level.</P>
+
+<H2><A NAME="whitepaper_xbox_secure_network_library_xsnl_turn_off_en"></A>Turning off Encryption During Development</H2>
+
+<P>By default, all traffic in and out of an Xbox console is encrypted. However, if you are linking with the XNet developer libraries (either XNETD.LIB or XNET.LIB), you can send packets in the clear, which can be useful when using packet sniffers for debugging or logging. 
+To enable unencrypted packets, set the XNET_STARTUP_BYPASS_ENCRYPTION parameter when calling <B>XNetStartup</B>. This parameter can be OR'd with other startup parameters for cumulative effects.</P>
+
+<PRE>
+XNetStartupParams xnsp;
+ZeroMemory( &amp;xnsp, sizeof(xnsp) );
+xnsp.cfgSizeOfStruct = sizeof(xnsp);
+xnsp.cfgFlags = XNET_STARTUP_BYPASS_ENCRYPTION; // can be OR'd with other params
+INT err = XNetStartup( &amp;xnsp );
+</PRE>
+
+<P>The code shown above will compile and link successfully with the Xbox secure libraries (XNETS.LIB and XNETSD.LIB), but the XNET_STARTUP_BYPASS_ENCRYPTION parameter will be ignored, and all packets will be encrypted.</P>
+
+<H2><A NAME="whitepaper_xbox_secure_network_library_xsnl_format"></A>Xbox Packet Format</H2>
+
+<P>Xbox packets conform to RFC 2406 (IP Encapsulating Security Payload; see <A HREF="http://www.faqs.org/rfcs/rfc2406.html" target="blank">http://www.faqs.org/rfcs/rfc2406.html</A>), with the addition of a UDP header immediately following the IP header. The general format of the packet is as follows:</P>
+<TABLE>
+    <TR>
+		<TH>Description</TH>
+        <TH>Size (bytes)</TH>
+        <TH>Authenticated</TH>
+        <TH>Encrypted</TH>
+	</TR>
+    <TR>
+        <TD>IP header</TD>
+        <TD>20</TD>
+        <TD>no</TD>
+        <TD>no</TD>
+    </TR>
+    <TR>
+        <TD>UDP header (NAT header)</TD>
+        <TD>8</TD>
+        <TD>no</TD>
+        <TD>no</TD>
+    </TR>
+    <TR>
+        <TD>ESP header (security data)</TD>
+        <TD>8</TD>
+        <TD>yes</TD>
+        <TD>no</TD>
+    <TR>
+		<TD>Encryption IV</TD>
+        <TD>8</TD>
+        <TD>yes</TD>
+        <TD>no</TD>
+	</TR>
+    <TR>		
+        <TD>True UDP or TCP header</TD>
+        <TD>8/20</TD>
+        <TD>yes</TD>
+        <TD>yes</TD>
+	</TR>
+    <TR>		
+        <TD>Message payload</TD>
+        <TD>variable</TD>
+        <TD>yes</TD>
+        <TD>yes</TD>
+	</TR>
+    <TR>		
+        <TD>Padding</TD>
+        <TD>2-9</TD>
+        <TD>yes</TD>
+        <TD>yes</TD>
+	</TR>
+    <TR>		
+        <TD>ICV authentication data</TD>
+        <TD>12</TD>
+        <TD>no</TD>
+        <TD>no</TD>
+	</TR>
+</TABLE>
+
+<P>The outer UDP header forces all packets to use exactly one UDP source port no matter how many actual source ports the game uses. This is essential for Xbox packets to communicate through NATs, a key requirement for future Internet games. This also means that every port number in the range 1 through 65535 is available for Xbox games, because that port number is contained in the "true" UDP/TCP header; there are no reserved ports. The single UDP source port used by the outer header is the Xbox Game Port, 3074, registered with the Internet Assigned Numbers Authority (IANA).</P>
+
+<P>Notice that the IP and outer UDP header are neither authenticated nor encrypted. The Xbox assumes that these fields can and will be spoofed. The Xbox uses the information in the authenticated UDP or TCP header only when reading the packet.</P>
+
+<P>The Encryption IV is the initialization vector (IV). The IV is random data used during the encryption process to guarantee that even if the same payload is sent more than once, it will always encrypt to different ciphertext. The ICV is the integrity check value, or the authentication hash.</P>
+
+<P>The size of the padding depends on the payload size. Two bytes are always required to store padding information. Packets must have a payload that's divisible by eight, so up to seven additional bytes may be added. To avoid wasted space in your packets, always send a payload that is a multiple of 8 bytes.</P>
+
+<P>The maximum UDP payload size is 1,430 bytes. The maximum TCP payload size for a single unfragmented packet is 1,418 bytes. TCP send buffers larger than 1,418 bytes are split automatically into multiple packets and reassembled automatically by the recipient.</P>
+
+<H2><A NAME="whitepaper_xbox_secure_network_library_xsnl_overhead_and_perf"></A>Secure Library Overhead and Performance</H2>
+
+<P>Compared to typical UDP/TCP packets, an Xbox packet includes the additional UDP header (8 bytes), the ESP header (8 bytes), the IV (8 bytes), and the ICV (12 bytes). Packets have a padding of 2 to 9 bytes. That means that Xbox packets are 38 to 45 bytes larger than their unauthenticated and unencrypted PC cousins. Because the Xbox uses a broadband connection, this overhead is less significant than it would be for narrowband. The advantage is that all Xbox communication is secure.</P>
+
+<P>The authentication and encryption algorithms were chosen not only for their security but also for their performance characteristics. Sending a 1-KB payload with the Xbox SNL takes approximately 0.00012 seconds. That includes the time to allocate the packet, fill it in, compute normal UDP and IP checksums, encrypt the payload, compute the hash, and transmit the packet. The time overhead is linear based on packet size. Transmit and receive performance can be roughly computed as:</P>
+
+<P>x = payload size in bytes</P>
+<P>t = (10<SUP>-8</SUP>)x + 16<SUP>-6</SUP> = transmission/receive time in seconds</P>
+<P>For example, sending a 512-byte payload takes approximately</P>
+<P>t = (10<SUP>-8</SUP>)(512) + 16<SUP>-6</SUP> = 51.2<SUP>-6</SUP> + 16<SUP>-6</SUP> - 67<SUP>-6</SUP> seconds = 67 microseconds</P>
+
+<P>CPU usage is another important gauge of performance. The next table shows the CPU usage required to send payloads ranging in size from 32 bytes to 1 KB, assuming those payloads are sent 20 times per second.</P>
+
+<TABLE>
+<TR>
+<TH>Payload size (bytes)</TH>
+<TH>CPU Usage</TH>
+</TR>
+<TR>
+<TD>32</TD>
+<TD>0.04%</TD>
+</TR>
+<TR>
+<TD>64</TD>
+<TD>0.04%</TD>
+</TR>
+<TR>
+<TD>128</TD>
+<TD>0.05%</TD>
+</TR>
+<TR>
+<TD>256</TD>
+<TD>0.08%</TD>
+</TR>
+<TR>
+<TD>512</TD>
+<TD>0.13%</TD>
+</TR>
+<TR>
+<TD>1,024</TD>
+<TD>0.23%</TD>
+</TR>
+</TABLE>
+
+<P>These results show that even when sending 20 KB of encrypted and authenticated data per second, CPU usage is less than a quarter of 1 percent! The results for receiving data are almost exactly the same.</P>
+
+<H2><A NAME="whitepaper_xbox_secure_network_library_xsnl_key_exchange"></A>Key Exchange</H2>
+<P>For secure communication to take place between two Xbox consoles, the consoles must agree on the keys used to encrypt, decrypt, and authenticate packets. When a title sends the first packet to an IP address obtained by the call to <B>XNetXnAddrToInAddr</B>, the Xbox network stack detects that no security association is established between the game client and destination Xbox. At this point, the two Xbox consoles transparently and automatically engage in a key exchange transaction. In the examples shown above, this key exchange transaction happens whenever a client sends the "join game" message directly to the game host.</P>
+
+<P>Xbox key exchange uses an industry standard secure key exchange algorithm that requires significant CPU time. Approximately 13 milliseconds are required to compute keys. Both the host and client perform this computation. This performance characteristic may improve in future versions of the library. In the meantime, be aware of the potential performance impact, particularly for games that support "join in progress."</P>
+
+<H2><A NAME="whitepaper_xbox_secure_network_library_xsnl_prevention"></A>How the Xbox Prevents Common Hacker Attacks</H2>
+
+<P>The Xbox SNL is designed to prevent many common network cheats and hacker attacks. By handling these attacks within the network stack itself, the Xbox insulates network games from having to individually deal with these issues. It also ensures that network performance is maximized, because bad packets can be detected and ignored at a low level. The following table describes common game cheats and how the Xbox inhibits that cheat.</P>
+
+<TABLE>
+<TR>
+<TH>Cheat</TH>
+<TH>Xbox Detection/Prevention</TH>
+</TR>
+<TR>
+<TD>Packet sniffing</TD>
+<TD>All packets are encrypted, so the packet contents are concealed and confidential.</TD>
+</TR>
+<TR>
+<TD>Packet tampering</TD>
+<TD>The true TCP/UDP portion of the Xbox packet and the payload is always authenticated and encrypted. Modifications to the packet cause the packet to fail authentication. Invalid packets are ignored by the Xbox SNL.</TD>
+</TR>
+<TR>
+<TD>Packet spoofing</TD>
+<TD>In a shipping game, an Xbox can send data only to other Xbox consoles and can receive data only from other Xbox consoles. Packets sent from a PC masquerading as an Xbox will be ignored, because a PC does not have the data required to emulate an Xbox.</TD>
+</TR>
+<TR>
+<TD>Buffer overruns</TD>
+<TD>Generating a buffer overrun requires a hacker to modify a packet so that it contains (or seems to contain) more data than the receiver expects. A modified packet will fail authentication and will be ignored.</TD>
+</TR>
+<TR>
+<TD>Replay attacks</TD>
+<TD>Xbox packets contain sequence numbers. The sequence number is authenticated, so any changes to the number will cause the packet to fail authentication. If an unchanged packet is re-sent, the destination Xbox will detect that the sequence number is out of range and the packet will be ignored.</TD>
+</TR>
+<TR>
+<TD>Denial of service</TD>
+<TD>The first line of denial of service defense is the ESP header portion of the Xbox packet. It contains security parameters and sequencing data that are checked before any other items in the packet. A flooder program would have difficulty replicating this data. The ESP can be checked without performing the hash authentication, so it's a very fast check. The second line of defense is the authentication itself. Although a flooding program could force the Xbox to authenticate packets, authentication is so fast that the flooding program would have to have very high throughput to adversely affect a game.</TD>
+</TR>
+</TABLE>
+
+-->
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

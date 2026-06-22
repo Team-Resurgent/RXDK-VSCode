@@ -1,0 +1,60 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Garbage Collection</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Garbage Collection"/>
+<MSHelp:Keyword Index="F" Term="Garbage Collection"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H3><A NAME="_dx_garbage_collection_dxaudio"></A>Garbage Collection</H3>
+
+<P>Caching of loaded objects can lead to wasted memory when an application loads many objects, particularly objects that reference other objects. </P>
+
+<P>When automatic caching is enabled, as it is by default, every object loaded by <A HREF="_dx_idirectmusicloader8_getobject_dxaudio.htm"><B>IDirectMusicLoader8::GetObject</B></A> is cached, including objects that are loaded by reference. For example, if you call <B>GetObject</B> on a segment, and that segment contains a reference to a script, the script is loaded and cached as well.</P>
+
+<P>In order to clean up objects that are not in use, call <A HREF="_dx_idirectmusicloader8_collectgarbage_dxaudio.htm"><B>IDirectMusicLoader8::CollectGarbage</B></A>. This method releases all objects from the cache except objects directly loaded by <B>GetObject</B> and objects referenced by them. <B>CollectGarbage</B> clears an object from the cache by releasing the loader's COM reference to the object (for information on the Xbox implementation of COM, see <A HREF="_dx_iunknown_interface_dxintro.htm"><B>Using the IUnknown Interface Methods</B></A>). If the object's reference count drops to zero as a result, the object destroys itself, thus making its memory available again.</P>
+
+<P>In summary, to ensure that loaded objects do not remain in memory when no longer needed, you need to do the following:
+
+<UL>
+	<LI>Call <B>CollectGarbage</B> to release the loader's reference to any objects that were loaded indirectly.</LI>
+
+	<LI>Call <B>Release</B> on any pointers held by your application.</LI>
+</UL>
+
+<P>A complication arises when objects have circular references to one another. Suppose a segment contains a reference, by way of its script track, to a script object, and the script contains a reference to the segment. You load the segment directly by calling <B>GetObject</B>, and the script is loaded indirectly. Then you release the segment from the cache by using <B>ReleaseObjectByUnknown</B>, and call <B>Release</B> on your application's reference to it. The segment continues to exist because there is still one COM reference to it, which is held by the script object. The script is now garbage, because it is not referenced by any other object in the cache. Without taking special measures, however, <B>CollectGarbage</B> could only release the loader's reference to the script; therefore its reference count would not drop to zero. The segment and script would continue to be referenced by one another, and although both were removed from the cache, they would both continue to exist in memory.</P>
+
+<P>To avoid this problem, <B>CollectGarbage</B> calls an internal method on an object that forces the object to release its references to other objects. In the example above, it causes the script to release its reference to the segment. The segment's reference count drops to zero, and in the course of destroying itself, the segment releases its reference to the script, thus allowing the script to destroy itself when the loader releases its reference.</P>
+
+<P>There is one more complication, however. Suppose the application has obtained an interface to the script that the loader knows nothing about, and neglects to call <B>Release</B> on this pointer. The script continues to exist, but it might not be able to behave as it should, because it no longer has a reference to the segment. Calling a method on the script could lead to a fatal error. To prevent this, <B>CollectGarbage</B> ensures that all methods on the script return DMUS_S_GARBAGE_COLLECTED. </P>
+
+<P>This scenario does not affect most applications. However, you should be aware that calling a method on an object that has been cleared from the cache by <B>CollectGarbage</B> might not yield the desired result.</P>
+
+<P>The following sample code, where m_pLoader is an <A HREF="_dx_idirectmusicloader8_dxaudio.htm"><B>IDirectMusicLoader8</B></A> interface and <I>m_pPerformance</I> is an <A HREF="_dx_idirectmusicperformance8_dxaudio.htm"><B>IDirectMusicPerformance8</B></A> interface, loads a script that contains a reference to a segment. After calling a routine in the script, the example removes the script object from the cache and then calls <B>CollectGarbage</B> to free the segment object. If the segment contains a reference to the script, this is released so that the script can be destroyed, in turn releasing the segment and allowing it to be destroyed.</P>
+
+<PRE>// Load script and call routine.
+ 
+IDirectMusicScript8 *pScript;
+ 
+m_pLoader-&gt;GetObject(scriptdesc, IID_IDirectMusicScript8, &amp;pScript);
+pScript-&gt;Init(m_pPerformance, NULL);
+pScript-&gt;CallRoutine("DoorSlam", NULL);
+ 
+// Release script object and collect garbage.
+ 
+pLoader-&gt;ReleaseObjectByUnknown(pScript);
+pLoader-&gt;CollectGarbage();
+pScript-&gt;Release();
+</PRE>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

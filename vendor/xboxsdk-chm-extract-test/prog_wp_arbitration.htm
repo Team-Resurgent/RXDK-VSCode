@@ -1,0 +1,183 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Xbox Live Arbitration: Minimizing Online Cheating</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Xbox Live Arbitration: Minimizing Online Cheating"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+  <MSHelp:Keyword Index="K" Term="arbitration in Xbox Live"/>
+  <MSHelp:Keyword Index="K" Term="cheating, minimizing"/>
+  <MSHelp:Keyword Index="K" Term="Player Reliability Rating"/>
+  <MSHelp:Keyword Index="K" Term="PRR (Player Reliability Rating)"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Xbox Live Arbitration: Minimizing Online Cheating</h1>
+<p><i>By Michal Bortnik, Program Manager, Xbox Live</i></p><p>Cheating has consistently plagued online gaming and choked many promising online communities. Common methods of cheating can be categorized into hacks (for example, executing modified code to walk through walls), game exploits (for example, pausing a game for hours to force the opponent to quit) and network exploits (for example, deploying packet filters to alter the course of a game). Xbox <i>Live</i><sup style="font-size:smaller">TM</sup> continuously addresses all three categories, since one of our pillars is maintaining a secure arena for fair online play. To learn about our approach to hackers and Xbox <i>Live</i> hacks, see the <a href="prog_wp_xbox_security_architecture.htm">Xbox Security Architecture</a> white paper. The Xbox <i>Live</i> Arbitration Service has been designed with the last two categories of cheating in mind. Arbitration targets network exploits and assists game developers in preventing game exploits.</p><p>This paper is intended for game developers who are interested in designing secure and fair online play. The paper describes the role of the Arbitration Service in minimizing online cheating, the Player Reliability Rating (PRR) used to settle score disputes, as well as best practices for integrating Arbitration and PRR into your game.</p><h2><a name="IDAIJFBB"></a>What problems matter most?</h2>
+<p>The value of the Arbitration Service is best understood in terms of the common problems it solves, such as:</p><ul>
+  <li>Plug pulling</li>
+  <li>Port blocking</li>
+  <li>Packet flooding</li>
+</ul>
+<p>To preserve the integrity of reported scores, the Arbitration Service imposes the following limitations:</p><ul>
+  <li>Join-in-progress games are not supported. All players must preregister with Arbitration before the match begins. Note that Arbitration does support a join-in-progress session if the session is divided into a series of short rounds, which do not allow join-in-progress.</li>
+  <li>Single-player games are not supported. At least two players must register for a session in order for Arbitration to approve final results.</li>
+  <li>Multiplayer sessions with more than 256 players are not supported.</li>
+  <li>In extreme cases, when no trustworthy results are submitted, it is possible that Arbitration rejects all submissions and records no results for the session.</li>
+</ul>
+<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;An underlying assumption in the design of the Arbitration Service is that no player is running modified code while logged on to Xbox <i>Live</i>. A number of existing security measures make it almost impossible to sneak a modified Xbox&reg; system into the Xbox <i>Live</i> service. If a modified Xbox ever succeeds in penetrating our defenses, it will be able to disrupt (but not alter) game results.</p><h2><a name="IDAKKFBB"></a>What is Arbitration?</h2>
+<p>Arbitration is a new Xbox <i>Live</i> service that supervises registered game sessions in an automated way. Arbitration enables accurate score reporting for all ranked games, including tournament matches. Before game play begins, each Xbox registers with the server. At the end of the game, each Xbox submits a complete game report containing information about all players in the session. Based on the received submissions, Arbitration makes the binding decision about the final outcome of the match. In case of a dispute, Arbitration looks up the past profiles of each of the players to settle the differences.</p><h2><a name="IDASKFBB"></a>What is a Player Reliability Rating (PRR)?</h2>
+<p>Player Reliability Rating (PRR) is a per-player, per-title value that reflects a player's reliability in submitting game scores to Xbox <i>Live</i>. PRR produces meaningful and fair ratings for almost all players in the long run. As mentioned above, PRR is used to settle disputes when players submit conflicting game results. When resolving score disputes, Arbitration sides with the group of players who demonstrate a higher total PRR than the contesting faction. Specifically, PRR is currently applied to:</p><ul>
+  <li>Determine whether to declare a Majority Quorum in a session.</li>
+  <li>Determine whether to declare a Non-Majority Quorum in a session.</li>
+  <li>Select a winner in a Competition Event for which no scores are available (for example, due to QoS/NAT issues preventing two checked-in players from establishing a game session).</li>
+</ul>
+<p>Player Reliability Rating is updated at the completion of every arbitrated session, according to a carefully tuned internal statistical model.</p><p>The PRR model adheres to the following rules:</p><ul>
+  <li>New players' ratings are always in between the worst and the best in the system.</li>
+  <li>Cheaters accumulate a worse rating than non-cheaters in the long run.</li>
+  <li>Plug pullers accumulate a worse rating than players who complete their games.</li>
+</ul>
+<h2><a name="IDAOLFBB"></a>Arbitrated Session Flow</h2>
+<p>We recommend the following sequence of steps for best results. Degenerate cases that may result are addressed in the <a href="prog_wp_arbitration.htm#anomalies">Anomalies</a> section.</p><p>An arbitrated session consists of the following phases:</p><ol>
+  <li><a href="prog_wp_arbitration.htm#pregame">Pregame</a></li>
+  <li><a href="prog_wp_arbitration.htm#registration">Registration</a></li>
+  <li><a href="prog_wp_arbitration.htm#gameplay">Gameplay</a></li>
+  <li><a href="prog_wp_arbitration.htm#score_reporting">Score Reporting</a></li>
+
+</ol>
+<h2><a name="pregame"></a>1. Pregame</h2>
+<p>1.1. A player creates a session with Matchmaking, becoming the Match Host.</p>
+<pre class="clsCode">
+HRESULT XOnlineMatchSessionCreate(
+    DWORD dwPublicFilled,
+    DWORD dwPublicOpen,
+    DWORD dwPrivateFilled,
+    DWORD dwPrivateOpen,
+    DWORD dwNumAttributes,
+    PXONLINE_ATTRIBUTE pAttributes,
+    HANDLE hWorkEvent,
+    PXONLINETASK_HANDLE phTask
+);
+</pre>
+    <p>1.2. Other players discover the session and obtain a SessionID via Matchmaking or Presence. They establish peer-to-peer connections with the Match Host.</p>
+<pre class="clsCode">
+HRESULT XOnlineMatchSearchGetResults(
+    XONLINETASK_HANDLE hTask,
+    PXONLINE_MATCH_SEARCHRESULT **prgpSearchResults,
+    DWORD *pdwReturnedResults
+);
+</pre>
+    <p>1.3. Players get together in the pregame lobby and agree on game settings. Eventually, they reach a "commit point" and the game session is about to begin. The registration process begins. 
+Note that at this point, players must be notified that an Arbitrated session is about to begin and that disconnects will be penalized.</p><h2><a name="registration"></a>2. Registration</h2>
+<p>2.1. The Match Host verifies that <a href="xbox_xnaddr_xsnl.htm">XNADDR</a>s for all Xbox consoles participating in the game have been shared with everybody else. This is necessary to guarantee that the remaining players can continue to communicate in the event the Match Host should disconnect.</p><p>2.2. The Match Host generates a RoundID (using the Client API) for each arbitrated session. The triplet of ArbitrationID (<a href="xbox_xnkid_xsnl.htm">XNKID</a> of the match host), RoundID, and TitleID (assigned before game is released) uniquely identifies each arbitrated session on the system. RoundID is a required element of registration, because multiple game rounds can be played in one Matchmaking session.</p>
+<pre class="clsCode">
+HRESULT XOnlineArbitrationCreateRoundID(
+    OUT ULONGLONG* pqwRoundID
+    );
+</pre>
+    <p>2.3. The Match Host requests that each Xbox register with the Arbitration Server immediately, and then notify the Match Host when the registration is successfully completed.</p><p>2.4. Each client registers for the session, providing ArbitrationID, RoundID, TitleID, and MaxSessionDuration, as well as session flags indicating whether overtime is allowed, whether it's a team or FFA session, and whether it's a Competition match, and if so, the type (Player- or Publisher-managed; see the <a href="prog_wp_Xbox_Live_Competitions.htm">Competitions on Xbox Live</a> white paper for details). The parameters (<i>flags</i> and <i>MaxSessionDuration</i>) passed by all participants of the same session must be exactly the same.</p>
+<pre class="clsCode">
+HRESULT XOnlineArbitrationRegister(
+    IN XNKID* pxnkidSessionID,
+    IN ULONGLONG* pqwRoundID,
+    IN DWORD dwMaxRoundSeconds,
+    IN DWORD dwFlags,
+    IN HANDLE hWorkEvent,
+    OUT XONLINETASK_HANDLE* phTask
+    );
+</pre>
+    <p>The flag XONLINE_ARBITRATION_REGISTERFLAG_TEAMS should be set when the game will update team stats or if the game is a team competition match.</p><p>2.5. The Match Host waits for everybody to notify it that registration is complete or waits a certain timeout period (5&#8211;10 seconds), whichever comes first.</p><p>2.6. The Match Host registers with Arbitration and verifies the list of connected players with the list of registered players. The Match Host then disconnects from all the players who have failed to register and broadcasts the final registration list to all remaining players. This list of registrants should be the official list used during the game. Any Xbox that doesn't make it into that list must be disconnected from the game session.</p>
+<pre class="clsCode">
+HRESULT XOnlineArbitrationGetRegisterResults(
+    IN XONLINETASK_HANDLE hTask,
+    OUT DWORD* pdwAddressesRegisteredSoFar,
+    OUT XNADDR* pAddressesRegisteredSoFar,
+    OUT BYTE* pAddressTrustworthinessValues,
+    );
+</pre>
+    <p>2.7. If a client loses connectivity to the Match Host after it registers, but before game play starts, it should report to Arbitration with an accurate lost connectivity report and no stats submission. Then it can proceed to find another game session.</p><p>2.8. Using the registration list as a reference, the clients can optionally perform a pairwise peer-to-peer QoS check. The goal of this optimization is to elect the client with best relative connectivity, QoS, and Reliability values to be the Game Host (if the game is not pure peer-to-peer). </p><p>2.9. The Match Host updates all clients with information about the new Game Host and cedes control of the game to the new Game Host.</p><p>2.10. All clients verify their connection to the new Game Host.</p><h2><a name="gameplay"></a>3. Gameplay</h2>
+<p>3.1. The Game Host officially starts the game.</p><p>3.2. Gameplay begins.</p><p>3.3. Time extensions to the arbitrated session are requested and granted as appropriate. Each client should make its own time extension call. For more details, see 
+<a href="prog_wp_arbitration.htm#managing_session_time">Managing Session Time</a> below.</p>
+<pre class="clsCode">
+XOnlineArbitrationExtendRound(
+    IN XNKID* pxnkidSessionID,
+    IN ULONGLONG* pqwRoundID,
+    IN DWORD dwMaxSecondsFromNow,
+    IN HANDLE hWorkEvent,
+    OUT XONLINETASK_HANDLE* phTask
+    );
+</pre>
+    <p>3.4. For handling midgame problems and errors, see the <a href="prog_wp_arbitration.htm#anomalies">Anomalies</a> section.</p><p>3.5. Gameplay ends.</p><h2><a name="score_reporting"></a>4. Score Reporting</h2>
+<p>4.1. Clients exchange their impression of the final results with each other.</p><p>4.2. Each client individually sends the complete game report to the Arbitration Service. The submitted stats info should include stat changes to all players participating in the session. The stats info submitted must match exactly for all clients that still have connectivity at the end of the game. Before sending a score report, make sure that any stats or competition results submitted by each Xbox at the end of the game session match exactly, byte for byte.</p>
+<pre class="clsCode">
+HRESULTS XOnlineArbitrationReport(
+    IN XNKID* pxnkidSessionID,
+    IN ULONGLONG* pqwRoundID,
+    IN DWORD dwNumStatProcs,
+    IN const XONLINE_STAT_PROC* pStatProcs,
+    IN DWORD dwNumLostConnectivityAddresses;
+    IN const XNADDR* pxnaddrLostConnectivityAddresses;
+    IN const XONLINE_ARBITRATION_SUSPICIOUS_INFO* pSuspiciousInfoType1,
+    IN const XONLINE_ARBITRATION_SUSPICIOUS_INFO* pSuspiciousInfoType2,
+    IN const XONLINE_ARBITRATION_SUSPICIOUS_INFO* pSuspiciousInfoType3,
+    IN void* pvTournamentBundle,
+    IN DWORD dwFlags,
+    IN HANDLE hWorkEvent,
+    OUT XONLINETASK_HANDLE* phTask
+    );
+</pre>
+    <p>4.3. The Arbitration Service collects and validates the client reports and either invalidates the session or records the final results.</p><p>4.4. The Arbitration Service updates the Player Reliability Ratings for all involved parties.</p><h2><a name="IDA4PFBB"></a>Competition (Tournament) Sessions Flow</h2>
+<p>Competition Matches flow the same as above with these exceptions:</p><ul>
+  <li>The final results are posted both in Stats and in the Competitions Service.</li>
+  <li>The updates to Player Reliability Ratings are amplified depending on which Tournament flags are set.</li>
+</ul>
+<h2><a name="anomalies"></a>Anomalies</h2>
+<dl>
+<dt><p>Pure peer-to-peer games</p></dt>
+<dd><p>If the game is a peer-to-peer game and no Game Host is used, then as connectivity is lost to some peers, the game can proceed without those peers and appropriately penalize the stats of players on the disconnecting peers. Alternatively, the game can decide that not enough people are left to play a meaningful game and terminate the game by synchronizing stats for all remaining peers. This requires each peer to send a report with the accurate stats submission and lost connectivity information.</p></dd>
+<dt><p>Game Host&#8211;based games</p></dt>
+<dd><p>If during the game a client loses connectivity to the Game Host, the client should attempt to establish communication with the other participants in the session.</p></dd>
+<p>The goal is to either synchronize stats and send a Score Report, or to re-elect a new Game Host and finish the game. In either case, the stats submission must still include stats changes for all the players who are no longer connected to the session. The game can optionally penalize those disconnected players by modifying stats in whatever way that is appropriate for the game.</p>
+</dl>
+<h2><a name="IDAEZFBB"></a>Best Practices</h2>
+<ul>
+  <li>Don't arbitrate private sessions and, conversely, don't allow Friend invites into arbitrated sessions (except for a slot on the same team as the inviter). Remember that all arbitrated sessions modify the Player Reliability Rating. For this reason, Arbitration should be used exclusively for public, randomly matched ranked games.</li>
+  <li>Enforce anonymous Matchmaking for arbitrated games to prevent friends from artificially boosting their PRRs. Make it difficult to predict who your opponent will be.</li>
+  <li>Do not allow Guests in arbitrated sessions. Guests do not have PRRs and can therefore jeopardize a session without penalty.</li>
+  <li>If you must ignore the above, make sure that players logged on as Guests play on the same team as the Guest's host in team vs. team games.</li>
+  <li>Keep team vs. team games balanced. Terminate any session that becomes unbalanced due to drops.</li>
+  <li>Expose the VoluntaryQuit option in the game UI, to allow players who are being verbally harassed or attacked to leave an arbitrated session. Just as in every arbitrated session, the PRR of each player is still affected, but if the player who uses the VoluntaryQuit option has a better PRR than the remaining player or players, no stats are recorded for that session.</li>
+  <li>Do not register for an arbitrated session until the full set of participants has been finalized and locked down.</li>
+  <li>Verify all corner cases to make sure that single-player sessions are prevented.</li>
+  <li>Players should not be able to deduce who the Game Host is from the game UI. This added protection makes it more difficult for cheaters to attack the Game Host.</li>
+</ul>
+<h2><a name="managing_session_time"></a>Managing Session Time</h2>
+<ul>
+  <li>Allocate time to your arbitrated session conservatively. We recommend maintaining a 30-percent margin at any point during the session. If you have a fixed-length sessions, request 30 percent extra time. If you have a variable-length session, request time extension when you reach two-thirds of the originally allocated time. Do <i>not</i> call time extension more frequently than every five minutes.</li>
+  <li>Enforce a limit on the total amount of stoppage time (for example, Pause menu) on players in an arbitrated session.</li>
+</ul>
+<h2><a name="IDAJ0FBB"></a>Disconnect and CompNoShow ratings</h2>
+<p>The Arbitration Service collects specific information related to a player's reliability in submitting accurate score reports. Although it's frequently impossible to determine which player or players were at fault when large multiplayer sessions go awry, we can detect with high confidence player disconnects. Additionally, we can detect no-shows for tournament matches.</p><p>The Xbox <i>Live</i> Service exposes a player's relative rating for disconnects and no-shows. Titles can use this information for Matchmaking, Sportsmanship Profiles, unlocking bonus content, or awarding trophies.</p><p>This information is returned with the user logon ticket, in the <b>dwUserFlags</b> member of the <a href="xuid.htm">XUID</a> structure. Disconnects and no-show ratings are on the scale from 0 (abysmal) to 7 (exceptional).</p><h2><a name="IDAZ0FBB"></a>Extending Arbitration with Suspicious Info</h2>
+<p>The Arbitration system cannot prevent game-specific abuses and exploits, but each title can verify that its internal limits are not broken. It is recommended that titles inject game-specific anticheating checks. For example, there should be a theoretical limit on how fast a player can run or how fast a car can complete a certain course. If scores collected from other players in the session exceed such limits, game code should register that fact using Suspicious Info flags. Each title has three custom Suspicious Info types reserved for exclusive use.</p><h2><a name="IDA50FBB"></a>Resources</h2>
+<p>For more information, see the Arbitration Sample and the following white papers:</p><ul>
+  <li><a href="prog_bp_xbox_security.htm">Xbox Security Best Practices</a></li>
+  <li><a href="prog_wp_xbox_security_architecture.htm">Xbox Security Architecture</a></li>
+  <li><a href="prog_wp_Xbox_Live_Competitions.htm">Competitions on Xbox Live</a></li>
+</ul>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

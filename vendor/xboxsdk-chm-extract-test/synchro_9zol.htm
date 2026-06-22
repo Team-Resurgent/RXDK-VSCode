@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>CreateSemaphore</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="CreateSemaphore">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="CreateSemaphore"/>
+<MSHelp:Keyword Index="F" Term="CreateSemaphore"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_createsemaphore"></A>CreateSemaphore</H1>
+
+<P>The <B>CreateSemaphore</B> function creates or opens a named or unnamed semaphore object. </P>
+
+<PRE class=syntax><B>HANDLE CreateSemaphore(
+  LPSECURITY_ATTRIBUTES</B><I> lpSemaphoreAttributes</I><B>, </B>// SD
+<B>  LONG</B><I> lInitialCount</I><B>,                          </B>// initial count
+<B>  LONG</B><I> lMaximumCount</I><B>,                          </B>// maximum count
+<B>  LPCSTR</B><I> lpName</I>                                // object name
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>lpSemaphoreAttributes</I></DT>
+
+<DD>[in] Ignored; use NULL.
+</DD>
+
+<DT><I>lInitialCount</I></DT>
+
+<DD>[in] Specifies an initial count for the semaphore object. This value must be greater than or equal to zero and less than or equal to <I>lMaximumCount</I>. The state of a semaphore is signaled when its count is greater than zero and nonsignaled when it is zero. The count is decreased by one whenever a wait function releases a thread that was waiting for the semaphore. The count is increased by a specified amount by calling the <A HREF="synchro_1vqd.htm">ReleaseSemaphore</a> function. </DD>
+
+<DT><I>lMaximumCount</I></DT>
+
+<DD>[in] Specifies the maximum count for the semaphore object. This value must be greater than zero. </DD>
+
+<DT><I>lpName</I></DT>
+
+<DD>[in] Pointer to a null-terminated string specifying the name of the semaphore object. Name comparison is case insensitive. 
+
+<P>If <I>lpName</I> matches the name of an existing named semaphore object, the <I>lInitialCount</I> and <I>lMaximumCount</I> parameters are ignored because they were already set when the semaphore was created.</P> 
+
+<P>If <I>lpName</I> is NULL, the semaphore object is created without a name. 
+
+<P>If <I>lpName</I> matches the name of an existing event, mutex, or waitable timer, the function fails and the <A HREF="errors_3uwi.htm">GetLastError</a> function returns ERROR_INVALID_HANDLE. This occurs because these objects share the same name space. 
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is a handle to the semaphore object. If the named semaphore object existed before the function call, the function returns a handle to the existing object and <A HREF="errors_3uwi.htm">GetLastError</a> returns ERROR_ALREADY_EXISTS. </P>
+
+<P>If the function fails, the return value is NULL. To get extended error information, call <A HREF="errors_3uwi.htm">GetLastError</a>. </P>
+
+<H4>Remarks</H4>
+
+<P>The handle returned by <B>CreateSemaphore</B> can be used in any function that requires a handle to a semaphore object. </P>
+
+<P>Any thread can specify the semaphore-object handle in a call to one of the wait functions. The single-object wait functions return when the state of the specified object is signaled. The multiple-object wait functions can be instructed to return either when any one or when all of the specified objects are signaled. When a wait function returns, the waiting thread is released to continue its execution. </P>
+
+<P>The state of a semaphore object is signaled when its count is greater than zero, and nonsignaled when its count is equal to zero. The <I>lInitialCount</I> parameter specifies the initial count. Each time a waiting thread is released because of the semaphore's signaled state, the count of the semaphore is decreased by one. Use the <A HREF="synchro_1vqd.htm">ReleaseSemaphore</a> function to increment a semaphore's count by a specified amount. The count can never be less than zero or greater than the value specified in the <I>lMaximumCount</I> parameter. </P>
+
+<P>Multiple libraries can have handles to the same semaphore object, enabling use of the object for synchronization. The following object-sharing mechanisms are available: 
+
+<UL>
+	<LI>A library can share the handle directly with another library.  However, if one library closes the handle, it will invalidate it for the other library.</LI>
+	
+	<LI>A library can specify the semaphore object handle in a call to the <A HREF="handobj_2pyd.htm">DuplicateHandle</a> function to create a duplicate handle that can be used by another library.</LI>
+
+	<LI>A library can specify the name of a semaphore object in a call to the <A HREF="synchro_5myc.htm">OpenSemaphore</a> or <B>CreateSemaphore</B> function.</LI>
+</UL>
+
+<P>Use the <A HREF="handobj_289x.htm">CloseHandle</a> function to close the handle.  The semaphore object is destroyed when its last handle has been closed.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p><H4>See Also</H4>
+<P>
+
+<a href="xbox_mt_xtl_sll_synchronization_functions.htm">Synchronization Functions</a> | 
+<A HREF="handobj_289x.htm">CloseHandle</a>,  <A HREF="handobj_2pyd.htm">DuplicateHandle</a>,  <A HREF="synchro_3y3p.htm">OpenSemaphore</a>,  <A HREF="synchro_1vqd.htm">ReleaseSemaphore</a></P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

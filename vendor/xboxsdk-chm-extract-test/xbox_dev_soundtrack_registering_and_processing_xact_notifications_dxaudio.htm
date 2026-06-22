@@ -1,0 +1,79 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Registering and Processing XACT Notifications</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Registering and Processing XACT Notifications"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+  <MSHelp:Keyword Index="K" Term="XACT event notifications, registering and processing"/>
+  <MSHelp:Keyword Index="K" Term="register an XACT event notification"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Registering and Processing XACT Notifications</h1>
+<p>With XACT, we can register for notifications as events occur such as cue start, stop, markers, and so on. This enables you to, for example, switch soundtracks when the last song of a soundtrack has ended. However, for the simple sample code below, we're registering for start notifications only.</p>
+<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;The sample below assumes the name of the cue created in our sound bank is "small". Once we obtain the index for the cue, we can tell XACT to provide start notifications for that cue specifically.</p>
+<pre class="clsCode">
+void RegisterXACTNotifications()
+{
+    // Find the index of the cue we've reserved for soundtracks
+    HRESULT hr = g_pSoundBank-&gt;GetSoundCueIndexFromFriendlyName( "small", &amp;g_dwSoundCueIndex );
+    assert( SUCCEEDED(hr) );
+
+    // Register notifications with XACT
+    XACT_NOTIFICATION_DESCRIPTION xactNotificationDesc;
+
+    ZeroMemory( &amp;xactNotificationDesc, sizeof( xactNotificationDesc ) );
+	
+    // Get start notifications
+    xactNotificationDesc.wType              = eXACTNotification_Start;
+	
+    // Always keep this notification registered (that is, don't just notify once) and
+    //  only notify when it pertains to this sound cue index
+    xactNotificationDesc.wFlags             = XACT_FLAG_NOTIFICATION_PERSIST |
+                                              XACT_FLAG_NOTIFICATION_USE_SOUNDCUE_INDEX;
+											  
+    xactNotificationDesc.u.pSoundBank       = g_pSoundBank;
+    xactNotificationDesc.dwSoundCueIndex    = g_dwSoundCueIndex;
+    xactNotificationDesc.hEvent             = NULL;
+
+    hr = g_pXACT-&gt;RegisterNotification( &amp;xactNotificationDesc );
+    assert( SUCCEEDED(hr) );
+}
+</pre>
+    <p>Now that we've told XACT which cues we're interested in, we need to add a routine that processes the notifications. In the following example, we loop through all of the notifications that are currently pending in XACT's notification queue. We then can take action based on the source of the notification and the type. In this case we only care about the start notifications we registered for in the RegisterXACTNotifications routine. We could use this notification to do such things as update the display with the current song information, for example.</p>
+<pre class="clsCode">
+void ProcessXACTNotifications()
+{
+    XACT_NOTIFICATION xactNotification;
+    while( g_pXACT-&gt;GetNotification( NULL, &amp;xactNotification ) == S_OK )
+    {
+        // Process notifications
+        if( xactNotification.Header.dwSoundCueIndex == g_dwSoundCueIndex &amp;&amp;
+            xactNotification.Header.u.pSoundBank    == g_pSoundBank &amp;&amp;
+            xactNotification.Header.wType           == eXACTNotification_Start )
+        {
+            //
+            // Start notification received
+            //
+        }
+    }
+}
+</pre>
+    <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

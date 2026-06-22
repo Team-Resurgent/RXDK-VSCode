@@ -1,0 +1,190 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XFileCreateMediaObject</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XFileCreateMediaObject"/>
+<MSHelp:Keyword Index="F" Term="XFileCreateMediaObject"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XFileCreateMediaObject</h1>
+<p>Creates and initializes a file Xbox Media Object (XMO).</p>
+<pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XFileCreateMediaObject(</b>
+    <b>LPCSTR</b> <i>pszFileName</i><b>,</b>
+    <b>DWORD</b> <i>dwDesiredAccess</i><b>,</b>
+    <b>DWORD</b> <i>dwShareMode</i><b>,</b>
+    <b>DWORD</b> <i>dwCreationDisposition</i><b>,</b>
+    <b>DWORD</b> <i>dwFlagsAndAttributes</i><b>,</b>
+    <b>XFileMediaObject</b> **<i>ppMediaObject</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+            <dt><i>pszFileName</i></dt>
+                <dd>Null-terminated string value that specifies the file path.</dd>
+            
+            <dt><i>dwDesiredAccess</i></dt>
+                <dd>Value that specifies the type of access to the object. Can be set to zero or one of the following values. If <i>dwDesiredAccess</i> is set to zero, applications will be allowed to query the device attributes without accessing the device.</dd>
+                <table>
+<tr>
+<th>Value</th>
+</tr>
+                    <tr>
+<td>GENERIC_READ</td>
+</tr>
+                    <tr>
+<td>GENERIC_WRITE</td>
+</tr>
+                </table>
+                <p>In addition, you can specify the following access flags.</p>
+                <table>
+<tr>
+<th>Value</th>
+</tr>
+                    <tr>
+<td>GENERIC_EXECUTE</td>
+</tr>
+                    <tr>
+<td>GENERIC_ALL</td>
+</tr>
+                    <tr>
+<td>DELETE</td>
+</tr>
+                    <tr>
+<td>SYNCHRONIZE</td>
+</tr>
+                    <tr>
+<td>STANDARD_RIGHTS_REQUIRED</td>
+</tr>
+                    <tr>
+<td>STANDARD_RIGHTS_ALL</td>
+</tr>
+                </table>
+                <p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;These flags are rarely used or needed</p>
+            
+            <dt><i>dwShareMode</i></dt>
+                <dd>Value that specifies the share mode of the object. Can be set to zero or one of the values listed below. If <i>dwShareMode</i> is set to zero, the object cannot be shared.</dd>
+                <table>
+<tr>
+<th>Value</th>
+</tr>
+                    <tr>
+<td>FILE_SHARE_DELETE</td>
+</tr>
+                    <tr>
+<td>FILE_SHARE_READ</td>
+</tr>
+                    <tr>
+<td>FILE_SHARE_WRITE</td>
+</tr>
+                </table>
+            
+            <dt><i>dwCreationDisposition</i></dt>
+                <dd>Value that specifies the creation distribution.</dd>
+                <table>
+<tr>
+<th>Value</th>
+</tr>
+                    <tr>
+<td>CREATE_NEW</td>
+</tr>
+                    <tr>
+<td>CREATE_ALWAYS</td>
+</tr>
+                    <tr>
+<td>OPEN_EXISTING</td>
+</tr>
+                    <tr>
+<td>OPEN_ALWAYS</td>
+</tr>
+                    <tr>
+<td>TRUNCATE_EXISTING</td>
+</tr>
+                </table>
+            
+            <dt><i>dwFlagsAndAttributes</i></dt>
+                <dd>Value that specifies the attributes and flags to use.</dd>
+                <p>Any combination of the following attributes is acceptable for the <i>dwFlagsAndAttributes</i> parameter.</p>
+                <table>
+<tr>
+<th>Value</th>
+</tr>
+                    <tr>
+<td>FILE_ATTRIBUTE_ARCHIVE</td>
+</tr>
+                    <tr>
+<td>FILE_ATTRIBUTE_HIDDEN</td>
+</tr>
+                    <tr>
+<td>FILE_ATTRIBUTE_NORMAL</td>
+</tr>
+                    <tr>
+<td>FILE_ATTRIBUTE_READONLY</td>
+</tr>
+                    <tr>
+<td>FILE_ATTRIBUTE_SYSTEM</td>
+</tr>
+                </table>
+                <p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;All other file attributes override FILE_ATTRIBUTE_NORMAL.</p>
+                <p>Any combination of the following flags is acceptable for the <i>dwFlagsAndAttributes</i> parameter.</p>
+                <table>
+<tr>
+<th>Value</th>
+</tr>
+                    <tr>
+<td>FILE_FLAG_OVERLAPPED</td>
+</tr>
+                    <tr>
+<td>FILE_FLAG_NO_BUFFERING</td>
+</tr>
+                    <tr>
+<td>FILE_FLAG_RANDOM_ACCESS</td>
+</tr>
+                    <tr>
+<td>FILE_FLAG_SEQUENTIAL_SCAN</td>
+</tr>
+                    <tr>
+<td>FILE_FLAG_DELETE_ON_CLOSE</td>
+</tr>
+                    <tr>
+<td>FILE_FLAG_BACKUP_SEMANTICS</td>
+</tr>
+                </table>
+            
+            <dt><i>ppMediaObject</i></dt>
+                <dd>Address of a pointer to the <a href="xbox_xfilemediaobject_xmo.htm">XFileMediaObject</a> that is created.</dd>
+            
+        </dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>Returns S_OK if successful, an error code otherwise.</p>
+<h4><a name="remarks"></a>Remarks</h4>
+            <p>The title is responsible for freeing the <b>XFileMediaObject</b> that is created by using the <b>Release</b> method.</p>
+            <p>For descriptions of the flags, see the <a href="filesio_7wmd.htm">CreateFile</a> documentation.</p>
+        <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in DSound.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use DSound.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+            <p><a href="xbox_xfilecreatemediaobjectex_xmo.htm">XFileCreateMediaObjectEx</a>, <a href="xbox_xfilecreatemediaobjectasync_xmo.htm">XFileCreateMediaObjectAsync</a>, <a href="xbox_xwavefilecreatemediaobject_xmo.htm">XWaveFileCreateMediaObject</a>, <a href="xbox_xwavefilecreatemediaobjectex_xmo.htm">XWaveFileCreateMediaObjectEx</a></p>
+        <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

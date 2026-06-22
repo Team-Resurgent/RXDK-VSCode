@@ -1,0 +1,61 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>What Is the Projection Transformation?</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="What Is the Projection Transformation?"/>
+<MSHelp:Keyword Index="F" Term="What Is the Projection Transformation?"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_what_is_the_projection_transformation_graphics"></A>What Is the Projection Transformation?</H1>
+
+<P>The projection matrix is typically a scale and perspective projection. The projection transformation converts the viewing frustum into a cuboid shape. Because the near end of the viewing frustum is smaller than the far end, this has the effect of expanding objects that are near to the camera; this is how perspective is applied to the scene.</P>
+
+<P>In <A HREF="_dx_the_viewing_frustum_graphics.htm">The Viewing Frustum</A>, the distance between the camera required by the projection transformation and the origin of the space defined by the viewing transformation is defined as <I>D</I>. A beginning for a matrix defining the perspective projection might use this <I>D</I> variable like this:</P>
+
+<P><IMG SRC="images/projmat1.gif" ALT="" BORDER=0></P>
+
+<P>The viewing matrix puts the camera at the origin of the scene. Because the projection matrix needs to have the camera at (0, 0, -<I>D</I>), it translates the vector by -<I>D</I> in the z-direction, by using the following matrix.</P>
+
+<P><IMG SRC="images/projmat2.gif" ALT="" BORDER=0></P>
+
+<P>Multiplying these two matrices gives the following composite matrix.</P>
+
+<P><IMG SRC="images/projmat3.gif" ALT="" BORDER=0></P>
+
+<P>The following illustration shows how the perspective transformation converts a viewing frustum into a new coordinate space. Notice that the frustum becomes cuboid and also that the origin moves from the upper-right corner of the scene to the center.</P>
+
+<P><IMG SRC="images/cuboid.gif" ALT="" BORDER=0></P>
+
+<P>In the perspective transformation, the limits of the x- and y-directions are -1 and 1. The limits of the z-direction are 0 for the front plane and 1 for the back plane.</P>
+
+<P>This matrix translates and scales objects based on a specified distance from the camera to the near clipping plane, but it doesn't consider the field of view (<I>fov</I>), and the z-values that it produces for objects in the distance can be nearly identical, making depth comparisons difficult. The following matrix addresses these issues, and it adjusts vertices to account for the aspect ratio of the viewport, making it a good choice for the perspective projection.</P>
+
+<P><IMG SRC="images/prjmatx1.gif" ALT="" BORDER=0></P>
+
+<P>In this matrix, <I>Z<SUB>n</SUB></I> is the z-value of the near clipping plane. The variables <I>w</I>, <I>h</I>, and <I>Q</I> have the following meanings. Note that <I>fov<SUB>w</SUB></I> and <I>fov<SUB>h</SUB></I> represent the viewport's horizontal and vertical fields of view, in radians.</P>
+
+<P><IMG SRC="images/prjmatx2.gif" ALT="" BORDER=0></P>
+
+<P>For your application, using field-of-view angles to define the x and y scaling coefficients might not be as convenient as using the viewport's horizontal and vertical dimensions (in camera space). As the math works out, the following two formulas for <I>w</I> and <I>h</I> use the viewport's dimensions, and are equivalent to the preceding formulas.</P>
+
+<P><IMG SRC="images/prjmatx3.gif" ALT="" BORDER=0></P>
+
+<P>In these formulas, <I>Z<SUB>n</SUB></I> represents the position of the near clipping plane, and the <I>V<SUB>w</SUB></I> and <I>V<SUB>h</SUB></I> variables represent the width and height of the viewport, in camera space. </P>
+
+<P>For a C++ application, these two dimensions correspond directly to the <B>Width</B> and <B>Height</B> members of the <A HREF="_dx_d3dviewport8_graphics.htm">D3DVIEWPORT8</A> structure.</P>
+
+<P>Whatever formula you decide to use, it's important that you set <I>Z<SUB>n</SUB></I> to as large a value as possible, because z-values extremely close to the camera don't vary by much. This makes depth comparisons using 16-bit z-buffers somewhat complicated. </P>
+
+<P>As with the world and view transformations, you call the <A HREF="_dx_idirect3ddevice8_settransform_graphics.htm">IDirect3DDevice8::SetTransform</A> method to set the projection transformation.</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

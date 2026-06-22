@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Stock Text. Do not change.****-->
+<TITLE>Compiler Error C2248</TITLE>
+<!--**********************************-->
+
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="C2248"/>
+<MSHelp:Keyword Index="F" Term="C2248"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Stock Text. Do not change.****-->
+<H1 class="heading"><A NAME="c2248"></A>Compiler Error C2248</H1>
+<!--**********************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<P><B>'<I>member</I>' : cannot access <I>access</I> <I>member</I> declared in class '<I>class</I>'</B></P>
+
+<P>Members of a derived class cannot access private members of a base class. Objects created from a class cannot access protected or private members of that class. </P>
+
+<P>See Knowledge Base article Q243351 for more information on C2248.</P>
+
+<P>The following sample generates C2248:</P>
+
+<PRE class="code">#include &lt;stdio.h&gt;
+class X 
+{
+public:
+   int  m_pubMemb;
+   void setPrivMemb( int i ) 
+   { 
+      m_privMemb = i;
+      printf("\n%d", m_privMemb);
+   }
+
+protected:
+   int  m_protMemb;
+
+private:
+   int  m_privMemb;
+
+} x;
+
+void main() 
+{
+   x.m_pubMemb = 4;
+   printf("\n%d", x.m_pubMemb);
+   x.setPrivMemb(0);   // OK, uses public access function
+
+   x.m_protMemb = 2;   // error, m_protMemb is protected
+   x.m_privMemb = 3;   // error, m_privMemb is private
+}</PRE>
+
+<P>You may also see this error when using Managed Extensions for C++:</P>
+
+<PRE class="code">#using &lt;mscorlib.dll&gt;
+__gc class Base {
+protected:
+void Method() {
+Console::WriteLine("protected");
+}
+};
+
+__gc class Der : public Base {
+void Method() {
+((Base*)this)-&gt;Method(); // C2248
+// try ...
+// Base::Method();
+}
+};
+void main() {
+}</PRE>
+
+<p>In addition, programs can generate this error when an attempt is made to
+access a private base class. A class (A) that is a private base class to a 
+type (B) should not be accessible to a type (C) that uses B as a base class.</p>
+ 
+<p>For code that is valid in both the Visual Studio .NET 2003 and Visual Studio 
+.NET versions of Visual C++, use the scope operator.</p>
+
+<pre class = "code">// C2248c.cpp
+// compile with: /LD
+struct A
+{
+};
+
+struct B: private A
+{
+};
+
+struct C: B
+{
+   void f()
+   {
+      A *p1 = (A*) this;   // C2248
+      ::A *p2 = (::A*) this;   // OK
+   }
+};</pre>
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+
+</BODY>
+</HTML>

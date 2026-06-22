@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>xfc</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="add">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="xfc"/>
+<MSHelp:Keyword Index="F" Term="xfc"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="xbox_jbh_dxref_psh_xfc"></A>xfc</H1>
+
+<P>This instruction defines the operation and inputs of the final combiner stage. If this instruction is not used to specify the final combiner state, the Direct3D render states that control specular and fog operations will be used to control the final combiner instead, and the r0 register in the final defined combiner stage will be assumed to contain the final color and alpha value for the fragment.</P>
+
+<P>The final combiner performs the following operations: final color = s0*s1 + (1-s0)*s2 + s3, final alpha = s6.b, final combiner prod register = s4*s5.</P>
+
+<P>Any of these inputs can specify the special prod register, which is the product of s4 and s5.</P>
+
+<PRE class=syntax>xfc s0, s1, s2, s3, s4, s5, s6
+</PRE>
+
+<H4>Registers</H4>
+
+<DL>
+<DT><B>s0, s1, s2, s3, s4, s5, s6</B></DT>
+
+<DD><P>The source registers s0, s1, s2, and s3 can be selected from the following set:</P>
+
+<TABLE>
+<TR VALIGN="top"><TH align=left width=20%>Register</TH><TH align=left width=50%>Description</TH></TR>
+<TR VALIGN="top"><TD>r0</TD><TD>Temporary register 0</TD></TR>
+<TR VALIGN="top"><TD>r1</TD><TD>Temporary register 1</TD></TR>
+<TR VALIGN="top"><TD>t0</TD><TD>Texture register 0</TD></TR>
+<TR VALIGN="top"><TD>t1</TD><TD>Texture register 1</TD></TR>
+<TR VALIGN="top"><TD>t2</TD><TD>Texture register 2</TD></TR>
+<TR VALIGN="top"><TD>t3</TD><TD>Texture register 3</TD></TR>
+<TR VALIGN="top"><TD>d0</TD><TD>Vertex color register 0</TD></TR>
+<TR VALIGN="top"><TD>d1</TD><TD>Vertex color register 1</TD></TR>
+<TR VALIGN="top"><TD>c(0-7)</TD><TD>Constant registers 0 through 7</TD></TR>
+<TR VALIGN="top"><TD>fog.rgb</TD><TD>Fog color</TD></TR>
+<TR VALIGN="top"><TD>fog.a</TD><TD>Fog iterator value</TD></TR>
+<TR VALIGN="top"><TD>prod</TD><TD>s4*s5</TD></TR>
+<TR VALIGN="top"><TD>sum</TD><TD>r0 + v1</TD></TR>
+<TR VALIGN="top"><TD>zero</TD><TD>Constant 0</TD></TR>
+</TABLE>
+
+<P>As with the previous instructions, the following modifiers may be specified for any of these registers. In the table below, X represents the register:</P>
+
+<TABLE>
+<TR VALIGN="top"><TH align=left width=20%>Modifier</TH><TH align=left width=50%>Description</TH></TR>
+<TR VALIGN="top"><TD>X.a</TD><TD>Replicate alpha channel to all channels</TD></TR>
+<TR VALIGN="top"><TD>X.b</TD><TD>Replicate blue channel to the alpha channel.</TD></TR>
+</TABLE>
+
+<P>The following two modifiers may also be specified:</P>
+
+<TABLE>
+<TR VALIGN="top"><TH align=left width=20%>Modifier</TH><TH align=left width=50%>Description</TH></TR>
+<TR VALIGN="top"><TD>Y_sat</TD><TD>Clamps negative Y to 0</TD></TR>
+<TR VALIGN="top"><TD>1-Y</TD><TD>Complements Y (1.0-Y)</TD></TR>
+</TABLE>
+
+<P>If no modifier is specified, the _sat modifier is applied by default. The final combiners require unsigned values as inputs. Negative values are clamped to zero. No modifiers can be used with the prod register. The sum register contains the sum of r0 and v1 (temporary register 0 and color register 1). Both registers are clamped to the range [0..1] before the sum. The sum register may use the modifier _sat, which causes it to be clamped to the range [0..1]. The alpha component of both of these special registers is 0.</P>
+
+<P>Registers s4, s5, and s6 can be any of the above registers except for prod and sum.</P>
+
+<P>The s6 register specifies the source for the final alpha value. The final alpha value may be selected from the alpha or blue channel of any of the source registers listed above except for prod or sum. The blue channel is the default unless the .a modifier is applied to s6. If no modifier is specified, the _sat modifier is applied by default.</P>
+
+</DD>
+
+</DL>
+
+<h4>Remarks</h4>
+
+<p>If the <b>xfc</b> instruction is not used in a pixel shader, the final combiner is used as normal by the graphics pipeline to blend in the fog color and add the specular color for each fragment. The following Direct3D render states affect the function of the final combiner if it is not used in a pixel shader:</p>
+
+<p>D3DRS_SPECULARENABLE &ndash; If enabled, causes the final combiner to add the specular color (v1) to the color calculated by the pixel shader (r0) to produce the final color. Otherwise, it selects the output of the pixel shader (r0) and discards the specular color.</p>
+
+<p>D3DRS_FOGENABLE &ndash; If enabled, causes the final combiner to blend the fragment color plus specular (if enabled) with the fog color according to the fog factor (fog.a). Otherwise, no fog blending occurs.</p>
+
+<p>The following tables show what the xfc instruction might look like for the various combinations of specular lighting and fog:</p>
+
+<table>
+<tr>
+<th>Fog</th>
+<th>Specular</th>
+<th>Sample Instruction</th>
+</tr>
+
+<tr>
+<td>Off</td>
+<td>Off</td>
+<td><code>xfc zero, zero, r0, zero, zero, zero, r0.a</code></td>
+</tr>
+
+<tr>
+<td>On</td>
+<td>Off</td>
+<td><code>xfc fog.a, fog, r0, zero, zero, zero, r0.a</code></td>
+</tr>
+
+<tr>
+<td>Off</td>
+<td>On</td>
+<td><code>xfc zero, zero, r0, v1, zero, zero, r0.a</code></td>
+</tr>
+
+<tr>
+<td>On</td>
+<td>On</td>
+<td><code>xfc fog.a, fog, r0, v1, zero, zero, r0.a</code></td>
+</tr>
+</table>
+
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work. &#169 2000 Microsoft Corporation. All rights reserved.</DIV>
+</BODY>
+</HTML>

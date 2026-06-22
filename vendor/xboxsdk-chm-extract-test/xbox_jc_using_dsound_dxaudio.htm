@@ -1,0 +1,56 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<TITLE>Using DirectSound with Xbox</TITLE>
+
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Using DirectSound with Xbox"/>
+<MSHelp:Keyword Index="F" Term="Using DirectSound with Xbox"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1 class="heading"><A NAME="xbox_jc_using_dsound_dxaudio"></A>Using DirectSound with Xbox</H1>
+
+
+
+<P>DirectSound is one of the main audio services for the Xbox. It is derived from the DirectX 8.0 version of DirectSound, and it also includes Xbox-specific interfaces, methods, and functions that expose the additional capabilities that are available on the Xbox.</P>
+
+<H2>Changes Specific to the Xbox</H2>
+
+<P>The following list contains some of the differences in DirectSound that are specific to the Xbox.</P>
+
+<UL>
+    <LI>The <A HREF="xbox_jc_idirectsoundstream_dxaudio.htm"><B>IDirectSoundStream</B></A> interface was added for audio streaming.</LI>
+    <LI>Titles must call the <A HREF="xbox_directsounddowork_dxaudio.htm"><B>DirectSoundDoWork</B></A> function when using streams, buffer position and stop notifications, and buffers that aren't assigned a hardware voice until they are played.</LI>
+	<LI>Titles must download a DSP effects image that contains the crosstalk cancellation code (such as Dsstdfx.bin, which is included in the source\dsound\bin directory of the XDK) to the global processor when using 3D sound, because 3D sound buffers get sent to the crosstalk mixbins.</LI>
+    <LI>Several methods have been added to <A HREF="_dx_idirectsoundbuffer8_dxaudio.htm"><B>IDirectSoundBuffer8</B></A> to expose the capabilities of the audio hardware.</LI>
+    <LI>DirectSound objects must be created using the functions provided by this library (<A HREF="xbox_jc_directsoundcreate_dxaudio.htm"><B>DirectSoundCreate</B></A>, <A HREF="xbox_jc_directsoundcreatebuffer_dxaudio.htm"><B>DirectSoundCreateBuffer</B></A>, and <A HREF="xbox_jc_directsoundcreatestream_dxaudio.htm"><B>DirectSoundCreateStream</B></A>), since there is no <B>CoCreateInstance</B> function on Xbox.</LI>
+</UL>
+
+<H2>Additional Changes</H2>
+
+<P>The following list contains additional changes made to DirectSound for Xbox.</P>
+<UL>    
+	<LI>MMIO (Multimedia File I/O) functions are not supported.</LI>
+	<LI>The <B>IUnknown::QueryInterface</B> method is not supported.</LI> 
+	<LI>3D buffer methods on buffers that have not been created with the DSBCAPS_CTRL3D flag set will return <B>E_FAIL</B>. </LI>
+	<LI>There is no primary buffer.</LI>
+</UL>
+	
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

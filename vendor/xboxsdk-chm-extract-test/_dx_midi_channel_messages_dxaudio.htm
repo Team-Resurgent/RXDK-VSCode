@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>MIDI Channel Messages</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="MIDI Channel Messages"/>
+<MSHelp:Keyword Index="F" Term="MIDI Channel Messages"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H4><A NAME="_dx_midi_channel_messages_dxaudio"></A>MIDI Channel Messages</H4>
+
+<P>A channel message is addressed to a particular MIDI channel, which corresponds to a single part in the music. </P>
+
+<P>A channel message can be either a <I>mode message</I> or a <I>voice message</I>.</P>
+
+<P>A mode message determines how a channel will deal with subsequent voice messages. For example, a mode message might instruct the channel to remain silent, ignoring all note-on messages until further notice. </P>
+
+<P>Most channel messages are voice messages. They instruct the channel to begin or stop playing a note or to modify the note in some way, or they change the timbre by assigning a different MIDI patch number to the channel.</P>
+
+<P>The following table describes types of voice messages.</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=29%>Voice message</TH>
+<TH align=left width=71%>Purpose</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=29%>Note-on</TD>
+<TD width=71%>Play a note.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=29%>Note-off</TD>
+<TD width=71%>Stop playing the note.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=29%>Control change</TD>
+<TD width=71%>Modify the tone with data from a pedal, lever, or other device; also used for miscellaneous controls such as volume and bank select.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=29%>Program (patch) change</TD>
+<TD width=71%>Select an instrument for the channel by assigning a patch number.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=29%>Aftertouch</TD>
+<TD width=71%>Modify an individual note, or all notes on the channel, according to the aftertouch of a key.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=29%>Pitch bend change</TD>
+<TD width=71%>Modify the pitch of all notes played on the channel.</TD>
+</TR>
+</TABLE><BR>
+
+<P>Keep in mind that these descriptions apply to standard MIDI messages, not MIDI data that has been converted to performance message format. For example, two MIDI messages to start and stop a note are combined by DirectMusic into a single performance message giving the duration of the note. DirectMusic messages also contain much additional information about timing and routing.</P>
+
+<H4><A NAME="_dx_midi_notes_dxaudio"></A>MIDI Notes</H4>
+
+<P>The data bytes of a note-on message represent the pitch and <A HREF="v.htm#_dx_velocity_glos" CLASS="POPUP">velocity</A>. In most cases, a pitch value of 0 represents C below subcontra C (called C0 in MIDI notation), 12 represents subcontra C (or C1), 60 is middle C (or C5), and so on. For drum kits, the data byte instead represents a particular drum sound. For example, as long as the General MIDI (GM) percussion key map is being adhered to, a value of 60 represents a high bongo sound. Channel 10 is reserved for drum kits, so the synthesizer knows that note-on messages on that channel are to be treated differently than on other channels.</P>
+
+<P>For information on how DirectMusic converts to and from MIDI notes, see <A HREF="_dx_music_values_and_midi_notes_dxaudio.htm"><B>Music Values and MIDI Notes</B></A>.</P>
+
+<H4><A NAME="_dx_program_changes_dxaudio"></A>Program Changes</H4>
+
+<P>Program changes and patch numbers are a key concept in MIDI playback and in DirectMusic. A program change assigns a particular instrument (also called a program or timbre) to a channel so that the notes sent to that channel are played with the appropriate sound. Instruments are identified by patch numbers. If the GM instrument set is loaded, a program change specifying patch number 1 always causes the channel to play its notes as an acoustic grand piano. The actual sound produced at the speakers depends on how the instrument is synthesized.</P>
+
+<H4><A NAME="_dx_bank_selection_dxaudio"></A>Bank Selection</H4>
+
+<P>Because a single data byte is used to select the patch number in a program change, and only 7 bits in each data byte of a MIDI message are significant, a program change can select from a maximum of 128 instruments. To provide a greater choice, the MIDI specification allows for the use of up to 16,384 instrument banks, each containing up to 128 instruments.</P>
+
+<P>To select an instrument from a different bank, the MIDI sequencer must first send a control change message called <I>bank select</I>. The 2 data bytes of this message are referred to as the most significant byte (MSB) and least significant byte (LSB), and they are combined to identify a bank. Once the bank has been selected, each subsequent program change selects an instrument from that bank.</P>
+
+<H4><A NAME="_dx_directmusic_patch_numbers_dxaudio"></A>DirectMusic Patch Numbers</H4>
+
+<P>In DirectMusic, the instrument patch number is not the 7-bit MIDI patch number but a 32-bit value that packs the MIDI patch number together with the MSB and LSB of the bank select and a one-bit flag for a drum kit.</P>
+
+<P>The organization of DirectMusic patch values is shown in the following table.</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=24%>Bits</TH>
+<TH align=left width=76%>Purpose</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=24%>0-7</TD>
+<TD width=76%>MIDI patch number (bit 7 is always 0)</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=24%>8-15</TD>
+<TD width=76%>LSB bank select (bit 15 is always 0)</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=24%>16-23</TD>
+<TD width=76%>MSB bank select (bit 23 is always 0)</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=24%>24-30</TD>
+<TD width=76%>Unused</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=24%>31</TD>
+<TD width=76%>Flag for drum kit</TD>
+</TR>
+</TABLE><BR>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

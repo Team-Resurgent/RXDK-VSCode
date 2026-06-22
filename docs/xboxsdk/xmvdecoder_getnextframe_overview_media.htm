@@ -1,0 +1,183 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Using XMVDecoder::GetNextFrame</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Using XMVDecoder::GetNextFrame"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+  <MSHelp:Keyword Index="K" Term="XMV files, playing back with XMVDecoder::GetNextFrame"/>
+  <MSHelp:Keyword Index="K" Term="audio playback"/>
+  <MSHelp:Keyword Index="K" Term="XMV playback"/>
+  <MSHelp:Keyword Index="K" Term="XMVDecoder::GetNextFrame, using to play back XMV files"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Using XMVDecoder::GetNextFrame</h1>
+<p><a href="xmvdecoder_getnextframe_media.htm">XMVDecoder::GetNextFrame</a> provides an alternative method of playing back XMV files. For a given XMV file, titles should use either <b>XMVDecoder::GetNextFrame</b> or <a href="xmvdecoder_play_media.htm">XMVDecoder::Play</a>. Using both will result in undefined behavior.</p><p>The example below uses overlays to demonstrate the steps necessary to play back a file with <b>XMVDecoder::GetNextFrame</b>.</p><ol>
+<li>Create and initialize IDirect3Device8 and IDirectSound8 objects.
+
+<pre class="clsCode">
+IDirectSound8 *pSound;
+IDirect3D8 *pD3D;
+IDirect3DDevice8 *pDevice;
+
+DirectSoundCreate( NULL, &amp;pSound, NULL );
+
+pD3D = Direct3DCreate8( D3D_SDK_VERSION );
+
+// Setup the presentation parameters.
+D3DPRESENT_PARAMETERS d3dPP;
+ZeroMemory( &amp;d3dPP, sizeof( D3DPRESENT_PARAMETERS ) );
+d3dPP.BackBufferWidth                 = 640;
+d3dPP.BackBufferHeight                = 480;
+d3dPP.BackBufferFormat                = D3DFMT_LIN_A8R8G8B8;
+d3dPP.BackBufferCount                 = 1;
+d3dPP.SwapEffect                      = D3DSWAPEFFECT_DISCARD;
+d3dPP.FullScreen_RefreshRateInHz      = 60;
+d3dPP.FullScreen_PresentationInterval = D3DPRESENT_INTERVAL_ONE;
+d3dPP.EnableAutoDepthStencil          = TRUE;
+d3dPP.AutoDepthStencilFormat          = D3DFMT_D24S8;
+
+pD3D-&gt;CreateDevice( D3DADAPTER_DEFAULT, 
+                    D3DDEVTYPE_HAL,
+                    0,
+                    D3DCREATE_HARDWARE_VERTEXPROCESSING,
+                    &amp;d3dPP,
+                    &amp;pDevice );
+</pre>
+    
+</li>
+
+<li><p>Next, create the decoder and load the XMV file with <a href="xmvdecoder_createdecoderforfile_media.htm">XMVDecoder_CreateDecoderForFile</a>.</p>
+
+
+<pre class="clsCode">
+XMVDecoder *pDecoder = NULL;
+XMVDecoder_CreateDecoderForFile( 0, "d:\\media\\MyVideo.xmv", &amp;pDecoder );
+</pre>
+    
+
+</li>
+
+<li><p>In order to play back audio, you need to enable at least one audio stream. While it is possible to embed multiple audio streams into an XMV file, typically you only want to play one at at time. If you are trying to enable multiple streams, you can get the number of audio streams in the XMV file by calling <a href="xmvdecoder_getvideodescriptor_media.htm">XMVDecoder::GetVideoDescriptor</a>. This example enables only the first stream by calling <a href="xmvdecoder_enableaudiostream_media.htm">XMVDecoder::EnableAudioStream</a>.</p>
+
+
+<pre class="clsCode">
+pDecoder-&gt;EnableAudioStream( 0, 0, NULL, NULL );
+</pre>
+    
+</li>
+
+<li><p>Because this example uses overlays to display the video, you need to create a surface using the <a href="_dx_d3dformat_graphics.htm#d3dfmt_yuy2">D3DFMT_YUY2</a> format. The surface needs to have the same dimensions as the video stream. Because the hardware scans the data directly out of the overlay as it draws the screen, you can't change the contents of that overlay or you will get tearing. To prevent this, we will create two surfaces and alternate between them.</p>
+
+
+<pre class="clsCode">
+IDirect3DTexture8 *pTextureShow;
+IDirect3DTexture8 *pTextureDraw;
+
+XMVVIDEO_DESC VideoDesc;
+pDecoder-&gt;GetVideoDescriptor(&amp;VideoDesc);
+
+pDevice-&gt;CreateTexture( VideoDesc.Width, 
+                        VideoDesc.Height, 
+                        0,
+                        0,
+                        D3DFMT_YUY2,
+                        0,
+                        &amp;pTextureShow );
+                        
+pDevice-&gt;CreateTexture( VideoDesc.Width, 
+                        VideoDesc.Height, 
+                        0,
+                        0,
+                        D3DFMT_YUY2,
+                        0,
+                        &amp;pTextureDraw );
+                        
+IDirect3DSurface8 *pSurfaceShow;
+IDirect3DSurface8 *pSurfaceDraw;
+IDirect3DSurface8 *pSurfaceSubmit = NULL; 
+pTextureShow-&gt;GetSurfaceLevel( 0, &amp;pSurfaceShow );
+pTextureDraw-&gt;GetSurfaceLevel( 0, &amp;pSurfaceDraw );
+</pre>
+    
+</li>
+
+<li><p>Enable overlays with <a href="_dx_idirect3ddevice8_enableoverlay_graphics.htm">IDirect3DDevice8::EnableOverlay</a>.  Perform at least one call to either <a href="_dx_idirect3ddevice8_present_graphics.htm">IDirect3DDevice8::Present</a> or <a href="_dx_idirect3ddevice8_swap_graphics.htm">IDirect3DDevice8::Swap</a> before updating the overlay.  Although not required, the example also clears the two render buffers.</p>
+
+<pre class="clsCode">
+pDevice-&gt;Clear( 0, NULL, D3DCLEAR_TARGET, 0x00000000, 1.0f, 0L );
+pDevice-&gt;Swap( D3DSWAP_DEFAULT );
+pDevice-&gt;Clear( 0, NULL, D3DCLEAR_TARGET, 0x00000000, 1.0f, 0L );
+pDevice-&gt;EnableOverlay( TRUE );
+</pre>
+    
+</li>
+
+<li><p>Set up the destination and source rectangles for the overlay.</p>
+
+<pre class="clsCode">
+RECT srcRect, dstRect;
+srcRect.top = srcRect.left = dstRect.top = dstRect.left = 0;
+srcRect.right = VideoDesc.Width;
+srcRect.bottom = VideoDesc.Height;
+dstRect.right = 640;
+dstRect.bottom = 480;
+</pre>
+    
+</li>
+
+<li><p>Finally, keep calling <a href="xmvdecoder_getnextframe_media.htm">XMVDecoder::GetNextFrame</a> and <a href="_dx_idirect3ddevice8_updateoverlay_graphics.htm">IDirect3DDevice8::UpdateOverlay</a> until the video is done.</p>
+
+<p><b>GetNextFrame</b> must be called often&#8212;25 times per second should be more than enough. Calling the function too often has minimal impact; however, calling it too infrequently will result in discontinuities in the audio stream.</p>
+
+<p><a href="xbox_dxg_IDirect3DDevice8_GetOverlayUpdateStatus.htm">IDirect3DDevice8::GetOverlayUpdateStatus</a> is called to determine if an overlay update is pending.</p> 
+
+
+<pre class="clsCode">
+XMVRESULT xr = XMV_NOFRAME;
+while( xr != XMV_ENDOFFILE &amp;&amp; xr != XMV_FAIL ) {
+
+    // has pending overlay update completed? 
+    if( pSurfaceSubmit &amp;&amp; pDevice-&gt;GetOverlayUpdateStatus() ) {
+        pSurfaceDraw = pSurfaceShow;
+        pSurfaceShow = pSurfaceSubmit;
+        pSurfaceSubmit = NULL;
+    }
+
+    // decode and check for new frame
+    pDecoder-&gt;GetNextFrame( pSurfaceDraw, &amp;xr, NULL );
+    if( XMV_NEWFRAME == xr ) {
+        pDevice-&gt;UpdateOverlay( pSurfaceDraw, &amp;srcRect, &amp;dstRect, FALSE, 0 );
+        pSurfaceSubmit = pSurfaceDraw;
+        pSurfaceDraw = NULL;
+    }
+
+    pDevice-&gt;Swap( D3DSWAP_DEFAULT );
+}
+
+pDevice-&gt;EnableOverlay( FALSE );
+pDecoder-&gt;CloseDecoder();
+</pre>
+    
+
+<p>While an overlay update is pending, neither overlay frame can be written (decoded) to.  While in this state, <b>GetNextFrame</b> can be called with <i>pSurface</i> set to NULL to perform background processing that doesn't require a writeable surface.</p>
+</li>
+</ol>
+<p>See the <a href="xbox_samp_xmvplayer.htm">XMVPlayer Sample</a> for a detailed XMV playback sample.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

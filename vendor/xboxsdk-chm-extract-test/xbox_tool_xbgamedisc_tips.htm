@@ -1,0 +1,101 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Tips for Laying Out an Xbox Game Disc</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Tips for Laying Out an Xbox Game Disc"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+	<MSHelp:Keyword Index="K" Term="DVD layout"/>
+	<MSHelp:Keyword Index="K" Term="XbGameDisc, layout tips"/>
+	<MSHelp:Keyword Index="K" Term="game disc layouts, tips"/>
+	<MSHelp:Keyword Index="K" Term="security placeholders for game discs"/>
+	<MSHelp:Keyword Index="K" Term="game disc layouts, security placeholders"/>
+	<MSHelp:Keyword Index="K" Term="game disc layouts, storage limits"/>
+	<MSHelp:Keyword Index="K" Term="storage limits on game discs"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Tips for Laying Out an Xbox Game Disc</h1>
+<p>In general, files located on the outer edge of the game disc are accessed 
+faster access than files located in the middle of the disc. Although a file's 
+location on the game disc is the primary factor responsible for access speed, 
+there are many other considerations to keep in mind when arranging a disc's 
+layout.</p><ul>
+<li><a href="#IDABRYK">Access Order</a></li><li><a href="#IDANRYK">Accessing Directories</a></li><li><a href="#IDAZRYK">The File Cache</a></li><li><a href="#IDABSYK">Security Placeholders</a></li><li><a href="#IDAHSYK">Guaranteed Contiguous Space</a></li><li><a href="#IDARSYK">Layer Seek and File Seek</a></li><li><a href="#IDAZSYK">Storage and the XDK</a></li></ul>
+<h2><a name="IDABRYK"></a>Access Order</h2>
+<p>The Xbox console always reads data from the top of the layout to the bottom.
+If your title needs to access files sequentially, it is often fastest to
+arrange those files contiguously from top to bottom in the layout.</p><p>For example, if your title must access three media files (named a.x, b.x,
+and c.x) in order, and you create a disc layout with the files in the opposite
+order (c.x, b.x, a.x), accessing those files requires the system software
+to seek to a.x, read a.x, seek to b.x, read b.x, seek to c.x, and read
+c.x. However, if you place the same data on the disc layout in the order that 
+the title needs to access it (a.x, b.x, c.x), the system software simply seeks 
+to a.x, reads a.x, reads b.x, and reads c.x. Correctly ordering these three files
+prevents the system from having to make two unnecessary and potentially slow
+seeks. The <a href="xbox_tool_xbgamedisc_optimizing.htm">optimization wizard</a> 
+can help you arrange files for optimum access speed.</p><h2><a name="IDANRYK"></a>Accessing Directories</h2>
+<p>Directories are listed in the layout tool along with files, and directories
+may be moved around within the disc layout in the same way you would move
+files. The same rules that apply to access time and access order for files also
+apply to directories.</p><p>When accessing a file, the system software must first visit the directory on
+the disc that contains that file. For example, to access a file named a.x in a
+directory called media, the system would seek to media, read media, seek to
+a.x, and read a.x.</p><p>The same optimization rules that apply to files also apply to directories. It makes sense 
+to place files in the layout tool as close as possible to the directory that contains them. 
+And, as much as possible, you should place directories and files on the disc in the order in 
+which they are accessed. The optimization wizard takes this approach.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;XbGameDisc does not copy empty directories in the layout into the final build of your 
+title.</p><h2><a name="IDAZRYK"></a>The File Cache</h2>
+<p>If two files (named a.x and b.x) are stored in a directory named media, and
+they are accessed in the order listed above, the system would (conceptually)
+seek to media, read media, read a.x, seek to media, read media, seek to b.x,
+and read b.x.</p><p>Thanks to the system's file cache, media can be available without seeking
+the second time. In this case, the access might look more like this: seek to
+media, read media, read a.x, and read b.x. Of course, the file cache is finite,
+and there is no guarantee that the parent directory of a file will be
+immediately available from the cache, but it is important to keep the cache in
+mind when designing your disc layout.</p><h2><a name="IDABSYK"></a>Security Placeholders</h2>
+<p>There are some slots on each layer that are reserved for security purposes.
+You cannot explicitly move the security placeholders. The XbGameDisc tool will
+automatically move the placeholders to accommodate your game data. After you
+submit your title, the Xbox team uses these placeholders to integrate security
+measures to protect the disc.</p><h2><a name="IDAHSYK"></a>Guaranteed Contiguous Space</h2>
+<p>While many hard disks report storage capacities based on a kilobyte of
+1000 bytes, the Xbox game disc storage capacities are specified based on a
+kilobyte of 1024 bytes. This is an important point to keep in mind when
+planning the layout of your disc.</p><p>The total capacity of an Xbox game disc is approximately 9 GB.
+Not all of that space is available to your title. Some space is reserved for
+the security placeholders, some is reserved for the video that is played if the
+game disc is placed in a standard DVD player, and some of the space (near the
+edges of the disc) is unreliable. The space remaining for use by Xbox titles is
+approximately 6.4 GB (3.2 GB per layer), but not all of that space is
+contiguous.</p><p>The Xbox game disc is divided in such a way as to guarantee one block of at
+least 416 MB per layer, with the remaining space on the layer
+divided into multiple blocks of at least 256 MB each.</p><h2><a name="IDARSYK"></a>Layer Seek and File Seek</h2>
+<p>Accessing files across layer boundaries is very slow, especially when
+compared to seeking a file within a given layer. Try to organize your data so
+that you access it sequentially. Avoid repeatedly crossing the layer
+boundary.</p><p>For instance, a poor disc layout would be one that groups all directories on
+Layer 0 and all files on Layer 1. In this case, the layer boundary is crossed
+every time a file is accessed, except in instances where the file cache already
+contains a reference to a file. Remember, every time a file is accessed, its
+parent directory is also accessed.</p><h2><a name="IDAZSYK"></a>Storage and the XDK</h2>
+<p>For more information on the Xbox disc drive, see 
+<a href="x_mt_storage_ov_devices.htm">Xbox Storage Devices</a>. You must understand how the 
+Xbox disc drive works to design the layout of your disc in the most efficient way.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

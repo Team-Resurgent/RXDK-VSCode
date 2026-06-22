@@ -1,0 +1,76 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Shader Reference</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Direct3DX Shader Reference"/>
+<MSHelp:Keyword Index="K" Term="Shader Reference"/>
+<MSHelp:Keyword Index="K" Term="shader assembler extensions"/>
+<MSHelp:Keyword Index="K" Term="Direct3D Extensions for Xbox"/>
+<MSHelp:Keyword Index="F" Term="Direct3DX Shader Assemblers Reference"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_direct3dx_shader_assemblers_reference_graphicsd3dx"></A>Shader Assembler Reference</H1>
+
+<P>This section contains reference information for the vertex and pixel shader assemblers provided by the Direct3DX utility library. 
+
+<UL>
+	<LI><A HREF="_dx_vertex_shader_assembler_reference_graphicsd3dx.htm">Vertex Shader Assembler Reference</A></LI>
+
+	<LI><A HREF="_dx_pixel_shader_assembler_reference_graphics.htm">Pixel Shader Assembler Reference</A></LI>
+	
+	<li><a href="_dx_directly_defined_pixel_shaders_graphics.htm">Directly Defined Pixel Shaders</a>
+
+	<li><a href="hlsl_overview.htm">High-Level Shader Language (HLSL)</a></li>
+</UL>
+
+<P>In addition to these reference sections, see the <A HREF="xbox_jbh_tool_xsasm.htm#xbox_tool_xsasm_preprocessor">Shader Assembler Preprocessor Reference</A>, located under the <b>Xbox Shader Tools</b> topic.</LI>
+
+<P>All of the example syntax used in this documentation is intended to demonstrate how to write shaders when using the Direct3DX vertex and pixel shader assemblers.</P>
+
+<H3 Class="subheading1">Shader Assembler Extensions</H3>
+
+<P class="content">The shader assembler has been extended to support C/C++ style comments, C/C++ style preprocessor statements, and NVIDIA NVASM-style macro declarations. In addition to producing normal DirectX shader tokens, the vertex shader assembler has been extended to produce optimized microcode for the Xbox GPU custom-designed by NVIDIA&reg;. For performance reasons, the Xbox IDirect3DDevice class will only accept microcode and not normal shader tokens. To support legacy applications, the shader assembler has been extended to optionally accept DirectX shader tokens as input and convert them into microcode.</P>
+
+
+
+<P class="content">The shader assembler is provided as both a command-line tool, <a href="xbox_jbh_tool_xsasm.htm">Shader Assembler Tool (XSAsm)</a>, and as an XGraphics library function, <a href="xbox_jbh_dxref_assembleshader.htm">XGAssembleShader</a>.</P>
+
+<H3 Class="subheading1">Direct3D Extensions for Xbox</H3>
+
+<P class="content">Direct3D has been very effective at abstracting differences between many different graphics chips.  However, it does not usually expose all of the functionality of any single chip.  Since Xbox runs on only a single graphics chip (the Xbox GPU) with fixed capabilities, it makes sense to modify Direct3D for the Xbox to expose all of the functions available on this chip.</P>
+
+<P class="content">The following extensions describe how Direct3D will be modified for the Xbox to expose all of the functionality on the Xbox GPU.</P>
+
+<H3 Class="subheading1">Pixel Shaders</H3>
+
+<P class="content">These extensions include additional pixel shader instructions and modifiers.  The way pixel shader programs are passed to the hardware is also modified to allow applications to directly specify pixel shader values without having to write pixel shader assembly language.</P>
+
+<H3 Class="subheading1">Vertex Shaders</H3>
+
+<H4 Class="subheading2">New Kinds of Vertex Shaders</H4>
+<P class="content">A total of four different kinds of vertex shaders are supported: normal DirectX 8.0 vertex shaders, normal Xbox vertex shaders, Xbox read/write vertex shaders, and Xbox vertex state shaders.</P>
+
+<H4 Class="subheading2">Loading Multiple Vertex Shader Programs at Once</H4>
+<P class="content">A method for loading several vertex shader programs simultaneously is provided.  An application can then change the vertex program entry point rather than loading a new program.  The entry point can be the beginning of any of the loaded vertex programs or it can be a point midway through a vertex program that has optionally-executed code at the start.</P>
+
+<H4 Class="subheading2">More Features</H4>
+<P class="content">An extension is provided to expose an additional 96 constant registers for use by vertex shaders. Two additional instructions are defined: a homogeneous dot product and a clamped reciprocal. Finally, two additional output registers are defined so that vertex shaders can calculate the color for the back sides of polygons.</P>
+
+<!--
+<H3 Class="subheading1">Texture Formats</H3>
+<P class="content">All of the texture formats supported by the GPU are either mapped to existing D3D formats or given new D3D format names.  In addition, unsupported D3D formats are listed and a few additional textures are listed that are supported by the GPU but won't be exposed.
+Additional extensions - Over the course of defining these extensions, a few other opportunities for extensions have arisen.  These other extensions are currently at a lower priority than the extensions that have been defined.  We will continue to work on these extensions as the need for them becomes more clear.</P>
+-->
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

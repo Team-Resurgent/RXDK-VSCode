@@ -1,0 +1,305 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Shader Assembler Tool (XSAsm)</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Shader Assembler Tool (XSAsm)"/>
+<MSHelp:Keyword Index="K" Term="XSAsm tool"/>
+<MSHelp:Keyword Index="F" Term="Shader Assembler Tool (XSAsm)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Shader Assembler Tool (XSAsm)</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<P class="content">The Xbox Shader Assembler Tool (XSAsm) compiles an ASCII representation of a pixel shader (*.psh) or vertex shader (*.vsh) into the microcode format used by the Xbox game system. The Xbox Shader Assembler Tool is based on the <a href="xbox_jbh_dxref_assembleshader.htm">XGAssembleShader</a> function.</P>
+
+<PRE>USAGE: xsasm [options] sourcefile [ucodefile] [constfile] [listfile]</PRE>
+
+
+<TABLE class="tblcontrols">
+<!--**Stock Text. Do not change.****-->
+<TR VALIGN="top"><TH align=left width=40%>Switch</TH><TH align=left width=60%>Description</TH></TR>
+<!--**Use this set of tags for a row. Copy and paste for additional rows.**-->
+<TR><td>-D symbol</td>   <td>Define symbol.</td></TR>
+<TR><td>-Od</td>         <td>Turn off vertex shader optimization.</td></TR>
+<TR><td>-Og</td>         <td>Turn off vertex shader global optimization only.</td></TR>
+<tr><td>-O1</td>         <td>Use the old vertex shader optimizer.</td></tr>
+<tr><td>-O2</td>         <td>Use the new (graph-based) vertex shader optimizer.</td></tr>
+<tr><td>-O1 -O2</td>         <td>Run both vertex shader optimizers and keep the best result (default).</td></tr>
+<tr><td>-On</td>         <td>Use the new (graph-based) vertex shader optimizer.</td></tr>
+<TR><td>-Ov</td>         <td>Turn off vertex shader optimization verification.</td></TR>
+<TR><td>-nologo</td>     <td>Suppress copyright message.</td></TR>
+<TR><td>-d</td>          <td>Generate debugging information for DirectX 8.0 token stream. Requires -t option.</td></TR>
+<TR><td>-h</td>          <td>Output as a .h file. This switch should not be used with vertex shaders that define constants using <a href="_dx_def_graphicsd3dx.htm">def</a>. The resulting header file will contain garbled text that won't compile.</td></TR>
+<TR><td>-hname sym</td>  <td>Use sym as the name of the variable defined in the .h file. Requires /h option.</td></TR>
+<TR><td>-l</td>          <td>Generate a listing.</td></TR>
+<TR><td>-p</td>          <td>Only run preprocessor. Put preprocessor output in ucodeFile.</td></TR>
+<TR><td>-P</td>          <td>Skip preprocessor. (If you specify both -p and -P you copy sourcefile to ucodeFile.)</td></TR>
+<TR><td>-t</td>          <td>Generate Microsoft&#174 Direct3D&#174 Direct3D8 tokens instead of Xbox GPU microcode.</td></TR>
+<TR><td>-u num</td>      <td>Input is Direct3D8 tokens instead of assembly source. num is: 
+                      <BR>&nbsp;&nbsp;0, for pixel shader
+                      <BR>&nbsp;&nbsp;1, for vertex shader
+                      <BR>&nbsp;&nbsp;2, for read/write vertex shader
+                      <BR>&nbsp;&nbsp;3, for vertex state shader
+                      <BR>&nbsp;&nbsp;4, for screen-space vertex shader
+                      <BR>&nbsp;&nbsp;5, for screen-space read/write vertex shader
+                      <BR>&nbsp;&nbsp;6, for ordinary non-Xbox vertex shader</td></TR>
+<TR><td>-uu num</td>     <td>Input is microcode instead of assembly source. num is: 
+                      <BR>&nbsp;&nbsp;0, for normal microcode
+                      <BR>&nbsp;&nbsp;1, for screenspace microcode</td></TR>
+<TR><td>-v</td>          <td>Do not validate the shader.</td></TR>
+<TR><td>-I <i>path</i></td>     <td>Set Include search path.</td></TR>
+<TR><td><i>sourcefile</i></td>  <td>source file for shader.</td></TR>
+<TR><td><i>ucodefile</i></td>   <td>output file for microcode.</td></TR>
+<TR><td><i>constfile</i></td>   <td>output file for shader constants file.</td></TR>
+<TR><td><i>listfile</i></td>    <td>output file for listing.</td></TR>
+<TR><td>/?</td>          <td>Display help message.</td></TR>
+
+</TABLE>
+
+<P class="content">Defaults:
+<UL>
+<LI>If you don't specify <i>ucodefile</i>, XSAsm uses a default value of either [sourcefile].xvu (for vertex shaders) or [sourcefile].xpu (for pixel shaders).</LI>
+<LI>If you don't specify [constfile], XSAsm uses a default value of [sourcefile].xsc.</LI>
+<LI>If you don't specify [listfile], XSAsm uses a default value of [sourcefile].lst.</LI>
+</UL>
+Where [sourcefile] is the name of the shader file, not including the extension.</P>
+
+<H3 class="overview">Xbox Enhancements</H3>
+
+<P class="content">The primary reason for implementing a new shader assembler was to provide support for the extra features of the Xbox graphics hardware. This section summarizes the enhancements that were made. For a detailed list see <A HREF="_dx_direct3dx_shader_assemblers_reference_graphicsd3dx.htm">Direct3DX Shader Assemblers Reference</A>.</p>
+
+<H4 Class="subheading2">Pixel Shader Extensions</H4>
+
+<P class="content">The following instructions were added to the pixel shader: XDD, XDM, XFC, XMMA, XMMC.</P>
+
+<H4 Class="subheading2">Vertex Shader Extensions</H4>
+
+<P class="content">The Xbox game system supports four types of vertex shaders.</P>
+
+<TABLE class="tblcontrols">
+<!--**Stock Text. Do not change.****-->
+<TR VALIGN="top"><TH align=left width=20%>Shader Tag</TH><TH align=left width=20%>C/C++ Constant</TH><TH align=left width=60%>Description</TH></TR>
+<!--**Use this set of tags for a row. Copy and paste for additional rows.**-->
+
+<TR><td><a href="_dx_vs_graphicsd3dx.htm">vs</a></td> <td>SASMT_VERTEXSHADER</td><td>Normal DirectX 8.0 Vertex Shader.</td></TR>
+<TR><td><a href="_dx_xvs_graphicsd3dx.htm">xvs</a></td> <td>SASMT_VERTEXSHADER</td><td>Xbox vertex shader. Using <b>xvs</b> allows access to the extra instructions, output registers, constant registers.</td></TR>
+<TR><td><a href="_dx_xvss_graphicsd3dx.htm">xvss</a></td> <td>SASMT_VERTEXSTATESHADER</td><td>Xbox vertex state shader. Used to set up values in constant registers. Only v0 can be used for input, and you can only write to constant registers, not output registers.</td></TR>
+<TR><td><a href="_dx_xvsw_graphicsd3dx.htm">xvsw</a></td> <td>SASMT_READWRITE_VERTEXSHADER</td><td>Xbox read-write vertex shader. Like a normal Xbox vertex shader, but you can also write to the constant registers.</td></TR>
+
+</TABLE>
+
+<P class="content">The vertex shader can take advantage of two new instructions (DPH, RCC), two new registers (oB0, oB1), and several additional constant registers (c[-96]..c[-1], plus the standard c[0]..c[95]).</P>
+
+<P class="content">If your vertex shader produces vertices that are already in screen space, then you can save two instruction slots and four vertex shader cycles by using the <B>#pragma screenspace</B> statement somewhere in your vertex shader.</P>
+
+<H4 Class="subheading2">Optimizations</H4>
+
+<P class="content">The vertex shader assembler performs a variety of optimizations while generating shader microcode. None of these optimizations should have any effect on the semantics of the shader. They should just make the shader microcode faster and/or smaller. Unfortunately, most of the specific vertex shader optimizations cannot be disclosed at this time, because they involve NVIDIA trade secrets. (For similar reasons we cannot disclose the exact vertex shader microcode format at this time.)</P>
+
+<P class="content">The main reason to mention vertex shader optimizations at all is to explain that you can turn them off (using the <b>-Od</b> flag). You may wish to turn them off either because you suspect there is a bug in the optimizer, or because you are doing something tricky, like jumping into the middle of your vertex shader.</P>
+
+<P class="content">The assembly listing file tells you how many microcode slots and cycles the vertex shader optimizer saved you. The statistics  looks something like this:</P>
+
+<PRE>; instructions: 14
+;    microcode: 14 slots, 21 cycles, cpi = 1.5
+; optimization saved 2 slots, 0 cycles.
+</PRE>
+
+<P class="content">Currently, the vertex shader optimizer doesn't optimize very much. You will typically see a 0&ndash;4 percent performance / space gain on your shader. Future releases of the shader assembler will perform more aggressive vertex shader optimizations.</P>
+
+<p>No pixel shader optimzation is done. </p>
+
+<a name="xbox_tool_xsasm_preprocessor"></a><H4 Class="subheading2">C-style Source Code Preprocessor</H4>
+
+<P class="content">The shader assembler supports a subset of the standard ANSI C Preprocessor. The following preprocessor statements are supported:</P>
+
+<PRE>#include
+#define (with and without arguments)
+#undef
+#ifdef
+#ifndef
+#else
+#endif
+#error
+#pragma
+</PRE>
+
+<P class="content">The following preprocessor statements are not supported:</P>
+
+<PRE>#if
+#elif
+</PRE>
+
+<P class="content">The #line preprocessor directive is partially supported. It is allowed only when the rest of the C preprocessor is disabled by using the <b>-P</b> flag.</P>
+
+<P class="content">In addition, neither the # or ## operators are recognized in macro definitions. Further, none of the standard predefined macros are defined. (For example, __LINE__ is not predefined.)</P>
+
+<P class="content">The main reason that the C style source code preprocessor syntax is implemented is to allow Microsoft&#174 Visual C++&#174 programs and vertex shaders to share a common #include file for contant #defines. An example would be:</P>
+
+<PRE>// File shaderDef.h
+#define WVPMATRIX 0
+
+// File shader.vsh
+#include "shaderDef.h"
+
+// ... at some point in the shader ...
+m4x4 r0,v[0],c[WVPMATRIX]
+
+// File main.cpp
+#include "shaderDef.h"
+
+// ... in some function ...
+hr = pDev-&gt;SetVertexShaderConstant(WVPMATRIX, &amp;mat, 4);
+</PRE>
+
+
+<H4 Class="subheading2">C/C++/Assembler-Style Source Code Comments</H4>
+
+<P class="content">The preprocessor supports C and C++ style comments in addition to the standard assembler style comments. Examples:</P>
+
+<PRE>
+; This is an assembler-style comment.
+
+/* This is a C style comment, which can span
+ * several lines.
+ */
+
+// This is a C++ style comment.
+</PRE>
+
+<P class="content">The preprocessor strips comments before passing the text on to the shader assembler.</P>
+
+<H4 Class="subheading2">Support for the NVIDIA NVASM "macro" Syntax</H4>
+
+<P class="content">NVIDIA has produced a DirectX 8 compatible vertex assembler called NVASM. It is available from their web site, in the developer relations portion of their support section. The Xbox shader assembler's preprocessor supports the macro statement of the NVASM assembler.</P>
+
+<P class="content">You can define macros using either the standard C preprocessor's #define statement, or the "macro" statement. Here's an example of a macro defined using the "macro" statement:</P>
+
+<PRE>; A macro version of the m4x4 instruction
+macro my_m4x4 dest,source,matrix
+dp4 %dest.x, %source, %matrix
+dp4 %dest.y, %source, %inc(%matrix)
+dp4 %dest.z, %source, %inc(%inc(%matrix))
+dp4 %dest.w, %source, %inc(%inc(%inc(%matrix)))
+endm
+
+; Usage of the macro
+my_m4x4 r0,r1,c[10]
+</PRE>
+
+<P class="content">The first line of a macro starts with the keyword "macro", followed by the name of the macro, followed by a comma-separated argument list. The body of the macro extends until the "endm" keyword is encountered.</P>
+
+<P class="content">Within the body of a macro definition, the '%' character is special. Normally the '%' character appears before an argument name, as in the usage "%matrix" above. At macro expansion time all the occurrences of "%matrix" will be replaced by the third argument to the macro invocation is. In the example above, the third argument is "c[10]".</P>
+
+<P class="content">"%inc" and "%dec" are two special functions that can be used inside macro declarations. "%inc" and "%dec" must be followed by parenthesized expressions. "%inc" adds one to whatever's inside the parentheses. "%dec" subtracts one. You can nest %incs and %decs to add or subtract more than one.</P>
+
+<P class="content">If the expression to be incremented or decremented has parentheses or square brackets, then the "%inc" or "%dec" operator will operate on the contents of the innermost set of parentheses or square brackets. For example:</P>
+
+<PRE>%inc(r3)   becomes r4
+%inc(c[4]) becomes c[5]
+</PRE>
+
+<p>Macros nested inside of each other will be properly expanded.</p>
+
+<h4>Support for Enumerations</h4>
+
+<p>The XSAsm tool supports an enumeration syntax as shown in the example below:</p>
+
+<pre>#define eyepoint 2
+enum
+{
+   reg1 = -96,
+   reg2,
+   reg3,
+   reg4 = eyepoint,
+   reg5
+};</pre>
+
+<p>This is equivalent to the following:</p>
+
+<pre>#define reg1 -96
+#define reg2 -95
+#define reg3 -94
+#define reg4 2
+#define reg5 3</pre>
+
+<p>This syntax has the following rules:</p>
+
+<ul>
+<li>The enum keyword must appear on a line by itself.</li>
+<li>The opening brace must appear on a line by itself, immediately following the enum keyword.</li>
+<li>The closing brace must appear on a line by itself.</li>
+<li>Each symbol that is to be defined must appear on a line by itself. The commas are optional.</li>
+<li>Each symbol may have an optional equal sign followed by an integer which defines its value. If this is not present, the value of the symbol is one more than the value of the previous symbol.</li>
+<li>The final semicolon is optional.</li>
+<li>Macros and #define expansions are done on each line of the enumeration before it is processed.</li>
+</ul>
+<H4 Class="subheading2">File Formats</H4>
+
+<P class="content">The shader assembler accepts a variety of input formats, and generates a variety of output formats. Depending upon the flags that you specify, the assembler can be used to:</P>
+
+<UL>
+<LI>Assemble source code into Xbox shader microcode.</LI>
+<LI>Assemble source code into DirectX 8.0 shader tokens.</LI>
+<LI>Assemble DirectX 8.0 shader tokens into Xbox shader microcode.</LI>
+<LI>Preprocess arbitrary text.</LI>
+</UL>
+
+<P class="content">In addition, the xsasm shader assembler command line tool can write out the DirectX 8.0 shader tokens or the Xbox microcode as either a binary file or as a C/C++ header file.</P>
+
+<H4 Class="subheading2">Header Files</H4>
+
+<P class="content">If you use the tool to generate a C/C++ header file for a shader named MyShader.vsh (xsasm -h MyShader.vsh):</P>
+
+<UL>
+  <LI>The header filename will be MyShader.h.
+  <LI>The header file will contain the a DWORD array named dwMyShaderVertexShader, which contains the shader tokens (or microcode, depending on the flags selected).
+  <LI>You can include the header file in your source code.
+</UL>
+
+<P class="content">See <A HREF="_dx_idirect3ddevice8_createvertexshader_graphics.htm"><B>IDirect3DDevice8::CreateVertexShader</B></A> for an example.</P>
+
+<H4 Class="subheading2">Using XSAsm in Different Environments</H4>
+
+<P class="content">The Xbox shader assembler is available in three forms:</P>
+
+<OL>
+<LI>XSAsm - an Xbox SDK command-line tool that you can run manually, or incorporate into your build process. This is expected to be the main way that most developers use this feature.</LI>
+<LI>An XTL xgraphics.lib function, XGAssembleShader, that you can incorporate into your Xbox titles to assemble shaders on the fly.</LI>
+<LI>An Xbox SDK xgraphics.lib function, XGAssembleShader, that you can incorporate into your own Windows tools. This might be useful for writing plugins for game editors or third party 3D modelers.</LI>
+</OL>
+
+<H4>See Also</H4>
+
+<P><a href="xbox_dxg_AssemblerErrorMessages.htm">Xbox Shader Assembler Error Codes</a>, <a href="xbox_jbh_dxref_assembleshader.htm">XGAssembleShader</a></P>
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

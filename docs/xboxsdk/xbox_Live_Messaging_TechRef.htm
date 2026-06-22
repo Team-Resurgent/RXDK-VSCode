@@ -1,0 +1,403 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Messaging Technical Reference</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Messaging Technical Reference"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Messaging Technical Reference</h1>
+<ul>
+<li><a href="#_message_components">Message Components</a></li><li><a href="#">Message Structure</a></li><li><a href="#IDAFMJV">Transient and Persistent Messages</a></li><li><a href="#appendix_a">Client API</a></li></ul>
+<h2><a name="_message_components"></a>Message Components</h2>
+<p>The basic building block of a message is the message property. These properties are the smallest units of data on a message. Each property is given a unique ID and a type that defines the property's contents. The type and ID together form a property tag that is used when setting and retrieving the property from a message. Titles are required to request only the properties they are interested in rather than being able to see all the properties on a message. This is done so that a particular message that a title is familiar with handling does not break the title if new properties are added to the message type in the future. Titles may embed title-specific properties for use within the title as they see fit. Messages contain three property types.</p><ul>
+<li><a href="#IDAXAIV">Summary Information</a></li><li><a href="#IDA3AIV">Message Details</a></li><li><a href="#IDADBIV">Attachments</a></li></ul>
+<h3><a name="IDAXAIV"></a>Summary Information</h3>
+<p>The message summary contains the common set of properties a developer can expect to find on any message. Think of this as the base metadata about the message. This information is used to make initial decisions about the routing and displaying of the message to the user. The size of the message summary is 64 bytes. During the logon process, the summary information for each message is retrieved, remains resident on the client, and is kept up-to-date via notifications.</p><h3><a name="IDA3AIV"></a>Message Details</h3>
+<p>Message details are a collection of properties applicable to the particular message type. Some messages have required properties that are predefined and expected in the message details. Developers may define their own properties to embed in the details. Details are a maximum of 4,096 bytes in size. The details of a message are retrieved when the user opens the message.</p><h3><a name="IDADBIV"></a>Attachments</h3>
+<p>A message may have attachments that accompany the message. Imagine a user sharing a map created in-game with a friend and annotating the map with a voice message. The map would be attached to the message. Attachments are represented as URLs to the Xbox <i>Live</i> storage service and stored as properties in the message details. Attachments are retrieved upon user action after the details information has been retrieved. Attachments are governed by the policy and requirements of the Xbox <i>Live</i> storage service.</p><h2><a name=""></a>Message Structure</h2>
+<p>The following structure holds the message summary.</p>
+<pre class="clsCode">
+typedef struct _XONLINE_MSG_SUMMARY
+	{
+	    XUID        xuidSender;        // User ID of sender
+	    BYTE        bMsgType;          // Type of the message
+	    ULONGLONG   qwMessageContext;  // Message-specific context value
+	    FILETIME    ftSentTime;        // Time at which message was sent, in Coordinated Universal Time (UTC) format
+	    DWORD       dwMessageID;       // ID of message
+	    DWORD       dwMessageFlags;    // Flags describing message
+	    DWORD       dwSenderTitleID;   // ID of title in which message was sent
+	    WORD        wExpireMinutes;    // Offset in minutes from the sent time
+	    WORD        cbDetails;         // Size of details BLOB, excluding downloadable content
+	    char        szSenderName[XONLINE_GAMERTAG_SIZE]; // Gamertag of sender
+	} XONLINE_MSG_SUMMARY, *PXONLINE_MSG_SUMMARY;
+</pre>
+    <h3><a name="IDAWBIV"></a>ULONGLONG qwMessageContext</h3>
+<p>The message context (<b>qwMessageContext</b>) is used to pass type-specific information 
+				about the message, the main purpose of which is to immediately give the title enough knowledge  
+				about the message to make an informed decision on how to visually indicate pending messages to  
+				the user. Think of this as "bread crumbs" that help lead the user to the appropriate place to 
+				take action on the message. Including this information in the summary alleviates the need to make 
+				a separate asynchronous request to get message details. The sender context is well-defined for 
+				each known message and may be used by title-specific messages in a manner applicable to that 
+				message's application.</p><ul>
+<li><a href="#IDA5BIV">Friend Request</a></li><li><a href="#IDAQDIV">Game Invite</a></li><li><a href="#IDA5EIV">Team Recruitment</a></li><li><a href="#IDAKGIV">Competition Recruitment</a></li><li><a href="#IDA4HIV">Competition Match Reminder</a></li><li><a href="#IDAPBJV">Custom Title Message</a></li><li><a href="#IDAEDJV">Personal Voice Message</a></li><li><a href="#IDAVEJV">Personal Text Message</a></li><li><a href="#IDAGGJV">Publisher-Specific Message (MOTD)</a></li></ul>
+<h4><a name="IDA5BIV"></a>Friend Request</h4>
+<table>
+						<tr>
+<td>Description</td>  <td>Another player is requesting a friend relationship, either 
+						through the player's menu or via the Dashboard.</td>
+</tr>
+						<tr>
+<td>Message type</td>  <td>XONLINE_MSG_TYPE_FRIEND_REQUEST</td>
+</tr>
+						<tr>
+<td>Sender context</td>  <td>&lt;none&gt;</td>
+</tr>
+						<tr>
+<td>Required properties</td>  <td>&lt;none&gt;</td>
+</tr>
+						<tr>
+<td>Delivered cross-title?</td>  <td>Yes</td>
+</tr>
+						<tr>
+<td nowrap="">In-game notification required?</td>  <td>Yes.</td>
+</tr>
+						<tr>
+<td>Expiration policy</td>  <td>45 days</td>
+</tr>
+					</table>
+<h4><a name="IDAQDIV"></a>Game Invite</h4>
+<table>
+						<tr>
+<td>Description</td>  <td>A game invite that was sent from the friends, teams, 
+						or competitions UI</td>
+</tr>
+						<tr>
+<td>Message type</td>  <td>XONLINE_MSG_TYPE_GAME_INVITE</td>
+</tr>
+						<tr>
+<td>Sender context</td>  <td>Sender contextual, could be &lt;none&gt;, Team_ID, or CompID</td>
+</tr>
+						<tr>
+<td>Required properties</td>  <td>XONLINE_MSG_PROP_SESSION_ID (ID of the session the 
+						user is being invited to)</td>
+</tr>
+						<tr>
+<td>Delivered cross-title?</td>  <td>Yes, if recipient is already a Friend</td>
+</tr>
+						<tr>
+<td nowrap="">In-game notification required?</td>  <td>Yes.</td>
+</tr>
+						<tr>
+<td>Expiration policy</td> <td>Transient</td>
+</tr>
+					</table>
+<h4><a name="IDA5EIV"></a>Team Recruitment</h4>
+<table>
+						<tr>
+<td>Description</td>  <td>A message sent to solicit a player to join a team</td>
+</tr>
+						<tr>
+<td>Message type</td>  <td>XONLINE_MSG_TYPE_TEAM_RECRUIT</td>
+</tr>
+						<tr>
+<td>Sender context</td>  <td>Team_ID</td>
+</tr>
+						<tr>
+<td>Required properties</td>  <td>XONLINE_MSG_PROP_TEAM_NAME (string indicating name of team)</td>
+</tr>
+						<tr>
+<td>Delivered cross-title?</td>  <td>No</td>
+</tr>
+						<tr>
+<td nowrap="">In-game notification required?</td>  <td>Optional</td>
+</tr>
+						<tr>
+<td>Expiration policy</td>  <td>Title-specified, max 45 days</td>
+</tr>
+					</table>
+<h4><a name="IDAKGIV"></a>Competition Recruitment</h4>
+<table>
+						<tr>
+<td>Description</td>  <td>A message sent to solicit a player to join a competition event</td>
+</tr>
+						<tr>
+<td>Message type</td>  <td>XONLINE_MSG_TYPE_COMP_RECRUIT</td>
+</tr>
+						<tr>
+<td>Sender context</td>  <td>Comp_ID</td>
+</tr>
+						<tr>
+<td>Required properties</td>  <td>
+<p>XONLINE_MSG_PROP_COMP_NAME (string indicating 
+						name of competition)</p>
+						  <p>XONLINE_MSG_PROP_COMP_EVENT_START (starting date of the event)</p>
+						  <p>XONLINE_MSG_PROP_COMP_ADMIN (XUID of the admin)</p>
+						  <p>XONLINE_MSG_PROP_COMP_REG_CLOSE (when the competition is available for registration)</p>
+						  <p>XONLINE_MSG_PROP_COMP_RECURRENCE</p></td>
+</tr> 
+						<tr>
+<td>Delivered cross-title?</td>  <td>No</td>
+</tr>
+						<tr>
+<td nowrap="">In-game notification required?</td>  <td>Optional</td>
+</tr>
+						<tr>
+<td>Expiration policy</td>  <td>Title-specified, max 45 days</td>
+</tr>
+					</table>
+<h4><a name="IDA4HIV"></a>Competition Match Reminder</h4>
+<table>
+						<tr>
+<td>Description</td>  <td>As a precursor to an upcoming match, this message is sent 
+						to a player who previously joined the competition event. This message is created by the 
+						service and delivered to a player shortly before the match begins.</td>
+</tr>
+						<tr>
+<td>Message type</td>  <td>XONLINE_MSG_TYPE_COMP_REMINDER</td>
+</tr>
+						<tr>
+<td>Sender context</td>  <td>Comp_ID</td>
+</tr>
+						<tr>
+<td>Required properties</td>  <td>
+<p>XONLINE_MSG_PROP_COMP_NAME (string indicating 
+						name of competition)</p>
+						  <p>XONLINE_MSG_PROP_COMP_EVENT_START (starting date of the event)</p></td>
+</tr>
+						<tr>
+<td>Delivered cross-title?</td>  <td>No</td>
+</tr>
+						<tr>
+<td nowrap="">In-game notification required?</td>  <td>Optional</td>
+</tr>
+						<tr>
+<td>Expiration policy</td>  <td>15 minutes from start of competition</td>
+</tr>
+					</table>
+<h4><a name="IDAPBJV"></a>Custom Title Message</h4>
+<table>
+						<tr>
+<td>Description</td>  <td>Titles are each allowed to create a customized title-specific message for use within the title as they see fit. A title may have multiple message types, but they will all appear as this type to the messaging service and to external clients. A title can use the title-reserved bits in the message flags or the sender context to distinguish its own internal types. Custom messages can have any combination of voice, text, or data attachments.</td>
+</tr>
+						<tr>
+<td>Message type</td>  <td>XONLINE_MSG_TYPE_TITLE_CUSTOM</td>
+</tr>
+						<tr>
+<td>Sender context</td>  <td>&lt;Title's discretion&gt;</td>
+</tr>
+						<tr>
+<td>Required properties</td>  <td>&lt;Title's discretion&gt; (A title may define 
+						any properties that are needed for its custom type.)</td>
+</tr>
+						<tr>
+<td>Delivered cross-title?</td>  <td>No</td>
+</tr>
+						<tr>
+<td nowrap="">In-game notification required?</td>  <td>&lt;Title's discretion&gt;</td>
+</tr>
+						<tr>
+<td>Expiration policy</td>  <td>Title-specified, max 45 days</td>
+</tr>
+					</table>
+<h4><a name="IDAEDJV"></a>Personal Voice Message</h4>
+<table>
+						<tr>
+<td>Description</td>  <td>A personal voice message sent between parties with an existing 
+						friend, team, or competition relationship</td>
+</tr>
+						<tr>
+<td>Message type</td>  <td>XONLINE_MSG_TYPE_VOICE</td>
+</tr>
+						<tr>
+<td>Sender context</td>  <td>&lt;none&gt;</td>
+</tr>
+						<tr>
+<td>Required properties</td>  <td>
+<p>XONLINE_MSG_PROP_VOICE_DATA (Storage URL to the actual voice data)</p>
+						  <p>XONLINE_PROP_VOICE_DATA_CODEC (codec and bitrate used to encode the voice data)</p></td>
+</tr>
+						<tr>
+<td>Delivered cross-title?</td>  <td>No</td>
+</tr>
+						<tr>
+<td nowrap="">In-game notification required?</td>  <td>Optional, with envelope</td>
+</tr>
+						<tr>
+<td>Expiration policy</td>  <td>7 days</td>
+</tr>
+					</table>
+<h4><a name="IDAVEJV"></a>Personal Text Message</h4>
+<table>
+						<tr>
+<td>Description</td>  <td>A personal text message sent between parties with an existing friend, 
+						team, or competition relationship</td>
+</tr>
+						<tr>
+<td>Message type</td>  <td>XONLINE_MSG_TYPE_TEXT</td>
+</tr>
+						<tr>
+<td>Sender context</td>  <td>&lt;none&gt;</td>
+</tr>
+						<tr>
+<td>Required properties</td>  <td>
+<p>XONLINE_MSG_PROP_TEXT (text of the message)</p>
+						  <p>XONLINE_PROP_TEXT_LANGUAGE (language of the text in the 
+						XMSG_PROP_TEXT property)</p></td>
+</tr>
+						<tr>
+<td>Delivered cross-title?</td>  <td>No</td>
+</tr>
+						<tr>
+<td nowrap="">In-game notification required?</td>  <td>Optional, with envelope</td>
+</tr>
+						<tr>
+<td>Expiration policy</td>  <td>7 days</td>
+</tr>
+					</table>
+<h4><a name="IDAGGJV"></a>Publisher-Specific Message (MOTD)</h4>
+<table>
+						<tr>
+<td>Description</td>  <td>Publishers are each allowed to create a publisher-specific message targeted to an individual title. This message will be delivered to all users of that title.</td>
+</tr>
+						<tr>
+<td>Message type</td>  <td>XONLINE_MSG_TYPE_TITLE_CUSTOM</td>
+</tr>
+						<tr>
+<td>Sender context</td>  <td>&lt;none&gt;</td>
+</tr>
+						<tr>
+<td>Required properties</td>  <td>
+<p>XMSG_PROP_TEXT (text of the message)</p>
+						  <p>XMSG_PROP_TEXT_LANGUAGE  (language of the text in the XMSG_PROP_TEXT property)</p></td>
+</tr>
+						<tr>
+<td>Delivered cross-title?</td>  <td>No</td>
+</tr>
+						<tr>
+<td nowrap="">In-game notification required?</td>  <td>&lt;Title's discretion&gt;</td>
+</tr>
+						<tr>
+<td>Expiration policy</td>  <td>Title-specified, max 45 days. This is a special case whereby 
+						the publisher may choose an absolute expiration date or a delta consisting of the number of 
+						days from the time the message is first delivered to the user.</td>
+</tr>
+					</table>
+<h3><a name="_message_flags"></a>Message Flags</h3>
+<p>The message flags are part of the summary properties. Titles may consult these bits 
+				to make informed decisions on what to display in-game or when constructing a message list.</p><table>
+					<tr>
+						<th>Flag</th>
+						<th>Value</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>XONLINE_MSG_FLAG_REQUIRED</td>
+						<td>0x00000001</td>
+						<td>The user is required to read this message.</td>
+					</tr>
+					<tr>
+						<td>XONLINE_MSG_FLAG_RECOMMENDED</td>
+						<td>0x00000002</td>
+						<td>The user has a system recommended message.</td>
+					</tr>
+					<tr>
+						<td>XONLINE_MSG_FLAG_HAS_VOICE</td>
+						<td>0x00000004</td>
+						<td>This message contains a voice attachment.</td>
+					</tr>
+					<tr>
+						<td>XONLINE_MSG_FLAG_HAS_TEXT</td>
+						<td>0x00000008</td>
+						<td>This message contains a text body</td>
+					</tr>
+					<tr>
+						<td>XONLINE_MSG_FLAG_READ</td>
+						<td>0x00000010</td>
+						<td>This message has been read.</td>
+					</tr>
+					<tr>
+						<td>XONLINE_MSG_FLAG_NON_EXPORTABLE</td>
+						<td>0x00000020</td>
+						<td>This message should only be displayed on Xbox consoles, not the Web.</td>
+					</tr>
+					<tr>
+						<td>XONLINE_MSG_FLAG_TEAM_CONTEXT</td>
+						<td>0x00000040</td>
+						<td>This message's sender context refers to a team ID.</td>
+					</tr>
+					<tr>
+						<td>XONLINE_MSG_FLAG_COMP_CONTEXT</td>
+						<td>0x00000080</td>
+						<td>This message's sender context refers to a competition event or entity ID.</td>
+					</tr>
+					<tr>
+						<td>XONLINE_MSG_FLAG_ALTERNATE_TITLE</td>
+						<td>0x00000100</td>
+						<td>This message is from an alternate title of the currently logged on title (only available on Xbox consoles).</td>
+					</tr>
+					<tr>
+						<td>XONLINE_MSG_FLAG_MARKETING</td>
+						<td>0x00000200</td>
+						<td>Used on title-sent messages to indicate the message is marketing-related and opt-in settings should be checked.</td>
+					</tr>
+					<tr>
+						<td>XONLINE_MSG_FLAGS_TITLE_RESERVED</td>
+						<td>0xFF000000</td>
+						<td>Flags reserved for title custom messages.</td>
+					</tr>
+				</table>
+<h3><a name="_global_property_tags"></a>Global Property Flags</h3>
+<p>Some property flags are global and are allowed in any message type. All message types can contain a voice attachment specified in the following properties:</p><ul>
+					<li>XONLINE_MSG_PROP_VOICE_DATA</li>
+					<li>XONLINE_MSG_PROP_VOICE_DATA_CODEC</li>
+					<li>XONLINE_MSG_PROP_VOICE_DATA_DURATION</li>
+				</ul>
+<p>All three of the above properties should be specified together. The XONLINE_MSG_FLAG_HAS_VOICE message flag can be used to test for the presence of these properties before the message details have been retrieved.</p><p>Additionally, all message types can contain a text summary specified in the following properties:</p><ul>
+					<li>XONLINE_MSG_PROP_TEXT</li>
+					<li>XONLINE_MSG_PROP_TEXT_LANGUAGE</li>
+				</ul>
+<p>Both of the above properties should be specified together. The XONLINE_MSG_FLAG_HAS_TEXT message flag can be used to test for the presence of these properties before the message details have been retrieved. The text summary should be 256 characters or less and may be used by Xbox <i>Live</i> anywhere that a summary of the message is useful, such as in an alert, on the Web, or in the Xbox Dashboard.</p><h2><a name="IDAFMJV"></a>Transient and Persistent Messages</h2>
+<p>The messaging service sends both transient and persistent messages to players. Transient messages are time critical. Invitations to join a game fall into the category of transient messages. The messaging service keeps a maximum of 100 persistent messages and 25 transient messages in each player's queue. </p><h2><a name="appendix_a"></a>Client API</h2>
+<p>The following functions are available for message support:</p><ul>
+				<li><a href="XOnlineMessageCreate.htm">XOnlineMessageCreate</a></li>
+				<li><a href="XOnlineMessageDelete.htm">XOnlineMessageDelete</a></li>
+				<li><a href="XOnlineMessageDestroy.htm">XOnlineMessageDestroy</a></li>
+				<li><a href="XOnlineMessageDetails.htm">XOnlineMessageDetails</a></li>
+				<li><a href="XOnlineMessageDetailsGetResultsProperty.htm">XOnlineMessageDetailsGetResultsProperty</a></li>
+				<li><a href="XOnlineMessageDetailsGetResultsSummary.htm">XOnlineMessageDetailsGetResultsSummary</a></li>
+				<li><a href="XOnlineMessageDownloadAttachmentGetProgress.htm">XOnlineMessageDownloadAttachmentGetProgress</a></li>
+				<li><a href="XOnlineMessageDownloadAttachmentToDirectory.htm">XOnlineMessageDownloadAttachmentToDirectory</a></li>
+				<li><a href="XOnlineMessageDownloadAttachmentToMemory.htm">XOnlineMessageDownloadAttachmentToMemory</a></li>
+				<li><a href="XOnlineMessageDownloadAttachmentToMemoryGetResults.htm">XOnlineMessageDownloadAttachmentToMemoryGetResults</a></li>
+				<li><a href="XOnlineMessageEnableReceivingFamilyTitleIDs.htm">XOnlineMessageEnableReceivingFamilyTitleIDs</a></li>
+				<li><a href="XOnlineMessageEnumerate.htm">XOnlineMessageEnumerate</a></li>
+				<li><a href="XOnlineMessageRevoke.htm">XOnlineMessageRevoke</a></li>
+				<li><a href="XOnlineMessageSend.htm">XOnlineMessageSend</a></li>
+				<li><a href="XOnlineMessageSendGetProgress.htm">XOnlineMessageSendGetProgress</a></li>
+				<li><a href="XOnlineMessageSendGetResults.htm">XOnlineMessageSendGetResults</a></li>
+				<li><a href="XOnlineMessageSetFlags.htm">XOnlineMessageSetFlags</a></li>
+				<li><a href="XOnlineMessageSetProperty.htm">XOnlineMessageSetProperty</a></li>
+				<li><a href="XOnlineMessageSetSendingFamilyTitleID.htm">XOnlineMessageSetSendingFamilyTitleID</a></li>
+				<li><a href="XOnlineMessageSetSummaryRefresh.htm">XOnlineMessageSetSummaryRefresh</a></li>
+				<li><a href="XOnlineMessageSummary.htm">XOnlineMessageSummary</a></li>
+			</ul>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

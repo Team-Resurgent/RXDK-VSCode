@@ -1,0 +1,47 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>MultipleListeners Sample</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="MultipleListeners Sample"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>MultipleListeners Sample</h1>
+<p>The MultipleListeners sample demonstrates how to create multiple independent virtual listeners using DirectSound. There are few concepts and terms that need to be defined:</p>
+
+<ul>
+	<li><i>Real Listener</i> &#8211; This is the standard DirectSound 3D Listener. For simplicity, we leave the real listener at the origin.</li>
+	<li><i>Virtual Listeners</i> &#8211; These are the listeners that we want to position throughout our game world, usually corresponding to players.</li>
+	<li><i>Real Source</i> &#8211; This is the source object, positioned in standard world coordinates.</li>
+	<li><i>Virtual Source</i> &#8211; This is a copy of the real source object, but with its position calculated relative to its corresponding virtual listener.</li>
+</ul>
+
+<p>Whenever a real source moves, we must update the position of each virtual source by recalculating the position of the real source relative to each virtual listener.  Whenever a virtual listener moves, we must recalculate the position of <i>every</i> real source relative to that virtual listener.</p>
+
+<p>Two modes are presented in the sample&#8212;all-listener mode and closest-listener mode. In all-listener mode, one virtual source is created and positioned relative to each virtual listener. All the virtual sounds are then mixed together so that the final speaker output is a mix of what each virtual listener would be hearing. There are two main drawbacks to this approach:</p>
+
+<ol>
+	<li>It uses more hardware voices, since you must allocate one buffer/stream per sound source per listener.</li>
+	<li>Since each buffer/stream will have a separate velocity, they will likely get out of sync due to Doppler shifting and create a flange effect. You can avoid this by using all-listener only for short, one-shot sounds and/or not setting velocity on the virtual sounds.</li>
+</ol>
+
+<p>In closest-listener mode, there is only one virtual source that is positioned relative to whichever virtual listener is closest to the real source. The primary drawback of this approach is that it can result in discontinuities when a different virtual listener becomes the new closest listener. You should experiment with these (and possibly other) techniques to determine what sounds best for your game.</p>
+
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

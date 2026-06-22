@@ -1,0 +1,473 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XACT Authoring Guide</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XACT Authoring Guide"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+		<MSHelp:Keyword Index="K" Term="wave banks, building with XACT"/> 
+		<MSHelp:Keyword Index="K" Term="Audio Console Application, launching"/> 
+		<MSHelp:Keyword Index="K" Term="AUDCONSOLE"/> 
+		<MSHelp:Keyword Index="K" Term="audio, creating with XACT"/> 
+		<MSHelp:Keyword Index="K" Term="audio, streaming"/> 
+		<MSHelp:Keyword Index="K" Term="content authoring with XACT"/> 
+		<MSHelp:Keyword Index="K" Term="zero-latency streaming"/> 
+		<MSHelp:Keyword Index="K" Term="streaming, zero-latency"/> 
+		<MSHelp:Keyword Index="K" Term="latency and streaming"/> 
+		<MSHelp:Keyword Index="K" Term="sound banks, building with XACT"/> 
+		<MSHelp:Keyword Index="K" Term="soundtracks, playing with XACT"/> 
+		<MSHelp:Keyword Index="K" Term="digital rights management (DRM)"/> 
+		<MSHelp:Keyword Index="K" Term="sounds, creating with XACT"/> 
+		<MSHelp:Keyword Index="K" Term="multitrack sounds"/> 
+		<MSHelp:Keyword Index="K" Term="sliders, using with XACT"/> 
+		<MSHelp:Keyword Index="K" Term="mix sounds with XACT"/> 
+		<MSHelp:Keyword Index="K" Term="in-memory waves"/> 
+		<MSHelp:Keyword Index="K" Term="run-time parameter controls (RPCs)"/> 
+		<MSHelp:Keyword Index="K" Term="streaming, primed"/> 
+		<MSHelp:Keyword Index="K" Term="audition sounds with XACT"/> 
+		<MSHelp:Keyword Index="K" Term="real-time auditioning with XACT"/> 
+		<MSHelp:Keyword Index="K" Term="waves, streamed"/> 
+		<MSHelp:Keyword Index="K" Term="waves, in-memory"/> 
+		<MSHelp:Keyword Index="K" Term="cues, creating with XACT"/> 
+		<MSHelp:Keyword Index="K" Term="sequence audio with XACT"/> 
+		<MSHelp:Keyword Index="K" Term="sound categories"/> 
+		<MSHelp:Keyword Index="K" Term="sound groups"/> 
+		<MSHelp:Keyword Index="K" Term="sound layers"/> 
+		<MSHelp:Keyword Index="K" Term="voice processor pipeline"/>
+	</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XACT Authoring Guide</h1>
+<p>This section offers a guide to the best practices and techniques for authoring with the Xbox Audio Creation Tool (XACT). For a more technical and conceptual overview of XACT, see the <a href="xbox_xact_overview_dxaudio.htm">XACT Overview</a> and <a href="xbox_xact_concepts_dxaudio.htm">XACT Concepts</a> sections.</p>
+<ul>
+<li><a href="#IDAWCYK">
+                Introduction
+            </a></li><li><a href="#IDAIEYK">
+                Before You Get Started: Dividing Responsibilities
+            </a></li><li><a href="#XACT_Authoring_Guide_Getting_Everything_Set_Up">
+                Getting Everything Set Up
+            </a></li><li><a href="#XACT_Authoring_Guide_Auditioning_Your_First_Wave">
+                Auditioning Your First Wave
+            </a></li><li><a href="#IDALDZK">
+                Building Wave Banks (.xwb)
+            </a></li><li><a href="#IDARGZK">
+                Creating Sound Banks (.xsb)
+            </a></li><li><a href="#IDAFHZK">
+                Creating Basic Sounds
+            </a></li><li><a href="#IDAQJZK">
+                Creating Basic Cues
+            </a></li><li><a href="#IDACKZK">
+                Using Sequenced and Multitrack Sounds
+            </a></li><li><a href="#IDA5KZK">
+                Adding Variability to Cues and Sounds
+            </a></li><li><a href="#IDAJMZK">
+                Handing Off Content
+            </a></li><li><a href="#IDAXMZK">
+                Mixing XACT Content
+            </a></li><li><a href="#IDAJNZK">
+                Monitoring XACT Content and Xbox Audio Resources
+            </a></li><li><a href="#IDAYNZK">
+                Choosing Streamed vs. In-Memory Waves
+            </a></li><li><a href="#IDAKPZK">
+                Run-time Parameter Controls ("Sliders")
+            </a></li><li><a href="#IDAQSZK">
+				Interactive Audio
+			</a></li><li><a href="#IDAQTZK">Track Event Overview</a></li><li><a href="#IDAIU0K">
+                Related Topics
+            </a></li></ul>
+<h2><a name="IDAWCYK"></a>
+                Introduction
+            </h2>
+<p>XACT attempts to address several recurring problems in audio development on an Xbox console system. The primary goal is to provide a high-level sound management library that is optimized for the audio hardware of the Xbox&reg; video game system from Microsoft&reg;. To this end, XACT provides the following:</p><ul>
+                <li>Xbox-optimized asynchronous non-buffered sector-aligned audio streaming from the Xbox DVD drive and the Xbox hard disk&#8212;or, in simpler terms, the ability to pull audio data from the DVD without blocking the CPU.</li>
+                <li>Primed (zero-latency) streaming. The very beginning of any sound can be read into memory so that the sound can be triggered immediately, with no latency. As the in-memory portion of the sound begins to play, the rest of the sound is smoothly streamed in from the Xbox hard disk.</li>
+                <li>Simplified jukebox-style interfaces to play user soundtracks and integrate game-supplied Microsoft&reg; Windows Media&reg; Audio (WMA) tracks.</li>
+                <li>Real-time in-game auditioning, mixing, and editing of sounds. By using the instrumented version of the XACT library and the XACT authoring tool on the computer, sounds can be adjusted while the game is played.</li>
+                <li>Methods for composers and sound designers to create sequenced audio events and to manipulate Xbox hardware parameters without requiring the developer to implement them.</li>
+                <li>Interfaces to control audio data and Xbox resource management. These interfaces give developers complete control over what is allocated when.</li>
+            </ul>
+<p>XACT is composed of three connected parts:</p><ol>
+                <li> <i>Run-time engine</i> (xacteng.lib). A highly optimized (currently roughly 27 KB) engine that exposes the previously mentioned run-time behaviors&#8212;streaming, WMA user soundtracks, and so on.</li>
+                <li> <i>Audition engine</i> ["instrumented"] (xactengi.lib, or for debug, xactengd.lib ). Beyond run-time engine features, the audition engine adds support for real-time auditioning from the computer-side XACT authoring tool and from the DSP Builder tool. You can actively mix, equalize, and edit sounds while your game is running. Even if you are not actively editing sounds, you can still use the XACT authoring tool to monitor resources and audio levels, and to display cue triggering events as they occur.</li>
+                <li> <i>Content authoring and auditioning tool</i> (XACT.exe). This is the tool used to create audio files that are used by the XACT engine. In addition to bundling waves into wave banks, the XACT tool provides a wealth of features exposing the Voice Processor pipeline, variability and weighting of content, and tools for in-game mixing, equalization, and monitoring.</li>
+            </ol>
+<p>This section of the documentation focuses primarily on the third part (xact.exe). It will walk you through the various aspects of creating content using the XACT tool, from the viewpoint of a composer or sound designer.</p><h2><a name="IDAIEYK"></a>
+                Before You Get Started: Dividing Responsibilities
+            </h2>
+<p>When creating an audio solution for a game, it is important to understand which aspects are in the hands of the programmer and which are the responsibility of the composer or sound designer. To avoid confusion and potential responsibility "clashes," XACT attempts to provide a single way to perform most tasks. Properties and behaviors that are specified in content cannot generally be "overridden" programmatically, and conversely, the composer does not control resource management or dynamic pausing.</p><p>When initiating a project, the sound designer and the programmer decide on important <i>cues</i>, or trigger points, in the game. The composer then creates a <i>sound</i> (or perhaps multiple sounds, one of which will be chosen randomly to play) that that cue plays. More details about what a sound consists of are described later in this section. For now, the programmer and the sound designer can go their separate ways.</p><p>The programmer's responsibilities:</p><ul>
+                <li>Program cue play calls into the game.</li>
+                <li>Manage resource management (such as memory, free hardware voices, and content loading and unloading).</li>
+                <li>Manage all dynamic sound management (pause/resume, 3D positioning, and so on).</li>
+            </ul>
+<p>Meanwhile, the sound designer or composer:</p><ul>
+                <li>Creates cues in the XACT tool that correspond to each programmed cue.</li>
+                <li>Creates a list of one or more sounds, one of which will be randomly chosen and played when the game calls for a specific cue.</li>
+                <li>Builds each of the individual sounds. A sound consists of one or more events on a timeline, which might consist of playing waves, adjusting hardware envelopes, starting and stopping low-frequency oscillators (LFOs), and sweeping filters&#8212;all possibly with variation.</li>
+            </ul>
+<h2><a name="XACT_Authoring_Guide_Getting_Everything_Set_Up"></a>
+                Getting Everything Set Up
+            </h2>
+<p>The XACT authoring tool and libraries are included with the Xbox Development Kit (XDK), which can be downloaded each month from Xbox Central (<a href="https://xds.xbox.com">https://xds.xbox.com</a>). Note that there is a Minimum Installation option, which will install all of the audio tools without requiring programming tools such as Microsoft&reg; Visual Studio&reg; to be on your machine.</p><p>You should also recover your Xbox Debug Kit or Xbox Development Kit each month with the latest version of the library. If you do not have a debug kit, contact your account manager (or contact content@xbox.com for help in determining who your account manager is). The Xbox Remote Console Recovery Tool, also available on Xbox Central, is an application that runs on your computer (attached by means of a network or a crossover cable to your debug or development kit) and transmits an updated image to your debug or development kit.</p><p>When your debug or development kit is recovered, note the program in the XDK Launcher called Audio Console App (AudConsole). This is the basic Xbox-side tool for real-time sound and digital signal processor (DSP) effect auditioning. Also note your XDK machine name and/or debug IP address (listed along the bottom of the Launcher frame). You'll need one of these two identifiers to connect your computer to the XDK for real-time auditioning.</p><h2><a name="XACT_Authoring_Guide_Auditioning_Your_First_Wave"></a>
+                Auditioning Your First Wave
+            </h2>
+<p>After you have everything set up, you are ready to audition your first wave. Simply follow these steps:</p><ol>
+                <li><a href="xbox_xact_authoring_dxaudio.htm#XACT_Authoring_Guide_Auditioning_Your_First_Wave_Launch_the_Audio_Console_Application">Launch the Audio Console Application</a></li>
+                <li><a href="xbox_xact_authoring_dxaudio.htm#XACT_Authoring_Guide_Auditioning_Your_First_Wave_Launch_XACT">Launch XACT</a></li>
+                <li><a href="xbox_xact_authoring_dxaudio.htm#XACT_Authoring_Guide_Auditioning_Your_First_Wave_Connect_to_the_Xbox">Connect to the Xbox</a></li>
+                <li><a href="xbox_xact_authoring_dxaudio.htm#XACT_Authoring_Guide_Auditioning_Your_First_Wave_Create_a_Wave_Bank">Create a Wave Bank</a></li>
+                <li><a href="xbox_xact_authoring_dxaudio.htm#XACT_Authoring_Guide_Auditioning_Your_First_Wave_Add_a_Wave_File">Add a Wave File</a></li>
+                <li><a href="xbox_xact_authoring_dxaudio.htm#XACT_Authoring_Guide_Auditioning_Your_First_Wave_Audition_the_Wave_File">Audition the Wave File</a></li>
+            </ol>
+<h3><a name="XACT_Authoring_Guide_Auditioning_Your_First_Wave_Launch_the_Audio_Console_Application"></a>
+                    Launch the Audio Console Application
+                </h3>
+<p>Rebooting your Xbox Debug Kit or Xbox Development Kit will bring up the <a href="xbox_mds_concept_xdk_launcher.htm">XDK Launcher</a>. The launcher features a list of applications available for execution on your Xbox. Once you are in the launcher, navigate to the Audio Console Application (AudConsole) by using the controller's left thumbstick or D-pad. Launch AudConsole by pressing the <b>A</b> button. The following screen appears on your Xbox monitor:</p><img src="images/xbox_XACT_Authoring_AudConsole.jpg"><p><i><b>Illustration</b>&nbsp;&nbsp;The Audio Console Application running on the Xbox. When AudConsole is running, it is effectively waiting for information from the computer.</i></p>
+<h3><a name="XACT_Authoring_Guide_Auditioning_Your_First_Wave_Launch_XACT"></a>
+                    Launch XACT
+                </h3>
+<p>Now that the AudConsole is waiting for information, the next step is to launch XACT. To launch XACT, from the <b>Start</b> menu, select <b>Programs</b>, <b>Microsoft Xbox SDK</b>, <b>Audio Tools</b>, and finally <b>Xbox Audio Creation Tool</b>. The XACT application displays a window that looks like this:</p><img src="images/xbox_XACT_Authoring_Launch_XACT.jpg"><p>Note that when XACT is launched, it automatically creates an empty project. In fact, XACT will <i>always</i> have a project loaded, whether it is one you created or the default "New Project".</p><p>You'll notice that the left side of the window contains a hierarchical view of the project, including the wave banks and sound banks contained in the project. For purposes of this discussion, we're concerned only with wave banks.</p><h3><a name="XACT_Authoring_Guide_Auditioning_Your_First_Wave_Connect_to_the_Xbox"></a>
+                    Connect to the Xbox
+                </h3>
+<p>You connect XACT to an Xbox by selecting <b>Connect to Xbox</b> on the <b>Audition</b> menu. Upon choosing this option, a dialog box appears in which you can enter the name of the Xbox you wish to connect to:</p><img src="images/xbox_XACT_Authoring_Connect_to_Xbox.jpg"><p>Enter the name of the Xbox you wish to connect to, then click <b>OK</b>. If XACT and the Xbox have been successfully connected, the following screen appears on your Xbox monitor:</p><img src="images/xbox_XACT_Authoring_AudConsole_connected.jpg"><h3><a name="XACT_Authoring_Guide_Auditioning_Your_First_Wave_Create_a_Wave_Bank"></a>
+                    Create a Wave Bank
+                </h3>
+<p>Now that you have established communication between XACT and the Xbox, you are ready to create a wave bank. Navigate to the <b>Wave Banks</b> menu and select <b>New Wave Bank</b>. The following dialog box appears:</p><img src="images/xbox_XACT_Authoring_Create_a_Wave_Bank.jpg"><p>The default name of the wave bank is <i>Bank</i>. You can rename the wave bank by replacing the name listed in the top field of the dialog box with a name of your choice. When you do this, the wave bank's path is updated automatically to reflect the new name. If you want the file name to differ from the name of the wave bank, simply edit the file name in the wave bank path.</p><p>This dialog box gives you an opportunity to alter other properties of the wave bank as well, such as whether the wave bank is streaming, whether to compact the wave bank, and whether to include wave-friendly names. These properties are discussed later, so for now you can leave them at the default values.</p><p>After you have selected the name and path of the new wave bank, click the <b>OK</b> button. The new wave bank is listed under the Wave Banks folder, and a new wave bank window appears.</p><img src="images/xbox_XACT_Authoring_New_Wave_Bank.jpg"><h3><a name="XACT_Authoring_Guide_Auditioning_Your_First_Wave_Add_a_Wave_File"></a>
+                    Add a Wave File
+                </h3>
+<p>Now you are ready to add a wave to the wave bank. First, make sure that the wave bank window is selected, which you do by clicking on the title bar of the wave bank window. Next, select the <b>Wave Bank</b> menu and select <b>Insert Wave File(s)</b>. The following window appears:</p><img src="images/xbox_XACT_Authoring_Insert_Wave.jpg"><p>Select one or more wave files to add to your wave bank, then click <b>Open</b>. The wave files you selected are added to the wave bank.</p><img src="images/xbox_XACT_Authoring_Wave_Loaded.jpg"><h3><a name="XACT_Authoring_Guide_Auditioning_Your_First_Wave_Audition_the_Wave_File"></a>
+                    Audition the Wave File
+                </h3>
+<p>To audition the wave file on the Xbox, first make sure that the wave to audition is selected in the wave bank. Then, select <b>Play</b> from the <b>Audition</b> menu. The wave file is copied to the Xbox and you will hear the audio played back on your Xbox monitor.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;For large wave files, there may be a perceptible delay the first time you audition the wave. This is because the wave file must be copied to the Xbox before you can play it. This applies only the first time you play the wave.</p><h2><a name="IDALDZK"></a>
+                Building Wave Banks (.xwb)
+            </h2>
+<p>
+                Now that you have successfully auditioned your first sound, the next step is understanding how to build a <a href="xbox_xact_concepts_dxaudio.htm#wave_bank">wave bank</a>. A wave bank is simply a collection of wave files bundled together into a single larger file. You can specify per wave bank whether it is meant to be used in-memory (where all of the wave data will be loaded into the Unified Memory Architecture) or to be streamed from the DVD or Xbox hard disk (where only the currently playing parts of any waves are in memory, and the rest are read from the DVD as needed).
+                </p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;
+                <ul>
+                    <li>If you change the wave bank format from in-memory to streaming, and then resynchronize while using in-game auditioning, XACT will crash.</li>
+                    <li>If your development pipeline involves even higher level bundling of data, wave banks (and sound banks) can easily reside in other files. A developer registers wave banks using a file handle (or memory address) and an offset. As a result, you don't need to use separate .xwb files to use XACT.</li>
+                </ul>
+            </p><p>Streaming options are broken down even further. By default, every wave in a streamed wave bank incurs some latency when you start to play it, because it takes time to seek the position of that wave on the disk and read the data into memory. While the latency can vary based on other processes accessing the disks, how far apart the data to be read is, and so on, hard disk reads generally incur tens of milliseconds of latency. DVD reads are on the order of hundreds of milliseconds. However, you can specify for one or more waves in your wave bank to use primed streaming. With primed streaming, the beginning of the wave is loaded into memory when the bank is first registered. This means the wave can start playing immediately, with ample time for the rest of the wave to be streamed in from the disk.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;
+                <ul>
+                    <li>Ask a developer to arrange the file structure on your DVD to avoid expensive seeks, such as those incurred by a layer change or by data reads that move the drive head from the innermost edge to the outermost edge of the DVD.</li>
+                    <li>A developer can manually specify a wave to be primed by using the <a href="xbox_ixactsoundbank_prepare_dxaudio.htm">IXACTSoundBank::Prepare</a> interface on a sound that plays a regular streamed wave. This is useful when, for instance, an animation must be synced to a sound but you don't want that sound to be primed until you are ready for the visuals to occur.</li>
+                </ul>
+            </p><p>The process of creating a wave bank is fairly straightforward:</p><ol>
+                <li>From the top-level menu, click <b>Wave Banks</b>, and then click <b>New Wave Bank</b>. The following property dialog box appears.</li>
+                <p><img src="images/xbox_xact_authoring1_dxaudio.gif"></p>
+                <p>You can enter a name for your wave bank as well as the location where the wave bank will be built. Next, you can choose the type of bank&#8212;whether it will consist of purely in-memory waves or if it should be streamed from the DVD or from the Xbox hard disk. The <b>Include wave friendly names</b> check box should be selected only if you plan to use this bank with your own playback engine (not using XACT).</p>
+                <li>After you click <b>OK</b>, the wave bank window opens. Now just add waves to the wave bank. XACT supports pulse code modulation (PCM) wave files (including multichannel waves), adaptive differential pulse code modulation (ADPCM) compressed wave files (though as you'll see below, it's often preferable to use the original PCM waves for flexibility), WMA files, and files in the Apple-popularized AIFF format. You can use the <b>Insert Wave File</b> option from the wave bank menu. Or more conveniently, drag waves (or entire folders of waves) from a Windows Explorer window into the bank. Using this second option, XACT will also look through any subdirectories in this folder for waves, and all wave names will consist of the path to that wave. This path is useful if you have multiple directories that have waves of the same name that you want to include in the project (for instance, monster1\growl.wav and monster2\growl.wav).</li>
+                <p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Make sure any WMA files you create do not use digital rights management (DRM). If your WMA files use DRM, these files can be played only on the computer on which they were authored.</p>
+                <li>If your Xbox is running an application that uses the instrumented XACT library (as the Audio Console Application does), you can connect to it (by means of the <b>Connect to Xbox</b> command on the <b>Audition</b> menu), and then audition your waves immediately. Just select a wave and click <b>Play</b>.</li>
+                <li>Later on, if you decide to change a bank's name, build location, or type, right-click on the bank (in the Wave Banks folder), click <b>Properties</b>, and the wave bank's property dialog box will reappear.</li>
+            </ol>
+<p>XACT provides the opportunity to do some basic "compression" on your PCM or AIFF wave data. By right-clicking on an individual wave (or selecting a group of waves), you can choose 8-bit PCM or Xbox ADPCM. If you audition the wave after choosing one of these options, you will hear it with the appropriate compression applied.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Your source waves will not be altered; the compression is applied only for auditioning and in the final wave bank creation.</p><p>Other options are available on a wave. The primed streamed waves mentioned earlier are also available for a wave or group of waves by means of the <b>Enable Zero-latency Streaming</b> command on the wave's shortcut menu, or by means of the property window that opens when you double-click a wave. If a wave was imported with loop points, these are retained by XACT. If you know you will never hear the wave data beyond the end loop point (that is, you don't intend to use a release envelope), you can click <b>Remove Loop Tail</b>, again per wave, which will reduce your wave data size.</p><p>The last step to using a wave bank is to build it. When XACT builds a streamed wave bank, it automatically sector-aligns waves in a streamed wave bank to ensure optimized streaming performance. To build your wave bank(s), on the <b>File menu</b>, click <b>Build</b> (or press <b>F7</b>). Or you can just wait until you've finished creating the sound bank as described below, and both will be built together.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Wave banks are generated from your original wave content every time you build the bank. So it's perfectly acceptable to keep editing your source waves using the sound editing tool of your choice. To keep the view in XACT current as far as file size and format, you can occasionally re-scan your wave bank entries (<b>SHIFT+F5</b>). Wave bank entries are also automatically re-scanned whenever the wave bank is built.</p><p>It is possible to build very large wave banks (over 1 MB). At production time, however, these files can be difficult to lay out on the DVD. See the <a href="xbox_tool_xbgamedisc_tips.htm">Tips for Laying Out an Xbox Game Disc</a> section for more information on managing large files.</p><h2><a name="IDARGZK"></a>
+                Creating Sound Banks (.xsb)
+            </h2>
+<p>The next step is to construct sounds and cues, which sound banks (.xsb files) comprise. Remember, cues are what the developer plays. With the possible exception of one global sound property (namely categories, which will be covered shortly), the developer does not need to know anything about the sound or sounds that a cue uses.</p><p>First, create a sound bank, much as you created a wave bank. On the <b>Sound Banks</b> menu, click <b>New Sound Bank</b> to open the following property dialog box:</p><p><img src="images/xbox_xact_authoring2_dxaudio.gif"></p><p>For now, keep the <b>Include cue friendly names</b> check box selected. Later on, your developer can refer to cues solely by their indices (numeric values), in which case this check box could be cleared to save some space in the file. Particularly for sound banks that have large numbers of cues (for instance, dialogue in a sports title), using indices optimizes performance as well, because no string lookup is required.</p><h2><a name="IDAFHZK"></a>
+                Creating Basic Sounds
+            </h2>
+<p>When we click <b>OK</b>, the Sound Bank window opens. The window consists of four frames.</p><p><img src="images/xbox_xact_authoring3_dxaudio.gif"><p><i><b>Illustration</b>&nbsp;&nbsp;The Sound Bank window. The upper left frame displays the sound bank's sounds. The upper right frame displays the events for the currently selected sound. The lower left frame displays the sound bank's cues. And the lower right frame displays the sound or sounds with which this cue is associated.</i></p>
+</p><p>As shown in the upper right frame, a sound is composed of one or more <i>tracks</i>. Each track can contain a single play event, as well as any number of other events (such as markers and filter sweeps). Each track of a sound plays only a single wave at any given time. For polyphonic sounds, you can create multiple tracks, each with its own play event (and again, each with as many other non-play events as you wish). Because the Audio Console Application limits the number of concurrent streams coming from the hard disk to 50, no more than 50 tracks should be added to a sound.</p><p>This example starts by creating the most basic sound, one that simply plays a wave. XACT provides a quick shortcut for this: Simply drag a wave from a wave bank into the upper left frame of the sound bank. (Otherwise, you could create the sound manually by clicking <b>New Sound</b> on the <b>Sound Banks</b> menu, or by pressing <b>CTRL+D</b>.) This creates a sound with the same name as the wave. The sound has one track with one play event, and the play event plays this wave.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Sounds can be even more basic and consist of nothing at all. This is useful if you ever want to use a "silent" cue, or have not yet implemented sounds for your cues but want them integrated into your game.</p><p><img src="images/xbox_xact_authoring4_dxaudio.gif"><p><i><b>Illustration</b>&nbsp;&nbsp;The sound "Cheer" as created from a wave of the same name.</i></p>
+</p><p>You can organize sounds in three ways:</p><ol>
+                <li> <i>Groups</i>. Assign a sound to one or more groups. This is purely a convenience function for the composer; it does not affect how the developer arranges, saves, or uses banks. After you create a group (by clicking <b>New Group</b> on the <b>Sound Banks</b> menu), you can assign sounds to that group by dragging them into that group's folder in the XACT project tree. Double-clicking on a specific group opens a new sound bank window that displays only the sounds and cues relating to a specific group. Again, you can use this feature to organize your sounds and for easier group management and editing.</li>
+                <li> <i>Categories</i>. As mentioned previously, categories are the one aspect of sounds that the developer can see. He or she can set the volume for a category (which will be applied additively with any per-sound volume settings), and can pause and resume individual categories. Categories are used most typically for the kind of global volume sliders seen in game menus, where players can adjust their own mix of music, dialogue, sound effects, and so on. A game might choose to break categories up even further so that, for instance, when a game is paused, the ambient track continues playing but all other sounds are temporarily paused. To assign a sound (or group of sounds) to a category, open the property window for the sound, and in the <b>General</b> tab, enter a name for the category.</li>
+                <li> <i>Layers</i>. Layers determine how sounds interact with each other. The general rule is that only one sound may be playing on a layer at any given time. Remember again that one sound may be composed of multiple waves, so you <i>can</i> still have polyphony on a layer. But starting a new sound on a layer does cause the previous sound to stop. The manner in which the transition occurs (immediately, with a crossfade, by queueing, and so on) is determined on the cues, as you will see shortly. Typical use is to create one layer per actor (because a person probably wouldn't be saying two things simultaneously!) or to assign the background music to a single layer. As with categories, you can assign a sound to a layer from its property page or by dragging the sound into the appropriate layer folder in the XACT project tree. By default, all sounds do not belong to a layer, so they can freely overlap and will not stop each other.</li>
+            </ol>
+<p>If your sound is intended to be 3D positioned by the developer, make sure to check <b>Enable 3D</b> from the <b>3D Properties</b> tab of the sound's property page. The tab is available (and the sound can only be 3D positioned) only if the wave that the sound plays is mono. A 3D-positioned wave is auditioned as if it were in front of the listener, sending to the environmental reverb as well as to the 3D position. The most commonly needed adjustments to the default properties are <b>minimum distance before rolloff</b> and <b>rolloff factor</b>.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Sounds with a different set of 3D properties that are played onto the same sound source need to use an additional hardware 3D voice.</p><p>The I3DL2 and LFE sliders on the <b>3D Properties</b> tab of the sound's property page apply to the sound source, rather than the sound itself. So, if you set the I3DL2 send for one sound playing on a particular sound source, and then use a different slider setting for another sound playing on that same sound source, the first one's setting is overridden.</p><h2><a name="IDAQJZK"></a>
+                Creating Basic Cues
+            </h2>
+<p>So you've created a sound that plays a wave. The last step is to create a cue that triggers this sound. Remember, the cue is what the developer is going to play. Again, XACT provides a few shortcuts. First, if you drag a sound into the lower left frame, XACT automatically creates a cue for it. Make sure you drag into an empty area, because this same drag action is used to replace the sound that an existing cue is associated with. Or as a super-shortcut, you can drag a wave into the lower left frame, which automatically creates both a sound playing the wave and a cue that plays the sound.</p><p>Opening up the cue's property window and clicking the <b>Layering</b> tab allows you to specify how this cue interacts with other cues playing sounds on the same layer. Remember that you assign layers to sounds, not to cues. But you assign the interaction (for example, whether the new sound waits for the previous one to complete, or causes an immediate crossfade) to cues. As with sounds and waves, you can audition cues by highlighting them and playing them, either from their property window or by clicking <b>Play</b> in the main XACT toolbar. </p><p>You now have a cue and a sound. You can build and deliver your wave bank and sound bank to the developer by clicking <b>Build</b> on the <b>File</b> menu.</p><h2><a name="IDACKZK"></a>
+                Using Sequenced and Multitrack Sounds
+            </h2>
+<p>A sound consisting of a single wave isn't going to make for particularly interesting audio. If you use multiple waves to create composite sounds, the real-time processing power of the Xbox Media Communications Processor can make all of your sound effects more complex and realistic than a single wave file.</p><p>As discussed previously, each track allows for a single play event. However, the play event need not occur at the moment the sound is fired. Opening up the play event's property window (by double-clicking on it), you'll notice a <b>Timestamp, in seconds</b> box. Similarly, every other event allows you to schedule the play even for any time during the playback of the sound.</p><p>For example, you could slowly pitch shift the wave up. To do this, right-click on any event in a track, click <b>Add Pitch Event</b>, and a pitch event dialog box appears:</p><p><img src="images/xbox_xact_authoring5_dxaudio.gif"><p><i><b>Illustration</b>&nbsp;&nbsp;A pitch event that, starting at 2.5 seconds into the sound's playback, sweeps the pitch up two octaves over 4 seconds. The step count indicates that the pitch changes occur every .04 (4/100) seconds. Use of relative values means that the pitch shift is relative to the sound's current pitch and not necessarily to the wave's original pitch. Otherwise, the pitch adjustment would trample any previous pitch changes.</i></p>
+</p><p>Similar events are available for all of the Xbox hardware parameters&#8212;for voice filter sweeps, low frequency oscillators, envelopes, and so on. There are also events for volume sweeps, speaker assignments, markers that a developer can use to mark the position in the cue, and stop events (for stopping a playing wave at some predetermined time).</p><p>You can also create as many additional new tracks as you like, either by clicking <b>New Track</b> on the <b>Sound Banks</b> menu, or by dragging a wave into the upper right frame of the sound bank window. Again, each track supports a unique play event, and all of the other events placed on a track modify only that track's waves.</p><h2><a name="IDA5KZK"></a>
+                Adding Variability to Cues and Sounds
+            </h2>
+<p>XACT cues are a bit more interesting than sounds, but still repetitive. Every time the cue is triggered, you're going to hear the same sound, which is composed of the same sequence of waves and other events. Let's add some basic variation to our sound and cue.</p><p>You'll find the simplest form of variation for a sound in the <b>Mixer</b> tab of its property window. Here you can set pitch and volume variation for a "simple" sound&#8212;one that consists of a single track. These settings will be applied across any waves that the sound plays. However, remember that they are applied additively with any per-wave pitch or volume settings that you specify. Consequently, relative volume and pitch will still be intact within a sound.</p><p>Many of the individual events have their own variation functionality. For example, if you have multiple tracks, each track's play events supply similar settings to those in the <b>Mixer</b> tab of the sound. And numerous other events have an <b>Enable variation</b> check box, which turns their range sliders into variation ranges.</p><p>Of course, even more useful than randomizing how a wave is manipulated is choosing between several different waves for playback. You can drag multiple waves onto a play event to create wave variations. Every time this play event is encountered, a wave will randomly be chosen from the list. You can also weight the list of waves by means of the play event's property page (click <b>Weight</b>), so certain waves are played more or less frequently than others.</p><p>Getting a bit fancier, a looped play event that uses waves from a streaming wave bank will automatically&#8212;and with sample accuracy&#8212;start playing a new wave as soon as the currently chosen variation completes. This works well for non-repetitive music and ambience. The main restriction for this functionality is that all of the variations must be waves of the same format (sampling rate, channels, compression, and so on), and they must be streamed.</p><p>To add even more variability, a cue can randomly choose between multiple sounds, again with weighting. The easiest way to add sounds to a cue is once again to drag them into the lower right frame of the Sound Bank window. You can also add sounds individually by means of the cue property window (the <b>Add</b> button in the <b>General</b> tab), or you can replace the current associated sound(s) by dragging the sounds onto the cue itself. As with play events in sounds, you can assign the weighting for a cue's sounds from the cue property window.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;In the sound cue properties dialog, if you modify the sound list, you must click <b>Apply</b> before you can edit the transition properties.</p><p>The ability of cues to choose randomly between multiple sounds is one reason that layers are assigned to sounds rather than to cues. For example, a hockey title has a cue called "YellAtRef." The cue is associated with ten sounds, each of which is a single irate fan (perhaps with multiple variations within each sound). Now, there is another cue, called "YellAtPlayer," in which the same voice talent has nice things to say about a favorite player. Because the layer is assigned to the sound, and not to the cue, if for some reason a character was yelling at the referee, and then the same character yelled at the player, you wouldn't hear the same fan saying two things at once (assuming you assigned both of that fan's sounds to the same layer). Conversely, if the YellAtRef and YellAtPlayer cues picked two different fans, they would <i>not</i> cut each other off.</p><h2><a name="IDAJMZK"></a>
+                Handing Off Content
+            </h2>
+<p>Now that you've completed your wave banks and sound banks, you can give them to the developer to get a first pass at integrating audio into the game. Delivering the sound bank and wave bank files is generally sufficient. However, if the developer wants to use cue indices rather than friendly names, make sure you build with the optional <b>Build Project Header</b> check box selected. (This is the same option to use if your game uses wave banks without using the XACT engine.) You might also want to choose <b>Build Cue List</b>, which creates a text file listing which cues you have delivered (along with any comments you added in the property window for each cue's <b>Notes</b> tab).</p><p>One file that hasn't been discussed yet is the XACT project file (.xap), which is basically a text listing of everything in your wave banks and sound banks. Archive this file in case changes are required later in the project, since developers may want to use this file to regenerate at least your sound banks in subsequent XDK releases. Because the sound bank format can change from month to month, developers should rebuild them with each newly released build of the XDK library. A command-line version of XACT enables developers to regenerate sound and wave banks without needing to use the tool (or open the project file).</p><h2><a name="IDAXMZK"></a>
+                Mixing XACT Content
+            </h2>
+<p>After you have created a bunch of cues and sounds, it would be really useful to hear how they interact with each other. Does the dialogue cut through the ambience? Are the gunshots too loud? There are several ways to accomplish this. For instance, you could manually audition each sound yourself, watching the volume levels in the Audio Console application, and opening up each sound's property window to adjust its volume individually. However, it's often easier to hear multiple sounds played at the same time, especially in the context of the game. There is a solution. If the game is compiled with the instrumented XACT library, you can mix your sounds in-game in real-time using the Mixer Window.</p><p>Mixer Windows are available for each Sound Group. Right click on a sound group and choose <b>Open Mixer Window</b> to see that group's mixer window. There are volume controls for each sound in the group, as well as a 'Master' group volume control (the first slider) that will be additively applied to all other sounds in the group.</p><p>In the "Simple" view, you have simple volume sliders for every sound. These sliders are "live" and applied as the sounds are played. Switching to the "Complex" view, you get a bit more information, such as the ability to change each sound's parametric EQ settings and the ability to manually audition the sound. The play cursor will flash if the sound is currently being played (either by means of manual audition, or by the game itself, running on the Xbox).</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;These functions are also available in the <b>Mixer</b> tab of each sound's property window. The Mixer Window just brings them all together in an environment more conducive to audio level mixing.</p><p>After you're done mixing your game, rebuild your sound bank with these new audio settings and give them to your developer. Even though you were auditioning them "live" in the game, the settings themselves are still only present in the XACT tool; they weren't being written to the banks on your debug kit's hard disk or anything along those lines.</p><h2><a name="IDAJNZK"></a>
+                Monitoring XACT Content and Xbox Audio Resources
+            </h2>
+<p>Using the <b>Audition Monitor</b> window, you can see exactly what cues are playing when, as well as how your Xbox system resources are being utilized. The window also replicates the 5.1 digital and stereo analog volume monitors from the Audio Console application so that you can monitor your in-game audio levels without needing the developer to add volume monitor bars. <p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Shared code used by all of the XDK audio samples demonstrates a quick implementation of such on-screen volume monitoring, if a developer wants to use it.</p> The Audition Monitor enables you to see when an unexpected cue might be called, as well as if there is one cue that for some reason never stops.</p><p>The resource monitoring aspects of the Audition Monitor can be useful for determining how many voices you're using (and if you're getting close to running out). If you notice that your streaming audio is breaking up, note how many streams are playing simultaneously as well as where they are located relative to each other on the game disc or on the Xbox hard disk.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;The <b>memory used</b> box is generally only useful if you are playing content exclusively from in-game; any auditioning from the computer tool causes memory use to increase as temporary wave banks, sound banks, and cues are dynamically created.</p><h2><a name="IDAYNZK"></a>
+                Choosing Streamed vs. In-Memory Waves
+            </h2>
+<p>A natural first question is whether to play sounds from in-memory, streamed from the Xbox hard disk, or streamed from the game disc. Let's cover some of the basic differences between these techniques, as well as how they effect Xbox resources.</p><p>In-memory waves are fully loaded into memory when the developer registers the wave bank. As such, there's a one-to-one correspondence between your wave bank's size and your memory footprint. On the positive side, no disk bandwidth is incurred once the wave data is loaded, and wave looping is performed in hardware, so no CPU hit is incurred once the wave starts playing.</p><p>Streamed waves reside on the Xbox hard disk (even when the developer registers them) until they are played back. The exception is that any waves marked for primed streaming (or manually primed by the developer by means of <a href="xbox_ixactsoundbank_prepare_dxaudio.htm">IXACTSoundBank::Prepare</a>) have several packets read into memory: three for non-looped waves and four for looped waves. For non-primed streamed waves, playback uses two packets for non-looped waves and three for looped waves. The size of these packets depends on what the developer specifies in <i>dwPacketSizeInMilliSecs</i> and on the specific format of the individual wave. The packet size is rounded up to the nearest "sector size" (512 bytes for Xbox hard disk wave banks, 2048 bytes for DVD wave banks).</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;The memory footprint does <i>not</i> vary with the length of the wave, so your waves can be as long as you want.</p><p>The read-ahead size needs to be larger for the DVD (because seek time is so much slower), so any streams from the DVD incur a larger in-memory footprint than streams from the Xbox hard disk. For this reason, the DVD is generally used for several non-primed streams (perhaps 5.1 music, ambience, and dialogue), and the Xbox hard disk is used for both primed and non-primed streams.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Several titles have successfully used the hard disk for all of their audio playback (music, sound effects, dialogue, and so on), without using the DVD or in-memory wave banks at all.</p><p>Xbox hard disk bandwidth is more limiting than memory footprint, however. Remember that the Xbox hard disk drive head must have enough time to seek to the wave and read in the next packet(s) of audio data for each wave that is playing. If other aspects of the game are using the Xbox hard disk and/or game disc, the bandwidth available for audio streaming, of course, decreases. You can maximize bandwidth by ensuring that all of the required data resides in the same vicinity on the disk. For this reason, it's recommended that your streamed waves for a particular area of a game reside in a single streamed wave bank (or at least in adjacent wave banks).</p><p>Streamed and in-memory waves have a few basic functional differences:</p><ul>
+                <li><i>File size</i>. The Xbox audio hardware can address only 8 MB of memory for in-memory wave data. For this reason, the total size of in-memory wave banks that you intend to use at any given time must remain under 8 MB. There is no corresponding limitation for streamed wave banks&#8212;they can be up to 1.8 GB in size.</li>
+                <li><i>Loop count</i>. In-memory waves are played exclusively by the hardware, so waves can either be looped infinitely (until stopped or told to enter their release envelope) or played a single time. By comparison, streamed waves can be looped an arbitrary number of times. This is reflected in the property page for play events for a sound.<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;If the loop count is changed while the sound is playing, the change does not take effect until the next time the sound is played.</p></li>
+                <li><i>Loop support</i>. For ADPCM waves, arbitrary loop points (which must still be aligned to 64-sample boundaries) are supported only on in-memory waves. The entire wave must be looped for streamed ADPCM waves.</li>
+                <li><i>Sample accurate variation looping</i>. As previously discussed, for a looping play event to use multiple waves, the waves must all be streaming and of the same format (sampling rate, number of channels, and so on). A looping play event consisting of in-memory waves will choose one and loop it. Non-looping play events can mix and match between streaming and in-memory waves.</li>
+            </ul>
+<h2><a name="IDAKPZK"></a>
+                Run-time Parameter Controls ("Sliders")
+            </h2>
+<p>Some kinds of sounds inherently require run-time control to function. For instance, a car engine is going to need to adjust its waves and respective pitches based on gear, RPM, and so on. Rather than force the developer to implement how these values relate to sound behavior, the content creator can present run-time parameter controls (RPCs, also known as "sliders") that dictate how content responds.</p><p>RPCs are currently available per sound, and an RPC's parameters can be applied with different settings per track in that sound. By opening a sound's property window to the <b>Parameter Controls</b> tab, you can see the list of RPCs your content exposes to the developer. To add a new RPC, click <b>Add</b>, which displays the following dialog box:</p><p><img src="images/xbox_xact_authoring6_dxaudio.gif"><p><i><b>Illustration</b>&nbsp;&nbsp;The run-time parameter control dialog box.</i></p>
+</p><p>The top text box is where you can specify the name of the parameter as the developer will see it (similar to cue "friendly names"). Below the top text box is a slider control through which you can audition this run-time parameter control in real time. And below the slider control are the three settings that you can currently specify per track: volume, pitch, and filter cutoff.</p><p>As a quick first example, suppose you have the sound of a sword hitting a shield. You want to control the sound's behavior based on how hard the hit is. To do so, provide a run-time parameter control to the developer called "Force" or something similar. If the force applied is large, you want the sound to be louder and the filter to be opened up more. If the force applied is small, you want the sound to be quieter and the filter to be closed (so the sound is more muffled).</p><p>First, enable the slider's control over volume and filter cutoff by checking the corresponding boxes for Track 1:</p><p><img src="images/xbox_xact_authoring7_dxaudio.gif"><p><i><b>Illustration</b>&nbsp;&nbsp;A close-up of the enabled volume parameter for this RPC.</i></p>
+</p><p>The grids to the right become enabled and display four points. You can now grab these points and drag them around to create an arbitrary curve. Look at the <b>Input value</b> and <b>Output value</b> text boxes to see what each point corresponds to. Again, you want volume to increase as the force increases. Let's start at &#8722;8 dB and then ramp up to full scale.</p><p><img src="images/xbox_xact_authoring8_dxaudio.gif"><p><i><b>Illustration</b>&nbsp;&nbsp;A mildly logarithmic-looking volume fade curve. Note that output value for volume ranges from </i></p>
+</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;The range of the RPC (the "input value") is from 0 to 65535. So the developer is going to need to translate his or her "force" value (which might be on some other arbitrary scale, perhaps 0 to 1) to this range.</p><p>Do the same for the filter cutoff curve. For the sake of demonstration, do a slightly more dramatic and less smooth sweep.</p><p><img src="images/xbox_xact_authoring9_dxaudio.gif"><p><i><b>Illustration</b>&nbsp;&nbsp;A possible filter cutoff curve. For very weak hits, the low pass filter cuts the wave off at nearly 0 Hz. Stronger forces open up the filter cutoff, and extremely high force open up the filter all the way to 8192 Hz.</i></p>
+</p><p>You can place the four points in absolutely arbitrary positions; there is no rule that says a curve has to constantly move up or down. You could now audition this run-time parameter control by means of the <b>Play</b> button at the top of the page. Move the slider around to hear the volume and filter cutoff adjust in real time, just as they do for the developer.</p><p>RPCs become really interesting when you can apply them to multiple waves simultaneously. Again, each RPC is attached to a single sound, so you're going to need to create a sound with multiple tracks. Consider an example in the form of a car engine. You have five different loops for the different gears. Then, each loop is pitch shifted up as the RPMs increase.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;This will be demonstrated in an upcoming XACTParamControl sample in the XDK.</p><p><img src="images/xbox_xact_authoring10_dxaudio.gif"><p><i><b>Illustration</b>&nbsp;&nbsp;The event list window for the engine sound. Initially, it just plays all five RPMs at the same time.</i></p>
+</p><p>So you're going to have two different run-time parameter controls acting on your sound:</p><ul>
+                <li><b>Gear</b>: Crossfade between the various tracks based on which gear you're in.</li>
+                <li><b>RPM</b>: Pitch shift and increase the volume of the engine while closing its low pass filter (in response to how fast the engine is going).</li>
+            </ul>
+<p>You create the sound with five tracks, one for each of the five RPM settings. Then, you return to the <b>Parameter Control</b> tab of the <b>Property</b> page and add a "Gear" parameter. Note that this time, you see five tracks listed in the parameter control dialog box. Each one has a unique curve, displayed in a different color. Of course, if there's one track that you don't want to affect here (perhaps the in-car ambience, for instance), you just uncheck that track and the RPC won't influence it. As the gear slider goes up, you want to crossfade between the waves. So the curves might look something like this:</p><p><img src="images/xbox_xact_authoring11_dxaudio.gif"><p><i><b>Illustration</b>&nbsp;&nbsp;The volume curves for each track of the "gear" RPC. The curve whose points you can see is the lowest RPM track (track 1).</i></p>
+</p><p>After clicking <b>OK</b> on that parameter control dialog, you do the same thing for RPMs. Remember that within a single gear, you're only going to hear one track, but as the RPMs go up, you might want to use a slightly different pitch curve for each track. When you're done, you might have something like this:</p><p><img src="images/xbox_xact_authoring12_dxaudio.gif"><p><i><b>Illustration</b>&nbsp;&nbsp;The curves for the five tracks that the RPM slider influences.</i></p>
+</p><p>You can audition either of these settings individually, though not currently at the same time. This means that you'll either hear all five engine loops simultaneously (while you audition RPMs) or one engine loop at a time at constant pitch (while you audition the Gear slider). Testing multiple simultaneous sliders is a planned future enhancement.</p><h2><a name="IDAQSZK"></a>
+				Interactive Audio
+			</h2>
+<p>XACT interactive audio cues enable controlled transitions between sounds, a step beyond the transitions <i>within</i> sounds achieved with run-time parameter controls. A complex set of music transitions defined by the content author can be controlled at run-time with a single <i>trigger variable</i>, set by the game, which causes sound transitions to occur. The transition states, effects, delays, and so on, as designed by the content author, are handled automatically by the XACT engine. Multiple interactive cues can be playing at one time, based off of the same or different trigger variables, enabling a rich combination of transitions. For example, crowd noises could transition between frantic cheering, booing, and stunned silence, while the background music transitions between scores, both based on the ebb and flow of the battle scene.</p><p>Interactive audio cues are enabled by simply checking the <b>Enable interactive audio transitions</b> option  on the <b>Interactive Audio</b> tab in a cue's property window, as shown here.</p><p><img src="images/xact_int_ac.jpg"><p><i><b>Illustration</b>&nbsp;&nbsp;An XACT Interactive Audio Cue</i></p>
+</p><p>A thorough description of XACT interactive audio, from both an authoring and development standpoint, can be found in the <a href="cd_aud_wp_interactiveaudio.htm">Introduction to XACT Interactive Audio Features</a> white paper.</p><p>The <a href="xbox_samp_aud_XActInteractiveAudio.htm">XACTInteractiveAudio Sample</a> in the XDK provides a sample XACT project with an interactive audio cue, and a sample program that uses that cue.</p><h2><a name="IDAQTZK"></a>Track Event Overview</h2>
+<p>This section provides a complete list of the available track events, as well as the properties of each event.</p><ul>
+				<li><a href="xbox_xact_authoring_dxaudio.htm#Track_Event_Overview_Play">Play</a></li>
+				<li><a href="xbox_xact_authoring_dxaudio.htm#Track_Event_Overview_Stop">Stop</a></li>
+				<li><a href="xbox_xact_authoring_dxaudio.htm#Track_Event_Overview_Volume">Volume</a></li>
+				<li><a href="xbox_xact_authoring_dxaudio.htm#Track_Event_Overview_Pitch">Pitch</a></li>
+				<li><a href="xbox_xact_authoring_dxaudio.htm#Track_Event_Overview_MixBin">MixBin</a></li>
+				<li><a href="xbox_xact_authoring_dxaudio.htm#Track_Event_Overview_MixBin_Pan">MixBin Pan</a></li>
+				<li><a href="xbox_xact_authoring_dxaudio.htm#Track_Event_Overview_Low_Pass_Filter">Low-Pass Filter</a></li>
+				<li><a href="xbox_xact_authoring_dxaudio.htm#Track_Event_Overview_Amplitude_Envelope">Amplitude Envelope</a></li>
+				<li><a href="xbox_xact_authoring_dxaudio.htm#Track_Event_Overview_Pitch_and_Filter_Envelope">Pitch and Filter Envelope</a></li>
+				<li><a href="xbox_xact_authoring_dxaudio.htm#Track_Event_Overview_Multifunction_LFO">Multifunction LFO</a></li>
+				<li><a href="xbox_xact_authoring_dxaudio.htm#Track_Event_Overview_Pitch_LFO">Pitch LFO</a></li>
+				<li><a href="xbox_xact_authoring_dxaudio.htm#Track_Event_Overview_Loop_Start">Loop Start</a></li>
+				<li><a href="xbox_xact_authoring_dxaudio.htm#Track_Event_Overview_Marker">Marker</a></li>
+				<li><a href="xbox_xact_authoring_dxaudio.htm#Track_Event_Overview_Environmental_Reverb">Environmental Reverb</a></li>			
+			</ul>
+<h3><a name="Track_Event_Overview_Play"></a>Play</h3>
+<p>The <i>Play</i> event is the fundamental event needed to start the sound playing.</p><p>The following is a list of properties for this event:</p><ul>
+					<li><i>Name</i> &#8211; The name, or description, of this event.</li>
+					<li><i>Timestamp</i> &#8211; A fixed number of seconds from the time that the play command is given until the sound plays. The actual play time may be further affected if a variable delay is added.</li>
+					<li><i>Variable delay</i> &#8211; A random number of seconds added to the playback Timestamp to determine the actual play time. The actual delay will be a random value between 0 and <i>variable delay</i> seconds.</li>
+					<li><i>Looping</i> &#8211; Determines if looping should be enabled for the play event.
+						<ul>
+							<li><i>Loop count</i> &#8211; Indicates the number of additional times the play event should loop. For example, if the loop count is 1, the sound will play twice. Loop count is available <i>only</i> for streamed waves.</li>
+							<li><i>Infinite loop</i> &#8211; Indicates that the play event should loop indefinitely. When this  value is set, the loop count is ignored. In-memory waves can <i>only</i> be infinitely looped.</li>
+							<li><i>Select new wave variation on each loop</i> &#8211; Determines if a new wave should be selected each time the play loops. Which wave will be selected is determined by the variation playlist type (listed below). This function is available only for streamed waves, and further, only if all waves this play event chooses between are of identical formats (sampling rate, number of channels, and so on).</li>
+						</ul>
+					</li>
+					<li><i>Variation playlist type</i> &#8211; Determines how the playlist is sorted for playback.
+						<ul>
+							<li><i>Ordered</i> &#8211; Indicates that entries are played in the order defined by entry weight.  The heaviest weighted entries (highest weight value) are played first and the lightest last.</li>
+							<li><i>Ordered from random</i> &#8211; Initially picks a random starting position (no weighting used), then proceeds to play all entries in weighted order (heaviest first), the same as the ordered type.</li>
+							<li><i>Parameter-controlled</i> &#8211; Indicates that the currently-playing variation will be parameter-controlled. Setting a parameter will not set the order; it will only set the current variation.</li>
+							<li><i>Random</i> &#8211; Random sound selection that does not track the previously played index. The immediate repeat of a previously played wave is possible with this setting.</li>
+							<li><i>Random (no immediate repeats)</i> &#8211; The waves will be chosen at random, but the immediate repeat of a previously played wave will not occur.</li>
+							<li><i>Shuffle</i> &#8211; Entries are chosen randomly, but no entry will be played twice until all entries in the list have been played.</li>
+						</ul>
+					</li>
+					<li><i>Level Variations</i> &#8211; Determines the range of variation for volume and pitch for sound playback.
+						<ul>
+							<li><i>Volume</i>
+								<ul>
+									<li><i>Lower deviation</i> &#8211; Represents the lowest range for random volume that will be assigned the sound on playback. This can be as low as &#8722;64 dB, and cannot be higher than the upper deviation.</li>
+									<li><i>Upper deviation</i> &#8211; Represents the highest range for random volume that will be assigned the sound on playback. This can be as high as 64 dB, and cannot be lower than the lower deviation.</li>
+								</ul>
+							</li>
+							<li><i>Pitch</i>
+								<ul>
+									<li><i>Lower deviation</i> &#8211; Represents the lowest pitch value that will be assigned the sound on playback. This can be as low as &#8722;24 semitones, and cannot be higher than the upper deviation.</li>
+									<li><i>Upper deviation</i> &#8211; Represents the highest pitch value that will be assigned the sound on playback. This can be as high as 24 semitones, and cannot be lower than the lower deviation.</li>
+								</ul>
+							</li>
+						</ul>
+					</li>
+				</ul>
+<h3><a name="Track_Event_Overview_Stop"></a>Stop</h3>
+<p>The <i>Stop</i> event allows the content designer to specify the stop time (instead of forcing the programmer to do it). This might be useful if the content designer has an in-memory looping wave/sound that they want to play for three seconds and then stop. Also, the stop event can specify when to invoke the release envelope. Stop doesn't always simply halt the sound output. If there's a release envelope, it will be triggered, which may cause the volume/pitch/filter cutoff to fade out slowly.</p><p>The following is a list of properties for this event:</p><ul>
+					<li><i>Name</i> &#8211; The name, or description, of this event.</li>
+					<li><i>Timestamp</i> &#8211; A fixed number of seconds from the time that the play command is given after which the sound should stop.</li>
+				</ul>
+<h3><a name="Track_Event_Overview_Volume"></a>Volume</h3>
+<p>The <i>Volume</i> event is used to set and optionally fade the playback volume of a sound.</p><p>The following is a list of properties for this event:</p><ul>
+					<li><i>Name</i> &#8211; The name, or description, of this event.</li>
+					<li><i>Enable variation</i> &#8211; Indicates that playback volume should be variable. This option cannot be used with fade.</li>
+					<li><i>Enable fade</i> &#8211; Indicates that the sound should fade during playback. This option cannot be used with variation.</li>
+					<li><i>Use relative values</i> &#8211; Indicates that this volume event should be applied with other volume events. Turning this setting off will cause this volume event to overwrite other volume events on the track.</li>
+					<li><i>Timestamp</i> &#8211; A fixed number of seconds from the time that the play command is given after which the volume event should occur.</li>
+					<li><i>Fade duration</i> &#8211; A fixed number of seconds from the start of the volume event over which the volume should fade. This is available only if fade is enabled.</li>
+					<li><i>Fade step count</i> &#8211; The number of steps over the fade duration to adjust the volume. For example, if the fade duration is 1 second, and the step count is 10, the volume will be adjusted every 10th of a second. This is available only if fade is enabled.</li>
+					<li><i>Volume</i>
+						<ul>
+							<li><i>Start</i> &#8211; Represents the starting volume value that will be assigned the sound on playback.</li>
+							<li><i>End</i> &#8211; Represents the ending volume value that will be assigned the sound on playback.</li>
+						</ul>
+					</li>
+				</ul>
+<h3><a name="Track_Event_Overview_Pitch"></a>Pitch</h3>
+<p>The <i>Pitch</i> event is used to set and optionally fade the playback pitch of a sound.</p><p>The following is a list of properties for this event:</p><ul>
+					<li><i>Name</i> &#8211; The name, or description, of this event.</li>
+					<li><i>Enable variation</i> &#8211; Indicates that playback pitch should be variable. This option cannot be used with fade.</li>
+					<li><i>Enable fade</i> &#8211; Indicates that the sound should fade during playback. This option cannot be used with variation.</li>
+					<li><i>Use relative values</i> &#8211; Indicates that this pitch event should be applied with other pitch events. Turning this setting off will cause this pitch event to overwrite other pitch events on the track.</li>
+					<li><i>Timestamp</i> &#8211; A fixed number of seconds from the time that the play command is given after which the pitch event should occur.</li>
+					<li><i>Fade duration</i> &#8211; A fixed number of seconds from the start of the volume event over which the volume should fade. This is available only if fade is enabled.</li>
+					<li><i>Fade step count</i> &#8211; The number of steps over the fade duration to adjust the volume. For example, if the fade duration is 1 second, and the step count is 10, the pitch will be adjusted every tenth of a second. This is available only if fade is enabled.</li>
+					<li><i>Volume</i>
+						<ul>
+							<li><i>Start</i> &#8211; Represents the starting pitch value that will be assigned the sound on playback.</li>
+							<li><i>End</i> &#8211; Represents the ending pitch value that will be assigned the sound on playback.</li>
+						</ul>
+					</li>
+				</ul>
+<h3><a name="Track_Event_Overview_MixBin"></a>MixBin</h3>
+<p>The <i>MixBin</i> event is used to set mixbin assignments of a sound.</p><p>The following is a list of properties for this event:</p><ul>
+					<li><i>Name</i> &#8211; The name, or description, of this event.</li>
+					<li><i>Timestamp</i> &#8211; A fixed number of seconds from the time that the play command is given until the mixbin settings are applied.</li>
+					<li><i>MixBin</i> &#8211; Indicates how the mixbins should be assigned. Up to eight assignments can be made with volume adjustments for each assignment.
+						<p>There are two fundamental rules to keep in mind when making the assignments:</p>
+						<ol>
+							<li>A wave must send to a number of sends corresponding to a multiple of its source voices. This means that:
+								<ul>
+									<li>Mono can be sent to any number of mixbins.</li>
+									<li>Stereo must be sent to either 2, 4, 6, or 8 mixbins (but not 1, 3, 5, or 7).</li>
+									<li>4.0 must be sent to either 4 or 8 mixbins.</li>
+									<li>5.1 can  be sent to exactly 6 mixbins only.</li>
+								</ul>
+							</li>
+							<li>There are up to 8 mixbin sends available. These sends alternate with the channels of the source wave:
+								<ul>
+									<li>For a mono wave, its sole channel will be sent to sends 1 through 8.</li>
+									<li>For a stereo wave, the left channel is sent to sends 1, 3, 5, and 7. The right channel goes to sends 2, 4, 6, and 8.</li>
+									<li>For a 4.0 wave, left goes to 1 and 5, right goes to 2 and 6, left surround goes to 3 and 7, and right surround goes to 4 and 8.</li>
+									<li>For a 5.1 wave, left goes to 1, right goes to 2, center goes to 3, LFE goes to 4, left surround goes to 5, and right surround goes to 6.</li>
+								</ul>
+							</li>
+						</ol>
+					</li>
+				</ul>
+<h3><a name="Track_Event_Overview_MixBin_Pan"></a>MixBin Pan</h3>
+<p>When the <i>MixBin Pan</i> event is processed by the engine, a random azimuth is selected from within the given range and mixbin levels are calculated to simulate 2D (x- and z-axis) positioning of the sound. This event is intended primarily for randomly occuring ambient sound effects.</p><p>The mixbin pan event does not calculate distance attenuation, Doppler pitch, or any of the other standard 3D audio parameters. It is simply used for positioning. Any volume or pitch must come from other events in the track.</p><p>Because this event internally calls <a href="xbox_ixactsoundsource_setmixbins_dxaudio.htm">SetMixBins</a> on the DirectSound voice, a mixbin pan event and a standard mixbin event will overwrite each other. If two appear in the same track, whichever is processed last will take priority.</p><p>MixBin Pan events can be added only to a track that plays mono waves. Multichannel waves cannot be added to a track that has a MixBin Pan event associated with it.</p><p>The following is a list of properties for this event:</p><ul>
+					<li><i>Name</i> &#8211; The name, or description, of this event.</li>
+					<li><i>Timestamp</i> &#8211; A fixed amount of time, in seconds, from the time that the play command is given until the mixbin pan settings are applied.</li>
+					<li><i>Starting angle</i> &#8211; Indicates the angle, in degrees, to begin the arc that defines the area used in calculating the sound location.</li>
+					<li><i>Arc size</i> &#8211; Indicates the width of the arc, in degrees, that defines the area used in calculating the sound location.</li>
+					<li><i>Speaker configuration</i> &#8211; Calculations based on a 4-channel or 5-channel configuration may be selected. This determines whether sound will be sent to the center channel (5-channel) or not (4-channel). This configuration does not need to be the same as the Xbox speaker configuration.</li>
+					<li><i>Use 3D mixbins</i> &#8211; Indicates that the event should use the standard 3D mixbins for sending positioned data. This allows the crosstalk cancellation filtering normally performed on 3D sounds to also be performed on this pseudo-3D sound.</li>
+					<li><i>Additional MixBins</i> &#8211; An additional three or four mixbins (depending on speaker configuration) may be selected for the sound to be sent to. There are three channels available when using a 5-channel speaker configuration, and four channels when using a 4-channel speaker configuration. These mixbins do not have any positioning attenuation applied to them. They work in the same way as the standard mixbin event.</li>
+				</ul>
+<h3><a name="Track_Event_Overview_Low_Pass_Filter"></a>Low-Pass Filter</h3>
+<p>The following is a list of properties for this event:</p><ul>
+					<li><i>Name</i> &#8211; The name, or description, of this event.</li>
+					<li><i>Timestamp</i> &#8211; A fixed number of seconds from the time that the play command is given until the low-pass filter settings are applied.</li>
+					<li><i>Sweep duration</i> &#8211; Length of time of the sweep, in seconds.</li>
+					<li><i>Sweep step count</i> &#8211; The number of steps over the sweep duration to adjust the volume.</li>
+					<li><i>Random values</i> &#8211; Choose a random resonance value and a random cutoff frequency between their respective start and end values.</li>
+					<li><i>Sweep cutoff frequency</i> &#8211; The highest frequency allowed through the filter.  Higher frequencies will be removed from the sound.</li>
+					<li><i>Use relative values</i> &#8211; Indicates that this low-pass filter event should be applied with other low-pass filter events. Turning this setting off will cause this low-pass filter event to overwrite other low-pass filter events on the track.</li>
+					<li><i>Resonance</i> &#8211; Represents the amount of peak prior to the cutoff frequency.
+						<ul>
+							<li><i>Start</i> &#8211; If <i>random values</i> is chosen, this represents the low end of the range. If <i>sweep</i> is chosen, this is the start value of the sweep.</li>
+							<li><i>End</i> &#8211; This is the end value of the sweep.</li>
+						</ul>
+					</li>
+					<li><i>Cutoff frequency</i> &#8211; Represents the highest frequency allowed through the filter. Higher frequencies will be removed from the sound.
+						<ul>
+							<li><i>Start</i> &#8211; If <i>random values</i> is chosen, this represents the low end of the range. If <i>sweep</i> is chosen, this is the start value of the sweep.</li>
+							<li><i>End</i> &#8211; This is the end value of the sweep.</li>
+						</ul>
+					</li>
+				</ul>
+<h3><a name="Track_Event_Overview_Amplitude_Envelope"></a>Amplitude Envelope</h3>
+<p>The following is a list of properties for this event:</p><ul>
+					<li><i>Name</i> &#8211; The name, or description, of this event.</li>
+					<li><i>Delay</i> &#8211; Number of seconds before the envelope begins.</li>
+					<li><i>Attack</i> &#8211; Number of seconds over which the envelope's power level increases to 100 percent.</li>
+					<li><i>Hold</i> &#8211; Number of seconds the sound maintains its maximum power level.</li>
+					<li><i>Decay</i> &#8211; Number of seconds over which the envelope's power level decreases to the value defined by the sustain slider.</li>
+					<li><i>Release</i> &#8211; Number of seconds over which the envelope's power level decreases to zero.</li>
+					<li><i>Sustain</i> &#8211; Power level maintained after the decay part of the envelope has ended.</li>
+				</ul>
+<h3><a name="Track_Event_Overview_Pitch_and_Filter_Envelope"></a>Pitch and Filter Envelope</h3>
+<p>The following is a list of properties for this event:</p><ul>
+					<li><i>Name</i> &#8211; The name, or description, of this event.</li>
+					<li><i>Delay</i> &#8211; Number of seconds before the envelope begins.</li>
+					<li><i>Attack</i> &#8211; Number of seconds over which the envelope's power level increases to 100 percent.</li>
+					<li><i>Hold</i> &#8211; Number of seconds the sound maintains its maximum power level.</li>
+					<li><i>Decay</i> &#8211; Number of seconds over which the envelope's power level decreases to the value defined by the sustain slider.</li>
+					<li><i>Release</i> &#8211; Number of seconds over which the envelope's power level decreases to zero.</li>
+					<li><i>Sustain</i> &#8211; Power level maintained after the decay part of the envelope has ended.</li>
+					<li><i>Pitch scale</i> &#8211; Number of semitones by which to change the pitch.</li>
+					<li><i>Filter cutoff</i> &#8211; Number of semitones by which to change the filter cutoff.</li>
+				</ul>
+<h3><a name="Track_Event_Overview_Multifunction_LFO"></a>Multifunction LFO</h3>
+<p>The following is a list of properties for this event:</p><ul>
+					<li><i>Name</i> &#8211; The name, or description, of this event.</li>
+					<li><i>Timestamp</i> &#8211; A fixed amount of time, in seconds, from the time that the play command is given until the multifunction LFO settings are applied.</li>
+					<li><i>Delta</i> &#8211; Frequency of the sine curve over which the values below are modulated.</li>
+					<li><i>Pitch modulation</i> &#8211; Number of semitones by which the pitch will vary from the original.</li>
+					<li><i>Filter modulation</i> &#8211; Number of semitones by which the filter will vary from the original.</li>
+					<li><i>Amplitude modulation</i> &#8211; The dB's by which the filter's volume will vary from the original.</li>
+				</ul>
+<h3><a name="Track_Event_Overview_Pitch_LFO"></a>Pitch LFO</h3>
+<p>The following is a list of properties for this event:</p><ul>
+					<li><i>Name</i> &#8211; The name, or description, of this event.</li>
+					<li><i>Timestamp</i> &#8211; A fixed number of seconds from the time that the play command is given until the pitch LFO settings are applied.</li>
+					<li><i>Delta</i> &#8211; Frequency of the sine curve over which the values below are modulated.</li>
+					<li><i>Pitch modulation</i> &#8211; Number of semitones by which the pitch will vary from the original.</li>
+				</ul>
+<h3><a name="Track_Event_Overview_Loop_Start"></a>Loop Start</h3>
+<p>It is important to note the difference between <i>loop start</i> events and <i>looping play</i> events. Looping play events only loop the wave itself; other events in the track are not looped. A loop start event will loop the track when the last event is processed or the wave ends playback, whichever occurs last. This means that using an infinite loop will cause the track itself to never loop, because the play event never completes.</p><p>The following is a list of properties for this event:</p><ul>
+					<li><i>Name</i> &#8211; The name, or description, of this event.</li>
+					<li><i>Infinite loop</i> &#8211; Indicates that the play event should loop indefinitely. When this value is set, the loop count is ignored.</li>
+					<li><i>Loop count</i> &#8211; Specifies the number of additional times the track will play. A loop count of 1 means that the track will play a total of two times.</li>
+				</ul>
+<h3><a name="Track_Event_Overview_Marker"></a>Marker</h3>
+<p>A <i>Marker</i> event will generate a marker notification in the XACT engine. Track events happen at a particular time, but a Marker event can be set up to recur on a timed interval.</p><p>The following is a list of properties for this event:</p><ul>
+					<li><i>Name</i> &#8211; The name, or description, of this event.</li>
+					<li><i>Repeat marker</i> &#8211; If selected, this will enable the marker to generate notifications repeatedly.</li>
+					<li><i>Timestamp</i> &#8211; A fixed number of seconds from the time that the play command is given until the pitch LFO settings are applied.</li>
+					<li><i>Total repeat duration</i> &#8211; Indicates the total amount of time that the maker will generate notifications.</li>
+					<li><i>Total marker occurences</i> &#8211; Indicates the number of notifications that will be generated over the repeat duration. For example, if the repeat duration is ten seconds, and there are five marker occurrences, a notification will be generated every two seconds for ten seconds.</li>
+					<li><i>Marker value</i> &#8211; An optional 32-bit number that will be passed as part of the marker notification sent by the XACT engine.</li>
+				</ul>
+<h3><a name="Track_Event_Overview_Environmental_Reverb"></a>Environmental Reverb</h3>
+<p>The following is a list of properties for this event:</p><ul>
+					<li><i>Name</i> &#8211; The name, or description, of this event.</li>
+					<li><i>Timestamp</i> &#8211; A fixed number of seconds from the time that the play command is given until the environmental reverb settings are applied.</li>
+					<li><i>Environmental preset</i> &#8211; Allows selection of a predefined set of environmental reverb parameters. A set of values that simulates a forest is available, for example.</li>
+
+					<li><i>Room effect intensity level</i> &#8211; Value that adjusts the intensity level and low-pass filter for the room effect. Can be a value between &#8722;10000 mB and 0 mB.</li>
+					<li><i>Room effect intensity level (high-frequency)</i> &#8211; Value that specifies the attenuation at high frequencies relative to the intensity at low frequencies. Can be a value between &#8722;10000 mB and 0 mB.</li>
+					<li><i>Room rolloff factor</i> &#8211; Value that controls the rolloff effect intensity vs. distance. Can be a value between 0.0 and 10.0.</li>
+					<li><i>Decay time</i> &#8211; Value that specifies the decay time at low frequencies. Can be a value between 0.1 and 20.0 seconds.</li>
+					<li><i>Decay high-frequency ratio</i> &#8211; Value that specifies the ratio of high-frequency decay time relative to the low-frequency decay time. Can be a value between 0.1 and 2.0.</li>
+					<li><i>Early reflection intensity level</i> &#8211; Value that adjusts the intensity level of early reflections, relative to the value of the room-effect intensity level. Can be a value between &#8722;10000 mB and 1000 mB.</li>
+					<li><i>Delay time of the first reflection</i> &#8211; Value that specifies the delay time of the first reflection, relative to the direct path. Can be a value between 0.0 and 0.3 seconds.</li>
+					<li><i>Late reverb intensity level</i> &#8211; Value that adjusts the intensity of late reverberations, relative to the value of the room-effect intensity level. Can be a value between &#8722;10000 mB and 2000 mB.</li>
+					<li><i>Reverb delay</i> &#8211; Value that specifies the time limit between the early reflections and the late reverberation, relative to the time of the first reflection. Can be a value between 0.0 and 0.1 seconds.</li>
+					<li><i>Diffusion</i> &#8211; Value that controls the echo density in the late reverberation decay. Can be a value between 0.0 and 100.0 percent.</li>
+					<li><i>Density</i> &#8211; Value that controls the modal density in the late reverberation decay. Can be a value between 0.0 and 100.0 percent.</li>
+					<li><i>Reference high frequency</i> &#8211; Value that contains the reference high frequency. Can be a value between 20.0 Hz and 20000.0 Hz.</li>
+
+				</ul>
+<h2><a name="IDAIU0K"></a>
+                Related Topics
+            </h2>
+<p>For more information about XACT, see the following topics.</p><ul>
+                <li> <a href="xbox_xact_overview_dxaudio.htm">XACT Overview</a></li>
+                <li> <a href="xbox_xact_concepts_dxaudio.htm">XACT Concepts</a></li>
+                <li> <a href="xbox_xact_programmerguide_dxaudio.htm">XACT Programming Guide</a></li>
+                <li> <a href="xbox_xact_xact_dxaudio.htm">XACT Graphical User Interface Commands</a></li>
+                <li> <a href="xbox_xact_xactbld_dxaudio.htm">XACT (XACTBld) Command-Line Utility Commands</a></li>
+            </ul>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

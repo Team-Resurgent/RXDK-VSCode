@@ -1,0 +1,50 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Two-Sided Lighting</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Two-Sided Lighting"/>
+<MSHelp:Keyword Index="F" Term="Two-Sided Lighting"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Two-Sided Lighting</H1>
+<!--***********************************************************-->
+
+<p>It is sometimes advantageous to perform lighting calculations as if a triangle has two faces rather than one.  An object that is thin and planar (such as a butterfly) can be easily represented by a single layer of triangles.  Unfortunately, Direct3D only allows the lighting calculations to be performed for one side of the triangles and consequently, the geometry must be sent to the graphics processing unit twice: once for the front side and once for the back side.</p>
+
+<p>The Xbox GPU supports two-sided lighting, so the Xbox defines an additional Direct3D render state that allows this capability to be controlled. Two-sided lighting is enabled using <b>IDirect3DDevice8::SetRenderState(</b>D3DRS_TWOSIDEDLIGHTING<b>,</b> TRUE<b>)</b>, or is disabled using <b>IDirect3DDevice8::SetRenderState(</b>D3DRS_TWOSIDEDLIGHTING<b>,</b> FALSE<b>)</b>. </p>
+
+<p>Which side is considered front and which side is considered back is determined by the <a href="_dx_d3drenderstatetype_graphics.htm#_dx_d3drs_frontface_graphics">D3DRS_FRONTFACE</a> renderstate. By default, the back-faces are automatically culled. Because this is generally not the desired behavior when using two-sided lighting, culling should be disabled by using <b>IDirect3DDevice8::SetRenderState(</b>D3RS_CULLMODE<b>,</b> D3DCULL_NONE<b>)</b>. When you are finished using two-sided lighting, normal culling can be restored by using <b>IDirect3DDevice8::SetRenderState(</b>D3DRS_CULLMODE<b>,</b> D3DCULL_CCW<b>)</b>. </p>
+
+<p>Once two-sided lighting has been enabled, materials for the back side can be set using <a href="_dx_idirect3ddevice8_setbackmaterial_graphics.htm">IDirect3DDevice8::SetBackMaterial</a> or retrieved using <a href="_dx_idirect3ddevice8_getbackmaterial_graphics.htm">IDirect3DDevice8::GetBackMaterial</a>.<p>
+
+<p>The ambient light color for the back side can be set using <a href="_dx_d3drenderstatetype_graphics.htm#_dx_d3drs_backambient_graphics">D3DRS_BACKAMBIENT</a>.
+
+<p>The specular, diffuse, ambient and emissive material sources for the back side can be set using the render states <a href="_dx_d3drenderstatetype_graphics.htm#_dx_d3drs_backspecularmaterialsource_graphics">D3DRS_BACKSPECULARMATERIALSOURCE</a>, <a href="_dx_d3drenderstatetype_graphics.htm#_dx_d3drs_backdiffusematerialsource_graphics">D3DRS_BACKDIFFUSEMATERIALSOURCE</a>, <a href="_dx_d3drenderstatetype_graphics.htm#_dx_d3drs_backambientmaterialsource_graphics">D3DRS_BACKAMBIENTMATERIALSOURCE</a>, and <a href="_dx_d3drenderstatetype_graphics.htm#_dx_d3drs_backemissivematerialsource_graphics">D3DRS_BACKEMISSIVEMATERIALSOURCE</a>.</p>
+
+<!--*******************************************************************************-->
+
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

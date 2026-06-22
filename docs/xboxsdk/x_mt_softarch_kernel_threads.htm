@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Kernel Threads, Synchronization, and Scheduling</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Kernel Threads%2c Synchronization%2c and Scheduling"/>
+<MSHelp:Keyword Index="K" Term="KiIdleLoop"/>
+<MSHelp:Keyword Index="K" Term="threads, synchronizing and scheduling"/>
+<MSHelp:Keyword Index="K" Term="scheduling and synchronizing threads"/>
+<MSHelp:Keyword Index="K" Term="synchronizing and scheduling threads"/>
+<MSHelp:Keyword Index="F" Term="Kernel Threads%2c Synchronization%2c and Scheduling"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1 class="heading"><A NAME=""></A>Kernel Threads, Synchronization, and Scheduling</H1>
+
+<H3>Threads</H3>
+
+<P>The kernel supports preemptively multitasked threads.  Multiple threads of execution can be simultaneously "running," with the available CPU time divided among those threads.  Preemptive multitasking means that while a thread is executing the kernel can interrupt it to schedule another ready thread for execution.  When this happens, the currently executing thread is suspended, and the system switches from one thread to another by saving the context of the preempted thread and restoring the saved context of the new thread.</P>
+
+<P>The time slice given to a thread is approximately 20 milliseconds.  However, a thread can potentially run for more or less time than this depending on the circumstances.  If the thread is the highest priority runnable thread (or the only runnable thread), it will continue to be given execution time.  If the thread voluntarily yields the remainder of its time slice or must wait for another resource to become available, the thread will be suspended and another thread scheduled.</P>
+
+<P>In the world of games, 20ms is a long time.  At a frame rate of 60Hz, a single frame is just 16.6ms.  Because a lot of work must be done for each frame, any thread that runs for 20ms would have to be the main thread doing all of the game's processing.  Thus, in a title using multiple threads those threads would likely not be running to completion of their quantum.  The threads would alternately perform tasks and, as one thread blocked, one of the others would run for a short time, and so on.</P>
+
+<P>Thread context switching on the Xbox is fast: A title can switch its threads about one million times per second&mdash;three times as fast as Windows 2000&mdash;and the kernel itself can switch those threads nearly twice as quickly.</P>
+
+<P>Although the threading model in Xbox has been optimized for fast context switching, there are still costs associated with running multiple threads.  Each thread uses up a small amount of memory to store the thread's context information, and each thread uses, by default, 64 KB of memory for the thread's stack.  The title can set the size of the default thread stack to a minimum of 12 KB.  An additional cost associated with multiple threads is a slight performance hit.  Context switching between threads uses some CPU cycles as mentioned above.  This context switching does no real work for the game itself; it simply switches between the runnable threads.  The time spent switching between many threads, although small, could be better spent squeezing that last bit of performance out of your game title.</P>
+
+<P>Primarily, for Xbox titles, the main disadvantage of using multiple threads is that a running thread can, at any time, be preempted by another thread of equal or higher priority. (This is, by definition, how preemptive multitasking works.) In a typical input-driven desktop application, this is usually not an issue.  For a high-performance game title, however, a tightly optimized game loop that closely balances the CPU, GPU, and bus and memory bandwidth can be thrown off by unknowingly, at a critical time, scheduling a thread whose execution might cause the title to skip a frame or starve the GPU.  This issue is not insurmountable and is solved by a properly designed architecture, but you do need to consider it when deciding if, when, and how your title will use multithreading.</P>
+
+<P>For more information on threads and thread scheduling, see the <A HREF="xbox_mt_xtl_sll_threads_overview.htm">Threads Overview</A>.</P>
+
+
+<H3>Scheduling</H3>
+
+<P>Each thread created by a game title is assigned a scheduling priority.  The scheduler maintains a queue of threads for each priority level and assigns a time slice to each thread in turn.  Only the highest priority threads that are ready to run are scheduled.  If there are no threads in the highest priority class ready to run, the next lowest priority class is checked, and so on.  Typically, there are relatively few (commonly, only one) ready threads, as most threads spend the majority of their time in a blocked state waiting for some event to occur.  Titles can adjust a thread's priority with the <A HREF="prothred_9f5l.htm">SetThreadPriority</A> function.</P>
+
+
+<H3>Waits</H3>
+
+<P>Most threads other than the primary game loop thread spend the majority of their time in a "wait state."  They are waiting for some event to complete, such as reading from or writing to hardware, a certain amount of time to elapse, or another thread to finish some task.   Such threads do not need to perform any actions until that event occurs, so they are temporarily suspended by the kernel.  While in this state, they do not consume CPU time.  When the event they are waiting for occurs, the kernel wakes the thread up and prepares it for execution.  Note that if a thread becomes ready to run, but a higher priority thread is already running, the higher priority thread will continue to be scheduled.  However, as described in the <A HREF="prothred_3gj7.htm">Priority Boosts</A> topic, the priority of a thread can be boosted when it is woken from a wait state, thus temporarily surpassing the priority of other threads.</P>
+
+<H3>KiIdleLoop</H3>
+
+<P>When all threads on the system are in a wait state, the CPU is blocked and cannot proceed with any further execution.  A profiler shows such a blocked state as time spent in the <B>KiIdleLoop</B> function, the kernel function that spins while waiting for a thread to become ready.  This wait state commonly occurs when a title's rendering thread is waiting for a GPU resource, is performing synchronous file I/O, or is waiting for some other type of event.</P>
+
+<H3>Yields</H3>
+
+<P>In addition to waiting on resource availability or events to occur, threads can voluntarily yield the remainder of their timeslice or can yield to other threads for a certain period of time.  The <A HREF="prothred_7jxs.htm">Sleep</A>, <A HREF="prothred_0o8o.htm">SleepEx</A>, and <A HREF="prothred_30h0.htm">SwitchToThread</A> functions enable a thread to specifically yield the remainder of its quantum, and, optionally, be woken again after a specified period of time has elapsed.  Note that, in general, well-written thread synchronization and scheduling algorithms rarely (if ever) need to use these functions.  Often, using them introduces non-deterministic behavior that can result in buggy synchronization algorithms.</P>
+
+<H3>Synchronization</H3>
+
+<P>The most common method of performing thread synchronization and scheduling is by using synchronization objects in conjunction with the <A HREF="synchro_4ldg.htm">WaitForSingleObject</A> or <A HREF="synchro_9xbn.htm">WaitForMultipleObjects</A> functions.  The kernel scheduler makes a variety of synchronization objects available.  These objects can be used individually or in combination to properly implement synchronization algorithms.</P>
+
+<P>Mutexes are used to protect a resource so that only one thread at a time can have access to that resource.  The mutex allows mutually exclusive access to a resource such as global data, shared memory, or other shared resource.  A thread waits on the mutex, and, when the wait succeeds, accesses the resource.  During this time, all other threads that wait on the mutex will be blocked and placed in a queue to obtain ownership of the resource.  When the first thread is finished accessing the resource, it releases the mutex.  The next thread (if any) waiting on the mutex is then given access, and so on.</P>
+
+<P>Event objects are used by threads to wait for a certain event to occur.  A thread waiting on an event is blocked until that event is signalled by some other thread.  When an event is signalled, and depending on the event type, either a single thread or multiple threads waiting on that event are woken and allowed to execute.</P>
+
+<P>Semaphores are similar to mutexes in that they protect a resource, but they differ in that they allow a specified number of threads access to the resource before blocking additional threads requesting access.  For example, if only four threads were to be given access to a resource at a time, a semaphore with a count of four would be created.  As each thread waited on the semaphore, the count would be decremented.  When the fifth thread waited on the semaphore, it would block until one of the other threads currently using the resource finished doing so and signalled the semaphore.</P>
+
+<P>Critical sections are similar to mutexes except that they are slightly faster and must be accessed with their own set of synchronization functions. (They cannot be specified in calls to <a href="synchro_4ldg.htm">WaitForSingleObject</a>, for example.)  Critical sections are an excellent choice for implementation of multithread-safe algorithms that access global data or resources.  For example, if a function will not tolerate reentry, the entire function (or just the global data it accesses) can be wrapped in a critical section to ensure that only one thread at a time accesses that portion of code or data.</P>
+
+<P>Waitable timers provide an object handle that will become signalled after a specified period of time has elapsed.  Thus, they are similar to the Sleep functions but they return an object handle that can be used in one of the Wait functions.</P>
+
+<!--*******************************************************************************-->
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

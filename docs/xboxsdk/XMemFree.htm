@@ -1,0 +1,62 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XMemFree</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XMemFree"/>
+<MSHelp:Keyword Index="F" Term="XMemFree"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XMemFree</h1>
+<p>Application-defined memory deallocation callback function that replaces the memory deallocator used by the XTL libraries.</p><pre class="syntax" xml:space="preserve"><b>VOID WINAPI</b> <b>XMemFree(</b>
+    <b>PVOID</b> <i>pAddress</i><b>,</b>
+    <b>DWORD</b> <i>dwAllocAttributes</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+<dt><i>pAddress</i></dt>
+<dd>[in]  Specifies the base address of the memory to be freed.  This parameter must be the address returned by the <a href="XMemAlloc.htm">XMemAlloc</a> function when the memory was allocated.</dd>
+<dt><i>dwAllocAttributes</i></dt>
+<dd>[in]  An <a href="XALLOC_ATTRIBUTES.htm">XALLOC_ATTRIBUTES</a> value that specifies the allocation attributes of the memory to be freed.  These attributes should match those that were specified when the memory was allocated (but see <a href="XMemFree.htm#remarks">Remarks</a> below).</dd>
+</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>This function does not return a value.</p><h4><a name="remarks"></a>Remarks</h4>
+<p>If a title implements an <b>XMemFree</b> function, all deallocations performed by the XTL libraries will instead call the title's <b>XMemFree</b> routine.  The title must deallocate the memory as requested.  The title can simply use the <a href="xbox_mt_sll_memman_xphysicalfree.htm">XPhysicalFree</a> and <a href="memman_7b1h.htm">HeapFree</a> functions to provide the underlying heap support, or call the default <a href="XMemFreeDefault.htm">XMemFreeDefault</a> if desired.  Alternatively, the title can implement its own heap routines and thus replace the default heap deallocator.</p>
+
+<p>XTL components that need to deallocate memory (graphics, sound, networking, and so on) all call <b>XMemFree</b> instead of other deallocation routines.  The default <b>XMemFree</b> then calls <b>XPhysicalFree</b> or <b>HeapFree</b> as appropriate.  A title can provide its own <b>XMemFree</b> function, thus overriding the default, and allowing the title to trace XTL deallocations and to replace the heap deallocator.  The title should provide all of the allocator replacement functions (<b>XMemAlloc</b>, <b>XMemFree</b>, and <a href="XMemSize.htm">XMemSize</a>) or none at all.  The allocator functions to use (either the default or title-defined versions) are determined at link time, so the title imposes no additional overhead by supplying its own versions.</p>
+
+<p>The title can, if desired, call its own implementation of <b>XMemFree</b> for deallocations as well, thus routing all title and XTL deallocations through a single deallocation routine.</p>
+
+<p>If the heap is storing allocation attributes along with the allocations, <b>XMemFree</b> can verify that the attributes specified in <i>dwAllocAttributes</i> match those stored with the allocation (in order to detect allocation/deallocation mismatches).  The <b>dwHeapTracksAttributes</b> member of the structure specified by <i>dwAllocAttributes</i> indicates whether the heap is responsible for storing allocation attributes.</p>
+
+<p>Not all XTL libraries pass <b>XALLOC_ATTRIBUTES</b> flags in <i>dwAllocAttributes</i> that precisely match those used for the allocation.  For example, D3D may allocate physical memory with XALLOC_MEMPROTECT_WRITECOMBINE, XALLOC_MEMPROTECT_NOCACHE, or XALLOC_MEMPROTECT_READWRITE, but always specifies XALLOC_MEMPROTECT_READWRITE when freeing that memory.  For performance reasons, D3D does not track attributes for physical memory allocations.  Debug asserts caused by this attribute mismatch can be safely ignored.</p>
+
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xbox.h; for include use xtl.h.</p>
+            <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="XMemAlloc.htm">XMemAlloc</a>, <a href="XMemSize.htm">XMemSize</a>, <a href="XMemFreeDefault.htm">XMemFreeDefault</a>, <a href="XALLOC_ATTRIBUTES.htm">XALLOC_ATTRIBUTES</a>
+</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

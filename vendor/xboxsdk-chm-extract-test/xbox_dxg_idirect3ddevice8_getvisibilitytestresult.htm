@@ -1,0 +1,70 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirect3DDevice8::GetVisibilityTestResult</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="IDirect3DDevice8::GetVisibilityTestResult [C++]">
+<META NAME="MS-HKWD" CONTENT="GetVisibilityTestResult (IDirect3DDevice8) [C++]">
+<META NAME="MS-HKWD" CONTENT="GetVisibilityTestResult [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="GetVisibilityTestResult (IDirect3DDevice8)"/>
+<MSHelp:Keyword Index="K" Term="IDirect3DDevice8::GetVisibilityTestResult"/>
+<MSHelp:Keyword Index="F" Term="GetVisibilityTestResult"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="GetVisibilityTestResult"></A>IDirect3DDevice8::GetVisibilityTestResult</H1>
+
+
+<P>Retrieves the results of a previously submitted visibility test.</P>
+
+<PRE class=syntax><B>HRESULT</B> <B>GetVisibilityTestResult(</B>
+  <B>DWORD</B> <I>Index</I>,
+  <B>UINT*</B> <I>pResult</I>,
+  <B>ULONGLONG*</B> <I>pTimeStamp</I>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>Index</I></DT>
+<DD>[in] An integer that identifies which visibility test is being queried.</DD>
+
+<DT><I>pResult</I></DT>
+<DD>[out] Pointer to an integer where the number of pixels rendered for the test geometry is stored if the visibility test is complete.</DD>
+
+<DT><I>pTimeStamp</I></DT>
+<DD>[out] Pointer to a variable that receives the GPU nanosecond count at the time the visibility test completed.  If the timestamp is not desired, this value can be NULL.</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If this method succeeds, it returns D3D_OK.</P>
+<p>If this method fails, it can return D3DERR_TESTINCOMPLETE, indicating that the visibility test is not yet complete. A return value of D3DERR_TESTINCOMPLETE also indicates that the values of the <i>pResult</i> and <i>pTimeStamp</i> parameters have not been updated.</p>
+
+<H4>Remarks</H4>
+
+<p>This method is used to retrieve the result of a previously submitted visibility test.  Calling  <b>IDirect3DDevice8::GetVisibilityTestResult</b> with an ID that has not been previously specified in a call to <a href="xbox_dxg_IDirect3DDevice8_EndVisibilityTest.htm"><b>IDirect3DDevice8::EndVisibilityTest</b></a> will result in an error.  If the visibility test has been completed by the hardware, the count of rendered pixels is written to the integer that is referenced by the <i>pResult</i> pointer.</p>
+<p>The <I>pTimeStamp</I> parameter can be used to determine the time spent in the GPU during a sequence of operations, by executing a visibility test before and after the desired operations and comparing the resulting timestamps.</p>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in d3d8.h.<BR>
+<B>&nbsp;&nbsp;Import Library:</B> Use d3d8.lib.</P>
+
+<H4>See Also</H4>
+<p><a href="xbox_dxg_Visibility_Testing.htm"><b>Visibility Testing</b></a>, <a href="xbox_dxg_IDirect3DDevice8_BeginVisibilityTest.htm"><b>IDirect3DDevice8::BeginVisibilityTest</b></a>, <a href="xbox_dxg_IDirect3DDevice8_EndVisibilityTest.htm"><b>IDirect3DDevice8::EndVisibilityTest</b></a></p>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

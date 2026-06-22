@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>wvsprintf</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="wvsprintf">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="wvsprintf"/>
+<MSHelp:Keyword Index="F" Term="wvsprintf"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_wvsprintf"></A>wvsprintf</H1>
+
+<P>The <B>wvsprintf</B> function formats and stores a series of characters and values in a buffer. The items pointed to by the argument list are converted and copied to an output buffer according to the corresponding format specification in the format-control string. The function appends a terminating null character to the characters it writes, but the return value does not include the terminating null character in its character count. </P>
+
+<PRE class=syntax><B>int wvsprintf(
+  LPTSTR</B><I> lpOutput</I><B>,  </B>// buffer for output
+<B>  LPCTSTR</B><I> lpFormat</I><B>, </B>// format-control string
+<B>  va_list</B><I> arglist</I>   // variable list of format-control arguments
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>lpOutput</I></DT>
+
+<DD>[out] Pointer to a buffer to receive the formatted output.</DD>
+
+<DT><I>lpFormat</I></DT>
+
+<DD>[in] Pointer to a null-terminated string that contains the format-control specifications. In addition to ordinary ASCII characters, a format specification for each argument appears in this string. For more information about the format specification, see <A HREF="strings_2bc6.htm">wsprintf</a>. </DD>
+
+<DT><I>arglist</I></DT>
+
+<DD>[in] A variable argument list; each element of the list specifies an argument for the format-control string. The number, type, and interpretation of the arguments depend on the corresponding format-control specifications in the <I>lpFmt</I> parameter. 
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is the number of <B>TCHARs</B> stored in the buffer, not counting the terminating null character. This refers to bytes for ANSI versions of the function or characters for Unicode versions. </P>
+
+<P>If the function fails, the return value is less than the length of the expected output. To get extended error information, call <A HREF="errors_3uwi.htm">GetLastError</a>. </P>
+
+<H4>Remarks</H4>
+
+<P>The function copies the format-control string into the output buffer character by character, starting with the first character in the string. When it encounters a format specification in the string, the function retrieves the value of the next available argument (starting with the first argument in the list), converts that value into the specified format, and copies the result to the output buffer. The function continues to copy characters and expand format specifications in this way until it reaches the end of the format-control string. If there are more arguments than format specifications, the extra arguments are ignored. If there are not enough arguments for all of the format specifications, the results are undefined.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winuser.h, for include use Xtl.h.<br>
+<b>Import Library: </b>Use User32.lib<br>
+<b>Unicode: </b>Implemented as both Unicode and ANSI versions.
+</p>
+
+
+<H4>See Also</H4>
+<P> 
+
+<a href="xbox_mt_xtl_sll_strings_functions.htm">String Functions</a> | 
+<A HREF="strings_2bc6.htm">wsprintf</a> </P>
+
+<P></P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

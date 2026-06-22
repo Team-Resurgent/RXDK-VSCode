@@ -1,0 +1,178 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XONLINE_FRIEND</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XONLINE_FRIEND"/>
+<MSHelp:Keyword Index="F" Term="XONLINE_FRIEND"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+    <body topmargin="0">
+        <table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+        <h1>XONLINE_FRIEND</h1>
+
+        
+        
+<p>Stores information about a player on the friends list.</p>
+
+	
+		
+
+<pre class="syntax">typedef struct{
+    XUID xuid;
+    CHAR szGamertag[XONLINE_GAMERTAG_SIZE];
+    DWORD dwFriendState;
+    FILETIME gameinviteTime;
+    XNKID sessionID;
+    DWORD dwTitleID;
+    BYTE StateDataSize;
+    BYTE StateData[MAX_STATEDATA_SIZE];
+    BYTE bReserved;
+} XONLINE_FRIEND, *PXONLINE_FRIEND;</pre>
+                    
+                
+            
+            
+                <h4><a name="members"></a>Members</h4>
+<dl>
+<dt><b>xuid</b></dt>
+                <dd>Unique identifier of the player.</dd>
+             <dt><b>szGamertag</b></dt>
+                <p><dd>Null-terminated string that contains the player's gamertag. The format 
+                        of the gamertag must adhere to the following rules:</dd>
+                    <ul>
+                        <li>Minimum of one character in length.</li>
+                        <li>Maximum of 15 characters in length.</li>
+                        <li>Can include only the following characters: A&#8211;Z,
+						    a&#8211;z, 0&#8211;9, and [space].</li>
+                        <li>Cannot begin with a [space] character.</li>
+                        <li>Cannot have multiple contiguous [space] characters.</li>
+                        <li>Must begin with an alphabetic character (A&#8211;Z, a&#8211;z).</li>
+                        <li>Cannot end with space.</li>
+                    </ul>
+                    <p>The gamertag is case insensitive for comparisons, but case should be preserved 
+                        when stored. For example, Ubba and UBBA are the same and, hence, cannot both 
+                        exist as accounts in the system, but whichever one was entered into the system, 
+                        the case is preserved.</p></p>
+             <dt><b>dwFriendState</b></dt>
+                <dd>State of the player. This member is a combination of 
+                    one or more of the following values:</dd>
+                <table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+                    <tr>
+<td>XONLINE_FRIENDSTATE_FLAG_INVITEACCEPTED</td>
+<td>The player represented by this <b>XONLINE_FRIEND</b> structure 
+                    has accepted an invitation from the player who enumerated the friends list.</td>
+</tr>
+                    <tr>
+<td>XONLINE_FRIENDSTATE_FLAG_INVITEREJECTED</td>
+<td>The player represented by this <b>XONLINE_FRIEND</b> structure 
+                    has rejected an invitation from the player who enumerated the friends list.</td>
+</tr>
+                    <tr>
+<td>XONLINE_FRIENDSTATE_FLAG_JOINABLE</td>
+<td>The player is in a session that 
+                    other players can join.</td>
+</tr>
+                    <tr>
+<td>XONLINE_FRIENDSTATE_FLAG_ONLINE</td>
+<td>The player is online.</td>
+</tr>
+                    <tr>
+<td>XONLINE_FRIENDSTATE_FLAG_RECEIVEDREQUEST</td>
+<td>The player who enumerated the friends list
+                    has received a Friend request from the player represented by this <b>XONLINE_FRIEND</b> structure.
+                    This flag is cleared when the request is answered</td>
+</tr>
+                    <tr>
+<td>XONLINE_FRIENDSTATE_FLAG_SENTREQUEST</td>
+<td>The player who enumerated the friends list
+                    has sent a Friend request to the player represented by this <b>XONLINE_FRIEND</b> structure.
+                    This flag is cleared when the request is answered</td>
+</tr>
+                    <tr>
+<td>XONLINE_FRIENDSTATE_FLAG_PLAYING</td>
+<td>The player is playing a game.</td>
+</tr>
+                    <tr>
+<td>XONLINE_FRIENDSTATE_FLAG_RECEIVEDINVITE</td>
+<td>The player who enumerated the friends list
+                    has received an invitation from the player represented by this <b>XONLINE_FRIEND</b> structure.
+                    This flag remains set until the invitation is revoked using <a href="XOnlineFriendsRevokeGameInvite.htm">XOnlineFriendsRevokeGameInvite</a> or the 
+                    inviting player's session ID changes. The player's session ID can be changed by calling 
+                    <a href="XOnlineNotificationSetState.htm">XOnlineNotificationSetState</a></td>
+</tr>
+                    <tr>
+<td>XONLINE_FRIENDSTATE_FLAG_SENTINVITE</td>
+<td>The player who enumerated the friends list has sent an 
+                    invitation to the player represented by this <b>XONLINE_FRIEND</b> structure.
+                    This flag remains set until the invitation is revoked using <b>XOnlineFriendsRevokeGameInvite</b> or the 
+                    inviting player's session ID changes. The player's session ID can be changed by calling 
+                    <b>XOnlineNotificationSetState</b></td>
+</tr>
+                    <tr>
+<td>XONLINE_FRIENDSTATE_FLAG_VOICE</td>
+<td>The player has voice capability.</td>
+</tr>
+                </table> <dt><b>gameinviteTime</b></dt>
+                
+                <dd><a href="time_0fzm.htm">FILETIME</a> structure that contains the time that this friend sent an 
+                    invitation to the current player.</dd>
+             <dt><b>sessionID</b></dt>
+                <dd>An <a href="xbox_xnkid_xsnl.htm">XNKID</a> structure that contains the session identifier. If 
+                    this structure is all zeros, the player is not in a session.</dd>
+             <dt><b>dwTitleID</b></dt>
+                <dd>The title identifier. If this value is zero, the title 
+                    identifier is unknown. Use the <a href="XOnlineFriendsGetTitleName.htm">XOnlineFriendsGetTitleName</a> function to 
+                    retrieve the corresponding title name.</dd>
+             <dt><b>StateDataSize</b></dt>
+                <dd>State data size, in bytes.</dd>
+             <dt><b>StateData</b></dt>
+                <dd>Array of <b>BYTE</b>s containing the state data.</dd>
+             
+
+			 <dt><b>bReserved</b></dt>
+			 	<dd>This member is reserved for future use. Do not use.</dd>
+			 
+
+
+            
+            </dl>
+                
+				
+            
+                <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+                <h4><a name="seealso"></a>See Also</h4>
+<p>
+                <a href="x_mt_xonline_structures.htm">Xbox Live Structures</a>, 
+				<a href="xbox_Live_Friends.htm">Friends Lists</a>, 
+				<a href="XOnlineFriendsGetLatest.htm">XOnlineFriendsGetLatest</a>,
+                <a href="XOnlineFriendsRemove.htm">XOnlineFriendsRemove</a>, <a href="XOnlineFriendsAnswerGameInvite.htm">XOnlineFriendsAnswerGameInvite</a>, <a href="XOnlineFriendsGameInvite.htm">XOnlineFriendsGameInvite</a>,
+                <a href="XOnlineFriendsRevokeGameInvite.htm">XOnlineFriendsRevokeGameInvite</a>, <a href="XONLINE_USER.htm">XONLINE_USER</a>, <a href="xuid.htm">XUID</a>
+        </p>
+
+        <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+    </body>
+    </html>

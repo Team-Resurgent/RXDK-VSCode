@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+
+<TITLE>LD_LAUNCH_DASHBOARD</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="LD_LAUNCH_DASHBOARD"/>
+<MSHelp:Keyword Index="F" Term="LD_LAUNCH_DASHBOARD"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<H1><A NAME="xthread_notification"></A>LD_LAUNCH_DASHBOARD</H1>
+
+<P>The <B>LD_LAUNCH_DASHBOARD</B> structure is used in the <A HREF="x_jsk_xlaunchnewtitle.htm">XLaunchNewImage</a> function to specify the reason that the Xbox Dashboard is being launched by the title, and what action the Dashboard should take upon launch.</P>
+
+<PRE class=syntax>typedef struct _LD_LAUNCH_DASHBOARD {
+    DWORD dwReason;
+    DWORD dwContext;
+    DWORD dwParameter1;
+    DWORD dwParameter2;
+    BYTE  Reserved[MAX_LAUNCH_DATA_SIZE - 16];
+} LD_LAUNCH_DASHBOARD, *PLD_LAUNCH_DASHBOARD;
+</PRE>
+
+<H4>Members</H4>
+
+<DL>
+<DT><B>dwReason</B></DT>
+
+<DD>
+<p>The reason the Dashboard is being launched.  <B>dwReason</B> must be one of the following values:</p>
+<TABLE>
+<TR><TH align=left>Value</TH><TH align=left>Meaning</TH></TR>
+<TR><TD>XLD_LAUNCH_DASHBOARD_MAIN_MENU</TD><TD>Launch to the Dashboard's main menu.</TD></TR>
+<TR><TD>XLD_LAUNCH_DASHBOARD_ERROR</TD><TD>Launch to the Dashboard for the Dashboard to indicate an error to the user and instruct the user on how to proceed.</TD></TR>
+<TR><TD>XLD_LAUNCH_DASHBOARD_MEMORY</TD><TD>Launch to the Dashboard memory and storage area so that the user can delete save games or other titles in order to provide necessary space for the calling title.</TD></TR>
+<TR><TD>XLD_LAUNCH_DASHBOARD_SETTINGS</TD><TD>Launch to the Dashboard's settings menu so that the user can adjust the console settings.</TD></TR>
+<TR><TD>XLD_LAUNCH_DASHBOARD_MUSIC</TD><TD>Launch to the Dashboard's music playback area.</TD></TR>
+</TABLE>
+
+<p>For Xbox <i>Live</i> titles, one of the following values (or one of the values listed above) may be specified:</p>
+<TABLE>
+<TR><TH align=left>Value</TH><TH align=left>Meaning</TH></TR>
+<TR><TD>XLD_LAUNCH_DASHBOARD_NETWORK_CONFIGURATION</TD><TD>Launch to the Dashboard's network configuration menu.</TD></TR>
+<TR><TD>XLD_LAUNCH_DASHBOARD_NEW_ACCOUNT_SIGNUP</TD><TD>Launch to the Dashboard's new account section.</TD></TR>
+<TR><TD>XLD_LAUNCH_DASHBOARD_ACCOUNT_MANAGEMENT</TD><TD>Launch to the Dashboard's account management section to display user messages that the user may be required to read before proceeding with online play.</TD></TR>
+<TR><TD>XLD_LAUNCH_DASHBOARD_ONLINE_MENU</TD><TD>Launch to the Dashboard's main online menu.</TD></TR>
+</TABLE>
+<P class=note><B><I>Note</I></B>&nbsp;&nbsp;&nbsp;When launching the Dashboard with XLD_LAUNCH_DASHBOARD_ACCOUNT_MANAGEMENT, Xbox <i>Live</i> titles should not close the online logon task handle (by calling <a href="XOnlineTaskClose.htm">XOnlineTaskClose</a>) before calling <a href="x_jsk_xlaunchnewtitle.htm">XLaunchNewImage</a>.  The title should have a valid, active Xbox <i>Live</i> session when rebooting into the Dashboard, so that the Dashboard can use the logon state to determine user messages or other problems.  In any case, titles are not <i>required</i> to close task handles before rebooting to the Dashboard or content downloader, or before calling <a href="XOnlineTitleUpdate.htm">XOnlineTitleUpdate</a> to boot to the updater.  However, as for any call to <b>XLaunchNewImage</b>, the title should be performing minimal processing, with no background or asynchronous tasks pending, and no activity in other threads.  See the <b>Quick-Booting</b> section of the <a href="x_mt_softarch_xtl.htm">XTL Overview</a> for more information.</P>
+</DD>
+
+<DT><B>dwContext</B></DT>
+<DD>A title-defined value that will be returned to the title in the <A HREF="x_mt_ld_fromdashboard.htm">LD_FROM_DASHBOARD</a> structure (see <A HREF="x_jc_xgetlaunchinfo.htm">XGetLaunchInfo</a>) when the Dashboard reboots to the title after performing whatever service the title has asked of the Dashboard.</DD>
+
+<DT><B>dwParameter1</B></DT>
+<DD>Parameter passed to the Dashboard.  The meaning of this parameter depends on the value specified in <B>dwReason</B> (see <b>Remarks</b> below).</DD>
+
+<DT><B>dwParameter2</B></DT>
+<DD>Parameter passed to the Dashboard.  The meaning of this parameter depends on the value specified in <B>dwReason</B> (see <b>Remarks</b> below).</DD>
+
+<DT><B>Reserved</B></DT>
+<DD>Reserved; do not use.</DD>
+
+</DL>
+
+<H4>Remarks</H4>
+
+<P>When a title launches the Xbox Dashboard using <B>XLaunchNewImage</B>, the <B>LD_LAUNCH_DASHBOARD</B> structure is used to tell the Dashboard why the title is launching it and what action the Dashboard should perform.</P>
+
+<P>Unless otherwise specified below, <B>dwParameter1</B> and <B>dwParameter2</B> should both be zero.</P>
+
+<P>If <B>dwReason</B> is XLD_LAUNCH_DASHBOARD_MEMORY, <B>dwParameter1</B> is the drive letter where memory blocks need to be freed (for example, 'U'), and <B>dwParameter2</B> is the total number of blocks needed (not the number of additional blocks needed beyond what is already available).</P>
+
+<!-- OMIT:
+
+<P>If <B>dwReason</B> is XLD_LAUNCH_DASHBOARD_ERROR, <B>dwParameter1</B> must be one of the following values:
+<TABLE>
+<TR><TH align=left>Value</TH><TH align=left>Meaning</TH></TR>
+<TR><TD>XLD_ERROR_INVALID_XBE</TD><TD>The XBE was invalid.</TD></TR>
+<TR><TD>XLD_ERROR_INVALID_HARD_DISK</TD><TD>The hard disk is invalid or failing.</TD></TR>
+<TR><TD>XLD_ERROR_XBE_REGION</TD><TD>The current region is invalid for this game title or media.</TD></TR>
+<TR><TD>XLD_ERROR_XBE_PARENTAL_CONTROL</TD><TD>Parental control settings restrict the use of this game or media.</TD></TR>
+<TR><TD>XLD_ERROR_XBE_MEDIA_TYPE</TD><TD>The media inserted was not valid.</TD></TR>
+</TABLE>
+-->
+
+<P>If <B>dwReason</B> is XLD_LAUNCH_DASHBOARD_SETTINGS, <B>dwParameter1</B> may have zero or more of the following flags set, indicating which settings should be adjusted by the user:
+<TABLE>
+<TR><TH align=left>Value</TH><TH align=left>Meaning</TH></TR>
+<TR><TD>XLD_SETTINGS_CLOCK</TD><TD>Adjust the clock.</TD></TR>
+<TR><TD>XLD_SETTINGS_TIMEZONE</TD><TD>Change the timezone.</TD></TR>
+<TR><TD>XLD_SETTINGS_LANGUAGE</TD><TD>Change the current language setting.</TD></TR>
+<TR><TD>XLD_SETTINGS_VIDEO</TD><TD>Change the current video settings.</TD></TR>
+<TR><TD>XLD_SETTINGS_AUDIO</TD><TD>Change the current audio settings.</TD></TR>
+</TABLE>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Xbox.h, for include use Xtl.h.<br><b>
+</p>
+
+<H4>See Also</H4>
+<P>
+<A HREF="x_jc_xgetlaunchinfo.htm">XGetLaunchInfo</a>,
+<A HREF="x_jsk_xlaunchnewtitle.htm">XLaunchNewImage</a>,
+<A HREF="x_mt_ld_fromdashboard.htm">LD_FROM_DASHBOARD</a>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

@@ -1,0 +1,105 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineFriendsEnumerate</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineFriendsEnumerate"/>
+<MSHelp:Keyword Index="F" Term="XOnlineFriendsEnumerate"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineFriendsEnumerate</h1>
+            <p>Creates an asynchronous task to enumerate the friends on the specified player's friends list.</p>
+        <pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineFriendsEnumerate(</b>
+    <b>DWORD</b> <i>dwUserIndex</i><b>,</b>
+    <b>HANDLE</b> <i>hWorkEvent</i><b>,</b>
+    <b>PXONLINETASK_HANDLE</b> <i>phTask</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+            <dt><i>dwUserIndex</i></dt>
+<dd>[in]  Controller index (zero-based) of the player whose friends list is to be enumerated.  The player must have been successfully logged on with a previous call to <a href="XOnlineLogon.htm">XOnlineLogon</a>.</dd>
+            
+            <dt><i>hWorkEvent</i></dt>
+<dd>[in, optional]  Handle to an event that will be signaled when there is work to be done on the enumeration task. This parameter can be NULL if no such event is required.</dd>
+            
+            <dt><i>phTask</i></dt>
+<dd>[out]  Pointer to a variable of type <b>XONLINETASK_HANDLE</b> that receives a task handle representing this enumeration request.  The handle can then be used in calls to <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> to perform work associated with this task.</dd>
+            
+        </dl>
+<h4><a name="return"></a>Return Values</h4>
+            
+                <p>If <b>XOnlineFriendsEnumerate</b> succeeds, the return value is S_OK.</p>
+                <p>If <b>XOnlineFriendsEnumerate</b> fails, the return value is one of the following error codes.</p>
+
+                <table>
+                    <tr>
+<th>Value</th> <th>Description</th>
+</tr>
+
+                    <tr>
+<td>XONLINE_E_NOTIFICATION_NO_TASK</td> <td>The friends startup task is not active. You must first call <a href="XOnlineFriendsStartup.htm">XOnlineFriendsStartup</a> to  create the startup task.</td>
+</tr>
+                    <tr>
+<td>E_OUTOFMEMORY</td> <td>Insufficient memory. Free some memory.</td>
+</tr>
+                    <tr>
+<td>E_FAIL</td> <td>Unspecified failure. If you receive this error, try the following:
+                            <ul>
+                                <li>Check your arguments to this function.</li>
+                                <li>Contact Support.</li>
+                                <li>If this happens in a game, try again later.</li>
+                            </ul>
+                        </td>
+</tr>
+
+                    <tr>
+<td>Other</td> <td>See <a href="xbox_online_errors.htm">Online Errors</a> for information about other possible errors.</td>
+</tr>
+                </table>
+
+            
+
+        <h4><a name="remarks"></a>Remarks</h4>
+
+            <p>The <b>XOnlineFriendsStartup</b> function must be called before calling <b>XOnlineFriendsEnumerate</b>.</p>
+
+            <p>The asynchronous task handle returned by this function should be pumped until <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> returns XONLINETASK_S_RESULTS_AVAIL, indicating that the current friends list is available. At that point, call <a href="XOnlineFriendsGetLatest.htm">XOnlineFriendsGetLatest</a>, <a href="XOnlineFriendsGetLatestByFocus.htm">XOnlineFriendsGetLatestByFocus</a>, or <a href="XOnlineFriendsGetLatestByRange.htm">XOnlineFriendsGetLatestByRange</a> to retrieve the list.</p>
+
+            <p>After initially retrieving the friends list, continue to pump the handle while the friends list is being displayed to the player. Pumping the handle processes updates to the list. When an updated list is available, <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> returns XONLINETASK_S_RESULTS_AVAIL. When the title receives this return value, it should call one of the "GetLatest" functions mentioned previously to retrieve the updated list.</p>
+
+            <p>When the title no longer needs to display the friends list, it should call <a href="XOnlineFriendsEnumerateFinish.htm">XOnlineFriendsEnumerateFinish</a>, passing in the task handle returned by <a href="XOnlineFriendsEnumerate.htm">XOnlineFriendsEnumerate</a>. <b>XOnlineFriendsEnumerateFinish</b> waits to receive any further updates from the service, then caches the friends list to the Xbox hard disk. After <a href="XOnlineFriendsEnumerateFinish.htm">XOnlineFriendsEnumerateFinish</a> returns, continue to pump the task handle until <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> returns XONLINETASK_S_SUCCESS, then call <a href="XOnlineTaskClose.htm">XOnlineTaskClose</a> to close the task handle.</p>
+
+            <p>There is typically no reason to pump the task handle throughout the life of the game. The task needs to be active only while the friends list is being displayed.</p>
+
+            <p>If <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> at any time returns an error code for this task, an error has occurred in enumeration processing; the task should be closed and <b>XOnlineFriendsEnumerate</b> called again to restart the enumeration.</p>
+        <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+             <a href="x_mt_xonline_functions.htm">Xbox Live Functions</a> | <a href="xbox_Live_Friends.htm">Friends Lists</a> | <a href="XOnlineFriendsEnumerateFinish.htm">XOnlineFriendsEnumerateFinish</a>, <a href="XOnlineFriendsGetLatest.htm">XOnlineFriendsGetLatest</a>, <a href="XOnlineFriendsGetLatestByFocus.htm">XOnlineFriendsGetLatestByFocus</a>, <a href="XOnlineFriendsGetLatestByRange.htm">XOnlineFriendsGetLatestByRange</a>, <a href="XOnlineFriendsStartup.htm">XOnlineFriendsStartup</a>
+        </p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

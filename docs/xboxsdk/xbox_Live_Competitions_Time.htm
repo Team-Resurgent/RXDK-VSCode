@@ -1,0 +1,71 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Time Advancement</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Time Advancement"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+		<MSHelp:Keyword Index="K" Term="competitions, adjusting time in development"/>
+	</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Time Advancement</h1>
+<p>Developing competitions presents unique challenges in dealing with the passage of time. In a single competition, for example, completing a series of rounds might take weeks, if not months, depending on how the competition is configured. Because it isn't practical to wait weeks for an automatic event such as a round progression, developers need some way to adjust the dates associated with a competition. <i>Time advancement</i> enables developers to "jump forward" in time with respect to an instance of a competition. By jumping forward, developers can trigger events or avoid waiting for specific windows of time (for example, registration open/close).</p><p>To adjust the time on a competition, call the <a href="XOnlineQuerySelect.htm">XOnlineQuerySelect</a> function with the following parameters.</p><table>
+		<tr>
+<th>Parameter</th>
+<th>Setting</th>
+</tr>
+		<tr>
+<td><i>dwPlayerIndex</i></td>
+<td>0</td>
+</tr>
+		<tr>
+<td><i>dwTeamId</i></td>
+<td>0</td>
+</tr>
+		<tr>
+<td><i>dwDatasetId</i></td>
+<td>Competition Template ID (the same value used for <i>dwTemplate</i> in the original call to <a href="XOnlineCompetitionCreate.htm">XOnlineCompetitionCreate</a>/<a href="XOnlineCompetitionCreateSingleElimination.htm">XOnlineCompetitionCreateSingleElimination</a>)</td>
+</tr>
+		<tr>
+<td><i>entityID</i></td>
+<td>The <i>qwCompetitionID</i> from <a href="XOnlineCompetitionCreateGetResults.htm">XOnlineCompetitionCreateGetResults</a></td>
+</tr>
+		<tr>
+<td><i>dwAction</i></td>
+<td>XONLINE_COMP_ACTION_DEBUG_ADVANCE_TIME</td>
+</tr>
+		<tr>
+<td><i>dwNumAttributes</i></td>
+<td>1</td>
+</tr>
+		<tr>
+<td><i>pAttributes</i></td>
+<td>Pointer to an array of <a href="XONLINE_ATTRIBUTE.htm">XONLINE_ATTRIBUTE</a> structures, with a single element. For the <b>dwAttributeID</b> member of this structure, specify XONLINE_COMP_ATTR_DEBUG_ADVANCE_TIME. The <b>qwValue</b> member is used to specify the time, in seconds, you wish to advance.</td>
+</tr>
+		</table>
+<p>Call <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> to complete the task. After it's finished, the timing of various events
+		associated with the competition will be adjusted by the specified time. This method simulates the advancement 
+		of time by moving any time values used on the service back by the specified time delta. For example, specifying 
+		a five-minute advancement would modify the competition to appear as though it had been created five minutes
+		earlier than it was. This method also adjusts any scheduled events&#8212;for example, slotting or round
+		progression. However, because these events are not instantaneous and run asynchronously, it is unlikely they 
+		will have completed immediately after the time adjustment. To enable these events to complete, a wait of at 
+		least one minute after the time adjustment or the competition start time (whichever occurred most recently) 
+		is recommended.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

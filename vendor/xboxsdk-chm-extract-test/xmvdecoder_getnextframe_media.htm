@@ -1,0 +1,63 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XMVDecoder::GetNextFrame</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="F" Term="GetNextFrame"/>
+<MSHelp:Keyword Index="K" Term="GetNextFrame (XMVDecoder)"/>
+<MSHelp:Keyword Index="K" Term="XMVDecoder::GetNextFrame"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XMVDecoder::GetNextFrame</h1>
+<p>Retrieves the next frame to display from an Xbox Media Video (XMV) file.</p>
+<pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>GetNextFrame(</b>
+    <b>IDirect3DSurface8</b> *<i>pSurface</i><b>,</b>
+    <b>XMVRESULT</b> *<i>pResult</i><b>,</b>
+    <b>DWORD</b> *<i>pTimeOfFrame</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+			<dt><i>pSurface</i></dt>
+<dd>[out]  Address of an <a href="_dx_idirect3dsurface8_graphics.htm">IDirect3DSurface8</a> interface used to render the frame. The surface must have the same height and width as the video. If no video is desired, <i>pSurface</i> can be NULL.</dd>
+			<dt><i>pResult</i></dt>
+<dd>[out]  Pointer to a member of the <a href="xmvresult_media.htm">XMVRESULT</a> enumerated type, which will receive the status of the new frame.</dd>
+			<dt><i>pTimeOfFrame</i></dt>
+<dd>[out]  Address of a <b>DWORD</b> value that will receive the time (in milliseconds) from the start of the movie to when the returned frame should be displayed. If there is no frame, the value will not change. If the title is allowing the library to synchronize between the video and the audio, <i>pTimeOfFrame</i> may be NULL.</dd>
+		</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>Returns S_OK if successful, an error code otherwise.</p>
+<h4><a name="remarks"></a>Remarks</h4>
+<p>Either this function or <a href="xmvdecoder_play_media.htm">XMVDecoder::Play</a> should be used to play back XMV files. Do not try intermixing the two methods.</p>
+
+<p>If audio is played while this function is in use, <a href="xbox_directsounddowork_dxaudio.htm">DirectSoundDoWork</a> must be called occasionally.</p>
+
+			<p>Calling <a href="xmvdecoder_terminateimmediately_media.htm">XMVDecoder::TerminateImmediately</a> is guaranteed to call <b>XMVDecoder::GetNextFrame</b> and return an <b>XMVRESULT</b> of XMV_ENDOFFILE.</p>
+		<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xmv.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xmv.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p><a href="playing_xmv_files_overview_media.htm">Playing XMV Files</a> | <a href="xmvdecoder_play_media.htm">XMVDecoder::Play</a>, <a href="xmvresult_media.htm">XMVRESULT</a></p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

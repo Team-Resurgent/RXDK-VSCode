@@ -1,0 +1,228 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Xbox Live 2003 Web Services</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Xbox Live 2003 Web Services"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+  <MSHelp:Keyword Index="K" Term="Web services, Xbox Live 2003"/>
+  <MSHelp:Keyword Index="K" Term="Web services, architecture"/>
+  <MSHelp:Keyword Index="K" Term="server authentication, Xbox Live"/>
+  <MSHelp:Keyword Index="K" Term="Web Identity"/>
+  <MSHelp:Keyword Index="K" Term="Gamertags"/>
+  <MSHelp:Keyword Index="K" Term="Live Aware titles"/>
+  <MSHelp:Keyword Index="K" Term="white papers, Xbox Live 2003 Web Services"/>  
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Xbox Live 2003 Web Services</h1>
+<p><i>By Van Van, Lead Program Manager, Xbox Online</i></p><ul>
+<li><a href="#IDACBEV">Summary</a></li><li><a href="#IDASBEV">Goals</a></li><li><a href="#IDA4CEV">Non-Goals</a></li><li><a href="#IDAMEEV">Terminology</a></li><li><a href="#IDAQFEV">Scenarios</a></li><li><a href="#web_services_architecture">Architecture Diagram</a></li><li><a href="#IDAKRFV">Dependencies</a></li><li><a href="#IDA0RFV">International</a></li><li><a href="#IDAASFV">Possible Future Features</a></li></ul>
+<h2><a name="IDACBEV"></a>Summary</h2>
+<p>Xbox <i>Live</i> is currently a service for the Xbox console only. There is no external access 
+	to the system and the data it contains. Xbox <i>Live</i> 2003 will start building a Web presence, 
+	establishing a tie between the Web and the Xbox <i>Live</i> service. The goal is to allow gamers a 
+	glimpse into the service while they are on the Web (even for those who are not Xbox <i>Live</i> members). 
+	With this capability, gamers can see what they are missing and can access the service (while they have 
+	a monitor, keyboard, and mouse) to do tasks that are more suited to a desktop computer. This freedom will 
+	improve their Xbox <i>Live</i> experience, which, in turn, will ultimately attract and retain more 
+	customers.</p><h2><a name="IDASBEV"></a>Goals</h2>
+<p>Xbox <i>Live</i> 2003 Web Services has the following goals:</p><p>The overall goals are to:</p><ul>
+		<li>Expose a subset of Xbox <i>Live</i> features on the Web for Web sites to consume and 
+		display as they see fit.</li>
+		<li>Expose these features in such a way that they can be consumed by international sites 
+		as well.</li>
+		<li>Provide read-only access to these features on the Web.</li>
+	</ul>
+<p>To support third-party and publisher sites in:</p><ul>
+		<li>Building a strong link between publisher and game Web sites to Xbox <i>Live</i> 
+		(for public information only).</li>
+		<li>Building a strong community of users for their games.</li>
+	</ul>
+<p>Allow gamers to:</p><ul>
+		<li>Access personal and public Xbox <i>Live</i> information on the Web.</li>
+		<li>Still be part of the Xbox <i>Live</i> experience while on the Web.</li>
+		<li>Link from the Xbox to the Web.</li>
+	</ul>
+<h2><a name="IDA4CEV"></a>Non-Goals</h2>
+<p>The Web service is not designed to provide any of the following:</p><ul>
+		<li><b>Central authentication authority</b> &#8211; Partner sites must perform 
+		their own authentication.</li>
+		<li><b>Presentation layer</b> &#8211; This is a Web service, not a Web server. 
+		It returns data to specific authenticated and authorized requests in XML. It is up to the 
+		requestor to present this information to the user in a manner that they see fit.</li>
+		<li><b>Anonymous access</b> &#8211; All access to the Web service will be authenticated 
+		and authorized using certificates. There will no anonymous (http) access to the Web service.</li>
+		<li><b>Providing different levels of service for different sites</b> &#8211; The Web 
+		service will provide equal levels of service to individual sites only. For example, time delays 
+		for stats and other information will be uniform for all titles.</li>
+		<li><b>Sign-up / subscription renewals on the Web</b> &#8211; For this version of Web 
+		services, we will not be supporting sign-ups or subscription renewals on the Web.</li>
+		<li><b>Write-access to the system</b> &#8211; For this version of Web services, we will 
+		not be supporting write-access to the Xbox <i>Live</i> service via Web services. All access, as 
+		indicated in the Goals section, will be read-only.</li>
+	</ul>
+<h2><a name="IDAMEEV"></a>Terminology</h2>
+<p>The following section introduces you to terminology you may not be familiar with. The author assumes 
+	you are familiar with existing terms of Xbox <i>Live</i>, including authentication, authorization, 
+	accounts, and other common concepts.</p><ul>
+		<li><i>Personally Identifiable Information (PII)</i> &#8211; Information about a user 
+		that can be used to discover the identity of the user, such as name, address, phone 
+		number, credit card information, age, email address, and so on. Note that PII is 
+		important when it comes to COPPA and underage users. We consider this information private.</li>
+		<li><i>Private Information</i> &#8211; Loose term used to indicate all PII and the 
+		gamer's friends list.</li>
+		<li><i>Web Identity</i> &#8211; The username and password pair used to login to a Web 
+		site. Note that one may have a different Web identity for every Web site.</li>
+		<li><i>Server authentication</i> &#8211; All access to the Xbox <i>Live</i> Web Service 
+		is authenticated. All Web sites that access the Web service must authenticate. Certificates 
+		are the current authentication mechanism.</li>
+	</ul>
+<h2><a name="IDAQFEV"></a>Scenarios</h2>
+<p>This section describes the scenarios that the Xbox <i>Live</i> Web service team plans to enable 
+	and support. Note that the goal of the Web service is to enable Web pages to display information. The 
+	Web service is not a Web server and hence does not render any UI. The Web service returns data necessary 
+	for the Web site to display the UI described below. Also note that all access to the Xbox <i>Live</i> 
+	Web Service is authenticated. In this case, all sites must have a certificate issued by Xbox <i>Live</i> 
+	to access the service.</p><p>In general, all information exposed by the Web service is not real-time. The time delay of the 
+	information is specific to the information requested. Time delays might look like the following:</p><ul>
+		<li>Presence information &#8211; delayed 2 minutes.</li>
+		<li>Stats/leaderboard information &#8211; delayed 15 minutes.</li>
+	</ul>
+<h3><a name="IDAHGEV"></a>Xbox Web Site</h3>
+<p>A Microsoft Xbox Web site will be one consumer of the Xbox <i>Live</i> 2003 Web Services. 
+		Due to privacy issues, it will be the only site that contains personally identifiable information (PII).</p><h4><a name="IDAOGEV"></a>Non-Personalized Web Pages</h4>
+<p>These pages are viewable by anyone who can access the Web site. A user may not need an account 
+			either at the Web site or Xbox <i>Live</i> and may not require a login on the Web site. The 
+			following information may be displayed without any user authentication:</p><ul>
+				<li>General Leaderboards for individual games with basic search, such as entering a Gamertag 
+				and getting the stats for said Gamertag for a specific title at a given time. (Note that the
+				release of game-specific information is subject to agreement with the publisher.)</li>
+				<li>Total number of gamers on a Leaderboard.</li>
+				<li>Date and time information.</li>
+			</ul>
+<h4><a name="IDA4GEV"></a>Personalized Web Pages</h4>
+<p>To view these pages, a Web user must be associated with a Gamertag. The user first logs 
+			in with a username and password pair and must then establish a link between the Web identity 
+			and the Xbox <i>Live</i> Gamertag. The Web service will provide the Web site with the 
+			ability to link a Web identity and Xbox <i>Live</i> Gamertag. Due to privacy issues, only 
+			the Xbox Web site will have the ability to link Web IDs to Gamertags.  Once linked, however, 
+			other sites may request for the Gamertag associated with a specific Web ID.  The Xbox <i>Live</i> 
+			web service team plans to enable the following scenarios:</p><ul>
+				<li>Link Gamertag (Xbox Web site only).</li>
+				<li>Get associated Gamertag.</li>
+				<li>Friends
+				<ul>
+					<li>Online/Offline information of friends.</li>
+					<li>Presence info of friends (what game they are playing if online).</li>
+					<li>Stats of friends on a specific leaderboard.</li>
+				</ul>
+</li>
+			</ul>
+<h3><a name="IDA0HEV"></a>Third-Party Publisher Sites</h3>
+<p>Most independent third-party sites, as they exist today, have information directly related 
+		to their games. They may or may not have authenticated access. In all cases, third-party sites 
+		using the Xbox <i>Live</i> Web services will have information concerning their games only. 
+		This information may include:</p><ul>
+			<li>Total number of gamers on a Leaderboard.</li>
+			<li>General Leaderboards for individual games with basic search, such as entering a Gamertag 
+			and getting the stats for said Gamertag for a specific game at a given time.</li>
+			<li>Date and time information.</li>
+		</ul>
+<p>In addition, if third-party sites wish to implement personalized Web pages based on Gamertag 
+		information, they can.  They must implement authentication on their Web site. Currently, the only 
+		authentication mechanism supported is Passport. Web sites that implement Microsoft Passport single 
+		sign-on technology can request the following information:</p><ul>
+			<li>Get associated Gamertag.</li>
+			<li>Friends
+			<ul>
+				<li>Online/Offline information of friends.</li>
+				<li>Presence info of friends (what game they are playing if online).</li>
+				<li>Stats of friends on a specific leaderboard of a title that is owned by the 
+				Web site publisher.</li>
+			</ul>
+</li>
+		</ul>
+<h2><a name="web_services_architecture"></a>Architecture Diagram</h2>
+<p>The following diagram presents an overview of how the system will be built and how it is run. 
+	To avoid complexity and confusion, only one complete flow is shown here; other widgets will talk 
+	to different back ends as necessary to handle requests. Note that the cluster representing the Web 
+	site can be <i>any</i> Web server that we have granted permissions to communicate with the Web 
+	service via a server certificate.</p><img src="images/webservices_fig1.jpg"><h2><a name="IDAKRFV"></a>Dependencies</h2>
+<p>There are many interdependencies between the Web site and Xbox <i>Live</i> Web services. 
+	Among others, consider the following:</p><ul>
+		<li>Passport integration including Kid's Passport and its associated requirements.</li>
+		<li>Third-party publishing sites will be accessing PartnerNet (as always) for Web services for testing.</li>
+		<li>Once again, note that the Web service returns data. In the presentation of the data, each individual Web 
+		site is free to present it however it chooses.</li>
+	</ul>
+<h2><a name="IDA0RFV"></a>International</h2>
+<p>One of the goals of Web services is to be the central location for data, even for international sites. 
+	We target this goal and make sure that all information released from Web services is international friendly.</p><h2><a name="IDAASFV"></a>Possible Future Features</h2>
+<p>The following are possible future features of the Web service (not planned for this release):</p><ul>
+		<li>Messages
+		<ul>
+			<li>System-wide messages.</li>
+			<li>Voice messages.</li>
+			<li>Game invites.</li>
+			<li>New offers available.</li>
+		</ul>
+</li>
+		<li>Friends
+		<ul>
+			<li>Friends management (add and delete friends).</li>
+		</ul>
+</li>
+		<li>Billing
+		<ul>
+			<li>Billing statement on the Web.</li>
+			<li>Billing account management, including change payment type and account information.</li>
+		</ul>
+</li>
+		<li>Parental controls and monitoring
+		<ul>
+			<li>Child's Gamertag.</li>
+			<li>Child's friends list.</li>
+			<li>Online parental control settings (voice and premium purchases).</li>
+			<li>Child's account activity.</li>
+			<li>Feedback information on the child.</li>
+			<li>Gamertags of all the people my child has played with.</li>
+			<li>Ability to set whether Friends requests require approval.</li>
+			<li>Ability to approve or deny friends requests if approval is required
+			(bi-directional).</li>
+			<li>Ability to set whether user can play games by invitation only.</li>
+			<li>Ability to set usage limits.</li>
+			<li>Play only with circle of friends.</li>
+		</ul>
+</li>
+		<li>Finer grain privacy and information sharing settings
+		<ul>
+			<li>Ability to manage information sharing policy down to the publisher level.</li>
+		</ul>
+</li>
+		<li>Third-party fan sites
+		<ul>
+			<li>Ability to see stats of titles and specific user stats in titles.</li>
+		</ul>
+</li>
+		<li>Ladders</li>
+		<li>Teams</li>
+		<li>Web sign-up for an Xbox <i>Live</i> account</li>
+	</ul>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

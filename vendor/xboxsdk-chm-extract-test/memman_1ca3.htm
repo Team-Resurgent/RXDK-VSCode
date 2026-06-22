@@ -1,0 +1,92 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>HeapWalk</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="HeapWalk">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="HeapWalk"/>
+<MSHelp:Keyword Index="F" Term="HeapWalk"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_heapwalk"></A>HeapWalk</H1>
+
+<P>The <B>HeapWalk</B> function enumerates the memory blocks in a specified heap created or manipulated by the heap memory allocators, such as <A HREF="memman_6krn.htm">HeapAlloc</a>, <A HREF="memman_6ahv.htm">HeapReAlloc</a>, and <A HREF="memman_7b1h.htm">HeapFree</a>.</P>
+
+<P class=note><B><I>Important</I></B>&nbsp;&nbsp;&nbsp;To use this function, you must link with XapilibD.lib, the debug version of Xapilib.  Retail (shipping) title builds should not call this function.</P>
+
+<PRE class=syntax><B>BOOL HeapWalk(
+  HANDLE</B><I> hHeap</I><B>,                 </B>// heap to enumerate
+<B>  LPPROCESS_HEAP_ENTRY</B><I> lpEntry</I>  // state information
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>hHeap</I></DT>
+
+<DD>[in] Handle to the heap whose memory blocks you wish to enumerate.</DD>
+
+<DT><I>lpEntry</I></DT>
+
+<DD>[in/out] Pointer to a <A HREF="memman_8iya.htm">PROCESS_HEAP_ENTRY</a><B> </B>structure that maintains state information for a particular heap enumeration. 
+
+<P>If the <B>HeapWalk</B> function succeeds, returning the value TRUE, this structure's members contain information about the next memory block in the heap.
+
+
+<P>To initiate a heap enumeration, set the <B>lpData</B> field of the <B>PROCESS_HEAP_ENTRY </B>structure to NULL. To continue a particular heap enumeration, call the <B>HeapWalk</B> function repeatedly, with no changes to <I>hHeap</I>, <I>lpEntry</I>, or any of the members of the <B>PROCESS_HEAP_ENTRY</B> structure.
+
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is nonzero.</P>
+
+<P>If the function fails, the return value is zero. To get extended error information, call <A HREF="errors_3uwi.htm">GetLastError</a>. </P>
+
+<P>If the heap enumeration terminates successfully by reaching the end of the heap, the function returns FALSE, and <B>GetLastError </B>returns the error code ERROR_NO_MORE_ITEMS.</P>
+
+<H4>Remarks</H4>
+
+<P>To initiate a heap enumeration, call <B>HeapWalk</B> with the <B>lpData</B> field of the <B>PROCESS_HEAP_ENTRY </B>structure pointed to by <I>lpEntry</I><B> </B>set to NULL.</P>
+
+<P>To continue a heap enumeration, call <B>HeapWalk </B>with the same <I>hHeap</I> and <I>lpEntry </I>values, and with the <B>PROCESS_HEAP_ENTRY</B> structure unchanged from the preceding call to<B> HeapWalk</B>. Repeat this process until you have no need for further enumeration, or until the function returns FALSE<B> </B>and <A HREF="errors_3uwi.htm">GetLastError</a><B> </B>returns ERROR_NO_MORE_ITEMS, indicating that all of the heap's memory blocks have been enumerated.</P>
+
+<P>No special call to <B>HeapWalk</B> is needed to terminate the heap enumeration, since no enumeration state data is maintained outside the contents of the <B>PROCESS_HEAP_ENTRY</B> structure.</P>
+
+<P><B>HeapWalk</B> can fail in a multithreaded application if the heap is not locked during the heap enumeration. Use the <A HREF="memman_0r3f.htm">HeapLock</a> and <A HREF="memman_0duz.htm">HeapUnlock</a> functions to control heap locking during heap enumeration.</P>
+
+<P>Walking a heap may degrade performance. The side effects may last until the console is rebooted.</P>
+
+<P class=note><B><I>Note</I></B>&nbsp;&nbsp;To guard against an access violation, you can use structured exception handling to protect code that writes to or reads from a heap. For more information on structured exception handling with memory accesses, see <a href="unresolved.htm">Reading and Writing</a> and <A HREF="unresolved.htm">Structured Exception Handling</a>.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use XapilibD.lib</p>
+
+<H4>See Also</H4>
+<P>
+
+<a href="xbox_mt_xtl_sll_memory_management_functions.htm">Memory Management Functions</a> | 
+<A HREF="memman_6krn.htm">HeapAlloc</a>, <A HREF="memman_6ahv.htm">HeapReAlloc</a>, <A HREF="memman_7b1h.htm">HeapFree</a>, <A HREF="memman_0r3f.htm">HeapLock</a>, <A HREF="memman_0duz.htm">HeapUnlock</a>, <A HREF="memman_53z9.htm">HeapValidate</a>, <A HREF="memman_8iya.htm">PROCESS_HEAP_ENTRY</a>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

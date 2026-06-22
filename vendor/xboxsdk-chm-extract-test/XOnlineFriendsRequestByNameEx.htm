@@ -1,0 +1,110 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineFriendsRequestByNameEx</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineFriendsRequestByNameEx"/>
+<MSHelp:Keyword Index="F" Term="XOnlineFriendsRequestByNameEx"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineFriendsRequestByNameEx</h1>
+<p>Enables a player to send a request to another player asking that the two players be added to each other's friends lists. The function differs from <a href="XOnlineFriendsRequestEx.htm">XOnlineFriendsRequestEx</a> in that <b>XOnlineFriendsRequestByNameEx</b> enables the player to specify the recipient of the friends request by gamertag rather than by XUID. Use this function rather than <a href="XOnlineFriendsRequestByName.htm">XOnlineFriendsRequestByName</a> when a voice attachment to the request is desired.</p><pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineFriendsRequestByNameEx(</b>
+    <b>DWORD</b> <i>dwUserIndex</i><b>,</b>
+    <b>LPCSTR</b> <i>lpUserName</i><b>,</b>
+    <b>XONLINE_MSG_HANDLE</b> <i>hMsg</i><b>,</b>
+    <b>HANDLE</b> <i>hWorkEvent</i><b>,</b>
+    <b>PXONLINETASK_HANDLE</b> <i>phTask</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+		<dt><i>dwUserIndex</i></dt>
+<dd>[in]  Controller index (zero-based) of the player making the request. The player must have been successfully logged on with a previous call to <a href="XOnlineLogon.htm">XOnlineLogon</a>.</dd>
+            
+
+		<dt><i>lpUserName</i></dt>
+<dd>[in]  Pointer to a null-terminated string that contains the gamertag of the recipient of the friend request.</dd>
+
+		<dt><i>hMsg</i></dt>
+<dd>[in]  An <b>XONLINE_MSG_HANDLE</b> of an XONLINE_MSG_TYPE_FRIEND_REQUEST message to be sent with the request. If this parameter is NULL, a default message with no voice attachment will be generated.</dd>
+            
+
+		<dt><i>hWorkEvent</i></dt>
+<dd>[in, optional]  Handle to a caller-created event object. This object will be signaled when there is work to do by calling <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a>. The caller may pass in NULL instead, indicating that the caller will poll <b>XOnlineTaskContinue</b>.</dd>
+            
+
+		<dt><i>phTask</i></dt>
+<dd>[out]  Pointer to a variable of type <b>XONLINETASK_HANDLE</b> that receives a task handle representing the verify task. Pump this task to completion using <b>XOnlineTaskContinue</b>. When the task is complete, call <a href="XOnlineTaskClose.htm">XOnlineTaskClose</a> to close the task.</dd>
+            
+	</dl>
+<h4><a name="return"></a>Return Values</h4>
+		
+		    <p>If <a href="XOnlineFriendsRequest.htm">XOnlineFriendsRequest</a> succeeds, the return value is S_OK.</p>
+			<p>If <b>XOnlineFriendsRequest</b> fails, the return value is one of the following error codes:</p>
+			<table>
+				<tr>
+					<th>Value</th>
+					<th>Description</th>
+				</tr>
+				<tr>
+					<td>E_OUTOFMEMORY</td>
+					<td>Insufficient memory. Free some memory.</td>
+				</tr>
+				<tr>
+					<td>XONLINE_E_NOTIFICATION_NO_TASK</td>
+					<td>The friends startup task is not active. You must first call <a href="XOnlineFriendsStartup.htm">XOnlineFriendsStartup</a> to create the startup task.</td>
+				</tr>
+				<tr>
+					<td>XONLINE_E_NOTIFICATION_SELF</td>
+					<td>The player requested to add himself/herself to his/her own friends list. Do not allow this. If you receive this error, display an error, or generate a sound to indicate that this is not a valid action.</td>
+				</tr>
+				<tr>
+					<td>XONLINE_E_NOTIFICATION_TOO_MANY_REQUESTS</td>
+					<td>Too many pending requests to the service. To avoid this error, pump the handle returned by <b>XOnlineFriendsStartup</b> more frequently. If you get this error during a game, pump the handle returned by <b>XOnlineFriendsStartup</b>, and then call <b>XOnlineFriendsRequest</b> again.</td>
+				</tr>
+				<tr>
+					<td>XONLINE_E_NOTIFICATION_LIST_FULL</td>
+					<td>The player's friends list is full. An appropriate way to handle this return code is to display the message "Unable to add the specified friend because your friends list is full. A - continue". This error should occur only if the title is currently enumerating the friends list. You can avoid this error by verifying that the player has fewer than 100 friends before requesting a new one. There are situations in which you will not receive this error even though the list is full.</td>
+				</tr>
+				<tr>
+					<td>XONLINE_E_NOTIFICATION_USER_ALREADY_EXISTS</td>
+					<td>The player is already in the list. An appropriate way to handle this return code is to display the message "This player is already on your friend's list. A - continue". Alternatively, you can do nothing. If the player forgot that a particular friend was on his list, and invites that player again, it will simply seem as though the invited player accepted immediately. This error should occur only if the title is currently enumerating the friends list.</td>
+				</tr>
+				<tr>
+					<td>Other</td>
+					<td>See <a href="xbox_online_errors.htm">Online Errors</a> for information about other possible errors.</td>     
+				</tr>
+			</table>
+			
+	<h4><a name="remarks"></a>Remarks</h4>
+		<p>The return values listed above may be returned by either <b>XOnlineFriendsRequestByNameEx</b> itself, or by <b>XOnlineTaskContinue</b> when called with the task handle returned by <b>XOnlineFriendsRequestByNameEx</b>.</p>
+		<p>The title should not destroy the message object it specified through the <i>hMsg</i> parameter until the <b>XOnlineFriendsRequestByNameEx</b> operation is complete.</p>
+		<p>Because <b>XOnlineFriendsRequestByNameEx</b> is not as efficient as <b>XOnlineFriendsRequestEx</b>, titles should, if possible, use <b>XOnlineFriendsRequestEx</b> instead.</p>
+	<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p><a href="x_mt_xonline_functions.htm">Xbox Live Functions</a></p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

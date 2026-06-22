@@ -1,0 +1,87 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>XINPUT_STATE</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="XINPUT_STATE">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XINPUT_STATE"/>
+<MSHelp:Keyword Index="F" Term="XINPUT_STATE"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="xinput_state"></A>XINPUT_STATE</H1>
+
+<P>The <B>XINPUT_STATE</B> structure input data from an Xbox peripheral device. </P>
+
+<PRE class=syntax>typedef struct _XINPUT_STATE
+{
+    DWORD dwPacketNumber;
+    union
+    {
+        XINPUT_GAMEPAD Gamepad;
+#ifdef DEBUG_MOUSE
+        XINPUT_MOUSE   DebugMouse;
+#endif //DEBUG_MOUSE
+    };
+} XINPUT_STATE, *PXINPUT_STATE;</PRE>
+
+<H4>Members</H4>
+
+<DL>
+<DT><B>dwPacketNumber</B></DT>
+
+<DD>The state packet number.  The packet number indicates whether there have been any changes in the state of the device.  If <B>dwPacketNumber</B> is the same in sequentially returned <b>XINPUT_STATE</b> structures, the device state has not changed.</DD>
+
+<DT><B>Gamepad</B></DT>
+
+<DD>An <A HREF="x_jsk_xinput_gamepad.htm">XINPUT_GAMEPAD</A> structure containing the current state of a gamepad controller.</DD>
+
+<DT><B>DebugMouse</B></DT>
+
+<DD>An <A HREF="XINPUT_MOUSE.htm">XINPUT_MOUSE</A> structure containing debug mouse information.  The structure contains the current state of the mouse buttons, and the relative mouse and wheel position changes since the last time the mouse state was queried.</DD>
+
+</DL>
+
+<H4>Remarks</H4>
+
+<P>The <B>dwPacketNumber</B> member will be incremented only if the status of the device has changed since the device was last polled.</P>
+
+<P>The <B>DebugMouse</B> member is available only if DEBUG_MOUSE was #defined before Xtl.h was #included.</P>
+
+<P>See <A HREF="XINPUT_MOUSE.htm">XINPUT_MOUSE</A> for details about the format and use of the debug mouse data.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Xbox.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+
+<H4>See Also</H4>
+<P>
+<A HREF="x_jsk_xid_structures.htm">Input Device Structures</A> |
+<A HREF="x_jsk_xinputopen.htm">XInputOpen</A>,
+<A HREF="x_jsk_xinputpoll.htm">XInputPoll</A>,
+<A HREF="x_jsk_xinputgetstate.htm">XInputGetState</A>,
+<A HREF="x_jsk_xinput_gamepad.htm">XINPUT_GAMEPAD</A>,
+<A HREF="XINPUT_MOUSE.htm">XINPUT_MOUSE</A>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

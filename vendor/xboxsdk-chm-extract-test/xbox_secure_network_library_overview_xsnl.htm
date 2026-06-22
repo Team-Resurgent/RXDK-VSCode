@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Xbox Secure Network Library Overview</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="Xbox Secure Network Library Overview">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Xbox Secure Network Library Overview"/>
+<MSHelp:Keyword Index="F" Term="Xbox Secure Network Library Overview"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="xbox_secure_network_library_overview_xsnl"></A>Xbox Secure Network Library Overview</H1>
+
+
+
+<P>The Xbox Secure Network Library (SNL) is designed to prevent network attacks against retail games by securing all network traffic.  While Xbox SNL does not necessarily encrypt data, it always stamps an authenticating hash on each packet, so that any spoofing, tampering, or replay will be rejected.  The Xbox SNL also supports encryption for an entire channel, which is recommended for any sensitive data transfer.</P>
+
+<P>The current version of the Xbox SNL only supports IPv4. Future versions of the library (and the game titles that link with them) may support IPv6 as the necessary infrastructure is sufficiently deployed.</P>
+
+<P>There will be two versions of the library file included with the XDK: a developer version (Xnet.lib) and a secure version (Xnets.lib). Each library file will have a corresponding checked version: Xnetd.lib (for Xnet.lib) and Xnetsd.lib (for Xnets.lib).</P>
+
+<UL>
+	<LI><A HREF="#dev"><B>Developer Version</B></A></LI>
+    <LI><A HREF="#secure"><B>Secure Version</B></A></LI>
+    <LI><A HREF="#NoNetwork"><B>No-Network Version</B></A></LI>
+</UL>
+
+<H2><A NAME="dev"></A>Developer Version</H2>
+
+<P>Xnet.lib and Xnetd.lib are developer versions of the Xbox SNL. These versions of the Xbox SNL have the following features:</P>
+
+    <UL>
+    	<LI>Work with the XDK Launcher</LI>
+        <LI>Allow communication to a development machine</LI>
+        <LI>Allow remote debugging (XBDM)</LI>
+        <LI>Allow developers to specify whether they want to use a secure or unsecure connection on a per-address basis, so that they can communicate with Xbox target systems.</LI>
+    </UL>
+
+<P>These versions of the library also allow communication not to be encrypted or authenticated to allow communication with insecure servers and computers, typically for testing purposes.</P>
+
+<P>Titles linking to this library will not be certified for the final hardware.</P>
+
+<H2><A NAME="secure"></A>Secure Version</H2>
+
+<P>Xnets.lib and Xnetsd.lib are the secure versions of the Xbox SNL. These versions of the Xbox SNL have the following features:</P>
+
+<UL>
+	<LI>Allow Xbox game systems to communicate only with other Xbox game systems that are directly connected via the Xbox System Link Cable or directly into a hub.</LI>
+    <LI>Do not allow communication to or from outside PCs.</LI>
+    <LI>Prevent traffic from affecting other PCs on the same LAN segment.</LI>
+    <LI>Remove ability to use the debugger. (Xnets.lib version only)</LI>
+    <LI>All of their debugging code is removed, and they are only for retail build testing. (Xnets.lib version only)</LI>
+    <LI>Require titles using this library to do local logging of errors to the screen or disk, because they will not have remote debugging access. (Xnets.lib version only)</LI>
+</UL>
+
+<P>A title must link with the Xnets.lib version of the Xbox SNL before it can be certified for the actual Xbox video game system.  The secure versions of the library do not allow security to be disabled and will communicate only with another Xbox system that can authenticate itself. The secure versions of this library have no support for ARP, DHCP, AUTO-IP, IP-ROUTE, ICMP, or packet fragmentation.  Future online versions of this library may reintroduce support for these features, but they are not needed for system link play and have been removed to make the library as small and secure as possible.</P>
+
+<H2><A NAME="NoNetwork"></A>No-Network Version</H2>
+
+<p>
+Xnetn.lib and Xnetnd.lib are "no-network" versions of the Xbox SNL. These libraries behave identically to their secure counterparts, Xnets.lib and Xnetsd.lib, including being marked "approved", except for the following changes:
+</p><ul>
+
+<li>
+<a>XNetGetEthernetLinkStatus</a> always returns zero (cable unplugged), even if the cable is plugged in.
+</li>
+
+<li>
+The network stack never acquires an IP address, so <a>XNetGetTitleXnAddr</a> always returns XNET_GET_XNADDR_ETHERNET.
+</li>
+
+<li>
+All outgoing ethernet frames are dropped instead of being given to the NIC hardware.
+</li>
+
+<li>All incoming ethernet frames are dropped instead of being processed by the network stack.</li>
+  </ul>
+
+<p>
+These libraries are intended to be linked into demo titles in which the equivalent retail title makes use of networking APIs and the title developers don't want to remove the networking code.  
+</p>
+
+<p>
+If a title would also normally link to XOnlines.lib or XOnlinesd.lib, then that title should link to the no-network version of that library as well: XOnlinen.lib or XOnlinend.lib.
+</p>
+
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

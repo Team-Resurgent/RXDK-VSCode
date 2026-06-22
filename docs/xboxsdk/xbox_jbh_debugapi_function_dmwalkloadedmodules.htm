@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>DmWalkLoadedModules</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="CreateFile">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="DmWalkLoadedModules"/>
+<MSHelp:Keyword Index="F" Term="DmWalkLoadedModules"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<DIV STYLE="display:none;">
+
+</DIV>
+
+
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_createfile"></A>DmWalkLoadedModules</H1>
+
+<P class="content">Provides a way to examine information about each loaded module. Call <b>DmWalkLoadedModules</b> repeatedly to iterate over the list of loaded modules.</P>
+
+<PRE class=syntax><b>DMHRAPI DmWalkLoadedModules(</b>
+  <B>PDM_WALK_MODULES</B> <I>*ppWalkMod</I><B>,</B> 
+  <B>PDMN_MODLOAD</B>     <I>pModLoad</I>
+  <b>);</b></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+
+<DT><I>ppWalkMod</I></DT>
+
+<DD>[in, out] Pointer to a variable that maintains a pointer to a internal structure used by <b>DmWalkLoadedModules</b>.  Set *<i>ppWalkMod</i> to NULL on the first call to <B>DmWalkLoadedModules</B>; the function allocates memory to store a list
+    of loaded modules, and sets the variable pointed to by <i>ppWalkMod</i> to point to that memory.</DD>
+
+<DT><I>pModLoad</I></DT>
+
+<DD>[out] Pointer to a <a
+    href="xbox_jbh_debugapi_struct_DMN_MODLOAD.htm">DMN_MODLOAD</a> structure
+    that receives information about the next loaded module.</DD>
+
+</DL>
+
+<H4>Return Values</H4>
+
+<P class="content">Returns XBDM_NOERR if the call is
+successful and the end of the list has not been reached. XBDM_ENDOFLIST is
+returned when the walk is complete. Otherwise, an error value is returned.</P>
+
+
+<H4>Remarks</H4>
+
+<P class="content">If the return is not XBDM_NOERR or XBDM_ENDOFLIST, then an
+error has occurred and the walk should be discontinued. After using
+<b>DmWalkLoadedModules</b>, you must free the memory allocated to store the
+list of loaded modules by calling <A
+HREF="xbox_jbh_debugapi_function_dmcloseloadedmodules.htm">DmCloseLoadedModules</A>,
+passing it the value stored in *<i>ppWalkMod</i>.</P>
+
+<p class="content">The following example illustrates how to use
+<b>DmWalkLoadedModules</b> and <b>DmCloseLoadedModules</b> to iterate over the
+list of loaded modules:</p>
+
+<pre>
+DMHRAPI error;
+PDM_WALK_MODULES pWalkMod = NULL;
+DMN_MODLOAD modLoad;
+
+while( XDBM_NOERR == (error = DmWalkLoadedModules(&amp;pWalkMod, &amp;modLoad)) ) {
+    // Examine the contents of modLoad.
+}
+if (error != XBDM_ENDOFLIST)
+{
+    // Handle error.
+}
+DmCloseLoadedModules(pWalkMod);
+</pre>
+
+
+<h4>Requirements</h4>
+
+<p class="content">
+<b>Header:</b> Declared in XbDm.h and XboxDbg.h
+<br><b>Import Library:</b> Use XbDm.lib for target system code; use XboxDbg.lib for development system code.
+</p>
+
+<H4>See Also</H4>
+<p class="content">
+<A HREF="xbox_jbh_debugapi_function_dmcloseloadedmodules.htm">DmCloseLoadedModules</A>,
+<a href="xbox_jbh_debugapi_struct_DMN_MODLOAD.htm">DMN_MODLOAD</a>
+</p>
+
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

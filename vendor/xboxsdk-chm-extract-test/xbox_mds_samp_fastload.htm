@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>FastLoad Sample</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="FastLoad Sample"/>
+<MSHelp:Keyword Index="F" Term="FastLoad Sample"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>FastLoad Sample</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<!--****Intro paragraph. Should be a three or four sentence summary of the topic.****-->
+
+<P class="content">The FastLoad sample asynchronously streams in 53 MB levels from the DVD using DMA and caches them on the hard disk utility region.  It also simultaneously streams in and plays a WMA file.</P>
+
+<H3 class="overview">Overview</H3>
+
+<P class="content">All I/O in the sample uses non-buffered DMA.  Both types of asynchronous I/O, threaded and overlapped, are demonstrated.</P>
+
+<p class="content">The sample's frame rate actually increases during level loads because: 1) a level is not being rendered during the load, and 2) non-buffered DMA does not waste CPU cycles. (The I/O thread blocks when it has to wait for I/O to complete and non-buffered DMA does not involve the CPU for file cache copies.) Also note that the frame rate never drops during any I/O operation, allowing levels to be streamed in while other animations are playing.</p>
+
+<p class="content">Non-buffered DMA reads and writes must be sector aligned, of sector sized bytes, and be targeted at DWORD-aligned memory buffers. The levels have a DVD sector aligned headers region (cached memory area) and a DVD sector aligned data region (write combined memory area).</p>
+
+<P class="content">The headers are read in first, followed by the raw data. <a href="xbox_dxg_IDirect3DResource8_Register.htm">IDirect3DResource8::Register</a> initializes the raw data into DirectX 8 resources. The sample does not use any of the resource create functions, which would waste time copying memory.</P>
+
+<P class="content">You may notice that the 53 MB levels contain several copies of the same texture. The bundler is used to copy the same textures over and over into packed resources, which avoids adding approximately 30 2.4 MB textures to the XDK install size.</P>
+
+<P class="content">The XCalculateSignature functions are used to detect a corrupt cache. A signature is calculated on the level headers data and written after the level is cached (the sample writes the signature last so that if the box is turned off during a cache operation, the signature will not be present). If the signature is not present, does not match the level header, or the cached file or signature file sizes are not correct, the cached level is consider corrupt and is automatically re-cached. Since the sample does not calculate a signature over the level's raw data region, there is a slight chance that a level's raw data region will become corrupt while the level's file size, headers region, and signature remain intact. In this case, the cached level must be deleted manually.</P>
+
+<P class="content">The hard disk utility region's cluster size is set to 64 KB to reduce the size of the FAT (which reduces the number of FAT misses in the file cache) by using the UDCLUSTER flag.</P>
+
+<P class="content">All I/O request packets (IRP) are for 128 KB size chunks of data. To minimize the number of DVD seeks, the WMA data is streamed into 128 KB buffers. If smaller buffers were used, the DVD would be interrupted from loading the level to fetch more sound. Larger buffers would waste memory.</P>
+
+<P class="content">The terms <em>system memory</em> and <em>video memory</em> are used throughout the source code. Video memory is continuous physically addressed write-combining memory that is used for GPU resources. System memory is virtually addressed cached memory that is used by the CPU.</P>
+
+<P class="content">More detailed explanations of various asynchronous DMA I/O "gotchas" are documented next to their relevant sections in the source code under "NOTE:".</P>
+	
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

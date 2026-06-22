@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Stock Text. Do not change.****-->
+<TITLE>Compiler Error C2910</TITLE>
+<!--**********************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="C2910"/>
+<MSHelp:Keyword Index="F" Term="C2910"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Stock Text. Do not change.****-->
+<H1 class="heading"><A NAME="c2910"></A>Compiler Error C2910</H1>
+<!--**********************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<P><B>'<I>function</I>' : cannot be explicitly specialized</B></P>
+
+<p>The compiler detected an attempt to explicitly specialize a function twice.</p>
+
+<p>The following sample generates C2910.</p>
+
+<pre class = "code">// C2910.cpp
+template &lt;class T&gt;
+struct S;
+
+template &lt;&gt;
+struct S&lt;int&gt; 
+{
+   void f() {}
+};
+
+template &lt;&gt;
+void S&lt;int&gt;::f() 
+{
+}   // C2910 delete this specialization
+</pre>
+
+<p>C2910 can also be generated if you try to explicitly specialize a non-template member. 
+That is, you can only explicitly specialize a function template. The following is an 
+example of this case.</p>
+<pre class = "code">// C2910b.cpp
+template &lt;class T&gt; 
+struct A 
+{
+   A(T* p);
+};
+
+template &lt;&gt; 
+struct A&lt;void&gt; 
+{
+   A(void* p);
+};
+
+template &lt;class T&gt;
+inline A&lt;T&gt;::A(T* p) 
+{
+}
+
+template &lt;&gt; A&lt;void&gt;::A(void* p){}   // C2910
+// try the following line instead
+// A&lt;void&gt;::A(void* p){}
+</pre>
+
+<p>For code will be valid in the Visual Studio .NET 2003 and Visual Studio .NET 
+versions of Visual C++, remove template &lt;&gt;. The following sample also generates 
+C2910.</p>
+
+<pre class = "code">// C2910c.cpp
+template &lt;class T&gt; 
+class A 
+{
+   void f();
+};
+
+template &lt;&gt; 
+class A&lt;int&gt; 
+{
+   void f();
+};
+
+template &lt;&gt; void A&lt;int&gt;::f() {}   // C2910
+// try the following line instead
+// void A&lt;int&gt;::f(){}   // OK
+</pre>
+
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+
+</BODY>
+</HTML>

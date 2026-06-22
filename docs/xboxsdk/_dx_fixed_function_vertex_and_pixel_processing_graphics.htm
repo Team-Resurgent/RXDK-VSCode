@@ -1,0 +1,51 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Fixed-Function Vertex and Pixel Processing</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="Direct3D, fixed function vertex processing">
+<META NAME="MS-HKWD" CONTENT="Direct3D, fixed function pixel processing">
+<META NAME="MS-HKWD" CONTENT="Direct3D, vertex processing">
+<META NAME="MS-HKWD" CONTENT="Direct3D, pixel processing">
+<META NAME="MS-HKWD" CONTENT="vertex processing [Graphics]">
+<META NAME="MS-HKWD" CONTENT="pixel processing [Graphics]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Fixed-Function Vertex and Pixel Processing"/>
+<MSHelp:Keyword Index="F" Term="Fixed-Function Vertex and Pixel Processing"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_fixed_function_vertex_and_pixel_processing_graphics"></A>Fixed-Function Vertex and Pixel Processing</H1>
+
+<P>The part of Microsoft&#174; Direct3D&#174; that pushes geometry through the fixed-function geometry pipeline is the transformation engine. It locates the model and viewer in the world, projects vertices for display on the screen, and clips vertices to the viewport. The transformation engine also performs lighting computations to determine diffuse and specular components at each vertex. </P>
+
+<P>The geometry pipeline takes vertices as input. The transformation engine applies three transformations&#8212;the world, view, and projection transformations&#8212;to the vertices , clips the result, and passes everything to the rasterizer. The following image illustrates the sequence of steps.</P>
+
+<P><IMG SRC="images/pipeline.gif" ALT="" BORDER=0></P>
+
+<P>At the head of the pipeline, no transformations have been applied, so all of a model's vertices are declared relative to a local coordinate system&#8212;this is a local origin and an orientation. This orientation of coordinates is often referred to as <A HREF="m.htm#_dx_model_space_glos" CLASS="POPUP">model space</A>, and individual coordinates are called <A HREF="m.htm#_dx_model_coordinates_glos" CLASS="POPUP">model coordinates</A>.</P>
+
+<P>The first stage of the geometry pipeline transforms a model's vertices from their local coordinate system to a coordinate system that is used by all the objects in a scene. The process of reorienting the vertices is called the <A HREF="w.htm#_dx_world_transformation_glos">world transformation</A>. This new orientation is commonly referred to as <A HREF="w.htm#_dx_world_space_glos" CLASS="POPUP">world space</A>, and each vertex in world space is declared using <A HREF="w.htm#_dx_world_coordinates_glos" CLASS="POPUP">world coordinates</A>. </P>
+
+<P>In the next stage, the vertices that describe your 3D world are oriented with respect to a camera. That is, your application chooses a point-of-view for the scene, and world space coordinates are relocated and rotated around the camera's view, turning world space into <A HREF="c.htm#_dx_camera_space_glos" CLASS="POPUP">camera space</A>. This is the <A HREF="v.htm#_dx_view_transformation_glos" CLASS="POPUP">view transformation</A>. </P>
+
+<P>The next stage is the <A HREF="p.htm#_dx_projection_transformation_glos" CLASS="POPUP">projection transformation</A>. In this part of the pipeline, objects are usually scaled with relation to their distance from the viewer in order to give the illusion of depth to a scene; close objects are made to appear larger than distant objects, and so on. For simplicity, this documentation refers to the space in which vertices exist after the projection transformation as <A HREF="p.htm#_dx_projection_space_glos" CLASS="POPUP">projection space</A>. Some graphics books might refer to projection space as post-perspective homogeneous space. Not all projection transformations scale the size of objects in a scene. A projection such as this is sometimes called an affine or orthogonal projection.</P>
+
+<P>In the final part of the pipeline, any vertices that will not be visible on the screen are removed, so that the rasterizer doesn't take the time to calculate the colors and shading for something that will never be seen. This process is called clipping. After clipping, the remaining vertices are scaled according to the viewport parameters and converted into screen coordinates. The resulting vertices&#8212;seen on the screen when the scene is rasterized&#8212;exist in <A HREF="s.htm#_dx_screen_space_glos" CLASS="POPUP">screen space</A>.</P>
+
+<P>Information on the fixed vertex and pixel processing pipeline is organized into the following topics.</p>
+
+<UL>
+	<LI><A HREF="_dx_transformation_and_lighting_engine_graphics.htm">Transformation and Lighting Engine</A></LI>
+	<LI><A HREF="_dx_viewports_and_clipping_graphics.htm">Viewports and Clipping</A></LI>
+	<LI><A HREF="_dx_rasterization_graphics.htm">Rasterization</A></LI>
+</UL>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

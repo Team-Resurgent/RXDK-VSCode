@@ -1,0 +1,278 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Creating DirectSound Buffers for Xbox ADPCM Compressed Waves</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="Creating DirectSound Buffers for Xbox ADPCM Compressed Waves">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Creating DirectSound Buffers for Xbox ADPCM Compressed Waves"/>
+<MSHelp:Keyword Index="F" Term="Creating DirectSound Buffers for Xbox ADPCM Compressed Waves"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="xbox_creating_directsound_buffers_for_xbox_adpcm_dxaudio"></A>Creating DirectSound Buffers for Xbox ADPCM Compressed Waves</H1>
+
+<P>This article will cover filling in the <A HREF="xbox_xboxadpcmwaveformat_dxaudio.htm">XBOXADPCMWAVEFORMAT</A> structure and then using it to create a DirectSound buffer for a wave file compressed using the Xbox ADPCM codec.</P>
+
+<UL>
+	<LI><A HREF="#xbox_creating_directsound_buffers_for_xbox_adpcm_compressed_waves_dxaudio_require">Prerequisites and Requirements</A></LI>
+    <LI><A HREF="#xbox_creating_directsound_buffers_for_xbox_adpcm_compressed_waves_dxaudio_steps">Implementation Steps</A></LI>
+    <LI><A HREF="#xbox_creating_directsound_buffers_for_xbox_adpcm_compressed_waves_dxaudio_related">Related Topics</A></LI>
+</UL>
+
+<H2><A NAME="xbox_creating_directsound_buffers_for_xbox_adpcm_compressed_waves_dxaudio_require"></A>Prerequisites and Requirements</H2>
+
+<P>To create a DirectSound buffer for Xbox ADPCM compressed wave files, you will need a mono or stereo wave file compressed using the Xbox ADPCM codec and a valid DirectSound object.</P>
+
+<H2><A NAME="xbox_creating_directsound_buffers_for_xbox_adpcm_compressed_waves_dxaudio_steps"></A>Implementation Steps</H2>
+
+<P>Complete the following steps to create a DirectSound buffer for a Xbox ADPCM compressed wave file.</P>
+
+<OL>
+	<LI>Declare a <B>XBOXADPCMWAVEFORMAT</B> structure.</LI>
+<PRE>
+XBOXADPCMWAVEFORMAT xboxadpcmwf;
+</PRE>
+    <LI>Fill in the members of the embedded <A HREF="_dx_waveformatex_dxaudio.htm">WAVEFORMATEX</A> structure (which is the <B>wfx</B> member of the <B>XBOXADPCMWAVEFORMAT</B> structure).</LI>
+        <OL>
+            <LI>Set the <B>wFormatTag</B> member to WAVE_FORMAT_XBOX_ADPCM.</LI>
+<PRE>
+XBOXADPCMWAVEFORMAT xboxadpcmwf;
+
+xboxadpcmwf->wfx.wFormatTag = WAVE_FORMAT_XBOX_ADPCM;
+</PRE>
+            <LI>Set the <B>nChannels</B> member to the number of channels in the wave file. For ADPCM compressed waves, it is currently limited to one (mono) or two (stereo). For this example, lets say that we have a stereo wave file.</LI>
+<PRE>
+XBOXADPCMWAVEFORMAT xboxadpcmwf;
+
+xboxadpcmwf->wfx.wFormatTag = WAVE_FORMAT_XBOX_ADPCM;
+xboxadpcmwf->wfx.nChannels = 2;
+</PRE>
+            <LI>Set the <B>nSamplesPerSec</B> member to the frequency of the wave file in hertz. For this example, lets use 48,000.</LI>
+<PRE>
+XBOXADPCMWAVEFORMAT xboxadpcmwf;
+
+xboxadpcmwf->wfx.wFormatTag = WAVE_FORMAT_XBOX_ADPCM;
+xboxadpcmwf->wfx.nChannels = 2;
+xboxadpcmwf->wfx.nSamplesPerSec = 48000;
+</PRE>
+            <LI>Set the <B>nBlockAlign</B> member of the structure to 36 times the number of channels specified by <B>nChannels</B>. For this example, we're using a stereo wave file (2 channels), so the value should be 72.</LI>
+<PRE>
+XBOXADPCMWAVEFORMAT xboxadpcmwf;
+
+xboxadpcmwf->wfx.wFormatTag = WAVE_FORMAT_XBOX_ADPCM;
+xboxadpcmwf->wfx.nChannels = 2;
+xboxadpcmwf->wfx.nSamplesPerSec = 48000;
+xboxadpcmwf->wfx.nBlockAlign = 72;
+</PRE>
+            <LI>Set the <B>nAvgBytesPerSec</B> member to be equal to number of samples per second (specified by <B>nSamplesPerSec</B>) times <B>nBlockAlign</B> divided by 64. So for this example, that would be 48000*72/64, which comes out to 54000.</LI>
+<PRE>
+XBOXADPCMWAVEFORMAT xboxadpcmwf;
+
+xboxadpcmwf->wfx.wFormatTag = WAVE_FORMAT_XBOX_ADPCM;
+xboxadpcmwf->wfx.nChannels = 2;
+xboxadpcmwf->wfx.nSamplesPerSec = 48000;
+xboxadpcmwf->wfx.nBlockAlign = 72;
+xboxadpcmwf->wfx.nAvgBytesPerSec = 54000;
+</PRE>
+            <LI>Set the <B>wBitsPerSample</B> member to the number of bits per sample. Xbox ADPCM uses 4 bits per sample, so we'll use that number here.</LI>
+<PRE>
+XBOXADPCMWAVEFORMAT xboxadpcmwf;
+
+xboxadpcmwf->wfx.wFormatTag = WAVE_FORMAT_XBOX_ADPCM;
+xboxadpcmwf->wfx.nChannels = 2;
+xboxadpcmwf->wfx.nSamplesPerSec = 48000;
+xboxadpcmwf->wfx.nBlockAlign = 72;
+xboxadpcmwf->wfx.nAvgBytesPerSec = 54000;
+xboxadpcmwf->wfx.wBitsPerSample = 4;
+</PRE>
+            <LI>Set the <B>cbSize</B> member to the size of the <B>XBOXADPCMWAVEFORMAT</B> structure minus the size of the embedded <B>WAVEFORMATEX</B> structure.</LI>
+<PRE>
+XBOXADPCMWAVEFORMAT xboxadpcmwf;
+
+xboxadpcmwf->wfx.wFormatTag = WAVE_FORMAT_XBOX_ADPCM;
+xboxadpcmwf->wfx.nChannels = 2;
+xboxadpcmwf->wfx.nSamplesPerSec = 48000;
+xboxadpcmwf->wfx.nBlockAlign = 72;
+xboxadpcmwf->wfx.nAvgBytesPerSec = 54000;
+xboxadpcmwf->wfx.wBitsPerSample = 4;
+xboxadpcmwf->wfx.cbSize = sizeof(xboxadpcmwf) - sizeof(xboxadpcmwf->wfx);
+</PRE>
+        </OL>
+    <LI>Set the <B>wSamplesPerBlock</B> member to the number of samples per block. Must be set to 64.</LI>
+<PRE>
+XBOXADPCMWAVEFORMAT xboxadpcmwf;
+
+xboxadpcmwf->wfx.wFormatTag = WAVE_FORMAT_XBOX_ADPCM;
+xboxadpcmwf->wfx.nChannels = 2;
+xboxadpcmwf->wfx.nSamplesPerSec = 48000;
+xboxadpcmwf->wfx.nBlockAlign = 72;
+xboxadpcmwf->wfx.nAvgBytesPerSec = 54000;
+xboxadpcmwf->wfx.wBitsPerSample = 4;
+xboxadpcmwf->wfx.cbSize = sizeof(xboxadpcmwf) - sizeof(xboxadpcmwf->wfx);
+xboxadpcmwf->wSamplesPerBlock = 64;
+</PRE>
+    <LI>Declare a <A HREF="_dx_dsbufferdesc_dxaudio.htm">DSBUFFERDESC</A> structure.</LI>
+<PRE>
+XBOXADPCMWAVEFORMAT xboxadpcmwf;
+
+xboxadpcmwf->wfx.wFormatTag = WAVE_FORMAT_XBOX_ADPCM;
+xboxadpcmwf->wfx.nChannels = 2;
+xboxadpcmwf->wfx.nSamplesPerSec = 48000;
+xboxadpcmwf->wfx.nBlockAlign = 72;
+xboxadpcmwf->wfx.nAvgBytesPerSec = 54000;
+xboxadpcmwf->wfx.wBitsPerSample = 4;
+xboxadpcmwf->wfx.cbSize = sizeof(xboxadpcmwf) - sizeof(xboxadpcmwf->wfx);
+xboxadpcmwf->wSamplesPerBlock = 64;
+
+DSBUFFERDESC dsbdesc;
+</PRE>
+    <LI>Fill in the members of the <B>DSBUFFERDESC</B> structure.</LI>
+        <OL>
+            <LI>Set the <B>dwSize</B> member to the size of the structure.</LI>
+<PRE>
+XBOXADPCMWAVEFORMAT xboxadpcmwf;
+
+xboxadpcmwf->wfx.wFormatTag = WAVE_FORMAT_XBOX_ADPCM;
+xboxadpcmwf->wfx.nChannels = 2;
+xboxadpcmwf->wfx.nSamplesPerSec = 48000;
+xboxadpcmwf->wfx.nBlockAlign = 72;
+xboxadpcmwf->wfx.nAvgBytesPerSec = 54000;
+xboxadpcmwf->wfx.wBitsPerSample = 4;
+xboxadpcmwf->wfx.cbSize = sizeof(xboxadpcmwf) - sizeof(xboxadpcmwf->wfx);
+xboxadpcmwf->wSamplesPerBlock = 64;
+
+DSBUFFERDESC dsbdesc;
+
+dsbdesc.dwSize = sizeof(DSBUFFERDESC);
+</PRE>
+            <LI>Set the <B>dwFlags</B> member to one or more of the flags that specify the capabilities for the DirectSound buffer.  For this example, lets just make a plain buffer by specifying zero.</LI>
+<PRE>
+XBOXADPCMWAVEFORMAT xboxadpcmwf;
+
+xboxadpcmwf->wfx.wFormatTag = WAVE_FORMAT_XBOX_ADPCM;
+xboxadpcmwf->wfx.nChannels = 2;
+xboxadpcmwf->wfx.nSamplesPerSec = 48000;
+xboxadpcmwf->wfx.nBlockAlign = 72;
+xboxadpcmwf->wfx.nAvgBytesPerSec = 54000;
+xboxadpcmwf->wfx.wBitsPerSample = 4;
+xboxadpcmwf->wfx.cbSize = sizeof(xboxadpcmwf) - sizeof(xboxadpcmwf->wfx);
+xboxadpcmwf->wSamplesPerBlock = 64;
+
+DSBUFFERDESC dsbdesc;
+
+dsbdesc.dwSize = sizeof(DSBUFFERDESC);
+dsbdesc.dwFlags = 0;
+</PRE>
+            <LI>Set the <B>dwBufferBytes</B> member to the size of the new buffer. For this example, we'll set it to zero, which tells the DirectSound not to allocate any memory for this DirectSound buffer. This makes the title responsible for allocating the memory and must call <A HREF="xbox_jc_idirectsoundbuffer8_setbufferdata_dxaudio.htm">IDirectSoundBuffer8::SetBufferData</A> to tell DirectSound where to found the sound buffer data.</LI>
+<PRE>
+XBOXADPCMWAVEFORMAT xboxadpcmwf;
+
+xboxadpcmwf->wfx.wFormatTag = WAVE_FORMAT_XBOX_ADPCM;
+xboxadpcmwf->wfx.nChannels = 2;
+xboxadpcmwf->wfx.nSamplesPerSec = 48000;
+xboxadpcmwf->wfx.nBlockAlign = 72;
+xboxadpcmwf->wfx.nAvgBytesPerSec = 54000;
+xboxadpcmwf->wfx.wBitsPerSample = 4;
+xboxadpcmwf->wfx.cbSize = sizeof(xboxadpcmwf) - sizeof(xboxadpcmwf->wfx);
+xboxadpcmwf->wSamplesPerBlock = 64;
+
+DSBUFFERDESC dsbdesc;
+
+dsbdesc.dwSize = sizeof(DSBUFFERDESC);
+dsbdesc.dwFlags = 0;
+dsbdesc.dwBufferBytes = 0;
+</PRE>
+
+            <LI>Set the <B>lpwfxFormat</B> member equal to your <B>XBOXADPCMWAVEFORMAT</B> structure. You will need to cast the <B>XBOXADPCMWAVEFORMAT</B> structure to a <B>WAVEFORMATEX</B> structure.</LI>
+<PRE>
+XBOXADPCMWAVEFORMAT xboxadpcmwf;
+
+xboxadpcmwf->wfx.wFormatTag = WAVE_FORMAT_XBOX_ADPCM;
+xboxadpcmwf->wfx.nChannels = 2;
+xboxadpcmwf->wfx.nSamplesPerSec = 48000;
+xboxadpcmwf->wfx.nBlockAlign = 72;
+xboxadpcmwf->wfx.nAvgBytesPerSec = 54000;
+xboxadpcmwf->wfx.wBitsPerSample = 4;
+xboxadpcmwf->wfx.cbSize = sizeof(xboxadpcmwf) - sizeof(xboxadpcmwf->wfx);
+xboxadpcmwf->wSamplesPerBlock = 64;
+
+DSBUFFERDESC dsbdesc;
+
+dsbdesc.dwSize = sizeof(DSBUFFERDESC);
+dsbdesc.dwFlags = 0;
+dsbdesc.dwBufferBytes = 0;
+dsbdesc.lpwfxFormat = (LPWAVEFORMATEX)&amp;xboxadpcmwf;
+</PRE>
+        </OL>
+    <LI>Declare a pointer to a DirectSound buffer.</LI>
+<PRE>
+XBOXADPCMWAVEFORMAT xboxadpcmwf;
+
+xboxadpcmwf->wfx.wFormatTag = WAVE_FORMAT_XBOX_ADPCM;
+xboxadpcmwf->wfx.nChannels = 2;
+xboxadpcmwf->wfx.nSamplesPerSec = 48000;
+xboxadpcmwf->wfx.nBlockAlign = 72;
+xboxadpcmwf->wfx.nAvgBytesPerSec = 54000;
+xboxadpcmwf->wfx.wBitsPerSample = 4;
+xboxadpcmwf->wfx.cbSize = sizeof(xboxadpcmwf) - sizeof(xboxadpcmwf->wfx);
+xboxadpcmwf->wSamplesPerBlock = 64;
+
+DSBUFFERDESC dsbdesc;
+
+dsbdesc.dwSize = sizeof(DSBUFFERDESC);
+dsbdesc.dwFlags = 0;
+dsbdesc.dwBufferBytes = 0;
+dsbdesc.lpwfxFormat = (LPWAVEFORMATEX)&amp;xboxadpcmwf;
+
+LPDIRECTSOUNDBUFFER pBuffer;
+</PRE>
+
+    <LI>Use <A HREF="xbox_jc_directsoundcreatebuffer_dxaudio.htm">DirectSoundCreateBuffer</A> or <A HREF="_dx_idirectsound8_createsoundbuffer_dxaudio.htm">IDirectSound8::CreateSoundBuffer</A> to create the DirectSound buffer. For this example, lets use <B>DirectSoundCreateBuffer</B>.</LI>    
+
+<PRE>
+XBOXADPCMWAVEFORMAT xboxadpcmwf;
+
+xboxadpcmwf->wfx.wFormatTag = WAVE_FORMAT_XBOX_ADPCM;
+xboxadpcmwf->wfx.nChannels = 2;
+xboxadpcmwf->wfx.nSamplesPerSec = 48000;
+xboxadpcmwf->wfx.nBlockAlign = 72;
+xboxadpcmwf->wfx.nAvgBytesPerSec = 54000;
+xboxadpcmwf->wfx.wBitsPerSample = 4;
+xboxadpcmwf->wfx.cbSize = sizeof(xboxadpcmwf) - sizeof(xboxadpcmwf->wfx);
+xboxadpcmwf->wSamplesPerBlock = 64;
+
+DSBUFFERDESC dsbdesc;
+
+dsbdesc.dwSize = sizeof(DSBUFFERDESC);
+dsbdesc.dwFlags = 0;
+dsbdesc.dwBufferBytes = 0;
+dsbdesc.lpwfxFormat = (LPWAVEFORMATEX)&amp;xboxadpcmwf;
+
+LPDIRECTSOUNDBUFFER pBuffer;
+
+DirectSoundCreateBuffer(&amp;dsbdesc;, &amp;pBuffer);
+</PRE>
+</OL>
+
+<H2><A NAME="xbox_creating_directsound_buffers_for_xbox_adpcm_compressed_waves_dxaudio_related"></A>Related Topics</H2>
+
+<P>The following topics are related to creating DirectSound for Xbox ADPCM compressed wave files.</P>
+
+<UL>
+	<LI><A HREF="xbox_adpcm_overview_dxaudio.htm">Xbox ADPCM Overview</A></LI>
+    <LI><A HREF="xbox_installing_the_xbox_adpcm_codec_dxaudio.htm">Installing the Xbox ADPCM Codec</A></LI>
+    <LI><A HREF="xbox_compressing_a_wave_file_using_adpcm_dxaudio.htm">Compressing a Wave File using the Xbox ADPCM Codec</A></LI>
+</UL>
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

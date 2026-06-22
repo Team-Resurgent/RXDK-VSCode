@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Handling Device Changes</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Handling Device Changes"/>
+<MSHelp:Keyword Index="F" Term="Handling Device Changes"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Handling Device Changes</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<P>The example code in the previous sections calls HandleDeviceChanges() whenever it detects a device change.  This is a title-defined function that deals with device insertions and removals.  As discussed previously, one of the tasks a title must perform in response to device insertions or removals is closing and/or opening the handles for those devices.  When a device is removed, a title must close any handles that are currently open for that device.  When a device is inserted, if the device is one that will be used, the title must open a handle to that device.  The following example shows a possible implementation of the HandleDeviceChanges() function:</P>
+
+<pre>
+void
+HandleDeviceChanges(
+    XPP_DEVICE_TYPE *pxdt,
+    DWORD dwInsert,
+    DWORD dwRemove )
+{
+    DWORD iPort, iSlot, dwMask, dwErr;
+    char szDrive[] = "X:\\";
+
+
+    if( XDEVICE_TYPE_GAMEPAD == pxdt || XDEVICE_TYPE_DEBUG_KEYBOARD == pxdt )
+    {
+        for( iPort = 0; iPort &lt; NUM_PORTS; iPort++ )
+        {
+            // Close removals.
+            if( (1 &lt;&lt; iPort &amp; dwRemove) &amp;&amp; g_hPads[iPort] )
+            {
+                XInputClose( g_hPads[iPort] );
+                g_hPads[iPort] = 0;
+            }
+
+            // Open insertions.
+            if( 1 &lt;&lt; iPort &amp; dwInsert )
+            {
+                g_hPads[iPort] = XInputOpen( pxdt, iPort, XDEVICE_NO_SLOT, NULL );
+            }
+        }
+    }
+
+    else if( XDEVICE_TYPE_MEMORY_UNIT == pxdt )
+    {
+        for( iPort = 0; iPort &lt; NUM_PORTS; iPort++ )
+        {
+            for( iSlot = 0; iSlot &lt; NUM_SLOTS; iSlot++ )
+            {
+
+                // Get mask from port and slot.
+                dwMask = iPort + (iSlot ? 16 : 0);
+                dwMask = 1 &lt;&lt; dwMask;
+
+                // Unmount removals.
+                if( (dwMask &amp; dwRemove) &amp;&amp; g_chMUDrives[iPort][iSlot] )
+                {
+                    XUnmountMU( iPort, iSlot );
+                    g_chMUDrives[iPort][iSlot] = 0;
+                }
+
+                // Mount insertions.
+                if( dwMask &amp; dwInsert )
+                {
+                    XMountMU( iPort, iSlot, g_chMUDrives[iPort] + iSlot );
+                    ShowMUInfo( g_chMUDrives[iPort][iSlot] );
+                }
+            }
+        }
+    }
+    
+    return;
+}
+</pre>
+
+<P>There are two main parts to this function: handling for memory units, and handling for the gamepads and debug keyboard.  The gamepad and keyboard case is discussed here; the memory unit case is covered in the next topic, <A HREF="x_mt_input_ov_mu.htm">Memory Units</A>.</P>
+
+<P>For most device types, on a device removal, your code should close any open handles to that device.  The code above checks each bit in the removal mask to see if the device for that port has been removed.  If so, and if there is an open device handle for that port, the code closes the handle by using <A HREF="x_jsk_xinputclose.htm">XInputClose</A>, and sets the saved handle for that port to zero so that it is known to have been closed.  It is important to process removals before insertions.  Close an old device handle and free up the associated resources before opening a new device handle.</P>
+
+<P>On a device insertion, the code opens a handle to that device so that the title can access it.  The code checks each bit in the insertion mask to determine whether a device has been inserted into that port.  If so, the code opens a device handle using <A HREF="x_jsk_xinputopen.htm">XInputOpen</A> and stores the resulting handle in the global array of device handles (one for each port).  The code, as given above, always maintains an open handle to any connected device.  Of course, not all titles use all devices, so in some cases a title might not care about certain devices and will not open a handle to them.  For example, a title might not be using the debug keyboard.  Additionally, it might support only two controllers and may have allocated resources for only two open controller handles when <A HREF="x_mt_xinitdevices.htm">XInitDevices</A> was called, in which case the title would have to monitor and limit open controller handles.  Also note that the debug keyboard is available only in debug builds of a title, so it would not be used in a retail (shipping) game.</P>
+
+<P>The example passes NULL for the <I>pPollingParameters</I> parameter of <B>XInputOpen</B>. This enables auto-polling using default timing intervals for the device type involved.  If necessary, the code can provide more detailed control of the polling mode and timing intervals in an <A HREF="x_jsk_xinput_polling_parameters.htm">XINPUT_POLLING_PARAMETERS</A> structure passed in for the <I>pPollingParameters</I> parameter.</P>
+
+<P>One additional note is to not assume the existence of one device based on another.  Your code must handle device types separately and be able to open and close handles to those devices independently of other devices.  It seems reasonable to assume that if a title detects a memory unit there must be a game controller connected for the memory unit to plug into.  However, there are couple of issues with this assumption.  First, the enumeration order is not guaranteed; the title may detect a memory unit insertion (or removal) before it detects a controller insertion (or removal).  Secondly, it is possible for a device to be reset.  For example, the title might detect a removal and insertion for a controller (requiring its device handle to be closed and reopened) without detecting any change for a memory unit in that controller.</P>
+
+<!--*******************************************************************************-->
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

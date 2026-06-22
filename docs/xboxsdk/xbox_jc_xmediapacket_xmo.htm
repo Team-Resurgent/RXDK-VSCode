@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>XMEDIAPACKET</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="XMEDIAPACKET [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XMEDIAPACKET"/>
+<MSHelp:Keyword Index="F" Term="XMEDIAPACKET"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="xbox_jc_xmediapacket_xmo"></A>XMEDIAPACKET</H1>
+
+<P>Data is sent to Xbox media objects using the <B>XMEDIAPACKET</B> structure.</P>
+
+<PRE class="syntax">typedef struct {
+	LPVOID pvBuffer;
+	DWORD dwMaxSize;
+	PDWORD pdwCompletedSize;
+	PDWORD pdwStatus;
+	union {
+		HANDLE hCompletionEvent;
+		PVOID pContext;
+	};
+	PREFERENCE_TIME prtTimestamp;
+} XMEDIAPACKET, *PXMEDIAPACKET, *LPXMEDIAPACKET;</PRE>
+
+<H4>Members</H4>
+
+<DL>
+<DT><B>pvBuffer</B></DT>
+<DD>Pointer to packet data to process.</DD>
+
+<DT><B>dwMaxSize</B></DT>
+<DD>Size of packet to process, in bytes. This value should be aligned to the <B>dwInputSize</B> or <B>dwOutputSize</B> member of the <B>XMEDIAINFO</B> structure obtained by calling <B>XMediaObject::GetInfo</B>.</DD>
+
+<DT><B>pdwCompletedSize</B></DT>
+<DD>Pointer to the amount of data processed by the Xbox media object. When calling an asynchronous Xbox media object, this value initially will be set to 0, then updated as the Xbox media object continues processing. When calling a synchronous Xbox media object, this value will be set during the call to <B>XMediaObject::Process</B>.</DD>
+
+<DT><B>pdwStatus</B></DT>
+<DD>Status of packet. States will be one of the following values:</DD>
+<table>
+  <tr>
+		<th>Value</th>
+    <th>Description</th>
+	</tr>
+	<tr>
+		<td>XMEDIAPACKET_STATUS_SUCCESS</td>
+    <td>Packet was processed successfully by the Xbox media object.</td>
+	</tr>
+  <tr>
+		<td>XMEDIAPACKET_STATUS_PENDING</td>
+    <td>Packet has been submitted but not yet processed by the Xbox media object.</td>
+	</tr>
+  <tr>
+		<td>XMEDIAPACKET_STATUS_FLUSHED</td>
+    <td>Packet has been flushed from the packet queue prior to processing.</td>
+	</tr>
+  <tr>
+		<td>XMEDIAPACKET_STATUS_FAILURE</td>
+    <td>Packet processing has failed for some unknown reason.</td>
+	</tr>
+</table>
+
+<DT><B>hCompletionEvent</B></DT>
+<DD>Event to trigger upon completion of the packet. An Xbox media object may use either completion events or callbacks, but never both. Refer to the documentation for each specific Xbox media object for more information.</DD>
+
+<DT><B>pContext</B></DT>
+<DD>Context to be passed to the callback function.</DD>
+
+<DT><B>prtTimestamp</B></DT>
+<dd>Not supported.</dd>
+<!-- OMIT: 
+<DD>Timestamp for packet. If <B>rtTimestamp</B> equals zero, the packet should be processed immediately. If <B>rtTimestamp</B> is greater than zero, it represents an absolute timestamp for this packet. If <B>rtTimestamp</B> is less than zero, it represents a relative (from current time) timestamp for this packet times negative one. This item will be ignored by synchronous Xbox media objects.</DD>
+
+-->
+
+</DL>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in Dsound.h.</P>
+
+<H4>See Also</H4>
+
+<P><A HREF="xbox_jc_xmediainfo_xmo.htm"><B>XMEDIAINFO</B></A></P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work. &#169 2000 Microsoft Corporation. All rights reserved.</DIV>
+</BODY>
+</HTML>

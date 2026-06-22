@@ -1,0 +1,80 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XCalculateContentSignature</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XCalculateContentSignature"/>
+<MSHelp:Keyword Index="F" Term="XCalculateContentSignature"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XCalculateContentSignature</h1>
+<p>Calculates a signature over the specified data.  The signature will match automatic content signatures created by the <a href="xbox_mt_tool_xbldsigs.htm">XBldSigs</a> tool.</p><pre class="syntax" xml:space="preserve"><b>BOOL</b> <b>XCalculateContentSignature(</b>
+    <b>LPBYTE</b> <i>pbData</i><b>,</b>
+    <b>DWORD</b> <i>dwDataSize</i><b>,</b>
+    <b>LPBYTE</b> <i>pbSignature</i><b>,</b>
+    <b>LPDWORD</b> <i>pdwSignatureSize</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+<dt><i>pbData</i></dt>
+<dd>[in]  Pointer to a buffer that contains the data over which the signature is calculated.</dd>
+<dt><i>dwDataSize</i></dt>
+<dd>[in]  Specifies the size, in bytes, of the <i>Data</i> buffer.</dd>
+<dt><i>pbSignature</i></dt>
+<dd>[out]  Pointer to a buffer that receives the calculated signature.</dd>
+<dt><i>pdwSignatureSize</i></dt>
+<dd>[in, out]  Pointer to a <b>DWORD</b> variable that specifies the size, in bytes, of the buffer pointed to by <i>Signature</i>.  On return, <i>SignatureSize</i> receives the number of bytes written to the <i>Signature</i> buffer.</dd>
+
+</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>If the function succeeds, the return value is TRUE.</p>
+<p>If the function fails, the return value is FALSE. To get extended error information, call <a href="errors_3uwi.htm">GetLastError</a>.</p><h4><a name="remarks"></a>Remarks</h4>
+<p><b>XCalculateContentSignature</b> calculates a signature over the specified data, using the same algorithm used by the XBldSigs tool to calculate automatic signatures. To verify installed content data (both after initial installation and before each subsequent use), a signature can be calculated over the data with <b>XCalculateContentSignature</b>, and then compared with the signature for the same data as returned by either the <a href="XLocateSignatureByName.htm">XLocateSignatureByName</a> function or
+the <a href="XLocateSignatureByIndex.htm">XLocateSignatureByIndex</a> function.</p>
+
+<p>If the content signatures are not automatic signatures created by XBldSigs, then, rather than calling <b>XCalculateContentSignature</b>, the title must use whatever title-specific algorithm it initially used to create the content signatures.</p>
+
+<p>To determine the buffer size needed to hold the signature (without actually performing the signature calculation), specify zero for <i>SignatureSize</i>.  The required size will be returned in <i>SignatureSize</i>.</p>
+
+<p>Content signatures calculated by <b>XCalculateContentSignature</b> are equivalent to content signatures calculated by <a href="x_mt_xcalculatesignaturebegin.htm">XCalculateSignatureBegin</a> with XCALCSIG_FLAG_CONTENT, but different than signatures calculated by <b>XCalculateSignatureBegin</b> with XCALCSIG_FLAG_SAVE_GAME, XCALCSIG_FLAG_NON_ROAMABLE, or XCALCSIG_FLAG_ONLINE.  Content signatures are used to verify installed content by comparing data signatures with those created by XBldSigs or <a href="xbox_jbh_tool_online_buildcontent.htm">BuildOffer</a> and stored in the content's signature data.  Each individual signature is a hash over the content data, and the collection of signatures, as a whole, is signed for security.  Save game and Xbox <i>Live</i> signatures, intended for signing save games and other dynamic data, perform the additional step of signing each data hash with a title-specific or Xbox <i>Live</i> key, and returning the signed hash as the signature. These methods are not interchangeable.  <b>XCalculateContentSignature</b>, and <b>XCalculateSignatureBegin</b> with XCALCSIG_FLAG_CONTENT, are specifically designed and optimized for use in verifying installed content.</p>
+
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xbox.h, for include use Xtl.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xapilib.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="x_mt_storage_oview.htm">Storage Overview</a>,
+<a href="x_jsk_storage_functions.htm">Storage Functions</a>,
+<a href="x_mt_storage_ov_signatures.htm">Content Signatures</a> |
+<a href="XLoadContentSignatures.htm">XLoadContentSignatures</a>,
+<a href="XLocateSignatureByName.htm">XLocateSignatureByName</a>,
+<a href="XLocateSignatureByIndex.htm">XLocateSignatureByIndex</a>,
+<a href="XCloseContentSignatures.htm">XCloseContentSignatures</a>,
+<a href="x_mt_xcalculatesignaturebegin.htm">XCalculateSignatureBegin</a>,
+<a href="xbox_mt_tool_xbldsigs.htm">XBldSigs</a>,
+<a href="xbox_jbh_tool_online_buildcontent.htm">BuildOffer</a>
+</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

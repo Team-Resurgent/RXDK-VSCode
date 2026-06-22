@@ -1,0 +1,88 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineFriendsAnswerGameInvite</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineFriendsAnswerGameInvite"/>
+<MSHelp:Keyword Index="F" Term="XOnlineFriendsAnswerGameInvite"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineFriendsAnswerGameInvite</h1>
+            <p>Responds to a game invitation received from another friend.</p>
+			<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;It is recommended that titles support voice message attachments to game invitations responses by using the <a href="XOnlineGameInviteAnswer.htm">XOnlineGameInviteAnswer</a> method.</p>
+        <pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineFriendsAnswerGameInvite(</b>
+    <b>DWORD</b> <i>dwUserIndex</i><b>,</b>
+    <b>const XONLINE_FRIEND</b> *<i>pToFriend</i><b>,</b>
+    <b>XONLINE_GAMEINVITE_ANSWER_TYPE</b> <i>Answer</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+            <dt><i>dwUserIndex</i></dt>
+<p><dd>[in]  Controller index (zero-based) of the player answering the game invitation. The player must have been successfully logged on with a previous call to <a href="XOnlineLogon.htm">XOnlineLogon</a>.</dd>
+                    
+
+                </p>
+            <dt><i>pToFriend</i></dt>
+<dd>[in]  Pointer to an <a href="XONLINE_FRIEND.htm">XONLINE_FRIEND</a> structure specifying the friend to whom the response is being made.</dd>
+            
+            <dt><i>Answer</i></dt>
+<p>
+                    <dd>[in]  An <a href="XONLINE_GAMEINVITE_ANSWER_TYPE.htm">XONLINE_GAMEINVITE_ANSWER_TYPE</a> value that specifies the answer to the invitation.</dd>
+                </p>
+        </dl>
+<h4><a name="return"></a>Return Values</h4>
+            
+               <p>If <b>XOnlineFriendsAnswerGameInvite</b> succeeds, it returns S_OK.</p>
+                <p>If <b>XOnlineFriendsAnswerGameInvite</b> fails, it returns one of the following error codes.</p>
+                <table>
+                    <tr>
+<th>Value</th> <th>Description</th>
+</tr>
+                    <tr>
+<td>XONLINE_E_NOTIFICATION_NO_TASK</td> <td>The friends startup task is not active. You must first call <a href="XOnlineFriendsStartup.htm">XOnlineFriendsStartup</a> to create the startup task.</td>
+</tr>
+                    <tr>
+<td>XONLINE_E_NOTIFICATION_USER_NOT_FOUND</td> <td>The player specified by the <i>pToFriend</i> parameter  is not on the current player's friends list. This error should occur only if the title is currently enumerating the friends list. The current player should not be accepting game invites from players that are not on  their friends list.</td>
+</tr>
+                    <tr>
+<td>Other</td> <td>See <a href="xbox_online_errors.htm">Online Errors</a> for information about other possible errors.</td>
+</tr>
+                </table>
+            
+        <h4><a name="remarks"></a>Remarks</h4>
+            
+            <p>The task returned by the <a href="XOnlineFriendsEnumerate.htm">XOnlineFriendsEnumerate</a> function must be active at the time the title calls the <b>XOnlineFriendsAnswerGameInvite</b> function.</p>
+            <p> <a href="XOnlineTaskContinue.htm">Pump</a> the task returned by <a href="XOnlineFriendsStartup.htm">XOnlineFriendsStartup</a> in order to send the answer.</p>
+            <p> <b>XOnlineFriendsAnswerGameInvite</b> writes invitation information to the hard disk if the title ID of the title that calls the function is different from the title ID of the title the player is being invited to play. The new title reads the invitation information from the hard disk by calling <a href="XOnlineFriendsGetAcceptedGameInvite.htm">XOnlineFriendsGetAcceptedGameInvite</a>.</p>
+            <p>Answering yes to an incoming game invitation implicitly cancels any outgoing invitations. Functionally, it is the same as first calling <a href="XOnlineFriendsRevokeGameInvite.htm">XOnlineFriendsRevokeGameInvite</a> with an empty list.</p>
+        <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+             <a href="x_mt_xonline_functions.htm">Xbox Live Functions</a> | <a href="xbox_Live_Friends.htm">Friends Lists</a> | <a href="XOnlineFriendsGameInvite.htm">XOnlineFriendsGameInvite</a>, <a href="XOnlineFriendsRevokeGameInvite.htm">XOnlineFriendsRevokeGameInvite</a>, <a href="XOnlineFriendsStartup.htm">XOnlineFriendsStartup</a>
+        </p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

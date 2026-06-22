@@ -1,0 +1,252 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Audio Performance and Memory Footprint Optimizations for Xbox</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Audio Performance and Memory Footprint Optimizations for Xbox"/>
+<MSHelp:Keyword Index="F" Term="Audio Performance and Memory Footprint Optimizations for Xbox"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1 class="heading"><A NAME=""></A>Audio Performance and Memory Footprint Optimizations for Xbox</H1> 
+
+<p><i>By Scott Selfon, Audio Content Consultant, Content and Design Team, Xbox Advanced Technology Group</i></P>
+
+<h2>Introduction</h2>
+<p>Often, many subsystems are competing for the finite resources of a console's hardware. This chapter focuses on ways to get the most bang for your buck, with special focus on how to get high quality sounds out of a minimized resource footprint using the unique features of the Xbox&#8482; video game system from Microsoft. We'll sort these areas based on what the optimization goal is: hard disk/game disc footprint, run-time memory footprint (UMA), and CPU overhead.</p>
+<p>As always, if you have any questions on the topics presented here, or suggestions/requests for future topics, please contact <a href="mailto:content@xbox.com">content@xbox.com</a>.</p>
+<h2>Minimizing UMA Footprint</h2>
+<p>Perhaps more critical than the size of audio resources on disk is the size of resources allocated in the 64 MB of UMA. Of course, file size optimizations will generally translate into memory optimizations, as we will discuss below. Similarly, taking advantage of the ability of the Xbox MCP to perform real-time effects, filtering, mixing, and ADPCM decode will often minimize the size of wave data needed in memory. Several other techniques can help maximize the amount of audio content you can squeeze into a small memory footprint.</p>
+<h3>Wave Streaming</h3>
+<p>For wave playback in XACT, Microsoft&#174; DirectSound&#174;, and Microsoft&#174; DirectMusic&#174;, you can take advantage of streaming to minimize your footprint. The tradeoff is that you now require some amount of bandwidth on the hard disk and/or game disc. The read-ahead buffer size (which is the actual amount of memory you're using) can be set programmatically in XACT and DirectSound, or within DirectMusic content.</p>
+
+<IMG SRC="images/bp6_fig6.gif" WIDTH="399" HEIGHT="237" ALT="" BORDER="0">
+<p><i><b>Illustration</b>&nbsp;&nbsp; Setting a wave to be <b>Streaming</b> from its property page in DirectMusic Producer for Xbox.</i></p>
+<p>XACT provides Xbox-optimized streaming functionality, which you can incorporate into your title by using the XACT engine or by using the sample code provided with the WaveBankStream sample. By using sector-aligned waves, XACT wave banks can be streamed asynchronously and without buffering. You can successfully streaming more than 140 stereo ADPCM waves simultaneously off the hard disk (less for PCM, as bandwidth limitations begin to come into play). XACT provides the opportunity to use two kinds of streaming (specified within the content as authored in wave banks): non-primed and primed (zero latency). Non-primed streaming waves will incur latency when playback begins as they are read into memory. However, they will have no memory footprint until they begin playing. The very beginning of primed (zero-latency) waves will be read into memory when the wave bank is registered by XACT. This means that the waves can be played immediately when requested, with no latency. As the beginning of the wave is played, the remainder of the wave begins to be streamed into memory, allowing for very large footprint wave banks to remain on disk rather than in memory. Typically, primed wave banks will be placed on the hard disk instead of the DVD due to read ahead considerations.</p>
+<p>DirectMusic will generally &#34;prime&#34; the wave (read in the size of the read-ahead buffer<sup>1</sup>) when it is downloaded, to avoid the latency that would otherwise be associated with a disk seek at the time you wanted to play it. If such latency is acceptable for your title, you can select Don't pre-roll to bypass the initial priming. Similarly, you can specify in XACT wave banks whether individual waves should be primed (&#34;enable zero latency streaming&#34; option).</p>
+<p>Note that streaming is not available for DLS collections; instruments used by a segment must be physically present in memory. In addition, DirectMusic does not support sample-accurate looping of streamed waves.</p>
+<p>Streaming brings up the issue of caching. Remember that latency for playback off of a game disc is significantly higher than playback off of the hard disk (which is in turn higher than playback off of the UMA). Depending on the specific title, predictive caching can aid with this: content that is going to be fairly important to maintain low latency playback on can be streamed from the game disc onto the hard disk, from where it can in turn be streamed or fully loaded into memory. Of course, when latency doesn't matter as much (for instance, a public address system announcer in a sports title), you could just stream directly from the game disc. In both cases, make sure you are communicating your bandwidth requirements, because graphics may be counting on streaming from them as well. Interleaved graphics and audio data layout on the game disc for a scene can aid with potential bandwidth issues, as can placing more bandwidth-intensive information on the outer rings of the game disc.</p>
+<h3>Audio Library Size Optimizations</h3>
+<p>Remember that the title libraries used will take up space in memory as will the content authored. But unlike on a Microsoft&#174; Windows&#174; PC, Xbox Title Libraries are only linked and compiled into a game as needed. Furthermore, features that are unused do not need to be compiled in at all. So for instance, if you use only low level DirectSound features, DirectMusic will not be linked in.</p>
+<p>On the topic of 3-D, two different coefficient sets are offered for use on Xbox. The larger set, which is approximately 70 KB in size, provides a full 3-D positioning coefficient table. The smaller set, approximately 6 KB in size, is &#34;azimuth-only.&#34; That is, sounds in the horizontal plane will be processed using Head Relative Transfer Function (HRTF) technology, but elevation/declination will be processed only with attenuation.</p>
+<p>The run-time size in DirectSound is optimized based on library calls made. DirectMusic can be optimized by using the Content Analyzer tool to scan what libraries are required to play the authored content.</p>
+<p>For more details on audio library optimization, see <b>UMA Audio Use Considerations</b> in <a href="cd_aud_wp_bp_chap3.htm">Xbox Audio Hardware</a> of the Best Practices Guide.</p>
+<h3>Effects Use</h3>
+<p>While real-time effects programs run on board the Global Processor of the Xbox MCP chip, some of them require a &#34;scratch&#34; space for wave data manipulation. Such scratch spaces are chunks of memory used by the effect for data manipulation. The primary user of scratch space is the I3DL2 Reverb. We provide two different versions of the reverb to allow you to balance the quality of the reverb (48 kHz versus 24 kHz) with your memory footprint restrictions (580 KB versus 380 KB).</p>
+<h3>Managing Downloads from DirectX Audio Scripting</h3>
+<p>Microsoft&#174; DirectX&#174; Audio scripting provides a subset of the functionality found in the DirectMusic and DirectSound libraries. One feature that it does provide to the content creator is the ability to manage content loading, downloading, and unloading. While this process could be managed by the developer, often the content creator is more aware of the footprint requirements of various pieces of content.</p>
+<p>DirectX Audio scripts (.spt files) provide the opportunity to automatically load and/or download all of the content they reference when the script is loaded, or for all the content downloading to be managed manually by the content creator or developer. This is covered in more detail in a separate white paper.</p>
+<IMG SRC="images/bp6_fig7.gif" WIDTH="399" HEIGHT="237" ALT="" BORDER="0"><p><i><b>Illustration</b>&nbsp;&nbsp; The script property page provides the content creator with the ability to manage content loading and downloading from the script.</i></p>
+<h2>Minimizing File Sizes: Wave Data</h2>
+<p>The Xbox game disc allows for more than 7 GB of data. However, remember that game disc playback can incur fairly high latency, and you may be competing with graphics and other media that your developer also wants to stream from the disc. The hard disk provides a solution for lower latency playback. A running title is granted a 750-MB utility region (XT:\) that can be used however you wish. Loading some audio assets onto this utility region is a common practice. Remember that this space can be reformatted when the Xbox console is restarted with another title, so do not depend on data to be there between uses of the console.<sup>2</sup></p>
+<p>In both the cases of game disc and hard disk use, we can run into footprint or bandwidth limitations that may make us consider optimizing our audio content in some manner. In particular, because at least a streaming buffer must be present in memory (if not the entire wave), we want to ensure that the data we read will fit into the memory area our developer has granted to audio.<sup>3</sup></p>
+<p>The following techniques will help limit the on-disk footprint (which of course gives the potential of reducing the size of the wave data as it is later played in memory).</p>
+<h3>Xbox ADPCM Compression</h3>
+<p><u>Pros: </u></p>
+<ul>
+<li>Hardware decompression&#8212;no additional CPU or memory overhead incurred by using it.
+</li>
+<li>3.5:1 compression.</li>
+</ul>
+<p><u>Cons: </u></p>
+<ul>
+<li>For looped content, loop points must be on 64 sample (36 byte) boundaries.
+</li>
+<li>Some artifacts, particularly at lower sampling rates.</li>
+<li>Codec only supports 16-bit source waves.<sup>4</sup></li>
+</ul>
+<p><u>Comments: </u></p>
+<ul>
+<li>Codec and sample code provided with Xbox Development Kit (XDK). </li>
+</ul>
+<h3>WMA Compression</h3>
+<p><u>Pros: </u></p>
+<ul>
+<li>High quality and high compression ratio&#8212;commonly 20:1 or better.</li>
+<li>In-console support for users creating their own user soundtracks (using Microsoft&#174; Windows Media&#174; Audio (WMA) compression); user soundtracks can be used to supplement in-game audio. </li>
+</ul>
+<p><u>Cons: </u></p>
+<ul>
+<li>Software decompression&#8212;uses between 5 and 10 percent of CPU per voice.<BR><BR></li>
+<li>Memory and CPU cost for creating and destroying Xbox Media Objects (XMOs) (avoid by using a single XMO, or by using XACT).</li>
+<li>More difficult to determine exact position within a WMA file.</li>
+<li>Cannot ensure sample accuracy in looping. </li>
+</ul>
+<p><u>Comments: </u></p>
+<ul>
+<li>In particular due to the CPU hit, we generally recommend decoding a single WMA file at a time. This can be limiting for uses like crossfades. One possible &#34;mixed&#34; use is to play adaptive differential pulse code modulation (ADPCM) content for the actual crossfade and then transition to a WMA file.</li>
+<li>There can be a significant performance hit associated with the creation of a WMA decoder. For general background music playback, we recommend creating your own file streamer to route WMA files in sequence to a single decoder (without destroying and recreating it). The XACTWMAPlayList sample demonstrates fairly simple code for playing back WMA files. </li>
+<li>A wide variety of WMA encoders are available. Windows Media Encoder can be found at <a href="http://www.microsoft.com/windows/windowsmedia/" target="blank">http://www.microsoft.com/windows/windowsmedia</a>. </li>
+</ul>
+<h3>Custom Compression Schemes (Xbox Media Objects)</h3>
+<p><u>Pros: </u></p>
+<ul>
+<li>Optimized for your specific content requirements.</li>
+<li>Optimized for your performance requirements.  </li>
+</ul>
+<p><u>Cons: </u></p>
+<ul>
+<li>Requires implementation of an XMO, and as such, runs in software.<sup> 5</sup></li>
+<li>Must implement a tool for authoring and/or encoding content.</li>
+<li>May not be sample accurate for loops. </li>
+</ul>
+<h3>Sample Rate Reduction</h3>
+<p><u>Pros: </u></p>
+<ul>
+<li>Allows you to balance quality with size on a per-wave basis, using 1-Hertz (Hz) granularity.</li>
+<li>Disk footprint reduction without CPU performance impact; upsampling is accomplished in hardware (using multipoint polynomial interpolation).</li>
+<li>Ideal for &#34;rumble&#34; tracks meant to be sent to the low frequency effects channel. The LFE channel generally filters audio above 120 Hz, so very low sample rates can be used.  </li>
+</ul>
+<p><u>Cons: </u></p>
+<ul>
+<li>Potential for loss of fidelity, particularly if you ADPCM encode the resulting wave.</li>
+<li>Within a single interleaved wave, you cannot independently alter the sample rates of individual channels. For the special case of a rumble track, you can often deliver it as a separate low-sample-rate wave file. </li>
+</ul>
+<h3>Bit Depth Reduction</h3>
+<p><u>Pros: </u></p>
+<ul>
+<li>Sometimes a better-sounding option than sample rate reduction or compression.</li>
+<li>Bit depth &#34;padding&#34; up to 24 bits performed on audio chip (no adverse CPU performance impact).  </li>
+</ul>
+<p><u>Cons: </u></p>
+<ul>
+<li>Not appropriate for all sounds, can be lossy.</li>
+<li>Xbox ADPCM encoder only supports 16-bit source waves.</li>
+</ul>
+<h3>Xbox Media Communications Processor</h3>
+<p>Of course, unless you choose to bypass the audio chip completely and write directly to the digital and analog outputs, everything you play will use the Xbox Media Communications Processor (MCP). But the processor provides the possibility for a lot more functionality than just hardware mixing, ADPCM decompress, and sample rate conversion, often allowing you to do a wide range of manipulations on much smaller source waves, and generally with a minimum of CPU overhead.</p>
+<p><u>Pros: </u></p>
+<ul>
+<li>Provides hardware filtering, pitch shifting, articulation control, 3-D positioning, effects.</li>
+<li>Dolby&#174; Digital and Dolby&#174; Surround encode for free; not necessary to author all content in six channels.</li>
+<li>Only need to deliver one version of a wave and can manipulate it in hardware to get a large variety of effects. (For instance, occlusion/obstruction.)</li>
+<li>Hardware looping-no CPU hit once an in-memory wave begins playing.</li>
+<li>Can do very complex processing on a small source wave.  </li>
+</ul>
+<p><u>Cons: </u></p>
+<ul>
+<li>Some effects do use unified memory architecture (UMA) footprint (in particular, reverb).</li>
+<li>3D positioning incurs some CPU overhead with each reposition (see section <b>Minimizing Audio Impact on the CPU</b>).</li>
+<li>Don't necessarily get the variety of more recognizable sounds (for instance, dialog) without additional source waves. </li>
+</ul>
+<h3>Using DirectMusic for Linear Wave Playback: DLS Collections</h3>
+<p><u>Pros: </u></p>
+<ul>
+<li>Provides MIDI control over aspects of playback: panning, volume, pitchbend, and so on.</li>
+<li>Waves placed in Downloadable Sounds (DLS) collections provide easy way to store and manipulate articulation information.</li>
+<li>Straightforward way to introduce variations and variability in playback (style-based playback and pattern tracks).<sup>6</sup></li>
+<li>Easier control over pitched wave information (for example, musical instruments).</li>
+<li>Multi-layer wave playback for more complex sounds.  </li>
+</ul>
+<p><u>Cons: </u></p>
+<ul>
+<li>DLS instruments must be loaded in memory to be used (cannot be streamed).</li>
+<li>DLS collections only support mono/stereo pulse code modulation (PCM) and mono ADPCM (no WMA).</li>
+<li>DirectMusic library footprint added to your title (though minimized if only wave playback).</li>
+<li>Cannot play waves from offsets.</li>
+<li>Cannot manipulate loop points on the fly.</li>
+<li>Abstractions to &#34;notes&#34; not always intuitive for sound effects-style playback. </li>
+</ul>
+
+<h3>Using DirectMusic for Linear Wave Playback: Wave Tracks</h3>
+<p><u>Pros: </u></p>
+<ul>
+<li>Provides MIDI control over aspects of playback: panning, volume, pitchbend, and so on.</li>
+<li>Waves placed in wave tracks provide quick method for adding variability without coding (within a single wave or by choosing between several waves).</li>
+<li>Multi-layer wave playback for more complex sounds.</li>
+<li>Wave data can be easily synced to musical information, other waves, and so on.</li>
+<li>Waves can be streamed (handled by DirectMusic; content dictates read-ahead buffer size).</li>
+<li>Can play from an offset into a wave.  </li>
+</ul>
+<p><u>Cons: </u></p>
+<ul>
+<li>DirectMusic library footprint added to your title (though minimized if only wave playback).</li>
+<li>DirectMusic segment looping is millisecond-accurate (all loops must slave to one tempo, so may not be sample accurate).</li>
+<li>Wave looping within a segment limited to in-memory waves. (However, the segment can loop, effectively looping a streamed wave.)</li>
+<li>Cannot manipulate loop points on the fly. </li>
+<li>Cannot edit multichannel waves using DirectMusic Producer for Xbox. </li>
+</ul>
+<h2>Minimizing File Sizes: DLS Collections</h2>
+<p>Unlike on the PC, DLS collections on the Xbox are loaded into memory in their entirety. So be sure to remove any instruments that you do not use from your DLS collection before loading it.<sup>7</sup> Microsoft&#174; DirectMusic&#174; does allow you to use multiple DLS collections at once, so long as their total size is less than the 8 MB limit imposed by the Xbox MCP for DirectSound buffers. </p>
+<p>To avoid latency in downloading instruments, it is generally recommended that DLS collections that you are preparing to use be cached to the hard disk.</p>
+<p>The primary way to minimize your DLS collection size is to get a good looping tool and take advantage of the DLS-2 filtering and articulation support within the Xbox audio hardware. Rather than pre-rendering things like reverb, filter sweeps, and pitchbends into long waves, let the Xbox MCP manipulate your (smaller) source content in real time.</p>
+<p>Many of the methods mentioned above for wave file size optimization apply here: sample rate reduction, bit depth, and so on. DLS support for compression deserves a separate mention: only Xbox ADPCM is currently supported in DLS collection waves; WMA and generic XMOs cannot be used for DLS collections. Furthermore, the DLS specification currently allows only for mono compression, so any stereo waves will have to remain as PCM. Of course, most instruments and 3-D positioned elements are mono to begin with, but it's something to keep in mind.</p>
+<p>One other note with regard to DLS waves: as a hardware synthesizer, the Xbox MCP has certain limits as to how much it can repitch a wave for playback. The number varies with sampling rate, but at 22 kilohertz (kHz) and below, the value is roughly four octaves, and at 48 kHz it is just under two octaves.</p>
+<h2>Minimizing File Sizes: DirectMusic Content</h2>
+<p>DirectMusic provides several opportunities to optimize file size, particularly when compared to the traditional MIDI format. Of course, these files are generally trivial in size next to the wave data that is being used, but bytes or kilobytes over several pieces of content can definitely make a difference.</p>
+<h3>Looping</h3>
+<p>In a traditional MIDI score, the concept of looping is handled by either the developer or the sequencing software but generally isn't portable within the format itself. Often for more advanced looping, the content author builds the loops right into the content via <b>Copy</b> and <b>Paste</b> commands. DirectMusic supports several forms of looping that can be set by the content creator and/or the developer as the situation dictates. The most basic form is segment looping. From a segment's property window, select the <b>Loop</b> tab.</p>
+<IMG SRC="images/bp6_fig1.gif" WIDTH="398" HEIGHT="236" ALT="" BORDER="0">
+<p>The loop points can also be changed by the developer, though the new loop points will not apply to an already playing segment until it is restarted.</p>
+<p>In some cases, a traditional MIDI score may have entire tracks that consist of several bars of looped content. DirectMusic allows you to maintain a single copy of this content in pattern tracks and style patterns, which gives the double benefit of file size optimization and only having to worry about editing one instance of the content to affect each and every loop. When you look at the property page for a pattern track, notice that each part has an independent length. Any parts shorter than the pattern itself (or in the case of a segment, the length of that segment) will repeat as necessary to fill the rest of the length. For instance, if I have a five-bar pattern and a two-bar part, it will play a total of two times and play its first measure a third time.<sup>8</sup></p>
+
+<IMG SRC="images/bp6_fig2.gif" WIDTH="399" HEIGHT="236" ALT="" BORDER="0"><p><i><b>Illustration</b>&nbsp;&nbsp; The property page for a pattern track part. Note the <b>Length</b> field, which can be independently set for each part.</i></p>
+<h3>Controller Curves</h3>
+<p>A primary source of MIDI data is often continuous MIDI controller information. A volume change from 0 to 127 is in many cases composed of 128 discrete values; in some instances, it can even be composed of additional (redundant) values. DirectMusic provides a method for specifying actual curve information&#8212;a starting value,<sup>9</sup> an ending value, and a curve shape (exponential, linear, and so on). </p>
+<p>To optimize an imported MIDI controller curve in DirectMusic Producer, select all of the individual points of the curve by drag-selecting them, then right-click and choose <b>Convert to single curve</b>. Note that DirectMusic does not support &#34;multi-point&#34; curves, so this function effectively draws a line from the first point selected to the last point, deleting the interior points.</p>
+<IMG SRC="images/bp6_fig3.gif" WIDTH="335" HEIGHT="89" ALT="" BORDER="0"><p><i><b>Illustration</b>&nbsp;&nbsp; An imported MIDI controller curve composed of many individual controller events...</i><BR><BR>
+<IMG SRC="images/bp6_fig4.gif" WIDTH="335" HEIGHT="86" ALT="" BORDER="0"></p>
+<p><i><b>Illustration</b>&nbsp;&nbsp; ...and the single curve generated from them by choosing <B>Convert to single curve</B>.</i></P>
+<p>Upon playback, MIDI controller information is regenerated dynamically from the curve, though DirectMusic will avoid sending redundant controller messages or large numbers of messages that would occur at the exact same (quantized) time.</p>
+
+<p>Upon playback, MIDI controller information is regenerated dynamically from the curve, though DirectMusic will avoid sending redundant controller messages or large numbers of messages that would occur at the exact same (quantized) time.</p>
+<h3>Part Linking</h3>
+<p>Particularly when authoring style-based content for interactive playback, a common technique is to have several &#34;intensity levels&#34; make use of the same basic bed of music while incrementally adding instrumental lines. Rather than maintain many copies of what is essentially identical content, you can use part linking.<sup>10</sup> Linking two or more parts together makes them reference a single copy of the musical information. If you want, they can be on different performance channels (that is, played by different instruments). They can also be in the same or different patterns. Editing the part in one place will affect every other pattern that contains that part. This can of course significantly reduce the size of a style file. The same technique can be used in the pattern tracks of segments.</p>
+<IMG SRC="images/bp6_fig5.gif" WIDTH="578" HEIGHT="117" ALT="" BORDER="0"><p><i><b>Illustration</b>&nbsp;&nbsp; How to set up a new part to link to an already authored part in the <b>Add Pattern Part(s)</b> dialog. The &#34;L&#34; in a part indicates that it is linked to another part.</i></p>
+<h2>Minimizing Audio Impact on the CPU</h2>
+<p>For a more complete discussion of audio performance characteristics from a developer's point of view, please see the <a href="https://xds.xbox.com/BPProgInfo.asp?Page=content/cd_aud_wp_DSperf_jh.htm" title="DirectSound Performance" target="blank">DirectSound Performance</a> white paper. In this guide, we will focus on performance aspects that can be controlled or influenced by the content author.</p>
+<p>Every library call will incur some amount of overhead from the CPU. However, many aspects of actual playback and signal processing can be handled by the chip itself. The following aspects of audio playback can generally be considered &#34;free&#34; (once their parameters are set up and/or methods are called by the developer) from a CPU point of view: </p>
+<ul>
+<li>Sample rate conversion</li>
+<li>ADPCM decompression</li>
+<li>Mixing/submixing</li>
+<li>Looping an in-memory wave</li>
+<li>Panning</li>
+<li>DLS-2 articulation envelopes</li>
+<li>Band pass/DLS-2 filtering</li>
+<li>Effects processing in the Global Processor, including multi-pass effects</li>
+<li>Dolby Digital/Dolby Surround encoding </li>
+</ul>
+<p>The following aspects of audio playback <u>will</u> incur CPU hits. Note that except where noted, the CPU hit generally occurs when the method is called (that is, it is not a continuous CPU load): </p>
+<ul>
+<li>Changing volume: For things like fading out a wave, consider taking advantage of the DLS-2 articulation envelope, which you can set up ahead of time with attack and release values. </li>
+<li>Changing envelope settings: Some minor math calculations are performed.</li>
+<li>WMA decompression (general load 5 to 10 percent of CPU during decode per stream).</li>
+<li>WMA loader instantiation: It is often beneficial to instantiate a single loader and implement your own streamer to it, rather than create and destroy a WMA decoder each time a new WMA file is to be used.</li>
+<li>3D positioning (&#34;re&#34;-positioning): Each time a 3D object is moved, new filtering coefficients need to be calculated by the CPU. For 64 3D voices moving each frame, this can begin to adversely impact the CPU. One easy method for minimizing the impact of this is to use DS3D_DEFERRED buffers, in which case you can delay the recalculation until all of your sound elements are ready (via <b>IDirectSound8::CommitDeferredSettings</b>). Note that while sounds are stationary (or, in the case of deferred buffers, the developer does not call <b>IDirectSound8::CommitDeferredSettings</b>), no CPU hit is incurred. Making use of submixing (if several sounds originate at the same or very close positions) before 3D positioning will decrease the CPU overhead. And recalculating position only when an object moves a significant distance will similarly minimize CPU overhead.</li>
+<li>DirectMusic messaging generally occurs in the background, and with the exception of heavy &#34;MIDI&#34;-style traffic (dense note passages and broadcasting controller information across many channels simultaneously), impact should generally be only on background CPU processing. </li>
+</ul>
+<h2>Wrap-Up</h2>
+<p>From the content creator's point of view, the primary way to optimize audio footprint will come back to the authoring process and the wave files delivered to the developer. Tradeoffs between performance and quality are inevitable, but by using some of the methods discussed above and by determining a budget (and the course of an implementation plan for content development) early in the process, you should be able to begin to take full advantage of the audio possibilities present in the Xbox without breaking the bank as far as memory footprint.</p>
+<p>If there is an area not addressed here that you would like to see presented as a sample, or if a particular process is blocking your progress on a project, please dont hesitate to let us know at <a href="mailto:content@xbox.com">content@xbox.com</a>.</p>
+<p>For more information about topics presented here, please consult other chapters of the <a href="cd_aud_wp_bp.htm">Xbox Audio Best Practices Guide</a>, the Xbox Development Kit documentation, or the white papers on Audio Designers Corner, or send an e-mail message to <a href="mailto:content@xbox.com">content@xbox.com</a>.</p>
+
+<HR ALIGN="left" WIDTH="300">
+<div class="footnote">
+<P><SUP>1</SUP>&nbsp;Because you can play waves from an offset, the &#34;primed&#34; wave data may not necessarily be the start of the wave. This is why loading a streamed wave may not allow you to play another instance of that streamed wave without loading its segment as well. </p>
+<P><SUP>2</SUP>&nbsp;In actuality, the Xbox keeps track of the last three titles played and will store their utility regions. The fourth new title will &#34;push out&#34; the oldest utility region, reformatting it for this title&'s use.</p>
+<P><SUP>3</SUP>&nbsp;Remember that the Xbox has a unified memory architecture (UMA), which means the 64 MB of memory can be used as your title sees fit: the graphics processor, audio processor, and the CPU all can access the memory area.</p>
+<P><SUP>4</SUP>&nbsp;As with most other ADPCM formats, ADPCM compressing an 8-bit source wave results in the same size compressed wave as a 16-bit source wave. Hence our codec's support for 16-bit sources only.</p>
+<P><SUP>5</SUP>&nbsp;It is feasible that a developer familiar with Motorola 56300 programming could create a program to run in the Global Processor (GP) of the Xbox Media Communications Processor to provide hardware-based decoding of a format. Limitations to keep in mind would be other instructions that must reside in the finite memory area of the GP (at the very least, a basic program that routes audio to the GP mixbins to make any sound) and the way that the chip processes data (generally in 32-sample chunks).</p>
+<P><SUP>6</SUP>&nbsp;For more on variability in DirectMusic and how variable content is authored in DirectMusic Producer, see <a href="cd_aud_wp_variations1.htm">Variations: Adding Basic Variability to Audio Content in DirectMusic Producer</a></p>
+<P><SUP>7</SUP>&nbsp;Unlike on the PC, there is no difference between load and download as used by DirectMusic. Loading wave data on the Xbox implicitly prepares it to be played and no subsequent call is needed prior to using the data.</p>
+<P><SUP>8</SUP>&nbsp;Note that, due to a bug in Windows DirectX 8.0, pattern track parts shorter than the segment will often fall silent when the segment loops. This is not an issue on Xbox, so use Xbox Experimenter to audition content that takes advantage of this feature. </p>
+<P><SUP>9</SUP>&nbsp;You can additionally author a curve to &#34;use current,&#34; which will ignore the start value and create a dynamic controller curve from the current value of a controller to the destination value. For more information, see the white paper <A href="https://xds.xbox.com/BPProgInfo.asp?Page=content/cd_aud_wp_crossfades.htm" target="blank">Crossfade Solutions Using DirectMusic: Volume Controller Curves, Audiopaths, and DirectX Audio Scripting</a>.</p>
+<P><SUP>10</SUP>&nbsp;For more information about styles, see the white paper <a href="https://xds.xbox.com/BPProgInfo.asp?Page=content/cd_aud_wp_style.htm" target="blank">Style-Based Playback: An Introduction to DirectMusic Style Files</a>. A full discussion of part linking is presented under the topic Using Groove Levels in that paper.</p>
+</div>
+<SMALL>Updated Wednesday, August 28, 2002</SMALL>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

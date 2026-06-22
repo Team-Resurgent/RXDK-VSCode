@@ -1,0 +1,28 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>HighQualityBumpMapping Sample</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="HighQualityBumpMapping Sample"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>HighQualityBumpMapping Sample</h1>
+<p>The HighQualityBumpMapping sample shows how to perform high quality per-pixel Blinn-Phong lighting with bump mapping, per-pixel normalization of the half-angle vector, and an arbitrary specular exponent. Not doing per-pixel normalization of the half-angle vector results in obvious artifacts unless the geometry is extremely finely tessellated. Normalizing the half-angle vector using a normalization cube map and then computing the specular function in the color combiners requires the use of an approximation for non power-of-two exponents, and results in artifacts because of the limited precision available.</p><h2><a name="IDAPQEV"></a>Remarks</h2>
+<p>The technique uses a texm3x2tex-dependent texture lookup operation to look up the result of the dot product (N dot H) with per-pixel normalization of the H vector. The idea is to lookup in a 2D texture with u = (N dot H) and v = (H dot H/|H|). (H dot H/|H|) is equal to the length of H. We get H/|H| or the normalized H from a normalization cube map lookup. The best results are obtained by using a cube map with V16U16 values and the hemisphere dot mapping mode. The 2D texture encodes (N dot H) to a power normalized for the length of H. The N vector comes from a normal map. The normal map may be an RGB texture, a V16U16 texture for high accuracy, or a V8U8 texture for compactness. Note that using the hemisphere dot mapping mode with a V16U16 or V8U8 texture only works when doing tangent space bump mapping.</p><p>The diffuse component of the lighting equation is computed with the color combiners using an approximation to the re-normalization of the L vector and the dot product instruction. The technique used for the specular could be used for the diffuse in a separate rendering pass, but it rarely results in any improvement in quality.</p><p>Because the technique requires all four texture stages, the most likely way to use it is to render the diffuse color texture and diffuse normal texture map in one pass, and then add the high-quality specular in a separate pass.</p><p>Copy the media tree to the target Xbox console before running this sample.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

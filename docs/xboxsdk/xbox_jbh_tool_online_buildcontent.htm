@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>BuildOffer Tool (BuildOffer)</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="BuildOffer Tool (BuildOffer)"/>
+secure content packages, building
+<MSHelp:Keyword Index="F" Term="BuildOffer Tool (BuildOffer)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>BuildOffer Tool (BuildOffer)</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+
+<P class="intro">The BuildOffer tool is used to build secure Xbox content packages (.xcp).  See 		      <a href="xbox_Live_Downloading.htm">Downloading Content from Xbox Live</a> for more information.</P>
+
+<H3 class="overview">Usage</H3>
+
+<PRE>USAGE: buildoffer [switches] [N|L|X] package metadata [@list] [files]...</PRE>
+
+<TABLE class="tblcontrols">
+<!--**Stock Text. Do not change.****-->
+<TR VALIGN="top"><TH align=left width=40%>Switch</TH><TH align=left width=60%>Description</TH></TR>
+<!--**Use this set of tags for a row. Copy and paste for additional rows.**-->
+
+<TR><td>-?</td>     <td>Display usage.</td></TR>
+
+<TR><td><b>-r</b></td>     <td>Recurse subdirectories.</td></TR>
+<tr><td><b>-u</b></td>     <td>Disable file compression.</td></tr>
+<tr><td><b>-v</b></td>     <td>Run in verbose mode, producing detailed package information.</td></tr>
+<tr>
+	<td><b>-x:&lt;DLL name&gt;</b></td>
+	<td>Loads the specified signature calculation DLL. You can specify as many signature DLLs as you wish by 
+	repeating the -x option.</td>
+</tr>
+<TR><td><b>-D</b></td>     <td>Use debug mode (see description <a href="#debug_mode">below</a>).</td></TR>
+<tr><td><b>-O</b></td>     <td>Create an offline package, which may be installed offline.</td></tr>
+<tr><td><b>-S</b></td>     <td>Create packages for multiple continents (see description <a href="#multiple_packages">below</a>).</td></tr>
+<TR><td><b>N</b></td>      <td>Create a new package.</td></TR>
+<TR><td><b>L</b></td>      <td>List the contents of a package.</td></TR>
+<TR><td><b>X</b></td>      <td>Extract the contents of a package.</td></TR>
+
+<TR><td><i>package</i></td>  <td>A required parameter that specifies the path and file name of the 
+         resulting package. If only a file name is specified, the package will be 
+         generated in the current directory.</td></TR>
+<TR><td><i>metadata</i></td> <td>A required parameter that specifies the path and file name 
+        of a file that contains the catalog-referral metadata 
+        about this package. This program does not validate the metadata
+        contained in the file. It is the responsibility of the content 
+        publisher to make sure the metadata is valid.</td></TR>
+
+</TABLE>
+
+<p class="content">The BuildOffer tool must be run from the root directory where the content to be packaged resides.</p>
+
+<P class="content">The list of files to be packaged is specified through a combination of file names (which may contain wildcards), and/or list files. File names are relative to the current directory from which this application is run. List files may contain file names (one name per line) that are relative
+to the directory from which this program is run.</P>
+
+<H3 class="overview">The -r Switch</H3>
+
+<P class="content">By default, wildcard matches are non-recursive. Recursive matches can be
+enabled by specifying the <b>-r</b> option. The <b>-r</b> option is global and thus
+affects all wildcard matches. For example, to create a package that
+contains all files under the current directory hierarchy, one would do:</P>
+
+<PRE>buildoffer -r N test.xcp .\metadata.xbx *.*</PRE>
+
+<P class="content">The directory hierarchy will be preserved when the package is installed on the Xbox hard disk. This allows the content publisher to lay out the content exactly as it should appear on the Xbox, and then build a package the preserves the whole layout.</P>
+
+<H3 class="overview"><a name="debug_mode"></a>The -D Switch</H3>
+<P class="content">A debug mode can be specified using the <b>-D</b> option, which will output the raw cabinet file without the secure packaging. This allows the content publisher to list and extract the files to verify that the cabinet layout is correct. The raw cabinet file will have a .cab file 
+extension rather than the .xcp extension that you would expect for a  secure Xbox content package. The raw cabinet can be accessed using the standard cabarc utility, or one of the following commands:</P>
+
+<H3 class="overview"><a name="multiple_packages">The -S Switch</a></H3>
+
+<P class="overview">
+If content is offered on multiple continents, specify the <b>-S</b> option when invoking the 
+BuildOffer tool. This option instructs BuildOffer to create multiple packages, one for each continent. 
+The name of each package file will have a prefix that identifies which continent that package is for: NA for North America, EMEA for Europe, JA for Japan. When using the <b>-S</b> option, you must ensure that the bits in the Offering Identifier that specify the continent are all zero. BuildOffer sets these bits to the correct value for each package. For more information, see the <a hot="1" href="xbox_online_contentpack.htm">Offering Packages</a> topic.
+</P>
+
+
+<PRE>List:       buildoffer L <I>cabinet</I>.cab
+Extract:    buildoffer X <I>cabinet</I>.cab [files] [output_dir]</PRE>
+
+<!--
+<H3 class="overview">The Plus Sign</H3>
+
+<P class="content">When creating a cabinet, the plus sign (+) may be used as a filename
+to force a folder boundary.</P>
+
+<PRE>buildoffer N test.xcp ..\metadata.xbx *.c test.h + *.bmp + @..\filelist</PRE>
+
+<P class="content">The example above causes test.xcp to be created, using ..\metadata.dat
+as the metadata file. test.xcp will contain three folders, one with *.c
+and test.h, another with *.bmp, and a third containing all the files
+specified in a file named "filelist" in the parent directory.</P>
+
+<P class="content">The Xbox content package format allows up to 100 folders per package.
+Your package will not work if you exceed this limit.</P>
+-->
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

@@ -1,0 +1,93 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Nickname Enumeration</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Nickname Enumeration"/>
+<MSHelp:Keyword Index="F" Term="Nickname Enumeration"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Nickname Enumeration</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<P>To retrieve the list of nicknames, you must first call <A HREF="x_jsk_xfindfirstnickname.htm">XFindFirstNickname</A>.  This function begins an enumeration of nicknames in the local nickname cache and returns the first nickname found, as well as an enumeration handle that can be used to continue retrieving nicknames.  Calling <A HREF="x_jsk_xfindnextnickname.htm">XFindNextNickname</A> with the returned handle will continue the enumeration and return the next nickname in the list.  Each subsequent call to <B>XFindNextNickname</B> will return the next nickname from the list, until the entire list has been enumerated.</P>
+
+<P>When beginning the enumeration, the <I>fThisTitleOnly</I> parameter of <B>XFindFirstNickname</B> specifies whether all nicknames in the cache should be returned, or only those nicknames previously added by the calling title should be returned.</P>
+
+<P>The following code example enumerates the entire nickname cache and sends each nickname to the debugger for display:</P>
+
+
+<PRE>
+//------------------------------------------------------------------------------ 
+// enumnick.cpp
+//
+// Example use of the XFindFirstNIckname and XFindNextNickanme functions.
+// Enumerate nicknames and send the output to the debugger.
+//------------------------------------------------------------------------------ 
+
+#include &lt;xtl.h&gt;
+
+
+void main( void )
+{
+    WCHAR wszNick[MAX_NICKNAME];
+    HANDLE hFind;
+    
+
+    // Start the enumeration and check for failure.
+    hFind = XFindFirstNickname( FALSE, wszNick, MAX_NICKNAME );
+
+    if( INVALID_HANDLE_VALUE == hFind )
+    {
+        OutputDebugStringW( L"XFindFirstNickname failed." );
+    }
+    else
+    {
+        // Display each nickname and ask for the next.
+        do
+        {
+            OutputDebugStringW( wszNick );
+            OutputDebugStringW( L"\n" );
+        } while( XFindNextNickname( hFind, wszNick, MAX_NICKNAME ) );
+
+        // Close the enumeration handle.
+        XFindClose( hFind );
+    }
+
+    // Don't return from main!
+    Sleep( INFINITE );
+}
+</PRE>
+
+
+<!--*******************************************************************************-->
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

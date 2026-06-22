@@ -1,0 +1,46 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>FastVSConstants Sample</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="FastVSConstants Sample"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>FastVSConstants Sample</h1>
+	<p>This sample demonstrates techniques for performing fast vertex shading.</p>
+<h2><a name="IDAT1YK"></a>Overview</h2>
+<p>The FastVSConstants sample shows how to use the 
+	<a href="_dx_idirect3ddevice8_beginstate_graphics.htm">IDirect3DDevice8::BeginState</a> and 
+	<a href="_dx_idirect3ddevice8_endstate_graphics.htm">Direct3DDevice8::EndState</a> functions to efficiently store calculated 
+	vertex shader constant data directly into the push-buffer. It also illustrates the 
+	importance of pre-fetching data in order to achieve maximum CPU performance.</p><h2><a name="IDAB2YK"></a>Path</h2>
+<p>Source: (XDK Root)\Samples\Xbox\Graphics\VertexShader\FastVSConstants</p><h2><a name="IDAH2YK"></a>Remarks</h2>
+<p>The sample draws 20,000 simple objects (tetrahedrons) per frame. The data needed 
+	to draw each object is pre-fetched to avoid cache misses. Pressing the <b>A</b> button toggles 
+	between the simple drawing loop and the optimized one. The optimized version is 
+	approximately 68 percent faster than the unoptimized version. Most of the speed increase 
+	(approximately 90 percent) is due to pre-fetching the data needed to draw each object.
+	The rest (about 10 percent) can be attributed to inlining the matrix multiplication 
+	and writing the vertex shader constants directly into the push-buffer. Avoiding cache
+	misses while writing data into write-combined memory such as the push-buffer is extremely 
+	important because a cache miss can interrupt the write combining resulting in 
+	additional bus cycles. The frame rate is 100 percent CPU bound when using the 
+	unoptimized drawing loop. The frame rate of the optimized drawing loop is GPU bound 
+	with the CPU usage at about 90 percent.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>IXACTEngine::RegisterNotification</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="F" Term="RegisterNotification"/>
+<MSHelp:Keyword Index="K" Term="RegisterNotification (IXACTEngine)"/>
+<MSHelp:Keyword Index="K" Term="IXACTEngine::RegisterNotification"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>IXACTEngine::RegisterNotification</h1>
+<p>Registers for an event notification.</p>
+<pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>RegisterNotification(</b>
+    <b>PCXACT_NOTIFICATION_DESCRIPTION</b> <i>pNotificationDesc</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+			<dt><i>pNotificationDesc</i></dt>
+				<dd>[in]  A pointer to an <a href="xbox_xactnotificationdescription_dxaudio.htm">XACT_NOTIFICATION_DESCRIPTION</a> structure that describes the notification to register.</dd>
+				<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;The <b>pSoundCue</b> parameter of <b>XACT_NOTIFICATION_DESCRIPTION</b> is reserved when calling this function and should be set to NULL.</p>
+			
+		</dl>
+<h4><a name="return"></a>Return Values</h4>
+            <p>Returns DS_OK if successful; returns an error code otherwise.</p>
+        <h4><a name="remarks"></a>Remarks</h4>
+			<p>Before receiving notifications from the XACT engine, the type of notification must be registered. The following example illustrates how to register notification for when a particular sound cue index on a sound bank starts:</p>
+
+<pre class="clsCode">
+// This code assumes that g_pXACTEngine is a valid pointer to the
+// XACT engine and pSoundBank is a valid pointer to an IXACTSoundBank.
+
+XACT_NOTIFICATION_DESCRIPTION Desc;
+DWORD dwSoundCueIndex;
+
+pSoundBank-&gt;GetSoundCueIndexFromFriendlyName("CUE0", &amp;dwSoundCueIndex);
+
+memset(&amp;Desc,0,sizeof(Desc));
+Desc.wFlags = XACT_FLAG_NOTIFICATION_USE_SOUNDCUE_INDEX;
+Desc.dwSoundCueIndex = dwSoundCueIndex;
+Desc.u.pSoundBank = pSoundBank;
+Desc.wType = eXACTNotification_Start;
+		
+g_pXACTEngine-&gt;RegisterNotification(&amp;Desc);
+</pre>
+    
+			<p>After the notification has been registered, repeatedly call <a href="xbox_ixactengine_getnotification_dxaudio.htm">IXACTEngine::GetNotification</a> to retrieve notifications as they occur. To clear pending notifications, call <a href="xbox_ixactengine_flushnotification_dxaudio.htm">IXACTEngine::FlushNotification</a>.</p>
+
+			<p>The behavior of the eXACTNotification_StreamDataAvailable notification varies depending on whether it is registered with the XACT_FLAG_NOTIFICATION_USE_WAVEBANK or the XACT_FLAG_NOTIFICATION_USE_SOUNDCUE_INDEX flag:</p>
+			<ul>
+				<li>When registered with the XACT_FLAG_NOTIFICATION_USE_WAVEBANK flag, this notification fires as soon as all zero-latency waves in the wave bank have been primed. If the wave bank contains no zero-latency waves, then the notification will fire immediately, and will not wait for a call to <a href="xbox_ixactsoundbank_prepare_dxaudio.htm">IXACTSoundBank::Prepare</a> on any or all of the waves in the wave bank. This behavior allows the application to wait until all the zero-latency waves have been automatically primed with a single API call.</li>
+				<li>Registering eXACTNotification_StreamDataAvailable with XACT_FLAG_NOTIFICATION_USE_SOUNDCUE_INDEX behaves slightly differently. The notification will <i>not</i> fire immediately for sound cues referencing non-zero-latency waves, rather <b>IXACTSoundBank::Prepare</b> must be called. Notification will fire for sound cues referencing zero-latency waves as soon as their wave banks have finished their automatic priming. The eXACTNotification_StreamDataAvailable notification will fire on all cues that reference streamed waves (regardless if the wave was zero-latency or not).</li>
+			</ul>
+			<p>Since loading a wave bank is required before registering notifications on it, a wave bank may become primed before notifications are registered, in which case the notification will be available immediately. Notifications will <i>not</i> be missed if they are registered after the XACT Engine has primed the wave bank.</p>
+		<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in XACT.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use XACTEng.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+			<a href="xbox_xactnotificationdescription_dxaudio.htm">XACT_NOTIFICATION_DESCRIPTION</a>
+		</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

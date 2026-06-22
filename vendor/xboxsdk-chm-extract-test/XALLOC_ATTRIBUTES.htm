@@ -1,0 +1,231 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XALLOC_ATTRIBUTES</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XALLOC_ATTRIBUTES"/>
+<MSHelp:Keyword Index="F" Term="XALLOC_ATTRIBUTES"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+    <body topmargin="0">
+        <table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+        <h1>XALLOC_ATTRIBUTES</h1>
+
+        
+        
+<p>Specifies memory allocation attributes.  Used with the memory allocation replacement functions (<a href="XMemAlloc.htm">XMemAlloc</a>, <a href="XMemFree.htm">XMemFree</a>, and <a href="XMemSize.htm">XMemSize</a>).</p>
+
+	
+		
+
+<pre class="syntax">typedef struct _XALLOC_ATTRIBUTES{
+    DWORD dwObjectType : 13;
+    DWORD dwHeapTracksAttributes : 1;
+    DWORD dwMustSucceed : 1;
+    DWORD dwFixedSize : 1;
+    DWORD dwAllocatorId : 8;
+    DWORD dwAlignment : 4;
+    DWORD dwMemoryProtect : 2;
+    DWORD dwZeroInitialize : 1;
+    DWORD dwMemoryType : 1;
+} XALLOC_ATTRIBUTES, *PXALLOC_ATTRIBUTES;</pre>
+                    
+                
+            
+            
+                <h4><a name="members"></a>Members</h4>
+<dl>
+<dt><b>dwObjectType</b></dt>
+<dd>Specifies a library or component defined value that identifies the object type being allocated.  A heap allocator might use this information, in conjunction with the allocation size, to minimize fragmentation (by grouping similar object allocations) and to increase performance (by preallocating memory chunks and performing simple array-style allocations for objects).</dd>
+<dt><b>dwHeapTracksAttributes</b></dt>
+<dd>Specifies whether the heap is responsible for tracking the allocation attributes for this allocation.  Specify TRUE to have the heap track allocation attributes, FALSE otherwise.</dd>
+<dt><b>dwMustSucceed</b></dt>
+<dd>Specifies whether this allocation must succeed (as the calling library can not handle a failure case), or whether the allocation is not critical and the calling library can properly handle a failed allocation.  Specify TRUE for an allocation that must succeed, FALSE otherwise.</dd>
+<dt><b>dwFixedSize</b></dt>
+<dd>Specifies whether allocations of this type (as specified by <i>dwObjectType</i>) will always be the same size.  Specify TRUE if allocations of this type will always be the same size, and FALSE otherwise.  This information is useful for heap routines to minimizing fragmentation.</dd>
+<dt><b>dwAllocatorId</b></dt>
+<dd>Specifies an identifier unique to each library or component that performs memory allocations.  Titles may use values between 0 and 127 to specify title components.  Values in the range 128 to 191 are used by system and XTL components.  Values in the range 192 to 255 are used by middleware components.  See <a href="XALLOC_ALLOCATOR_IDS.htm">XALLOC_ALLOCATOR_IDS</a>.</dd>
+<dt><b>dwAlignment</b></dt>
+<p><dd>Specifies the byte alignment of the allocated memory.</dd>
+
+
+<p>For heap allocations, <b>dwAlignment</b> must be one of the following values.  Allocations from XTL libraries will specify 16-byte alignment for this value.  Alignments greater than 16 bytes are not supported.  Titles may perform allocations on 4 or 8 byte boundaries if their heap code supports those alignments.</p>
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>XALLOC_ALIGNMENT_DEFAULT</td>
+<td>default alignment (16-byte)</td>
+</tr>
+<tr>
+<td>XALLOC_ALIGNMENT_4</td>
+<td>4-byte alignment</td>
+</tr>
+<tr>
+<td>XALLOC_ALIGNMENT_8</td>
+<td>8-byte alignment</td>
+</tr>
+<tr>
+<td>XALLOC_ALIGNMENT_16</td>
+<td>16-byte alignment</td>
+</tr>
+</table>
+
+<p>For physical memory allocations, <b>dwAlignment</b> must be one of the following values.</p>
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>XALLOC_PHYSICAL_ALIGNMENT_DEFAULT</td>
+<td>default alignment (4 KB)</td>
+</tr>
+<tr>
+<td>XALLOC_PHYSICAL_ALIGNMENT_4K_BELOW_16M</td>
+<td>4 KB alignment, memory below 16 MB</td>
+</tr>
+<tr>
+<td>XALLOC_PHYSICAL_ALIGNMENT_4</td>
+<td>4-byte alignment</td>
+</tr>
+<tr>
+<td>XALLOC_PHYSICAL_ALIGNMENT_8</td>
+<td>8-byte alignment</td>
+</tr>
+<tr>
+<td>XALLOC_PHYSICAL_ALIGNMENT_16</td>
+<td>16-byte alignment</td>
+</tr>
+<tr>
+<td>XALLOC_PHYSICAL_ALIGNMENT_32</td>
+<td>32-byte alignment</td>
+</tr>
+<tr>
+<td>XALLOC_PHYSICAL_ALIGNMENT_64</td>
+<td>64-byte alignment</td>
+</tr>
+<tr>
+<td>XALLOC_PHYSICAL_ALIGNMENT_128</td>
+<td>128-byte alignment</td>
+</tr>
+<tr>
+<td>XALLOC_PHYSICAL_ALIGNMENT_256</td>
+<td>256-byte alignment</td>
+</tr>
+<tr>
+<td>XALLOC_PHYSICAL_ALIGNMENT_512</td>
+<td>512-byte alignment</td>
+</tr>
+<tr>
+<td>XALLOC_PHYSICAL_ALIGNMENT_1K</td>
+<td>1 KB alignment</td>
+</tr>
+<tr>
+<td>XALLOC_PHYSICAL_ALIGNMENT_2K</td>
+<td>2 KB alignment</td>
+</tr>
+<tr>
+<td>XALLOC_PHYSICAL_ALIGNMENT_4K</td>
+<td>4 KB alignment</td>
+</tr>
+<tr>
+<td>XALLOC_PHYSICAL_ALIGNMENT_8K</td>
+<td>8 KB alignment</td>
+</tr>
+<tr>
+<td>XALLOC_PHYSICAL_ALIGNMENT_16K</td>
+<td>16 KB alignment</td>
+</tr>
+<tr>
+<td>XALLOC_PHYSICAL_ALIGNMENT_32K</td>
+<td>32 KB alignment</td>
+</tr>
+</table>
+
+</p>
+<dt><b>dwMemoryProtect</b></dt>
+<p><dd>Specifies the access protection and optional memory type modifiers. One of the following access protection flags must be specified:</dd>
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>XALLOC_MEMPROTECT_READONLY</td>
+<td>Enables read and execute access to the committed region of pages. An attempt to write to the committed region results in an access violation.</td>
+</tr>
+<tr>
+<td>XALLOC_MEMPROTECT_READWRITE</td>
+<td>Enables read, write, and execute access to the committed region of pages."</td>
+</tr>
+</table>
+<p>In addition, one of the following flags may be specified to modify the characteristics of the allocated memory:</p>
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>XALLOC_MEMPROTECT_NOCACHE</td>
+<td>Allows no memory caching for memory in the committed region of pages. The hardware attributes for the physical memory will be treated as "no cache." This is useful, for example, for mapping a video frame buffer with no caching.</td>
+</tr>
+<tr>
+<td>XALLOC_MEMPROTECT_WRITECOMBINE</td>
+<td>The allocated memory has a write-combining cache policy.  Write combining is a special caching mode that batches writes to the same cache line so they can be transferred in a single bus clock. Write combining does not preserve ordering of the writes, a tradeoff that is usually acceptable for frame buffers.</td>
+</tr>
+</table>
+</p>
+<dt><b>dwZeroInitialize</b></dt>
+<dd>Specifies whether the memory should be zero-initialized when allocated.  Specify TRUE to zero-initialize the memory, FALSE otherwise.</dd>
+<dt><b>dwMemoryType</b></dt>
+<dd>Specifies the memory type.  Can be one of the following values:
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>XALLOC_MEMTYPE_HEAP</td>
+<td>Heap (virtual) memory</td>
+</tr>
+<tr>
+<td>XALLOC_MEMTYPE_PHYSICAL</td>
+<td>Physical memory</td>
+</tr>
+</table>
+</dd>
+</dl>
+                
+				
+            
+                <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xbox.h; for include use xtl.h.</p>
+            
+                <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="XMemAlloc.htm">XMemAlloc</a>, <a href="XMemFree.htm">XMemFree</a>, <a href="XMemSize.htm">XMemSize</a>, <a href="XSetAttributesOnHeapAlloc.htm">XSetAttributesOnHeapAlloc</a>, <a href="XGetAttributesOnHeapAlloc.htm">XGetAttributesOnHeapAlloc</a>, <a href="XALLOC_ALLOCATOR_IDS.htm">XALLOC_ALLOCATOR_IDS</a>
+</p>
+
+        <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+    </body>
+    </html>

@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>CopyProgressRoutine</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="CopyProgressRoutine">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="CopyProgressRoutine"/>
+<MSHelp:Keyword Index="F" Term="CopyProgressRoutine"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_copyprogressroutine"></A>CopyProgressRoutine</H1>
+
+<P>The <B>CopyProgressRoutine</B> function is an application-defined callback function used with the <A HREF="filesio_4qt4.htm">CopyFileEx</A> and <A HREF="filesio_748j.htm">MoveFileWithProgress</A> functions. It is called when a portion of a copy or move operation is completed. The <B>LPPROGRESS_ROUTINE</B> type defines a pointer to this callback function. <B>CopyProgressRoutine</B> is a placeholder for the application-defined function name. </P>
+
+<PRE class=syntax><B>DWORD CALLBACK CopyProgressRoutine(
+  LARGE_INTEGER</B><I> TotalFileSize</I><B>,          </B>// file size
+<B>  LARGE_INTEGER</B><I> TotalBytesTransferred</I><B>,  </B>// bytes transferred
+<B>  LARGE_INTEGER</B><I> StreamSize</I><B>,             </B>// bytes in stream
+<B>  LARGE_INTEGER</B><I> StreamBytesTransferred</I><B>, </B>// bytes transferred for stream
+<B>  DWORD</B><I> dwStreamNumber</I><B>,                 </B>// current stream
+<B>  DWORD</B><I> dwCallbackReason</I><B>,               </B>// callback reason
+<B>  HANDLE</B><I> hSourceFile</I><B>,                   </B>// handle to source file
+<B>  HANDLE</B><I> hDestinationFile</I><B>,              </B>// handle to destination file
+<B>  LPVOID</B><I> lpData                         </I>// from CopyFileEx
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>TotalFileSize</I></DT>
+
+<DD>[in] Specifies the total size of the file, in bytes.</DD>
+
+<DT><I>TotalBytesTransferred</I></DT>
+
+<DD>[in] Specifies the total number of bytes transferred from the source file to the destination file since the copy operation began.</DD>
+
+<DT><I>StreamSize</I></DT>
+
+<DD>[in] Specifies the total size of the current file stream, in bytes.</DD>
+
+<DT><I>StreamBytesTransferred</I></DT>
+
+<DD>[in] Specifies the total number of bytes in the current stream that have been transferred from the source file to the destination file since the copy operation began.</DD>
+
+<DT><I>dwStreamNumber</I></DT>
+
+<DD>[in] Handle to the current stream. The stream number is 1 the first time <B>CopyProgressRoutine</B> is called.</DD>
+
+<DT><I>dwCallbackReason</I></DT>
+
+<DD>[in] Specifies the reason that <B>CopyProgressRoutine</B> was called. This parameter can be one of the following values.
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=48%>Value</TH>
+<TH align=left width=52%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=48%>CALLBACK_CHUNK_FINISHED</TD>
+<TD width=52%>Another part of the data file was copied.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=48%>CALLBACK_STREAM_SWITCH</TD>
+<TD width=52%>Another stream was created and is about to be copied. This is the callback reason given when the callback routine is first invoked.</TD>
+</TR>
+</TABLE><BR>
+
+</DD>
+
+<DT><I>hSourceFile</I></DT>
+
+<DD>[in] Handle to the source file.</DD>
+
+<DT><I>hDestinationFile</I></DT>
+
+<DD>[in] Handle to the destination file.</DD>
+
+<DT><I>lpData</I></DT>
+
+<DD>[in] The argument passed to <B>CopyProgressRoutine</B> by the <A HREF="filesio_4qt4.htm">CopyFileEx</A> or <A HREF="filesio_748j.htm">MoveFileWithProgress</A> function.
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>The <B>CopyProgressRoutine </B>function should return one of the following values.</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=41%>Value</TH>
+<TH align=left width=59%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>PROGRESS_CONTINUE</TD>
+<TD width=59%>Continue the copy operation.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>PROGRESS_CANCEL</TD>
+<TD width=59%>Cancel the copy operation and delete the destination file.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>PROGRESS_QUIET</TD>
+<TD width=59%>Continue the copy operation, but stop invoking <B>CopyProgressRoutine </B>to report progress.</TD>
+</TR>
+</TABLE><BR>
+
+<H4>Remarks</H4>
+
+<P>An application can use this information to display a progress bar that shows the total number of bytes copied as a percent of the total file size.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.
+</p>
+
+<H4>See Also</H4>
+
+<P>
+
+<A HREF="xbox_mt_xtl_sll_file_io_functions.htm">File I/O Functions</A> | 
+<A HREF="filesio_748j.htm">MoveFileWithProgress</A>,
+<A HREF="filesio_4qt4.htm">CopyFileEx</A>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

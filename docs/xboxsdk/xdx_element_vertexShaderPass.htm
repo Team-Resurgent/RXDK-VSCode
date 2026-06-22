@@ -1,0 +1,92 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>vertexShaderPass Element</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+<MSHelp:Attr Name="DevLang" Value="XML"/>
+<MSHelp:Attr Name="DevLang" Value="XSL"/>
+<MSHelp:Attr Name="Technology" Value="XML"/>
+<MSHelp:Keyword Index="K" Term="vertexShaderPass element"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>vertexShaderPass Element</h1>
+<p>Sets the vertex shader for current render pass.</p>
+<pre class="syntax" xml:space="preserve">&lt;vertexShaderPass
+   vertexShader = string
+/&gt;</pre>
+<h4>Required Attributes</h4>
+<dl id="idXML">
+<dt><b>vertexShader</b></dt>
+<dd>
+						<p>Name of the vertex shader to use for the render pass. This value must correspond to the <b>id</b> attribute of a previously defined &lt;<a href="xdx_element_vertexshader.htm">vertexShader</a>&gt;.</p>
+					</dd>
+</dl>
+<h4>Optional Attributes</h4>
+<p>None.</p><h4>Element Information</h4>
+<table>
+<tr>
+<td><b>Parent Elements</b></td>
+<td><a href="xdx_element_pass.htm">pass</a></td>
+</tr>
+<tr>
+<td><b>Child Elements</b></td>
+<td><a href="xdx_element_constantvs.htm">constantVS</a>, <a href="xdx_element_declvs.htm">declVS</a></td>
+</tr>
+</table>
+<h4><a name="remarks"></a>Remarks</h4>Any constants or declaration made using &lt;<a href="xdx_element_constantVS.htm">constantVS</a>&gt; or &lt;<a href="xdx_element_declVS.htm">declVS</a>&gt; inside of a &lt;<b>vertexShaderPass</b>&gt; will add to, or overwrite, those made inside the shader referenced by the <b>vertexShader</b> attribute.<h4><a name="examples"></a>Examples</h4>
+<dl><dt><b>&lt;vertexShader&gt; and &lt;vertexShaderPass&gt;</b></dt>
+<dd><p>This example shows how declarations and constants get combined. The vertex buffer (object1_VB) is getting set during the render pass. This allows multiple vertex buffers to be used with a given vertex shader. During the render pass, the vertex shader will use three constants: c11, c40, and c90. The c11 constant is set by VertexShader1. The values for c40 and c90 are determined by the &lt;<b>vertexShaderPass</b>&gt; that overwrites the c90 value set in VertexShader1.</p>
+
+
+<pre class="clsCode">
+&lt;vertexShader id="VertexShader1"&gt;
+   &lt;declVS&gt;
+      &lt;stream index="0"&gt; ... &lt;/stream&gt;
+   &lt;/declVS&gt;
+   &lt;asm&gt; ... &lt;/asm&gt;
+   &lt;constantVS index="11"&gt;1 1 1 1&lt;/constantVS&gt;
+   &lt;constantVS index="90"&gt;0 0 -1 0&lt;/constantVS&gt;
+&lt;/vertexShader&gt;
+...
+&lt;frame id="Frm0"&gt;
+   &lt;model id="object1"&gt;
+      &lt;pass&gt;
+         &lt;vertexShaderPass vertexShader="VertexShader1"&gt;
+            &lt;declVS&gt;
+               &lt;stream index="0" vertexBuffer="object1_VB"/&gt;
+            &lt;/declVS&gt;
+            &lt;constantVS index="40"&gt;1 2  3  4&lt;/constantVS&gt;
+            &lt;constantVS index="90"&gt;0 0 -5 -5&lt;/constantVS&gt;
+         &lt;/vertexShaderPass&gt;
+         ...
+      &lt;/pass&gt;
+   &lt;/model&gt;
+&lt;/frame&gt;
+</pre>
+    						
+						
+
+						</dd>
+</dl>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

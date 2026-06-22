@@ -1,0 +1,94 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>IXHVEngine::EnableProcessingMode</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="F" Term="EnableProcessingMode"/>
+<MSHelp:Keyword Index="K" Term="EnableProcessingMode (IXHVEngine)"/>
+<MSHelp:Keyword Index="K" Term="IXHVEngine::EnableProcessingMode"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>IXHVEngine::EnableProcessingMode</h1>
+<pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>EnableProcessingMode(</b>
+    <b>XHV_PROCESSING_MODE</b> <i>processingMode</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+			<dt><i>processingMode</i></dt>
+				<p><dd>[in]  An XHV_PROCESSING_MODE constant. Can be one of the following:</dd>
+				<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+					<tr>
+<td>XHV_INACTIVE_MODE</td>
+<td>This mode is already enabled by default.</td>
+</tr>
+					<tr>
+<td>XHV_LOOPBACK_MODE</td>
+<td>Links XHV loopback code into the game title.</td>
+</tr>
+					<tr>
+<td>XHV_SR_MODE</td>
+<td>Links XHV speech recognition code into the game title.</td>
+</tr>
+					<tr>
+<td>XHV_VOICECHAT_MODE</td>
+<td>Links XHV voice chat code into the game title.</td>
+</tr>
+					<tr>
+<td>XHV_VOICEMAIL_MODE</td>
+<td>Links XHV voice mail code into the game title. XHV_VOICECHAT_MODE must be enabled before enabling XHV_VOICEMAIL_MODE.</td>
+</tr>
+				</table>
+</p>
+			
+		</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>Returns S_OK if successful, an error code otherwise.</p>
+<h4><a name="remarks"></a>Remarks</h4>
+			<p>This function determines which processing modes will be usable by the XHV engine and by the local talkers registered with the engine.  The library code supporting a mode will not be linked in with the title unless the title specifically enables that processing mode.  For example, the XHV code for speech recognition is linked into the title only if <b>EnableProcessingMode</b> is called with XHV_SR_MODE.</p>
+			
+			<p>Because a title must call <b>EnableProcessingMode</b> before using any functions of the specified mode, the title typically calls the function in the initialization code.</p>
+
+			<p>A title must enable a specific processing mode before using <a href="XHVEngine_SetProcessingMode.htm">SetProcessingMode</a> to set a local talker to that mode.  Also, once the title has registered a local talker with <a href="XHVEngine_RegisterLocalTalker.htm">RegisterLocalTalker</a>, further processing modes may not be enabled in the engine.</p>
+
+<p>As an example, the order of calls for setting XHV_SR_MODE is:</p>
+			<ol>
+				<li><b>EnableProcessingMode</b> with XHV_SR_MODE</li>
+				<li><a href="IXHVEngine_RegisterSpeechRecognitionBank.htm">RegisterSpeechRecognitionBank</a></li>
+				<li><a href="XHVEngine_SelectVocabulary.htm">SelectVocabulary</a></li>
+				<li><a href="XHVEngine_SetProcessingMode.htm">SetProcessingMode</a> with XHV_SR_MODE</li>
+			</ol>
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xhv.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xvoice.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="XHVEngine_SetProcessingMode.htm">IXHVEngine::SetProcessingMode</a>
+</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

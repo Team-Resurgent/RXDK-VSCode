@@ -1,0 +1,131 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineCompetitionCheckin</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineCompetitionCheckin"/>
+<MSHelp:Keyword Index="F" Term="XOnlineCompetitionCheckin"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineCompetitionCheckin</h1>
+            <p>Enables a player to perform the required check-in for a competition event. Check-in must succeed 
+			prior to starting any round.</p>
+        <pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineCompetitionCheckin(</b>
+    <b>DWORD</b> <i>dwUserIndex</i><b>,</b>
+    <b>DWORD</b> <i>dwTemplate</i><b>,</b>
+    <b>ULONGLONG</b> <i>qwTeamID</i><b>,</b>
+    <b>ULONGLONG</b> <i>qwCompetitionID</i><b>,</b>
+    <b>ULONGLONG</b> <i>qwEventID</i><b>,</b>
+    <b>HANDLE</b> <i>hWorkEvent</i><b>,</b>
+    <b>PXONLINETASK_HANDLE</b> <i>phTask</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+            <dt><i>dwUserIndex</i></dt>
+				<dd>[in]  Controller index (zero-based) of the player. The player must have been 
+				successfully logged on with a previous call to <a href="XOnlineLogon.htm">XOnlineLogon</a>.</dd>
+            
+			
+            <dt><i>dwTemplate</i></dt>
+				<dd>[in]  ID of a template describing the competition.</dd>
+			
+            <dt><i>qwTeamID</i></dt>
+				<dd>[in]  Team ID. The value in this parameter is used only if this is a team competition 
+				rather than a competition between individuals. If this is not a team competition, set 
+				this value to zero.</dd>
+            
+			
+            <dt><i>qwCompetitionID</i></dt>
+				<dd>[in]  Unique ID that specifies the competition.</dd>
+            
+			
+            <dt><i>qwEventID</i></dt>
+				<dd>[in]  ID of the current event within the competition. This ID is received from the topology query.</dd>
+            
+			
+            <dt><i>hWorkEvent</i></dt>
+				<dd>[in, optional]  Handle of the event you want to associate with this task. If you do not 
+				want to assign an event, set this parameter to NULL.</dd>
+            
+			
+            <dt><i>phTask</i></dt>
+				<dd>[out]  Pointer to an <b>XONLINETASK_HANDLE</b> type. The handle is associated 
+				with the task started by <b>XOnlineCompetitionCheckin</b>. The handle can then be used in 
+				calls to <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> to perform work associated with this task.</dd>
+			
+        </dl>
+<h4><a name="return"></a>Return Values</h4>
+            
+                <p>Returns S_OK if successful, or an error code otherwise. The error codes can include those 
+				listed in the following table.</p>
+				<table>
+					<tr>
+						<th>Error Code</th> <th>Description</th>
+					</tr>
+					<tr>
+						<td>XONLINE_E_QUERY_ENTITY_NOT_FOUND</td>
+						<td>The specified competition does not exist.</td>
+					</tr>
+					<tr>
+						<td>XONLINE_E_COMP_CHECKIN_TOO_EARLY</td>
+						<td>Check-in for the competition event has not started yet.</td>
+					</tr>
+					<tr>
+						<td>XONLINE_E_COMP_CANCELLED</td>
+						<td>The competition has been canceled.</td>
+					</tr>
+					<tr>
+						<td>XONLINE_E_COMP_CHECKIN_BAD_EVENT</td>
+						<td>The player is not a valid participant in the event, or the event does not exist.</td>
+					</tr>
+					<tr>
+						<td>XONLINE_E_COMP_CHECKIN_TIME_INVALID</td>
+						<td>The player is attempting to check in to an event after the round has ended.</td>
+					</tr>
+					<tr>
+						<td>XONLINE_E_COMP_CHECKIN_EVENT_SCORED</td>
+						<td>The player is attempting to check in to an event that has already been scored by 
+						the service. Most likely the player has already forfeited or been ejected.</td>
+					</tr>
+					<tr>
+						<td>XONLINE_S_COMP_CHECKIN_EVENT_SCORED</td>
+						<td>The entrant's opponent in the event forfeited or has been ejected, so the entrant has automatically won the event by checking in. Re-query topology to view results. </td>
+					</tr>
+				</table>
+            
+        <h4><a name="remarks"></a>Remarks</h4>
+			<p>Titles call <b>XOnlineCompetitionCheckin</b> when a player is ready to play a competition event, 
+			reguardless of whether the match opponent is online and ready to play. A successful call to 
+			<b>XOnlineCompetitionCheckin</b> should be followed by a game invitation to the player's opponent in 
+			the event.</p>
+		<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+			<a href="XOnlineCompetitionCreate.htm">XOnlineCompetitionCreate</a>, <a href="XOnlineCompetitionTopology.htm">XOnlineCompetitionTopology</a>, <a href="XOnlineCompetitionTopologySingleElimination.htm">XOnlineCompetitionTopologySingleElimination</a>
+		</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

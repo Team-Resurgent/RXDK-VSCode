@@ -1,0 +1,104 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Extending XbRC</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Extending XbRC"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+		<MSHelp:Keyword Index="K" Term="XbRC, extending"/>
+	</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Extending XbRC</h1>
+<p>Extending the XbRC to understand new data types is quite simple:</p><ol>
+	<li><a href="xbrc_adding_new_class.htm">Adding a new class</a>. Add a new class to represent your data type derived from <a href="xbrc_extending.htm#xbrcrawdata">XBRCRawData</a>.</li>
+
+	<li><a href="xbrc_writing_tag_handlers.htm">Writing Tag Handlers</a>. Write the tag handlers for the new data type as members of <b>CXBParser</b>. These are the <b>Begin</b><i>_tag</i> and <b>End</b><i>_tag</i> functions described in <a href="xbrc_parsing.htm">Parsing Using CXBParser</a>.</li>
+
+	<li><a href="xbrc_add_tag_handlers.htm">Adding Tag Handlers</a>. Add the tag handlers to the <a href="xbrc_content_handler.htm#start">startElement</a> and <a href="xbrc_content_handler.htm#end">endElement</a> member functions of the <b>CXBParser</b> class, being sure to include them in the correct context.</li>
+
+	<li><a href="xbrc_writing_constructor.htm">Writing the Constructor</a>. Write the constructor that takes the parsed data and adds it to the class derived from <b>XBRCRawData</b> above.</li>
+
+	<li><a href="xbrc_writing_adddata.htm">Writing the addData Function</a>. Write the <b>addData</b> function for the class derived from <b>XBRCRawData</b> and call it from the <a href="xbrc_content_handler.htm#char">CXBParser::characters</a> member function based on the correct context.</li>
+
+	<li><a href="xbrc_writing_needscompiling.htm">Writing needsCompiling function</a>. Write the <b>needsCompiling</b> function for the class derived from <b>XBRCRawData</b> to determine if the newly parsed data matches the data in the intermediate file.</li>
+
+	<li><a href="xbrc_writing_compile.htm">Writing a Compile Function</a> Write the compiler member function for the class derived from <b>XBRCRawData</b>.</li>
+
+	<li><a href="xbrc_storing_data_dep_checking.htm">Storing Data for Dependency Checking</a>. Write the <b>inputIntermediateFile</b> and <b>outputIntermediateFile</b> functions for the class derived from <b>XBRCRawData</b> to store the data for dependency checking.</li>
+
+	<li><a href="xbrc_writing_optimize.htm">Writing an Optimize Function</a>. Write the optimize function for the class derived from <b>XBRCRawData</b> to optimize the data, if desired.</li>
+
+	<li><a href="xbrc_writing_link.htm">Writing a Link Function</a>. Write the link function that outputs the data from the memory footprint or intermediate file to the final file format needed for the resource(s).</li>
+</ol>
+<p>The <b>CXBParser</b> class drives the process and provides error handling if the parsing, compiling, optimizing, or linking run into problems.</p><p>When XbRC starts up, it parses the command line, starts up the SAX parser, and creates an instance of the <b>CXBParser</b> class. Based on the command line, it hands the file specified to the <b>CXBParser</b> class and starts parsing. When parsing is complete, XbRC makes sure no error was thrown and then starts compiling. After compiling and making sure the compile didn't throw any errors, it starts optimizing. After optimizing and making sure the optimization pass didn't throw any errors, it links the data into a resource file or files. It then exits with the error code of S_OK if everything went OK, or the error code of the problem encountered if not.</p><p>The <b>CXBParser</b> class is what runs the show. It provides the callbacks used by the SAX parser to hand us the data it parses from the XML file. It also knows about each resource type and does the specific work needed to create the containers for each resource type. <b>CXBParser</b> creates the containers and pushes them into two lists. The first is the master list that contains all of the data parsed out of the class. The second acts like a stack so that nested tags will be parsed correctly. The second list shows the current context that you are parsing. For example, if your current context is a cube map resource (that is, the top of the stack or second list is a resource of type cube map) and you encounter a texture tag, the context allows you to add the texture to the cube map and not to the general list of resources.</p><p>When you compile, optimize, or link, you are simply iterating through the master list of resources and calling their compile, optimize, and link functions to actually output the data. That's all there is to it.</p><p>The data containers are derived from the <b>XBRCRawData</b> class. Here is the header for this class:</p><h2><a name="xbrcrawdata"></a></h2>
+<pre class="clsCode">
+//-----------------------------------------------------------------------------
+// Name: XBRCRawData
+// Desc: Base class from which all containers are derived.
+// DEVELOPERS: All custom data types should derive from this.
+//-----------------------------------------------------------------------------
+class XBRCRawData
+{
+    protected:
+        XBRCResourceType    m_dwResourceType;
+
+    public:
+        XBRCRawData()
+        {
+            m_dwResourceType = XBRC_INVALID_RESOURCE;
+        }
+
+        XBRCRawData( ISAXAttributes *pAttributes );
+
+        virtual ~XBRCRawData()
+        {
+            m_dwResourceType = XBRC_INVALID_RESOURCE;
+        }
+
+        //Adds data to the class from XML file.
+        virtual HRESULT addData( WCHAR *pwchChars, int cchChars ) = 0;
+
+        // Compiles resource into binary format.
+        virtual HRESULT compile() = 0;
+
+        // optimizes binary format.  (Stripify triangles, etc.)
+        virtual HRESULT optimize() = 0;
+
+        // Writes intermediate file containing compiled/optimized binary data.
+        virtual HRESULT outputIntermediateFile() = 0;
+
+        // Reads intermediate file containing compiled/optimized binary data.
+        virtual HRESULT inputIntermediateFile() = 0;
+
+        // Checks dependencies to see if resource needs to be compiled.
+        virtual BOOL needsCompiling() = 0;
+
+        // links resource into final bundled format.
+        virtual HRESULT link() = 0;
+
+        virtual XBRCResourceType getResourceType()
+        {
+            // Return INVALID for the base class.  Nothing should ever
+            // be this type of resource.
+            return m_dwResourceType;
+        }
+};
+</pre>
+    <p>All of the containers used in XbRC should be derived from this class.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>XFindNextNickname</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="XFindNextNickname">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XFindNextNickname"/>
+<MSHelp:Keyword Index="F" Term="XFindNextNickname"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+
+
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_xbox_xfindnextnickname"></A>XFindNextNickname</H1>
+
+<P>The <B>XFindNextNickname</B> function continues a nickname cache enumeration begun with a call to <A HREF="x_jsk_xfindfirstnickname.htm">XFindFirstNickname</a>.</P>
+
+<PRE class=syntax><B>BOOL XFindNextNickname(
+    HANDLE</B> <I>hFindNickname</I>,
+    <B>LPWSTR</B> <I>lpNickname</I>,
+    <B>UINT</B> <I>uSize</I><BR><B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>hFindNickname</I></DT>
+<DD>[in] A nickname search handle returned by a previous call to the <B><A HREF="x_jsk_xfindfirstnickname.htm">XFindFirstNickname</a></B> function.</DD>
+
+<DT><I>lpNickname</I></DT>
+<DD>[out] Pointer to a buffer that receives the next enumerated nickname from the local cache.  Nicknames are limited to MAX_NICKNAME characters (including the terminating null character).</DD>
+
+<DT><I>uSize</I></DT>
+<DD>[in] The size, in characters, of the <I>lpNickname</I> buffer.</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is TRUE and <I>lpNickname</I> will contain the next enumerated nickname.</P>
+
+</P>If the function fails or there are no more nicknames to enumerate, the return value is FALSE.</P>
+
+<P>If the function fails, it does not call <B>SetLastError</B>. A title cannot call <B>GetLastError</B> for extended error information.</P>
+
+<H4>Remarks</H4>
+
+<P><B>XFindNextNickname</B> continues a nickname enumeration on the specified search handle.  When the enumeration is complete, the function returns FALSE.  When the search handle is no longer needed, close it using the <A HREF="x_jsk_xfindclose.htm">XFindClose</a> function.</P>
+
+<P>Nicknames that will not fit in a buffer of <I>uSize</I> characters will be skipped.  This allows a title to use the <I>uSize</I> parameter to filter the results of the enumeration to only those nicknames with a length that the title is capable of displaying.  The calculation includes the terminating null character.  So, for example, to request only nicknames with three or fewer characters, specify four for <I>uSize</I>.</P>
+
+<P>The nicknames are returned in order from the newest in the cache to the oldest.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Xbox.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+
+<BR><B><A HREF="xbox_mt_xtl_sll_strings_oview_unioview.htm">Unicode</a>:</B> Implemented as Unicode only.<BR>
+
+<H4>See Also</H4>
+<P>
+<A HREF="x_jsk_xfindfirstnickname.htm">XFindFirstNickname</a>,
+<A HREF="x_jsk_xfindclose.htm">XFindClose</a>,
+<A HREF="x_jsk_xsetnickname.htm">XSetNickname</a>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

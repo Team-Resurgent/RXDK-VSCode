@@ -1,0 +1,94 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>IDirect3DDevice8::SetRenderTargetFast</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="F" Term="SetRenderTargetFast"/>
+<MSHelp:Keyword Index="K" Term="SetRenderTargetFast (IDirect3DDevice8)"/>
+<MSHelp:Keyword Index="K" Term="IDirect3DDevice8::SetRenderTargetFast"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>IDirect3DDevice8::SetRenderTargetFast</h1>
+<p>Sets a new color buffer and/or depth-buffer for the device. Unlike <a href="_dx_idirect3ddevice8_setrendertarget_graphics.htm">IDirect3DDevice8::SetRenderTarget</a>, <b>SetRenderTargetFast</b> can only be used when the new render target (and optional Z buffer) have exactly the same surface format, dimensions, pitch, and multi-sample format as the old.</p>
+<pre class="syntax" xml:space="preserve"><b>void</b> <b>SetRenderTargetFast(</b>
+    <b>IDirect3DSurface8</b> *<i>pRenderTarget</i><b>,</b>
+    <b>IDirect3DSurface8</b> *<i>pNewZStencil</i><b>,</b>
+    <b>DWORD</b> <i>Flags</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+			<dt><i>pRenderTarget</i></dt>
+<p><dd>[in]  Pointer to a new color buffer. The reference count on the new render target is incremented. This parameter cannot be NULL. Devices always have to be associated with a color buffer.</dd> 
+<p>The new render target surface must have been created with a valid render target format, and must also have the exact same surface format, dimensions, pitch and multi-sample format as the old. See <a href="_dx_d3dformat_graphics.htm">D3DFORMAT</a> for a list of valid render target formats.</p>
+
+</p>
+			<dt><i>pNewZStencil</i></dt>
+<p><dd>[in]  Pointer to a new depth-stencil buffer. If there is an existing depth-stencil buffer, it is released. If this parameter is not NULL, the reference count on the new depth-stencil buffer surface is incremented. Applications can change the render target (without changing the depth buffer) by passing in the <i>ppZStencilSurface</i> parameter of <a href="_dx_idirect3ddevice8_getdepthstencilsurface_graphics.htm">IDirect3DDevice8::GetDepthStencilSurface</a>.</dd>
+
+<p>The new depth-stencil surface must have been created with a valid depth/stencil format and must have the exact same surface format, dimensions, pitch, and multi-sample format as the old. For a list of valid depth/stencil formats, see <b>D3DFORMAT</b>.</p>
+
+</p>
+			<dt><i>Flags</i></dt>
+<dd>[in]  Must be zero.</dd>
+		</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>None.</p>
+<h4><a name="remarks"></a>Remarks</h4>
+<p>Because of its reduced functionality, <b>SetRenderTargetFast</b> is significantly faster than <b>SetRenderTarget</b> in the scenarios that it supports. The following data shows the improvement. The data was measured with all of the code in the cache and ignoring the GPU. The GPU still has to do a back-end synchronize and so there will be no improvement in that respect.</p>
+
+<table>
+<tr>
+<th>
+</th>
+<th>SetRenderTargetFast</th>
+<th>SetRenderTarget</th>
+</tr>
+
+<tr>
+<td>CPU cycles per call</td>
+<td>65</td>
+<td>810</td>
+</tr>
+
+<tr>
+<td>Bytes written to push-buffer</td>
+<td>48</td>
+<td>292</td>
+</tr>
+
+</table>
+<p>Direct3D will not perform a final release on a resource until both the hardware and Direct3D are done with that resource. The status of the lock on the resource can be determined using <a href="xbox_dxg_IDirect3DResource8_IsBusy.htm">IDirect3DResource8::IsBusy</a>.</p>
+
+<p>Once a color buffer and a depth-stencil surface have been associated with the same device by this method, they are said to be paired.</p>
+
+<p>The previous depth-stencil surface's contents persist after a call to <b>SetRenderTargetFast</b> to disassociate the previous depth-stencil surface from the device. If the surface is re-associated with the device, then the contents of the surface will be unchanged, providing that the color buffer to which the new depth-stencil surface is being paired is the same size and format as the color buffer to which the depth-stencil surface was most recently paired.</p>
+
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in D3d8.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use D3d8.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p><a href="_dx_idirect3ddevice8_setrendertarget_graphics.htm">IDirect3DDevice8::SetRenderTarget</a></p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

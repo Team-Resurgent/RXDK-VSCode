@@ -1,0 +1,55 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Playing Sounds on Audiopaths</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Playing Sounds on Audiopaths"/>
+<MSHelp:Keyword Index="F" Term="Playing Sounds on Audiopaths"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H3><A NAME="_dx_playing_sounds_on_audiopaths_dxaudio"></A>Playing Sounds on Audiopaths</H3>
+
+<P>You can play a segment on the default path by passing NULL in the <I>pAudioPath</I> parameter of <A HREF="_dx_idirectmusicperformance8_playsegmentex_dxaudio.htm"><B>IDirectMusicPerformance8::PlaySegmentEx</B></A>.</P>
+
+<P>If there is no default audiopath, or if you want to play a segment on another path, you must use <B>PlaySegmentEx</B> rather than <B>PlaySegment</B>. You can specify the audiopath in two ways:
+
+<UL>
+	<LI>Supply a pointer in the <I>pAudioPath</I> parameter. Usually this is the <A HREF="_dx_idirectmusicaudiopath8_dxaudio.htm"><B>IDirectMusicAudioPath8</B></A> interface pointer you received when the audiopath was created.</LI>
+
+	<LI>Include DMUS_SEGF_USE_AUDIOPATH in <I>dwFlags</I>. This flag causes the segment to create an audiopath from a configuration embedded in the segment object.</LI>
+</UL>
+
+<P class=note><B>Note</B>&nbsp;&nbsp;An audiopath created in response to the DMUS_SEGF_USE_AUDIOPATH flag is automatically released as soon as the segment has stopped playing. If the audiopath contains an effect such as reverberation, the effect is cut short prematurely. To prevent this from happening, the application should create the audiopath manually and release it only after a suitable delay.</P>
+
+<P>The following sample code, where <I>g_pPerf</I> is an <A HREF="_dx_idirectmusicperformance8_dxaudio.htm"><B>IDirectMusicPerformance8</B></A> interface pointer and <I>g_pSeg</I> is an <A HREF="_dx_idirectmusicsegment8_dxaudio.htm"><B>IDirectMusicSegment8</B></A> interface to any type of sound file, plays the segment on an embedded audiopath configuration if one is available, or on the default audiopath otherwise:</P>
+
+
+<PRE>
+IDirectMusicAudioPath8 * pPath =  NULL;
+ 
+if (g_pSeg)
+{
+  g_pPerf-&gt;CreateStandardAudioPath(DMUS_APATH_SHARED_STEREOPLUSREVERB, 128, TRUE, &amp;pPath);
+    
+  if (pPath)
+  {  
+    g_pPerf-&gt;PlaySegmentEx(g_pSeg, NULL, NULL, 0, 0, NULL, NULL, pPath);
+    pPath-&gt;Release();
+    pPath = NULL;
+  }
+}
+</PRE>
+
+<P>If you have an interface to the audiopath, you can change the volume by using <A HREF="_dx_idirectmusicaudiopath8_setvolume_dxaudio.htm"><B>IDirectMusicAudioPath8::SetVolume</B></A>. Unlike the global parameter GUID_PerfMasterVolume, which affects all sounds playing on the synthesizer, this method sets the volume only on the performance channels playing on this audiopath.</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

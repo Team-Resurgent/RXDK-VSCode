@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>getsockname</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="getsockname">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="getsockname"/>
+<MSHelp:Keyword Index="F" Term="getsockname"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="xbox_getsockname_winsock"></A>getsockname</H1>
+
+<P>Retrieves the local name for a socket.</P>
+
+<PRE class=syntax><B>int getsockname(
+  SOCKET </B><I>s</I>,<B>                    </B>
+<B>  struct sockaddr FAR </B><I>*name</I>,<B>  </B>
+<B>  int FAR </B><I>*namelen            </I>
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>s</I></DT>
+
+<DD>[in] Descriptor identifying a socket.</DD>
+
+<DT><I>name</I></DT>
+
+<DD>[out] Receives the address (name) of the socket.</DD>
+
+<DT><I>namelen</I></DT>
+
+<DD>[in/out] Size of the <I>name</I> buffer.
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If no error occurs, <B>getsockname</B> returns zero. Otherwise, a value of SOCKET_ERROR is returned, and a specific error code can be retrieved by calling <A HREF="xbox_wsagetlasterror_winsock.htm">WSAGetLastError</A>.</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=41%>Error code</TH>
+<TH align=left width=59%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>WSANOTINITIALISED</TD>
+<TD width=59%>A successful <A HREF="xbox_wsastartup_winsock.htm">WSAStartup</A> call must occur before using this API.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>WSAEINPROGRESS</TD>
+<TD width=59%>A blocking call is in progress.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>WSAENOTSOCK</TD>
+<TD width=59%>The descriptor is not a socket.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=41%>WSAEINVAL</TD>
+<TD width=59%>The socket has not been bound to an address with <A HREF="xbox_bind_winsock.htm">bind</A>, or ADDR_ANY is specified in <B>bind</B> but connection has not yet occurs.</TD>
+</TR>
+</TABLE><BR>
+
+<H4>Remarks</H4>
+
+<P>The <B>getsockname</B> function retrieves the current name for the specified socket descriptor in <I>name</I>. It is used on the bound or connected socket specified by the <I>s</I> parameter. The local association is returned. This call is especially useful when a <A HREF="xbox_connect_winsock.htm">connect</A> call has been made without doing a <A HREF="xbox_bind_winsock.htm">bind</A> first; the <B>getsockname</B> function provides the only way to determine the local association that has been set by the system.</P>
+
+<P>On call, the <I>namelen</I> argument contains the size of the <I>name</I> buffer, in bytes. On return, the <I>namelen</I> parameter contains the actual size in bytes of the <I>name</I> parameter.</P>
+
+<P>The <B>getsockname</B> function does not always return information about the host address when the socket has been bound to an unspecified address, unless the socket has been connected with <A HREF="xbox_connect_winsock.htm">connect</A> or <A HREF="xbox_accept_winsock.htm">accept</A> (for example, using ADDR_ANY). A title must not assume that the address will be specified unless the socket is connected.</P>
+
+<H4>Requirements</H4>
+<p>
+<b>Header: </b>Declared in winsockx.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xnet.lib for titles that only support system link play, XOnline.lib for titles that support online play. Use the secure versions of the library file (Xnets.lib or XOnlines.lib) for final testing.
+</p>
+
+
+<H4>See Also</H4>
+
+<P>
+<a href="xbox_winsock_overview_winsock.htm">Winsock Overview</A>,
+<a href="xbox_winsock_functions_winsock.htm">Winsock Functions</A> |
+  <A HREF="xbox_bind_winsock.htm">bind</A>, <A HREF="xbox_getpeername_winsock.htm">getpeername</A>, <A HREF="xbox_socket_winsock.htm">socket</A></P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

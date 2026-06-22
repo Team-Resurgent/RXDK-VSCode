@@ -1,0 +1,64 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineContentSetSecurityKey</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineContentSetSecurityKey"/>
+<MSHelp:Keyword Index="F" Term="XOnlineContentSetSecurityKey"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineContentSetSecurityKey</h1>
+<p>Sets the security key used to decrypt the package keys of specially signed title content received from PartnerNet.</p>
+<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;This function is implemented in the debug xonlined.lib only, should not be used by retail (shipping) titles, and is provided for testing purposes only.</p>
+<pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineContentSetSecurityKey(</b>
+    <b>const BYTE</b> *<i>pbSecretKey</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+	<dt><i>pbSecretKey</i></dt>
+<dd>[in]  The 128-bit extra security key that was used to sign the content package.</dd>
+            
+</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>If the function succeeds, the return value is S_OK.</p>
+<p>If the function is called in a retail build, it returns E_NOTIMPL.</p>
+<h4><a name="remarks"></a>Remarks</h4>
+
+<p>If desired, content sent to PartnerNet can be encrypted with an extra key when building the content package. Otherwise, content packages on PartnerNet can potentially be downloaded and viewed by other publishers.  <b>XOnlineContentSetSecurityKey</b> sets the key to use to decrypt that content when it is retrieved from PartnerNet using <a href="XOnlineContentInstall.htm">XOnlineContentInstall</a>.  To install an offering that has the extra encryption, call <b>XOnlineContentSetSecurityKey</b> before <b>XOnlineContentInstall</b>.</p>
+
+<p>When building a content package, the extra security key is specified as the <b>SecurityKey</b> value in the content metadata file for the package.  <a href="xbox_jbh_tool_online_buildcontent.htm">BuildOffer</a> looks for the <b>SecurityKey</b> value in the metadata and signs the package with the extra key if found.  The 128-bit key is a byte array specified as a big-endian hexadecimal value; the same byte array must be passed as the <i>pbSecretKey</i> parameter to <b>XOnlineContentSetSecurityKey</b> when the content is later installed.</p>
+
+<p>Once <b>XOnlineContentSetSecurityKey</b> has been called to set the extra security key, there is no way to "unset" the key (other than rebooting the console), and there is no "identity" key that would produce the same result as having not signed the package with an extra key.  Therefore, publishers should extra-sign either all or none of the content they send to PartnerNet (or, after switching to either method, only download content that matches the new method being used).  Before setting the extra key (with <b>XOnlineContentSetSecurityKey</b>) all extra-signed content is unreachable, and, after setting the extra key, only content signed with that extra key is reachable.</p>
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonlined.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="x_mt_xonline_functions.htm">Xbox Live Functions</a> |
+<a href="XOnlineContentInstall.htm">XOnlineContentInstall</a>,
+<a href="xbox_jbh_tool_online_buildcontent.htm">BuildOffer</a>
+</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

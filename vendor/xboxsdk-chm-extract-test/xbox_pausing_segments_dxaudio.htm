@@ -1,0 +1,55 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Pausing Segments</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Pausing Segments"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+  <MSHelp:Keyword Index="K" Term="DirectMusic, pausing segments in"/>
+  <MSHelp:Keyword Index="K" Term="segments, pausing"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Pausing Segments</h1>
+<p>Because DirectMusic does not support a pause method. Instead, titles must stop playing audio content in order to pause a segment. After the pause is over, the title would need to start playing the audio content again at the point it left off. The following sections will explain how to implement this functionality, and also discuss issues to consider when doing this.</p>
+<ul>
+<li><a href="#IDAWAYK">Implementation Steps</a></li><li><a href="#IDAUBYK">Considerations</a></li><li><a href="#IDAMCYK">Related Topics</a></li></ul>
+<h2><a name="IDAWAYK"></a>Implementation Steps</h2>
+<p>Complete the following steps to pause a segment:</p><ol>
+                <li>To retrieve the time the segment was started, call <a href="_dx_idirectmusicsegmentstate8_getstarttime_dxaudio.htm">IDirectMusicSegmentState8::GetStartTime</a>.</li>
+                <li>To retrieve the time the segment was stopped, call <a href="_dx_idirectmusicperformance8_gettime_dxaudio.htm">IDirectMusicPerformance8::GetTime</a>.</li>
+                <li>To pause the segment, call <a href="_dx_idirectmusicperformance8_stopex_dxaudio.htm">IDirectMusicPerformance8::StopEx</a>.</li>
+                <li>To determine how much of the segment has been played, subtract the start time from the time the segment was stopped.</li>
+                <li>To move the start point to the point where the segement was paused, call <a href="_dx_idirectmusicsegment8_setstartpoint_dxaudio.htm">IDirectMusicSegment8::SetStartPoint</a> (using the value provided in the previous step).</li>
+                <li>To resume playing the segment from the point where the segment was paused, call <a href="_dx_idirectmusicperformance8_playsegmentex_dxaudio.htm">IDirectMusicPerformance8::PlaySegmentEx</a>.</li>
+            </ol>
+<h2><a name="IDAUBYK"></a>Considerations</h2>
+<p>The following list contains some issues to consider when using the method described above to pause segments.</p><ul>
+            	<li>Notes inside a sequence or style track are played at specific points in time, but may sustain and/or decay for a period of time afterward. If a segment is stopped after a note has started playing, that note will not be triggered again when the segment is restarted. However, restarting a segment in the middle of a wave (in a wave track) will restart that wave from the appropriate offset.</li>
+                <li><b>IDirectMusicSegment8::SetStartPoint</b> takes a start point for the segment in <b>MUSIC_TIME</b>. Clock-time segments and wave files loaded as segments do not have a <b>MUSIC_TIME</b> length, so <b>IDirectMusicSegment8::SetStartPoint</b> will fail unless the title sets a <b>MUSIC_TIME</b> length using <a href="_dx_idirectmusicsegment8_setlength_dxaudio.htm">IDirectMusicSegment8::SetLength</a>.</li>
+            </ul>
+<h2><a name="IDAMCYK"></a>Related Topics</h2>
+<p>The following topics are related to pausing segments.</p><ul>
+                <li><a href="_dx_clock_time_vs._music_time_dxaudio.htm">Clock Time vs. Music Time</a></li>
+                <li><a href="_dx_idirectmusicperformance8_gettime_dxaudio.htm">IDirectMusicPerformance8::GetTime</a></li>
+                <li><a href="_dx_idirectmusicsegment8_setlength_dxaudio.htm">IDirectMusicSegment8::SetLength</a></li>
+            	<li><a href="_dx_idirectmusicsegment8_setstartpoint_dxaudio.htm">IDirectMusicSegment8::SetStartPoint</a></li>
+                <li><a href="_dx_idirectmusicperformance8_stopex_dxaudio.htm">IDirectMusicPerformance8::StopEx</a></li>
+            </ul>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

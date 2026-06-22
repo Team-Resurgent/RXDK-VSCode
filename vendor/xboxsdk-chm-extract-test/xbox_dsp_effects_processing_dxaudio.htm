@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>DSP Effects Processing</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="DSP Effects Processing">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="DSP Effects Processing"/>
+<MSHelp:Keyword Index="F" Term="DSP Effects Processing"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="xbox_dsp_effects_processing_dxaudio"></A>DSP Effects Processing</H1>
+
+<!--
+<P CLASS="note"><B><I>Note</I></B>&nbsp;&nbsp;&nbsp;&nbsp;Only available on the actual Xbox hardware.</P>
+-->
+
+<P>DSP effects processing are provided by the global processor digital signal processor (DSP) within the Xbox Media Communications Processor (MCP).  The global processor is a fully programmable DSP, compatible with the Motorola 56300 DSP core, with some enhancements designed to make it interact with the rest of the MCP.</P>
+
+<P>The global processor is responsible for taking data from the voice processor and creating the final 5.1 data stream to be sent to the encode processor for Surround encoding.  The global procssor DSP program is arbitrary, but for sound to be output, it needs to (at a minimum) take data from the voice processor mixbins and output to system memory where the encode processor can pick it up for encoding.  Full details on global processor DSP programming is outside the scope of this document.  The figure below shows the relationship between the voice processor, global processor, and encode processor, and shows a simple global processor DSP program.</P>
+
+<IMG SRC="images/xbox_simple_gp_dsp_program_dxaudio.gif" BORDER="0" ALT="Simple GP DSP Program">
+
+<P>The global processor DSP program image is created by the XGPImage tool.  It takes a description of the DSP program desired and creates the final binary image to be downloaded to the global processor's internal program memory.  XGPImage allows a developer to specify a list of DSP effects (or any arbitrary code).  It also specifies from which mixbin(s) each effects chain should receive data and where the data should be ultimately sent.  The following configuration file describes a single effects chain, MIXBIN0_CHAIN with two effects (two separate instances of an IIR Filter effect) receiving data from voice processor Mixbin 20 and outputting to global processor Mixbin 1.</P>
+
+<P>The following text is an example of a DSP configuration file.</P>
+
+<PRE>
+[MAIN]
+IMAGE_FRIENDLY_NAME=MyEffectsImage
+FX_NUMTEMPBINS=1
+GRAPH0=CHAIN
+
+[CHAIN]
+FX0=IIR2
+FX1=IIR2
+
+[CHAIN_FX0_IIR2]
+FX_MIXOUTPUT=0
+FX_DSPCODE=C:\Program Files\Microsoft Xbox SDK\source\dsound\dsp\bin\iir2.scr
+FX_DSPSTATE=C:\Program Files\Microsoft Xbox SDK\source\dsound\dsp\ini\iir2state.ini
+FX_NUMINPUTS=1
+FX_NUMOUTPUTS=1
+FX_INPUT0=VPMIXBIN_FXSEND1
+FX_OUTPUT0=GPTEMPBIN0
+
+[CHAIN_FX1_IIR2]
+FX_MIXOUTPUT=0
+FX_DSPCODE=C:\Program Files\Microsoft Xbox SDK\source\dsound\dsp\bin\iir2.bin
+FX_DSPSTATE=C:\Program Files\Microsoft Xbox SDK\source\dsound\dsp\ini\iir2state.ini
+FX_NUMINPUTS=1
+FX_NUMOUTPUTS=1
+FX_INPUT0=GPTEMPBIN0
+FX_OUTPUT0=GPMIXBIN_FRONTLEFT
+</PRE>
+
+<P>When run with the above configuration file, XGPImage.exe will output two files: a binary image that is to be loaded into DSP program memory and a 'C' header file describing the offsets for the parameter of each effect.</P>
+
+<P>The DSP image itself is set, by DirectSound, using the <A HREF="xbox_idirectsound8_downloadeffectsimage_dxaudio.htm">IDirectSound::DownloadEffectsImage</A> method.</P>
+
+<P>DirectSound has no direct notion of what is running in the global processor directly.  All DirectSound can do is:</P>
+
+<OL>
+<LI>Specify the DSP program that should be running on the global processor.</LI>
+<LI>Set memory to update DSP program parameters.</LI>
+</OL>
+
+<P>It does the former with <B>IDirectSound::DownloadEffectsImage</B>.  It sets DSP program parameters with <A HREF="xbox_idirectsound8_seteffectdata_dxaudio.htm">IDirectSound8::SetEffectData</A>.</P>
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

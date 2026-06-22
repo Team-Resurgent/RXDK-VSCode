@@ -1,0 +1,61 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>3D Compressed Texture Format</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="3D Compressed Texture Format"/>
+<MSHelp:Keyword Index="F" Term="3D Compressed Texture Format"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>3D Compressed Texture Format</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<!--****Intro paragraph. Should be a three or four sentence summary of the topic.****-->
+<P class="intro">The Xbox uses an extension of DXTn to support 3D compressed textures. This format is block linear in nature and handles any size of texture map. Hardware limited to power of two texture sizes will find a simple implementation of the addressing possible. An optimization is done to minimize memory consumption and bandwidth for small texture depths.</P>
+<p>Each texture map is based on width x height x depth texels in size, where all dimensions are greater than zero. Then, this texture map is divided up into blocks that are one of the following four sizes: 4 x 4 x 4, 4 x 4 x 3, 4 x 4 x 2, or 4 x 4 x 1. Specifically, if depth = 1, then the 4 x 4 x 1 size is selected. If depth = 2, then the 4 x 4 x 2 size is selected. If depth = 3, then the 4 x 4 x 3 size is selected. Otherwise, the 4 x 4 x 4 size is selected. The block sizes are not affected by width or height&#8212;only by depth.</p>
+<H3>DXTn 3D Block Formats</h3>
+<p>The 4 x 4 x 1 block contains one 4 x 4 x 1 subblock. The 4 x 4 x 2 block format contains two 4 x 4 x 1 subblocks that differ in position by depth only. The 4 x 4 x 3 block format contains three 4 x 4 x 1 subblocks that differ in position by depth only. The 4 x 4 x 4 block format contains four 4 x 4 x 1 subblocks that differ in position by depth only. The format for the 4 x 4 x 1 subblock matches the corresponding DXTn 4 x 4 block format (compressed to either 8 bytes or 16 bytes.)</p>
+<p>The subblock ordering within the block is from smaller to larger depth values.</p>
+<H3>Block and Subblock Addressing</h3>
+<p>Given a texel coordinate (<i>u</i>, <i>v</i>, <i>p</i>) in the ranges <i>u</i> (0,1,...,width &#8211; 1), <i>v</i> (0, 1, ..., height &#8211; 1), and <i>p</i> (0, 1, ..., depth &#8211; 1), the following computes the corresponding address of the compressed block and subblock in memory containing that texel. As mentioned above, the subblock format matches the existing DXTn format.</p>
+
+<pre>subblock_size		=  for DXT1, 8; for DXT2..DXT5, 16.
+block_size		=  MIN(p, 4) * subblock_size
+horiz_stride		=  (width + 3) &#62;&#62; 2
+planar_stride		=  ( (height + 3) &#62;&#62; 2) * horiz_stride
+block_byte_address		=  ( (p &#62;&#62; 2) * planar_stride + (v &#62;&#62; 2) * horiz_stride + (u &#62;&#62; 2) ) * block_size
+subblock_byte_address	=  block_byte_address + ( (p &#38; 3) * subblock_size  )
+</pre>
+
+<h3>See Also</h3>
+<p><a href="_dx_idirect3ddevice8_createvolumetexture_graphics.htm">IDirect3DDevice8::CreateVolumeTexture</a></p>
+
+
+<!--*******************************************************************************-->
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

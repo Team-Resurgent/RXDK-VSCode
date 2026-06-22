@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Using Resources From Multiple Threads</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Using Resources From Multiple Threads"/>
+<MSHelp:Keyword Index="F" Term="Using Resources From Multiple Threads"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Using Resources From Multiple Threads</H1>
+<!--***********************************************************-->
+
+<!--****Intro paragraph. Should be a three or four sentence summary of the topic.****-->
+<p>Direct3D is not thread-safe; in particular, there is no synchronization to prevent multiple commands from being written into the push-buffer at the same time. The title must guarantee that only one thread will ever be calling a function that pushes commands into the push-buffer at any given time.</p>
+
+<p>A title should never try to use Direct3D from multiple threads if any Direct3D object has private data set on it. All private data is stored on one list that will be easily corrupted if manipulated from multiple threads.</p>
+
+<p>Direct3D does have several functions that do not manipulate any global state and therefore can be called from any thread, although the performance counters for these functions may become corrupted.  These include:</p>
+
+<ul>
+	<li><a href="_dx_idirect3ddevice8_createtexture_graphics.htm"><b>IDirect3DDevice8::CreateTexture</b></a></li>
+	<li><a href="_dx_idirect3ddevice8_createvolumetexture_graphics.htm"><b>IDirect3DDevice8::CreateVolumeTexture</b></a></li>
+	<li><a href="_dx_idirect3ddevice8_createcubetexture_graphics.htm"><b>IDirect3DDevice8::CreateCubeTexture</b></a></li>
+	<li><a href="_dx_idirect3ddevice8_createvertexbuffer_graphics.htm"><b>IDirect3DDevice8::CreateVertexBuffer</b></a></li>
+	<li><a href="_dx_idirect3ddevice8_createindexbuffer_graphics.htm"><b>IDirect3DDevice8::CreateIndexBuffer</b></a></li>
+	<li><a href="xbox_dxg_Idirect3ddevice8_createpalette.htm"><b>IDirect3DDevice8::CreatePalette</b></a></li>
+	<li><a href="_dx_idirect3ddevice8_createrendertarget_graphics.htm"><b>IDirect3DDevice8::CreateRenderTarget</b></a></li>
+	<li><a href="_dx_idirect3ddevice8_createdepthstencilsurface_graphics.htm"><b>IDirect3DDevice8::CreateDepthStencilSurface</b></a></li>
+	<li><a href="_dx_idirect3ddevice8_createimagesurface_graphics.htm"><b>IDirect3DDevice8::CreateImageSurface</b></a></li>
+	<li><a href="xbox_dxg_IDirect3DDevice8_IsBusy.htm"><b>IDirect3DDevice8::IsBusy</b></a></li>
+	<li><a href="_dx_idirect3ddevice8_isfencepending_graphics.htm"><b>IDirect3DDevice8::IsFencePending</b></a></li>
+	<li><a href="xbox_dxg_IDirect3DResource8_IsBusy.htm"><b>IDirect3DResource8::IsBusy</b></a></li>
+	<li><a href="xbox_dxg_IDirect3DResource8_Register.htm"><b>IDirect3DResource8::Register</b></a></li>
+	<li><a href="_dx_idirect3dtexture8_getleveldesc_graphics.htm"><b>IDirect3DTexture8::GetLevelDesc</b></a></li>
+	<li><a href="_dx_idirect3dtexture8_unlockrect_graphics.htm"><b>IDirect3DTexture8::UnlockRect</b></a></li>
+	<li><a href="_dx_idirect3dvolumetexture8_getleveldesc_graphics.htm"><b>IDirect3DVolumeTexture8::GetLevelDesc</b></a></li>
+	<li><a href="_dx_idirect3dvolumetexture8_unlockbox_graphics.htm"><b>IDirect3DVolumeTexture8::UnlockBox</b></a></li>
+	<li><a href="_dx_idirect3dcubetexture8_getleveldesc_graphics.htm"><b>IDirect3DCubeTexture8::GetLevelDesc</b></a></li>
+	<li><a href="_dx_idirect3dcubetexture8_unlockrect_graphics.htm"><b>IDirect3DCubeTexture8::UnlockRect</b></a></li>
+	<li><a href="_dx_idirect3dvertexbuffer8_getdesc_graphics.htm"><b>IDirect3DVertexBuffer8::GetDesc</b></a></li>
+	<li><a href="_dx_idirect3dvertexbuffer8_unlock_graphics.htm"><b>IDirect3DVertexBuffer8::Unlock</b></a></li>
+	<li><a href="_dx_idirect3dindexbuffer8_getdesc_graphics.htm"><b>IDirect3DIndexBuffer8::GetDesc</b></a></li>
+	<li><a href="_dx_idirect3dindexbuffer8_unlock_graphics.htm"><b>IDirect3DIndexBuffer8::Unlock</b></a></li>
+	<li><a href="xbox_dxg_idirect3dpalette8_GetSize.htm"><b>IDirect3DPalette8::GetSize</b></a></li>
+	<li><a href="xbox_dxg_idirect3dpalette8_Unlock.htm"><b>IDirect3DPalette8::Unlock</b></a></li>
+	<li><a href="_dx_idirect3dsurface8_getdesc_graphics.htm"><b>IDirect3DSurface8::GetDesc</b></a></li>
+	<li><a href="_dx_idirect3dsurface8_unlockrect_graphics.htm"><b>IDirect3DSurface8::UnlockRect</b></a></li>
+	<li><a href="_dx_idirect3dvolume8_getdesc_graphics.htm"><b>IDirect3DVolume8::GetDesc</b></a></li>
+	<li><a href="_dx_idirect3dvolume8_unlockbox_graphics.htm"><b>IDirect3DVolume8::UnlockBox</b></a></li>
+	<li><a href="xgraphics_xgsetcubetextureheader.htm"><b>XGSetCubeTextureHeader</b></a></li>
+	<li><a href="xgraphics_xgsetsurfaceheader.htm"><b>XGSetSurfaceHeader</b></a></li>
+	<li><a href="xgraphics_xgsettextureheader.htm"><b>XGSetTextureHeader</b></a></li>
+	<li><a href="xgraphics_xgsetvolumetextureheader.htm"><b>XGSetVolumeTextureHeader</b></a></li>
+</ul>
+
+<p>The following methods can be called on a resource as long as the <B>Lock</B> field of the resource is set to zero and the resource is not set on <B>IDirect3DDevice8</B>. The <B>Lock</B> field is automatically set to zero if <a href="xbox_dxg_IDirect3DResource8_IsBusy.htm"><b>IDirect3DResource8::IsBusy</b></a> is called and returns FALSE.</p>
+
+<ul>
+	<li><a href="_dx_idirect3dtexture8_lockrect_graphics.htm"><b>IDirect3DTexture8::LockRect</b></a></li>
+	<li><a href="_dx_idirect3dvolumetexture8_lockbox_graphics.htm"><b>IDirect3DVolumeTexture8::LockBox</b></a></li>
+	<li><a href="_dx_idirect3dcubetexture8_lockrect_graphics.htm"><b>IDirect3DCuveTexture8::LockRect</b></a></li>
+	<li><a href="xbox_dxg_idirect3dpalette8_Lock.htm"><b>IDirect3DPalette8::Lock</b></a></li>
+	<li><a href="_dx_idirect3dsurface8_lockrect_graphics.htm"><b>IDirect3DSurface8::LockRect</b></a></li>
+	<li><a href="_dx_idirect3dvolume8_lockbox_graphics.htm"><b>IDirect3DVolume8::LockBox</b></a></li>
+</ul>
+
+<p><a href="_dx_iunknown_release_dxintro.htm"><b>IDirect3DResource8::Release</b></a> can be called with the same restrictions as the <b>Lock</b> methods as long as it will release the very last reference to the resource to cause it to be destroyed. The reference counting code is not thread-safe and may corrupt the resource if it is called from multiple threads at the same time.</p>
+
+<p><a href="_dx_idirect3dvertexbuffer8_lock_graphics.htm"><b>IDirect3DVertexBuffer8::Lock</b></a> can be called with the same restrictions as the other resource's <b>Lock</b> method as long as D3DLOCK_NOFLUSH is passed to inhibit the lock from flushing the vertex cache.</p>
+
+<p><a href="_dx_idirect3dindexbuffer8_graphics.htm"><b>IDirect3DIndexBuffer8</b></a> and <a href="_dx_idirect3dpushbuffer8_graphics.htm"><b>IDirect3DPushBuffer8</b></a> can both be used without setting them on the device. The title has to guarantee that neither <a href="xbox_dxg_IDirect3DDevice8_DrawVertices.htm"><b>IDirect3DDevice8::DrawVertices</b></a> nor <a href="_dx_idirect3ddevice8_runpushbuffer_graphics.htm"><b>IDirect3DDevice8::RunPushBuffer</b></a> are being called on another thread with this resource when either locking or destroying the resource.</p>
+
+<p>Both <a href="_dx_idirect3ddevice8_insertcallback_graphics.htm"><b>IDirect3DDevice8::InsertCallback</b></a> and <a href="_dx_idirect3ddevice8_setverticalblankcallback_graphics.htm"><b>IDirect3DDevice8::SetVerticalBlankCallback</b></a> take method pointers that will be called at DPC time. These methods will not be synchronized with the Direct3D and should be treated as if they are being called on a separate thread. Also, much of the kernel and XTL functionality cannot be used at DPC time and these methods should be as short as possible.  You should assume that you can only manipulate the state in your own code or set an event which will allow a background thread to do work.</p>
+
+
+<!--*******************************************************************************-->
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

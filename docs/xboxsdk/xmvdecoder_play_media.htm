@@ -1,0 +1,79 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XMVDecoder::Play</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="F" Term="Play"/>
+<MSHelp:Keyword Index="K" Term="Play (XMVDecoder)"/>
+<MSHelp:Keyword Index="K" Term="XMVDecoder::Play"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XMVDecoder::Play</h1>
+<p>Plays an entire Xbox Media Video (XMV) file, blocking until the video and audio portion of the stream is complete. This method creates a surface that is the size of the video, and then plays it back on the screen.</p>
+<pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>Play(</b>
+    <b>DWORD</b> <i>Flags</i><b>,</b>
+    <b>RECT</b> *<i>pRect</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+			<dt><i>Flags</i></dt>
+<dd>[in]  Determines what kind of playback will occur. It must be one of the following values:
+				<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+					<tr>
+<td>XMVFLAG_NONE</td>
+<td>No looping occurs.</td>
+</tr>
+					<tr>
+<td>XMVFLAG_FULL_LOOP</td>
+<td>The movie will loop until either <a href="xmvdecoder_terminateloop_media.htm">XMVDecoder::TerminateLoop</a> or <a href="xmvdecoder_terminateplayback_media.htm">XMVDecoder::TerminatePlayback</a> is called.</td>
+</tr>
+				</table>
+			</dd>
+			<dt><i>pRect</i></dt>
+<dd>[in]  Pointer to a <b>RECT</b> structure describing what part of the screen to render the output video. If <i>pRect</i> is NULL, the video will be displayed on the full screen.</dd>
+		</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>Returns S_OK if successful, an error code otherwise.</p>
+<h4><a name="remarks"></a>Remarks</h4>
+<p>Either this function or <a href="xmvdecoder_getnextframe_media.htm">XMVDecoder::GetNextFrame</a> should be used to play back XMV files. Do not try intermixing the two methods.</p>
+
+		<p>Because this function uses overlays, there must be at least one call to either <a href="_dx_idirect3ddevice8_present_graphics.htm">IDirect3DDevice8::Present</a> or <a href="_dx_idirect3ddevice8_swap_graphics.htm">IDirect3DDevice8::Swap</a> before calling <b>Play</b>.</p>
+		
+
+<p>This function cannot be used with an XMV file opened using XMVFLAG_UNSYNCHRONIZED_PLAYBACK. Direct3D must have been initialized before calling <b>Play</b>. <b>Play</b> uses overlays to render the video, and can be run on background threads without interfering with other Direct3D rendering functions.</p>
+
+<p>The <a href="xmvdecoder_terminateimmediately_media.htm">XMVDecoder::TerminateImmediately</a> routine must be called on the same thread that the decoder is running on and therefore cannot be used with <b>XMVDecoder::Play</b>.</p>
+
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xmv.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xmv.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p><a href="playing_xmv_files_overview_media.htm">Playing XMV Files</a> | <a href="xmvdecoder_getnextframe_media.htm">XMVDecoder::GetNextFrame</a></p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

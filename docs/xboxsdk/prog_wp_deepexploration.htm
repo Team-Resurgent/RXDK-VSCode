@@ -1,0 +1,727 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Deep Exploration Advanced Usage Guide</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Deep Exploration Advanced Usage Guide"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Deep Exploration Advanced Usage Guide</h1>
+<p>This white paper covers the advanced usage of Deep Exploration, the tool that is 
+	the front-end for the Xbox&reg; Preview Pipeline.  Deep Exploration provides a number 
+	of useful features that may not be obvious. These features are covered in more detail 
+	in the following sections.</p><ul>
+<li><a href="#IDATAIV">Xbox Preview Buttons</a></li><li><a href="#IDAJBIV">Background Color and Background Image</a></li><li><a href="#IDA3BIV">Advanced Materials</a></li><li><a href="#IDAARIV">Problems Compiling - Pixel Shader Combiner Stages</a></li><li><a href="#IDA4RIV">2D and 3D Preview</a></li><li><a href="#IDAZGJV">Format Conversion</a></li><li><a href="#IDABHJV">Batch Conversion</a></li><li><a href="#IDARHJV">Rendering Modes</a></li></ul>
+<h2><a name="IDATAIV"></a>Xbox Preview Buttons</h2>
+<p>The Xbox Preview buttons are part of a toolbar in Deep Exploration and usually sit in 
+	the upper right corner.  The buttons look like this:</p><img src="images/deepexplore1.jpg"><p>On mouseover, the lighter grey button turns green and displays the pop-up text 
+	"Preview on Xbox."  The darker grey button turns red on mouseover and displays the 
+	pop-up text "(SLOW!!) Optimized Preview on Xbox." </p><img src="images/deepexplore2.jpg"><p>The green button exports the current 3D or 2D scene and gets it to the Xbox as fast 
+	as possible.  The red button exports the current 3D or 2D scene and then optimizes the 
+	triangle geometry into triangle strips.  This can improve performance by up to 30 percent 
+	when previewing the object.  Unfortunately, it takes time to create the triangle strips 
+	and this time can vary from nearly the same amount of time as the traditional green-button
+	preview to ten or more minutes!  The good news is that once you've previewed the scene with 
+	a given button (and haven't changed the scene in Deep Exploration), the previews are 
+	instantly available for the object with whatever button you already used.  This allows you 
+	to switch back and forth and observe the performance improvements, if any. If you're just 
+	in a hurry to see what your object looks like, use the green button. If you want an 
+	optimized model for performance analysis reasons, use the red button.</p><p>The background image or color from Deep Exploration is sent to the Xbox.  The current 
+	camera view is also duplicated on the Xbox.  If the animation slider in Deep Exploration 
+	has been moved, the current frame is also sent to the Xbox so that the animation view window 
+	in the Xbox View Application (<a href="xbox_xbview_overview.htm">XbView</a>) matches the 
+	Deep Exploration view window.</p><h2><a name="IDAJBIV"></a>Background Color and Background Image</h2>
+<p>You can change the background image in Deep Exploration by right-clicking in the 3D 
+	view window and clicking <b>Open Background</b>, and then choosing the image file for 
+	the background image in both Deep Exploration and on the Xbox.  There is no size limit 
+	on the background image.  It is automatically scaled to consume the least amount of 
+	memory possible on the Xbox.  The image size can affect performance in Deep Exploration.</p><p>You change the background color in Deep Exploration by clicking 
+	<b>Tools</b> from the main menu and then clicking <b>Options</b>. 
+	This brings up a dialog box with several tabs on it.  Clicking on the 
+	<b>Colors</b> tab brings up a dialog box in which you can choose 
+	the background color (the first entry in the list of colors presented).</p><p>The background image overrides the background color.  To return to a single 
+	background color with no background image, right-click in the 3D view window and 
+	click <b>Clear Background</b> on the pop-up menu.  The background image 
+	and color are updated to the Xbox by simply hitting the desired preview button.</p><h2><a name="IDA3BIV"></a>Advanced Materials</h2>
+<p>This feature enables the artist to change the materials on a given 3D model to some 
+	advanced materials that are not usually available directly from the 3D authoring package.  
+	Once the materials have been changed in Deep Exploration, they can be previewed on the Xbox 
+	by simply hitting one of the preview buttons.  The materials are easy to change.  Simply
+	double-click the material you want to change in the current 3D model from the Objects
+	List.</p><img src="images/deepexplore3.jpg"><p>This brings up the <b>Material Properties</b> dialog box, which looks 
+	like this:</p><img src="images/deepexplore4.jpg"><p>There are four tabs in the dialog box.  The first two control the material properties. 
+	Changing these will change the visual appearance in Deep Exploration, but that view may 
+	not match what the Xbox draws. Deep Exploration will do it's best to utilize your particular 
+	PC video card to show you the presence of particular characteristics, but often there will 
+	be significant differences between how things look on the PC and the Xbox. This is the 
+	main reason for the Preview tool!  It's also the reason that the following explanations 
+	are necessary.</p><h3><a name="IDAOCIV"></a>Basic Tab</h3>
+<p>On the <b>Basic</b> tab, you can set the overall ambient, 
+		diffuse, specular, and emissive properties of the material. You can also control 
+		the material's opacity and set whether it is double-sided.</p><ul>
+<li><a href="#IDAXCIV">Ambient</a></li><li><a href="#IDA3CIV">Diffuse</a></li><li><a href="#IDADDIV">Specular</a></li><li><a href="#IDAVDIV">Emissive</a></li><li><a href="#IDA1DIV">Opacity</a></li><li><a href="#IDABEIV">Shading</a></li><li><a href="#IDAHEIV">Glossiness and Specular Level</a></li><li><a href="#IDANEIV">Raytrace Reflection and Index of Refraction</a></li><li><a href="#IDATEIV">Double Sided</a></li><li><a href="#IDAZEIV">Render Outlines</a></li></ul>
+<h4><a name="IDAXCIV"></a>Ambient</h4>
+<p>This is the base color of the material under ambient light.  The ambient 
+			light color and this color are blended together to the resulting ambient light.  
+			By setting this color to black, the ambient light color alone affects the 
+			material on the Xbox.</p><h4><a name="IDA3CIV"></a>Diffuse</h4>
+<p>This is the base color of the material.  It is blended with the diffuse 
+			texture set on the Maps tab.  By default, the diffuse texture is always set to 
+			Amount 100, which means ignore this diffuse color.  If the material has a diffuse
+			texture and the amount of the texture is 100, be sure to set this to black to 
+			avoid doing extra work in the Xbox Pixel Shader.  Otherwise, it works exactly 
+			as expected.  The diffuse color is blended with the light intensity at each point 
+			on the object.</p><h4><a name="IDADDIV"></a>Specular</h4>
+<p>To get a specular highlight, set the specular color to the color desired for 
+			the highlight.  This color is blended with the light color on the Xbox.  To get 
+			just the light color, select pure white as the specular color (RGB 255,255,255.)  
+			To remove all specular highlights for this material, simply set the specular color 
+			to black (RGB 0,0,0.)  You can also adjust the <b>Glossiness</b> 
+			and <b>Specular level</b> edit boxes.  These control the size
+			(<b>Glossiness</b>) and intensity (<b>Specular level</b>) 
+			of the specular spot on the object.  Specular is per-pixel on the Xbox.  The 
+			specular color can also modulated by the specular texture set with the <b>Maps</b> 
+			tab.  The specular texture is used to provide the color of the specular highlight 
+			for that location on the model.  The specular level can also be modulated with the
+			specular level texture set with the <b>Maps</b> tab.  Given a grey-scale
+			specular level texture, the closer the color is to white on the specular level
+			texture, the brighter the specular highlight appears for that location.  More on 
+			the maps below.</p><h4><a name="IDAVDIV"></a>Emissive</h4>
+<p>The emissive color is added to all of the colors after they are computed and is 
+			not affected by lighting.  The material itself is considered to be emitting light 
+			itself.  Again, make sure this is black (RGB 0,0,0) if no emissive color is desired.  
+			If the color is very close to black (for example, RGB 0,0,1), the Xbox Pixel Shader 
+			will add it in to the final result.  This is extra work that hurts performance and 
+			consumes one of the eight pixel shader combiner stages.</p><h4><a name="IDA1DIV"></a>Opacity</h4>
+<p>This controls the overall opacity of the material.  This number ranges from 0 
+			to 100,	where 0 is completely transparent and 100 is completely opaque.</p><h4><a name="IDABEIV"></a>Shading</h4>
+<p>This is not used by the Preview tool.</p><h4><a name="IDAHEIV"></a>Glossiness and Specular Level</h4>
+<p>These are covered under Specular above.</p><h4><a name="IDANEIV"></a>Raytrace Reflection and Index of Refraction</h4>
+<p>These are not used by the Preview tool.</p><h4><a name="IDATEIV"></a>Double Sided</h4>
+<p>This turns off back-face culling for the material.  It is useful if the material 
+			is not completely opaque to draw the back faces.</p><h4><a name="IDAZEIV"></a>Render Outlines</h4>
+<p>This is not used by the Preview tool.</p><img src="images/deepexplore5.jpg"><h3><a name="IDADFIV"></a>Maps Tab</h3>
+<p>The <b>Maps</b> tab controls the textures applied to the material.  The 
+		<b>Offset U</b>, <b>Offset V</b>, <b>Scale U</b>,
+		<b>Scale V</b>, and <b>Angle</b> edit controls as well as the
+		<b>U Tile</b> and <b>V Tile</b> check boxes do not do 
+		anything with the Preview tool.  You cannot change the UV coordinates in Deep
+		Exploration. To change a texture, double-click it.  If a texture is already present,
+		selecting the map will show a preview of the texture and its file name.  To change
+		textures, click	<b>Browse</b>, which brings up a file dialog box, and pick 
+		a new texture.  To clear the texture, click <b>Remove</b>.</p><ul>
+<li><a href="#IDA4FIV">Diffuse Texture</a></li><li><a href="#IDAKGIV">Bump Texture</a></li><li><a href="#IDAZGIV">Opacity</a></li><li><a href="#IDABHIV">Reflection</a></li><li><a href="#IDAZHIV">Specular</a></li><li><a href="#IDAEQIV">Specular Level</a></li><li><a href="#IDAOQIV">Ambient</a></li><li><a href="#IDAWQIV">Self Illum</a></li></ul>
+<h4><a name="IDA4FIV"></a>Diffuse Texture</h4>
+<p>The diffuse texture is the base texture for the material.  The
+			<b>Amount</b> edit control ranges from 0 to 100, where 0 means use 
+			none of the diffuse texture, and 100 means completely overwrite the diffuse 
+			color with the diffuse texture.  If you completely overwrite the diffuse color 
+			by setting <b>Amount</b> to 100 (which is the default), be sure to 
+			set the diffuse color in the <b>Basic</b> tab to black (RGB 0,0,0) 
+			to avoid doing extra work in the Xbox Pixel Shader.  The alpha channel of this
+			texture is ignored.  If the diffuse texture has an alpha channel, extract the 
+			alpha channel from the diffuse texture and save it as a separate texture map 
+			and apply it as the opacity map.  This uses one of the four texture stages
+			available.</p><h4><a name="IDAKGIV"></a>Bump Texture</h4>
+<p>The bump texture is specified as a grey scale height map that makes the material 
+			appear "bumpy."  The <b>Amount</b> edit control in this case controls 
+			how "bumpy" the material appears.  It ranges from 0 to 100, where 100 is very 
+			bumpy and 0 is minimally bumpy.  Setting <b>Amount</b> to 0 still 
+			results in some bumpiness because
+			bump-mapping is a fairly expensive operation and the Preview tool wants you to know 
+			you are using a bump texture.  If you want no bump-mapping, remove the bump texture.  
+			Vertex colors are ignored for materials using bump-mapping.  There aren't enough 
+			registers to pass the vertex colors to the pixel shader so we could not support 
+			both features with stock shaders. Do not mirror bump maps.  The preview tool can't 
+			figure out what to do with the normals when this happens.  If you see something 
+			like this,</p><img src="images/deepexplore6.jpg"><p>the bump map is probably mirrored.  An easy way to check is to remove the bump map 
+			and note if the weird black splotches go away.  This uses one of the four texture 
+			stages available.</p><h4><a name="IDAZGIV"></a>Opacity</h4>
+<p>This texture map is used as the alpha channel for the diffuse texture.  The 
+			opacity of the alpha is computed by averaging the RGB values for each color in 
+			the texture.  For example, an RGB value of 0,0,255 would be treated as a grey-scale 
+			value of 85,85,85 (255 divided by 3 in each color component).  The opacity map is 
+			combined with the diffuse texture when the Preview tool creates the textures and 
+			doesn't need its own texture stage in the pixel shader.  
+			The <b>Amount</b> setting for opacity has no effect in the 
+			Preview tool.</p><h4><a name="IDABHIV"></a>Reflection</h4>
+<p>This texture map is used to specify the cube map used by the Preview tool for 
+			environment mapping on the Xbox.  Cube maps are actually six textures, which makes 
+			it somewhat difficult to specify with the single texture entry provided by Deep 
+			Exploration.  The Preview tool works around this by using the file names of the 
+			cube map.  If you select any texture that specifies a cube map, the other five 
+			are automatically loaded.  For example, a cube map is defined by these texture 
+			file names:</p><ul>
+				<li>Desert_negx</li>
+				<li>Desert_posx</li>
+				<li>Desert_negy</li>
+				<li>Desert_posy</li>
+				<li>Desert_negz</li>
+				<li>Desert_posz</li>
+			</ul>
+<p>Selecting any of these as the reflection map will correctly create a cube map for 
+			the Preview tool.  Selecting a file name that doesn't end in negx, negy, negz, posx, 
+			posy, or posz will create a cube map where the selected texture is used for all size 
+			faces of the cube map.  The <b>Amount</b> edit control specifies 
+			the overall	reflectivity of the material.  It ranges from 100 (perfectly reflective)
+			to 0 (no reflection).  This is an expensive operation on the Xbox so make sure you 
+			never reflect 0!  This uses one texture stage of the four available.</p><h4><a name="IDAZHIV"></a>Specular</h4>
+<p>This texture specifies the color of the specular highlight that is blended with
+			the light source color.  The <b>Amount</b> edit control has no effect. 
+			The specular texture is applied like a diffuse texture and blended with the specular
+			highlight.  This uses one texture stage of the four available.</p><h4><a name="IDAEQIV"></a>Specular Level</h4>
+<p>This texture controls how the specular highlight is blended with the underlying 
+			colors.  The brighter the color in the specular level texture, the brighter the 
+			specular highlight at that point in the material.  It can be thought of as an alpha 
+			mask for the specular highlight.  The <b>Amount</b> edit control effects
+			how much of the texture is used.  At a level of 100, the texture is used exactly 
+			as specified.  As the level drops off to 0, the texture has less and less influence
+			over the specular highlight.  Be careful not to specify a specular level map and 
+			then set the control to 0.  This operation is not free even if
+			<b>Amount</b> is set to 0!  This uses one texture stage of the four
+			available.</p><h4><a name="IDAOQIV"></a>Ambient</h4>
+<p>This texture is blended with the ambient light color.  It will typically not be 
+			visible in the preview tool unless the ambient light level is increased in XbView.  
+			The <b>Amount</b> edit control has no effect with the Preview tool.  This uses one 
+			texture stage of the four available.</p><h4><a name="IDAWQIV"></a>Self Illum</h4>
+<p>This texture is treated as an emissive color.  The texture is unaffected by the 
+			light sources and is simply blended into the resulting diffuse, specular, bump, and 
+			reflective stages.  The Amount edit control has no effect in the Preview tool.  This 
+			uses one texture stage of the four available.</p><p>None of the other maps has any effect in the Preview tool. </p><h2><a name="IDAARIV"></a>Problems Compiling - Pixel Shader Combiner Stages</h2>
+<p>The Xbox pixel shader has a few important limitations.  It can reference only four 
+	textures at a time, and it can combine colors in eight different stages.  This means 
+	that selecting more than four textures in the <b>Maps</b> tab of the 
+	<b>Material Properties</b> dialog box will result in the preview not 
+	being possible 
+	on the Xbox.  In fact, selecting fewer than four may also cause problems if you've 
+	specified diffuse or ambient colors.  Unfortunately, there is no easy way to know 
+	which combinations will work and which won't without trying them.  Some hints can help.</p><ul>
+		<li>If the compiler is complaining about too many texture stages, try removing the 
+		least important texture from the <b>Maps</b> tab of the 
+		<b>Material Properties</b> dialog box.  Make sure to remove any textures 
+		that use <b>Amount</b> set to 0!</li>
+		
+		<li>If the compiler is complaining about too many combiner stages, first check the 
+		<b>Basic</b> tab of the <b>Material Properties</b> dialog box 
+		and make sure that colors you don't want to use are set to black (RGB 0,0,0.)  Make 
+		sure they are not just visibly black but in fact are RGB values 0,0,0.  If this doesn't
+		fix the problem, you may have to remove textures from the <b>Maps</b> tab 
+		of the <b>Material Properties</b> dialog box.</li>
+	</ul>
+<h2><a name="IDA4RIV"></a>2D and 3D Preview</h2>
+<p>In addition to allowing the preview of 3D objects, the Preview tool will display 2D
+	images. This can be useful for a quick preview of UI art or other flat artwork to see how 
+	it looks on Xbox.</p><h3><a name="IDADSIV"></a>2D Formats Supported</h3>
+<table>
+			<tr>
+			<th>Description</th>	
+			<th>Extension</th>	
+			<th>Can Import?</th>	
+			<th>Can Export?</th>
+</tr>
+			<tr>
+			<td>Autodesk FLI/FLC file</td>	
+			<td>.fli / .flc</td>	
+			<td>Yes</td>	
+			<td>No</td>
+</tr>
+			<tr>
+			<td>CEL image</td>	
+			<td>.cel</td>	
+			<td>Yes</td>	
+			<td>No</td>
+</tr>
+			<tr>
+			<td>CompuServe GIF</td>	
+			<td>.gif</td>	
+			<td>Yes</td>	
+			<td>No</td>
+</tr>
+			<tr>
+			<td>DDS (DirectDraw Surface)</td>	
+			<td>.dds</td>	
+			<td>Yes</td>	
+			<td>No</td>
+</tr>
+			<tr>
+			<td>IFF image</td>	
+			<td>.iff</td>	
+			<td>Yes</td>	
+			<td>No</td>
+</tr>
+			<tr>
+			<td>JPEG 2000</td>	
+			<td>.jp2 / .jpc / .j2k / .jpx</td>	
+			<td>Yes</td>	
+			<td>Yes</td>
+</tr>
+			<tr>
+			<td>JPEG image</td>	
+			<td>.jpg / .jpeg</td>	
+			<td>Yes</td>	
+			<td>Yes</td>
+</tr>
+			<tr>
+			<td>Layered Image Format</td>	
+			<td>.LiF</td>	
+			<td>Yes</td>	
+			<td>Yes</td>
+</tr>
+			<tr>
+			<td>Maya image file</td>	
+			<td>.iff</td>	
+			<td>Yes</td>	
+			<td>Yes</td>
+</tr>
+			<tr>
+			<td>PCX image</td>	
+			<td>.pcx</td>	
+			<td>Yes</td> 	
+			<td>No</td>
+</tr>
+			<tr>
+			<td>Photoshop Document</td>	
+			<td>.psd</td>	
+			<td>Yes</td>	
+			<td>No</td>
+</tr>
+			<tr>
+			<td>Playstation .TIM picture</td>	
+			<td>.tim</td>	
+			<td>Yes</td>	
+			<td>No</td>
+</tr>
+			<tr>
+			<td>PNG image</td>	
+			<td>.png</td>	
+			<td>Yes</td>	
+			<td>Yes</td>
+</tr>
+			<tr>
+			<td>PPM image</td>	
+			<td>.ppm</td>	
+			<td>Yes</td>	
+			<td>Yes</td>
+</tr>
+			<tr>
+			<td>SGI image</td>	
+			<td>.rgb / .rgba / .int / .inta</td>	
+			<td>Yes</td>	
+			<td>No</td>
+</tr>
+			<tr>
+			<td>SOFTIMAGE PIC</td>	
+			<td>.pic</td>	
+			<td>Yes</td>	
+			<td>No</td>
+</tr>
+			<tr>
+			<td>TARGA image</td>	
+			<td>.tga</td>	
+			<td>Yes</td>	
+			<td>Yes</td>
+</tr>
+			<tr>
+			<td>TIFF image</td>	
+			<td>.tiff / .tif</td>	
+			<td>Yes*</td>	
+			<td>Yes*</td>
+</tr>
+			<tr>
+			<td>Windows bitmap</td>	
+			<td>.bmp / .dib</td>	
+			<td>Yes</td>	
+			<td>Yes</td>
+</tr>
+			<tr>
+			<td>Windows RLE bitmap</td>	
+			<td>.rle</td>	
+			<td>Yes</td>	
+			<td>No</td>
+</tr>
+		</table>
+<p>* Uncompressed TIFF images can be imported and exported.  
+		If the TIFF is compressed, Deep Exploration will not import or export it.</p><h3><a name="IDALYIV"></a>3D Formats Supported</h3>
+<table>
+			<tr>
+			<th>Description</th>	
+			<th>Extension</th>	
+			<th>Can Import?</th>	
+			<th>Can Export?</th>
+</tr>
+			<tr>
+			<td>16-bit PGM file format	</td>
+			<td>.pgm	</td>
+			<td>Yes	</td>
+			<td>No</td>
+</tr>
+			<tr>
+			<td>3D Metafile	</td>
+			<td>.3dmf / .3dm	</td>
+			<td>Yes	</td>
+			<td>No</td>
+</tr>
+			<tr>
+			<td>3D Studio ASC file	</td>
+			<td>.asc	</td>
+			<td>Yes	</td>
+			<td>Yes</td>
+</tr>
+			<tr>
+			<td>3D Studio Material Library	</td>
+			<td>.mli	</td>
+			<td>Yes	</td>
+			<td>No</td>
+</tr>
+			<tr>
+			<td>3D Studio Mesh</td>	
+			<td>.3ds	</td>
+			<td>Yes	</td>
+			<td>Yes</td>
+</tr>
+			<tr>
+			<td>3D Studio Project	</td>
+			<td>.prj	</td>
+			<td>Yes	</td>
+			<td>No</td>
+</tr>
+			<tr>
+			<td>3DS MAX DCOM*	</td>
+			<td>.max	</td>
+			<td>Yes	</td>
+			<td>Yes</td>
+</tr>
+			<tr>
+			<td>AOFF (geo) file format	</td>
+			<td>.geo	</td>
+			<td>Yes	</td>
+			<td>Yes</td>
+</tr>
+			<tr>
+			<td>ASCII MAX Scene	</td>
+			<td>.ase	</td>
+			<td>Yes	</td>
+			<td>No</td>
+</tr>
+			<tr>
+			<td>AutoCAD Binary DXF	</td>
+			<td>.dxb	</td>
+			<td>Yes	</td>
+			<td>No</td>
+</tr>
+			<tr>
+			<td>AutoCAD drawing	</td>
+			<td>.dwg	</td>
+			<td>Yes	</td>
+			<td>No</td>
+</tr>
+			<tr>
+			<td>AutoCAD DXF	</td>
+			<td>.dxf	</td>
+			<td>Yes	</td>
+			<td>Yes</td>
+</tr>
+			<tr>
+			<td>Cinema 4D	</td>
+			<td>.c4d	</td>
+			<td>Yes	</td>
+			<td>No</td>
+</tr>
+			<tr>
+			<td>CPP OpenGL code	</td>
+			<td>.cpp	</td>
+			<td>No	</td>
+			<td>Yes</td>
+</tr>
+			<tr>
+			<td>Direct X Model	</td>
+			<td>.x	</td>
+			<td>Yes	</td>
+			<td>Yes</td>
+</tr>
+			<tr>
+			<td>Extended RAW triangles	</td>
+			<td>.rax	</td>
+			<td>Yes	</td>
+			<td>No</td>
+</tr>
+			<tr>
+			<td>HalfLife Model	</td>
+			<td>.mdl	</td>
+			<td>Yes	</td>
+			<td>No</td>
+</tr>
+			<tr>
+			<td>Homeworld Geometry	</td>
+			<td>.peo / .geo	</td>
+			<td>Yes	</td>
+			<td>Yes</td>
+</tr>
+			<tr>
+			<td>HPGL Files	</td>
+			<td>.plt	</td>
+			<td>Yes</td>	
+			<td>No</td>
+</tr>
+			<tr>
+			<td>Imagine Object	</td>
+			<td>.iob	</td>
+			<td>Yes	</td>
+			<td>No</td>
+</tr>
+			<tr>
+			<td>ISO G Code	</td>
+			<td>.iso / .nc	</td>
+			<td>Yes	</td>
+			<td>No</td>
+</tr>
+			<tr>
+			<td>Lightwave Object	</td>
+			<td>.lwo / .lw	</td>
+			<td>Yes	</td>
+			<td>Yes</td>
+</tr>
+			<tr>
+			<td>Lightwave Scene	</td>
+			<td>.lws	</td>
+			<td>Yes	</td>
+			<td>Yes</td>
+</tr>
+			<tr>
+			<td>Maya Ascii Scene*	</td>
+			<td>.ma	</td>
+			<td>Yes	</td>
+			<td>Yes</td>
+</tr>
+			<tr>
+			<td>Maya Binary Scene*	</td>
+			<td>.mb	</td>
+			<td>Yes	</td>
+			<td>Yes</td>
+</tr>
+			<tr>
+			<td>Nendo file	</td>
+			<td>.ndo	</td>
+			<td>Yes	</td>
+			<td>No</td>
+</tr>
+			<tr>
+			<td>Object File Format	</td>
+			<td>.off	</td>
+			<td>Yes	</td>
+			<td>Yes</td>
+</tr>
+			<tr>
+			<td>Open Flight Scene	</td>
+			<td>.flt	</td>
+			<td>Yes	</td>
+			<td>No</td>
+</tr>
+			<tr>
+			<td>Polygon File Format	</td>
+			<td>.ply	</td>
+			<td>Yes	</td>
+			<td>No</td>
+</tr>
+			<tr>
+			<td>Power Render Object	</td>
+			<td>.pro	</td>
+			<td>Yes	</td>
+			<td>No</td>
+</tr>
+			<tr>
+			<td>PTS file format	</td>
+			<td>.pts	</td>
+			<td>Yes	</td>
+			<td>No</td>
+</tr>
+			<tr>
+			<td>Quake 2 Model	</td>
+			<td>.md2	</td>
+			<td>Yes	</td>
+			<td>No</td>
+</tr>
+			<tr>
+			<td>Quake 3 Model	</td>
+			<td>.md3	</td>
+			<td>Yes	</td>
+			<td>No</td>
+</tr>
+			<tr>
+			<td>Quake MAP file	</td>
+			<td>.map	</td>
+			<td>Yes	</td>
+			<td>No</td>
+</tr>
+			<tr>
+			<td>Quake Model	</td>
+			<td>.mdl	</td>
+			<td>Yes	</td>
+			<td>No</td>
+</tr>
+			<tr>
+			<td>RAW file format	</td>
+			<td>.raw	</td>
+			<td>Yes	</td>
+			<td>Yes</td>
+</tr>
+			<tr>
+			<td>RH internal format	</td>
+			<td>.rh	</td>
+			<td>Yes</td>	
+			<td>Yes</td>
+</tr>
+			<tr>
+			<td>Shockwave 3D file	</td>
+			<td>.w3d	</td>
+			<td>No	</td>
+			<td>Yes</td>
+</tr>
+			<tr>
+			<td>Softimage dotXSI scene	</td>
+			<td>.xsi	</td>
+			<td>Yes	</td>
+			<td>Yes</td>
+</tr>
+			<tr>
+			<td>SPX file type	</td>
+			<td>.spx	</td>
+			<td>Yes	</td>
+			<td>No</td>
+</tr>
+			<tr>
+			<td>Stereo Lithography	</td>
+			<td>.stl	</td>
+			<td>Yes	</td>
+			<td>Yes</td>
+</tr>
+			<tr>
+			<td>trueSpace Object	</td>
+			<td>.cob	</td>
+			<td>Yes	</td>
+			<td>Yes</td>
+</tr>
+			<tr>
+			<td>trueSpace Scene	</td>
+			<td>.scn	</td>
+			<td>Yes	</td>
+			<td>No</td>
+</tr>
+			<tr>
+			<td>Unreal character	</td>
+			<td>.psk	</td>
+			<td>Yes	</td>
+			<td>Yes</td>
+</tr>
+			<tr>
+			<td>Wavefront Object	</td>
+			<td>.obj	</td>
+			<td>Yes	</td>
+			<td>Yes</td>
+</tr>
+			<tr>
+			<td>Wild Tangent Encrypted Format	</td>
+			<td>.wsad	</td>
+			<td>No	</td>
+			<td>Yes</td>
+</tr>
+			<tr>
+			<td>WMF files	</td>
+			<td>.wmf	</td>
+			<td>Yes	</td>
+			<td>No</td>
+</tr>
+			<tr>
+			<td>XDX Scene	</td>
+			<td>.xdx	</td>
+			<td>Yes	</td>
+			<td>Yes</td>
+</tr>
+			<tr>
+			<td>XGL	</td>
+			<td>.xgl	</td>
+			<td>Yes	</td>
+			<td>No</td>
+</tr>
+		</table>
+<p>* Maya and MAX formats with an asterisk are supported 
+		only if the correct version of MAX or Maya is installed.</p><h2><a name="IDAZGJV"></a>Format Conversion</h2>
+<p>A 3D format can be converted to another 3D format if two conditions are met: 
+	1) Deep Exploration must be able to import the file to convert, and 2) it must be able 
+	to export the desired format.  Due to differences between 3D tools, no conversion is 
+	guaranteed to be 100 percent correct.  Probably the largest reason for a conversion 
+	failing or creating a file that is identical is that some feature in the import file 
+	is not supported in the export file.  For example, the input format might support more 
+	than one texture UV coordinate per vertex, and the export format may not support this.  
+	In such cases, the conversion is often unpredictable and must be tested to make sure 
+	it does what the user expects.</p><p>A 2D format can be converted to another 2D format if two conditions are met: 
+	1) Deep Exploration must be able to import the file to convert, and 2) it must be able 
+	to export the desired format.  Again, the conversions might lose data if, for example, 
+	the input format has an alpha channel but the output format doesn't support alpha
+	channels.</p><h2><a name="IDABHJV"></a>Batch Conversion</h2>
+<p>Clicking <b>Batch Conversion</b> on the <b>File</b> menu brings 
+	up three choices for conversion: <b>Picture Files</b> (for converting 2D files),
+	<b>Geometry Files</b> (for converting 3D files), and Deep Exploration can do a batch of
+	renders from 3D formats that it can import.  The user can easily select the output 2D format
+	of the renders.  The dialog box for all of these options is essentially identical and
+	self-explanatory.</p><p>Deep Exploration can also rescale 2D images and set the compression factor for 
+	lossy compression formats.</p><h2><a name="IDARHJV"></a>Rendering Modes</h2>
+<p>In the lower right corner of the Deep Exploration window is a button that indicates 
+	which renderer is being used for the real-time view window.  There are several possible
+	selections depending on the video card installed and the drivers for that video card.</p><ul>
+		<li><b>XD Graphics</b> &#8211; This selection is always available.  It is
+		the software renderer supplied with Deep Exploration.  It will not run fast or show
+		advanced materials very well, but it will let Deep Exploration work without a video 
+		card supporting 3D acceleration.  It also allows Deep Exploration to work on a remote
+		machine using Remote Desktop.</li>
+		<li><b>NVIDIA OpenGL</b> &#8211; Uses the NVidia version of the Open GL
+		drivers for Microsoft Windows XP or Windows 2000 and requires an NVidia chipset-enabled
+		video card.  This mode is very fast and works with almost all advanced materials.  Many
+		advanced materials render differently on the Xbox, which is why we built the Xbox Preview
+		Pipeline! There are also some advanced features available in this mode, available by
+		right-clicking in the real-time window and clicking <b>NVidia special</b> 
+		on the pop-up menu.  The environment map option switches reflection from a single texture
+		to a cube map.  You can set the cube faces by clicking <b>NVidia special</b> on the
+		pop-up menu and clicking the <b>Environment</b> tab.  The config for
+		<b>NVidia special</b> also lets you set the supported special materials in
+		the <b>Textures</b> tab.  You can set the antialiasing modes with the
+		<b>Antialiasing Settings</b> tab.  You can set brightness and contrast using
+		the	<b>Colour Correction</b> tab, and you can get general information about
+		the NVidia card you have by using the <b>Info</b> tab.</li>
+		<li><b>DirectX</b> &#8211; Uses the installed version of DirectX to render
+		the real-time window.  This mode is also very fast and works with almost all advanced
+		materials.  The DirectX driver will also load the vertex and pixel shaders present in 
+		the XDX file and try to use them to draw the object in the real-time view.  This is a
+		two-edged sword, though, because many of the shaders used in the XDX files are advanced
+		and do not work in the PC version of DirectX.  If the shader doesn't work, that piece of
+		geometry doesn't draw.  You can disable this feature by right-clicking on the real-time
+		view, clicking <b>DirectX8</b> on the pop-up menu, and then picking
+		<b>Config</b>.  If you uncheck the <b>Enable custom shaders</b>
+		check box, it will use the default DirectX shaders.</li>
+		<li><b>OpenGL</b> &#8211; There is also a straight OpenGL that runs through
+		the default OpenGL installed with Windows 2000 and Windows XP.  It doesn't support most
+		advanced material types, but it may be a good fallback if Deep Exploration has problems
+		with the DirectX driver or another custom OpenGL driver.</li>
+	</ul>
+<p>Because the Xbox contains an NV2A graphics chip from NVidia, it's a good idea for the 
+	PC using Deep Exploration to be running at least a GeForce 3 so that the chips are 
+	basically identical.  However, any advanced video card that supports the 1.1 vertex and 
+	pixel shaders will work and will allow the user to preview the advanced materials on the 
+	PC side in a proxy view that, while not identical to the Xbox view, is still useful.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

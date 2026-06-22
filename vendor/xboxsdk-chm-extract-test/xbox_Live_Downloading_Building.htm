@@ -1,0 +1,635 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Building Content Download Packages</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Building Content Download Packages"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Building Content Download Packages</h1>
+<p>To release new content to players, publishers use <a href="xbox_tool_xlast_content.htm">XLAST</a> to build the content data files into packages. Content download packages contain metadata, content, and content signatures. </p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Under rare circumstances, such as when building a subscription, it may be necessary to use the older <a href="xbox_jbh_tool_online_buildcontent.htm">BuildOffer</a> tool, rather than <b>XLAST</b>, to create content download packages. In general, however, <b>XLAST</b> is the preferred tool. For information on how to use BuildOffer, see the <a href="http://atgwebdev01/BPProgInfo.asp?Page=content/prog_wp_contentdnloadpkgs.htm" target="_blank">Preparing Content Packages for the Xbox</a> white paper on Xbox Central.</p><p><b>XLAST</b> automatically puts most of the required information, such as the package metadata, into your content download package. Generally, all you have to do is use the <a href="xbox_tool_xlast_content_wizard.htm">The New Content Package Wizard</a> to create the package, <a href="xbox_tool_xlast_content_organizing.htm">add your content files</a> to the package, and then build it for release on <a href="xbox_tool_xlast_content_building_live.htm">Xbox Live</a> or <a href="xbox_tool_xlast_content_building_DVD.htm">DVD</a>. However, to enable you to easily use the <a href="xbox_jbh_tool_online_buildcontent.htm">BuildOffer</a> tool when needed, the following topics provide a detailed presentation of the internals of content download packages.</p><ul>
+<li><a href="#IDAECEV">Required Components in Offering Packages</a></li><li><a href="#offer_metadata">Offering Metadata (content.xbx or subscription.xbx)</a></li><li><a href="#IDAKXFV">Content Metadata (contentmeta.xbx) and Signatures</a></li></ul>
+<h2><a name="IDAECEV"></a>Required Components in Offering Packages</h2>
+<p>The following components are required when building an offering package:</p><ul>
+				<li>A content directory &#8211; Contains all content that will be included in the package.  The directory may have subdirectories, which will be preserved when the content is installed.</li>
+				<li>A content.xbx or subscription.xbx file &#8211; Contains offering metadata file supplied by the publisher about the offering, such as name, price, language, unique identifier, and so on.</li>
+				<li>A contentimage.xbx file &#8211; Contains a bitmap image that the title displays for the content when it is viewed within the Xbox Dashboard.</li>
+				<li>Details and enumeration binary block of data (BLOB) files &#8211; Contain the title-specific binary data used for the details and enumeration BLOBs. Two files must be provided for each language supported. The files are in the format details.xxx.bin and enum.xxx.bin, where xxx is a three-letter country code.</li>
+			</ul>
+<p>Place all content to be included in the package in the content directory. The root directory of the content will map to the content root directory on the Xbox when the content is later installed. After installation, the content's root directory on the Xbox hard disk can be determined by calling <a href="XGetContentInstallLocationFromIDs.htm">XGetContentInstallLocationFromIDs</a>. The directory structure of the content directory is preserved when the package is installed on the hard disk.</p><p>The offering metadata file (content.xbx or subscription.xbx) and the details and enumeration BLOB data files (enum.xxx.bin and details.xxx.bin) do not need to be included in the content directory; they are referenced and incorporated into the content package when built and do not need to be installed as part of the content.</p><p>After the offering's components have been prepared and placed in their correct locations, run <a href="xbox_jbh_tool_online_buildcontent.htm">BuildOffer</a> from the content root directory, or run it such that the content root directory is the current working directory.</p><p>The simple example below creates a package named test.xcp that includes all files in the current directory and its subdirectories:</p>
+<pre class="clsCode">
+BuildOffer -r N ..\test.xcp ..\content.xbx *.*
+</pre>
+    <p>The location of the content.xbx file is specified in the <b>BuildOffer</b> command line, and the location of the BLOB data files is specified within the content.xbx file itself. In this example, the offering metadata file (content.xbx) and the details and enumeration BLOB data files (enum.eng.bin, details.eng.bin, enum.jpn.bin, and details.jpn.bin) are located in the directory one level above the content root.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;If the content is offered on multiple continents, you must specify the -S option when invoking the <a href="xbox_jbh_tool_online_buildcontent.htm">BuildOffer</a> tool. This option instructs <b>BuildOffer</b> to create multiple packages, one for each continent. The name of each package file will have a prefix that identifies which continent that package is for: NA for North America, EMEA for Europe, or JA for Japan. For more information, see the descriptions for Offering Identifier and Region Information in the <a href="xbox_Live_Downloading_Building.htm#offer_metadata">Offering Metadata</a> section below.</p><p>As part of the packaging process, <b>BuildOffer</b> produces a contentmeta.xbx file in the content root directory. This file contains content signatures for each file included in the offering. The file contentmeta.xbx must be installed when the content is installed, so it should either be explicitly specified in the content file list, or allowed to be picked up automatically with the BuildOffer tool's recursive inclusion (-r) command-line switch.</p><p>The contentimage.xbx file is an image file, in the same format as a save game image file (SAVEIMAGE.XBX, 64&#0215;64 DXT1 formatted image). It is used to display an image for the content when it is viewed within the Xbox Dashboard. Additionally, a contentimage.xbx file can be placed at the root of the title's persistent data region (T:), to be used as the default content image file for that title. The dashboard uses the content's specific image file, if found. If the image file is not found, the default title content image file is used.</p><h2><a name="offer_metadata"></a>Offering Metadata (content.xbx or subscription.xbx)</h2>
+<p>The content.xbx and subscription.xbx files contain offering metadata files that specify information such as the name, price, language, and unique identifier of the offering. The Xbox SDK installs example offering metadata files (content.xbx and subscription.xbx) in the &lt;XDKRoot&gt;\xbox\bin directory.</p><p>Each section of the content.xbx file is described below, along with an example entry.</p><ul>
+<li><a href="#IDAJFEV">Version</a></li><li><a href="#IDACGEV">OfferingType</a></li><li><a href="#IDA1GEV">Premium</a></li><li><a href="#IDAUHEV">OfferFrequency</a></li><li><a href="#IDAQAFV">PurchaseOnceOnly</a></li><li><a href="#IDAJBFV">OfferDuration</a></li><li><a href="#IDACCFV">OfferFreePeriod</a></li><li><a href="#IDA1CFV">TitleID</a></li><li><a href="#IDAVDFV">OfferingID</a></li><li><a href="#IDAAGFV">BitFlags</a></li><li><a href="#IDA3GFV">ActivationDate</a></li><li><a href="#IDAWHFV">EndDate</a></li><li><a href="#IDARIFV">DefaultDisplayName</a></li><li><a href="#IDAKJFV">DashDisplayName</a></li><li><a href="#IDAQLFV">AdminFriendlyName</a></li><li><a href="#IDAJMFV">OfferRegions</a></li><li><a href="#IDATRFV">DisplayInDash</a></li><li><a href="#IDAMSFV">OfferLocations</a></li><li><a href="#IDAXTFV">SecurityKey</a></li><li><a href="#IDASUFV">Description Index</a></li><li><a href="#IDAOVFV">EnumerationData</a></li><li><a href="#IDAJWFV">DetailsData</a></li></ul>
+<h3><a name="IDAJFEV"></a>Version</h3>
+<dl>
+					<dt><b>Description:</b></dt>
+					<dd>Indicates the version of this template.</dd>
+
+					<dt><b>In Offering Type:</b></dt>
+					<dd>All</dd>
+
+					<dt><b>Required/Optional:</b></dt>
+					<dd>Required</dd>
+
+					<dt><b>Example:</b></dt>
+					<dd>
+<pre class="clsCode">
+Version=0x00020001
+</pre>
+    </dd>
+				</dl>
+<h3><a name="IDACGEV"></a>OfferingType</h3>
+<dl>
+					<dt><b>Description:</b></dt>
+					<dd>Specifies the type of offering (Content or Subscription</dd>
+
+					<dt><b>In Offering Type:</b></dt>
+					<dd>All</dd>
+
+					<dt><b>Required/Optional:</b></dt>
+					<dd>Required</dd>
+
+					<dt><b>Example:</b></dt>
+					<dd>
+<pre class="clsCode">
+OfferingType=Content
+</pre>
+    </dd>
+				</dl>
+<h3><a name="IDA1GEV"></a>Premium</h3>
+<dl>
+					<dt><b>Description:</b></dt>
+					<dd>Indicates whether this is a premium (requires purchase) offering. Valid values are Yes and No.</dd>
+
+					<dt><b>In Offering Type:</b></dt>
+					<dd>All</dd>
+
+					<dt><b>Required/Optional:</b></dt>
+					<dd>Required</dd>
+
+					<dt><b>Example:</b></dt>
+					<dd>
+<pre class="clsCode">
+Premium=No
+</pre>
+    </dd>
+				</dl>
+<h3><a name="IDAUHEV"></a>OfferFrequency</h3>
+<dl>
+					<dt><b>Description:</b></dt>
+					<dd>Specifies the frequency of the offering. Valid values are: Onetime, Monthly, Quarterly, Biannually, or Annually.</dd>
+
+					<dt><b>In Offering Type:</b></dt>
+					<dd>Subscription offerings only</dd>
+
+					<dt><b>Required/Optional:</b></dt>
+					<dd>Required</dd>
+
+					<dt><b>Example:</b></dt>
+					<dd>
+<pre class="clsCode">
+OfferFrequency=Monthly
+</pre>
+    </dd>
+				</dl>
+<h3><a name="IDAQAFV"></a>PurchaseOnceOnly</h3>
+<dl>
+					<dt><b>Description:</b></dt>
+					<dd>Specifies whether the offer can be purchased more than once. Valid values are Yes and No.</dd>
+
+					<dt><b>In Offering Type:</b></dt>
+					<dd>Subscription offerings only</dd>
+
+					<dt><b>Required/Optional:</b></dt>
+					<dd>Required if Premium=Yes</dd>
+
+					<dt><b>Example:</b></dt>
+					<dd>
+<pre class="clsCode">
+PurchaseOnceOnly=Yes
+</pre>
+    </dd>
+				</dl>
+<h3><a name="IDAJBFV"></a>OfferDuration</h3>
+<dl>
+					<dt><b>Description:</b></dt>
+					<dd>Specifies the duration of the offer.</dd>
+
+					<dt><b>In Offering Type:</b></dt>
+					<dd>Subscription offerings only</dd>
+
+					<dt><b>Required/Optional:</b></dt>
+					<dd>Required</dd>
+
+					<dt><b>Example:</b></dt>
+					<dd>
+<pre class="clsCode">
+OfferDuration=12
+</pre>
+    </dd>
+				</dl>
+<h3><a name="IDACCFV"></a>OfferFreePeriod</h3>
+<dl>
+					<dt><b>Description:</b></dt>
+					<dd>Specifies the free period for the offer, if any.</dd>
+
+					<dt><b>In Offering Type:</b></dt>
+					<dd>Subscription offerings only</dd>
+
+					<dt><b>Required/Optional:</b></dt>
+					<dd>Required</dd>
+
+					<dt><b>Example:</b></dt>
+					<dd>
+<pre class="clsCode">
+OfferFreePeriod=0
+</pre>
+    </dd>
+				</dl>
+<h3><a name="IDA1CFV"></a>TitleID</h3>
+<dl>
+					<dt><b>Description:</b></dt>
+					<dd>Contains a 32-bit hexadecimal title identifier for which this content is created.</dd>
+
+					<dt><b>In Offering Type:</b></dt>
+					<dd>All</dd>
+
+					<dt><b>Required/Optional:</b></dt>
+					<dd>Required</dd>
+
+					<dt><b>Example:</b></dt>
+					<dd>
+<pre class="clsCode">
+TitleID=0xffffffff
+</pre>
+     (substitute the title's actual identifier)</dd>
+				</dl>
+<h3><a name="IDAVDFV"></a>OfferingID</h3>
+<dl>
+					<dt><b>Description:</b></dt>
+					<dd>
+						<p>Specifies a 64-bit hexadecimal offering identifier assigned to this content package. The first 32 bits must match the title identifier. The next 32 bits specify:</p>
+						<ul>
+							<li>A reserved bit that should be zero (1-bit).</li>
+							<li>The continent on which the content is offered (3-bits). Leave these bits zero. These bits are set by the <a href="xbox_jbh_tool_online_buildcontent.htm">BuildOffer</a> tool. </li>
+							<li>An identifier determined by the publisher that is unique to this offering (28-bits)</li>
+						</ul>
+						<p>The layout of the offering identifier is as follows:</p>
+						<p>&lt;TID, 32-bits&gt;&lt;Reserved, 1-bit&gt;&lt;Continent, 3-bits&gt;&lt;Publisher OID, 28-bits&gt;</p>
+			
+						<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;If the content is offered on multiple continents, you must specify the <b>-S</b> option when invoking the <b>BuildOffer</b> tool. The -S option instructs <b>BuildOffer</b> to create multiple packages, one for each continent. <a href="xbox_jbh_tool_online_buildcontent.htm">BuildOffer</a> sets the continent bits to the correct value for each package. The name of each package file will have a prefix that identifies which continent that package is for: NA for North America, EMEA for Europe, or JA for Japan. For more information, see the description of Region Information below.</p>
+
+					</dd>
+
+					<dt><b>In Offering Type:</b></dt>
+					<dd>All</dd>
+
+					<dt><b>Required/Optional:</b></dt>
+					<dd>Required</dd>
+
+					<dt><b>Example:</b></dt>
+					<dd>
+<pre class="clsCode">
+OfferingID=0xffffffff00000000
+</pre>
+    </dd>
+				</dl>
+<h3><a name="IDAAGFV"></a>BitFlags</h3>
+<dl>
+					<dt><b>Description:</b></dt>
+					<dd>Publisher-defined bitflags to describe the offering. This can be any 32-bit number as desired by the publisher. This value is returned as the <b>dwBitFlags</b> value of the <a href="XONLINEOFFERING_INFO.htm">XONLINEOFFERING_INFO</a> structure, and is used to filter content during enumeration.</dd>
+
+					<dt><b>In Offering Type:</b></dt>
+					<dd>All</dd>
+
+					<dt><b>Required/Optional:</b></dt>
+					<dd>Required</dd>
+
+					<dt><b>Example:</b></dt>
+					<dd>
+<pre class="clsCode">
+BitFlags=0xffffffff
+</pre>
+    </dd>
+				</dl>
+<h3><a name="IDA3GFV"></a>ActivationDate</h3>
+<dl>
+					<dt><b>Description:</b></dt>
+					<dd>Date this offer becomes valid.</dd>
+
+					<dt><b>In Offering Type:</b></dt>
+					<dd>All</dd>
+
+					<dt><b>Required/Optional:</b></dt>
+					<dd>Required</dd>
+
+					<dt><b>Example:</b></dt>
+					<dd>
+<pre class="clsCode">
+ActivationDate=3/1/2002
+</pre>
+    </dd>
+				</dl>
+<h3><a name="IDAWHFV"></a>EndDate</h3>
+<dl>
+					<dt><b>Description:</b></dt>
+					<dd>Date, if any, this offer expires.</dd>
+
+					<dt><b>In Offering Type:</b></dt>
+					<dd>All</dd>
+
+					<dt><b>Required/Optional:</b></dt>
+					<dd>Required</dd>
+
+					<dt><b>Example:</b></dt>
+					<dd>EndDate=12/31/2999</dd>
+				</dl>
+<h3><a name="IDARIFV"></a>DefaultDisplayName</h3>
+<dl>
+					<dt><b>Description:</b></dt>
+					<dd>Default display name for this package. This string is used when none of the localized strings specified in the localized section below match the current language.</dd>
+
+					<dt><b>In Offering Type:</b></dt>
+					<dd>All</dd>
+
+					<dt><b>Required/Optional:</b></dt>
+					<dd>Required</dd>
+
+					<dt><b>Example:</b></dt>
+					<dd>
+<pre class="clsCode">
+DefaultDisplayName="Sample Content Package"
+</pre>
+    </dd>
+				</dl>
+<h3><a name="IDAKJFV"></a>DashDisplayName</h3>
+<dl>
+					<dt><b>Description:</b></dt>
+					<dd>
+						<p>The following set of properties specify localized display names used by the Dashboard to identify this offer based on the current language settings on the Xbox. The examples below contain localized display names for English (EN), Japanese (JA), and French (FR). If the Xbox happens to be set to a language other than these three, the string specified by DefaultDisplayName (above) will be used as default. Although DashDisplayName is optional, localized descriptions are highly recommended for readability and best user experience.</p>
+			
+			<p>The following are the set of language codes supported by the Xbox.</p>
+			
+			<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+				<tr>
+<td>EN</td>
+<td>English</td>
+</tr>
+				<tr>
+<td>JA</td>
+<td>Japanese</td>
+</tr>
+				<tr>
+<td>DE</td>
+<td>German</td>
+</tr>
+				<tr>
+<td>FR</td>
+<td>French</td>
+</tr>
+				<tr>
+<td>ES</td>
+<td>Spanish</td>
+</tr>
+				<tr>
+<td>IT</td>
+<td>Italian</td>
+</tr>
+				<tr>
+<td>KO</td>
+<td>Korean</td>
+</tr>
+				<tr>
+<td>TW</td>
+<td>Traditional Chinese</td>
+</tr>
+				<tr>
+<td>BR</td>
+<td>Brazilian</td>
+</tr>
+			</table>
+			
+			
+				<p>Note that there is a counter after DashDisplayName, which must start from zero (0). That is, the first language in the list must be DashDisplayName.0, followed by .1, .2, and so on. The language codes can be listed in any order (for example, TW followed by EN is valid), but the counter must not leave any gaps. For example, 0, 1, 3 will cause anything after 1 to be ignored. This file is in UNICODE format so each localized string can be entered in its native code page. For instance, glyphs may be used for JA, KO, and TW.</p>
+			</dd>
+
+					<dt><b>In Offering Type:</b></dt>
+					<dd>Content offerings only</dd>
+
+					<dt><b>Required/Optional:</b></dt>
+					<dd>Optional</dd>
+
+					<dt><b>Example:</b></dt>
+					<dd>
+
+<pre class="clsCode">
+DashDisplayName.0=EN,"English Dash Display Name for this offer"
+DashDisplayName.1=JA,"Japanese Dash Display Name for this offer"
+DashDisplayName.2=FR,"French Dash Display Name for this offer"
+</pre>
+    
+					</dd>
+				</dl>
+<h3><a name="IDAQLFV"></a>AdminFriendlyName</h3>
+<dl>
+					<dt><b>Description:</b></dt>
+					<dd>Administrative friendly name for this offering. This should be in English and is the name of the package known to Xbox Operations staff when referring to this offering.</dd>
+
+					<dt><b>In Offering Type:</b></dt>
+					<dd>All</dd>
+
+					<dt><b>Required/Optional:</b></dt>
+					<dd>Required</dd>
+
+					<dt><b>Example:</b></dt>
+					<dd>
+<pre class="clsCode">
+AdminFriendlyName="Sample Content Package Friendly Name"
+</pre>
+    </dd>
+				</dl>
+<h3><a name="IDAJMFV"></a>OfferRegions</h3>
+<dl>
+					<dt><b>Description:</b></dt>
+					<dd><p>Region information for the regions in which this content is offered. If this content 
+					is offered in multiple regions, then multiple entries are required. The valid region values 
+					are as follows.</p>
+						<table>				
+						    <tr>
+<th>Value</th>
+<th>Region</th>
+<th>Continent</th>
+</tr>
+						    <tr>
+<td>5</td>
+<td>Austria</td>
+<td>Europe (EMEA)</td>
+</tr>
+						    <tr>
+<td>8</td>
+<td>Belgium</td>
+<td>Europe (EMEA)</td>
+</tr>
+						    <tr>
+<td>16</td>
+<td>Canada</td>
+<td>North America (NA)</td>
+</tr>
+						    <tr>
+<td>25</td>
+<td>Denmark</td>
+<td>Europe (EMEA)</td>
+</tr>
+						    <tr>
+<td>24</td>
+<td>Germany</td>
+<td>Europe (EMEA)</td>
+</tr>
+						    <tr>
+<td>32</td>
+<td>Finland</td>
+<td>Europe (EMEA)</td>
+</tr>
+						    <tr>
+<td>34</td>
+<td>France</td>
+<td>Europe (EMEA)</td>
+</tr> 
+						    <tr>
+<td>35</td>
+<td>Great Britain</td>
+<td>Europe (EMEA)</td>
+</tr> 
+						    <tr>
+<td>50</td>
+<td>Italy</td>
+<td>Europe (EMEA)</td>
+</tr>
+						    <tr>
+<td>44</td>
+<td>Ireland</td>
+<td>Europe (EMEA)</td>
+</tr>
+						    <tr>
+<td>74</td>
+<td>The Netherlands</td>
+<td>Europe (EMEA)</td>
+</tr>
+						    <tr>
+<td>53</td>
+<td>Japan</td>
+<td>Japan (JA)</td>
+</tr>  
+						    <tr>
+<td>31</td>
+<td>Spain</td>
+<td>Europe (EMEA)</td>
+</tr>
+						    <tr>
+<td>90</td>
+<td>Sweden</td>
+<td>Europe (EMEA)</td>
+</tr>
+						    <tr>
+<td>18</td>
+<td>Switzerland</td>
+<td>Europe (EMEA)</td>
+</tr>
+						    <tr>
+<td>103</td>
+<td>USA</td>
+<td>North America (NA)</td>
+</tr> 
+						</table>
+						
+						<p>The region values match the country values defined in xonline.h (XONLINE_COUNTRY_),
+						<i>not</i> the region values returned by <a href="x_jg_xgetgameregion.htm">XGetGameRegion</a>.</p>
+
+						<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;If the content is offered on multiple continents, you must specify the -S
+						option when invoking the <a href="xbox_jbh_tool_online_buildcontent.htm">BuildOffer</a> tool.
+						This option instructs <b>BuildOffer</b> to create
+						multiple packages, one for each continent. The name of each package file will have a prefix that
+						identifies which continent that package is for: NA for North America, EMEA for Europe, or JA for
+						Japan. For example, if you specify USA (103), Canada (16), and Great Britain (35) as the regions 
+						in which the content is offered, then you should specify the -S option in 
+						<a href="xbox_jbh_tool_online_buildcontent.htm">BuildOffer</a> because these regions imply 
+						two continents: North America (NA) and Europe (EMEA). In this case, 
+						<a href="xbox_jbh_tool_online_buildcontent.htm">BuildOffer</a> creates two package files. 
+						One package file  has a prefix of "NA" and the other has the prefix "EMEA". You can make a single
+						offering available in multiple regions in the same continent (for example, to Canada and the United
+						States).</p>
+
+						<p>The format of the region information is: &lt;Country ID&gt;,&lt;price whole&gt;,&lt;price fractional&gt;,&lt;tax type&gt;</p>
+
+						<p>For free content, both the whole and fractional parts of the price must be zero. Leading and trailing white spaces are not allowed before and after arguments. Set the tax type to 'NotApplicable'.</p>
+					</dd>
+
+					<dt><b>In Offering Type:</b></dt>
+					<dd>All</dd>
+
+					<dt><b>Required/Optional:</b></dt>
+					<dd>Required</dd>
+
+					<dt><b>Example:</b></dt>
+					<dd><p>The following example shows the content being offered in two regions:</p>
+
+<pre class="clsCode">
+OfferRegions.0=103,0,0,TaxNotIncluded
+OfferRegions.1=16,0,0,TaxNotIncluded
+</pre>
+    
+					</dd>
+				</dl>
+<h3><a name="IDATRFV"></a>DisplayInDash</h3>
+<dl>
+					<dt><b>Description:</b></dt>
+					<dd>Specifies whether the content package should be displayed by the Dashboard. By default, a package is displayed in the Dashboard for management (for example, remove) purposes. This is the behavior if the DisplayInDash entry is omitted. However, if this entry is present and its value is set to 0, then the package will not be displayed by the Dashboard. Titles, however, can still enumerate the package and manipulate it (for example, to remove it).</dd>
+
+					<dt><b>In Offering Type:</b></dt>
+					<dd>Content offerings only</dd>
+
+					<dt><b>Required/Optional:</b></dt>
+					<dd>Optional</dd>
+
+					<dt><b>Example:</b></dt>
+					<dd>
+<pre class="clsCode">
+DisplayInDash=Yes
+</pre>
+    </dd>
+				</dl>
+<h3><a name="IDAMSFV"></a>OfferLocations</h3>
+<dl>
+					<dt><b>Description:</b></dt>
+					<dd><p>Download location URL for the package, in the format:</p>
+						
+<pre class="clsCode">
+"&lt;IP Address&gt;[:&lt;Port&gt;]/&lt;URL of package&gt;"
+</pre>
+    
+						<p>The required extension of the package is .xcp. To use this feature, uncomment the line in the content.xbx file and substitute the desired URL.</p>
+						<p>This is URL is primarily for publishers who want to host their own download servers for privacy reasons. If this is not specified, the package defaults to a content download server on PartnerNet. It's important to remember that all content hosted on PartnerNet may be downloaded and viewed by other partners. You should consider hosting anything confidential on your own servers, or specify a SecurityKey (see below).</p>
+					</dd>
+
+					<dt><b>In Offering Type:</b></dt>
+					<dd>Content offerings only</dd>
+
+					<dt><b>Required/Optional:</b></dt>
+					<dd>Optional</dd>
+
+					<dt><b>Example:</b></dt>
+					<dd>
+<pre class="clsCode">
+; OfferLocations="1.2.3.4:3074/content/content.xcp"
+</pre>
+    </dd>
+				</dl>
+<h3><a name="IDAXTFV"></a>SecurityKey</h3>
+<dl>
+					<dt><b>Description:</b></dt>
+					<dd>Publisher security key. Because packages placed on PartnerNet are available to other publishers with PartnerNet access, a package that contains sensitive content can potentially be downloaded and viewed by other publishers. To prevent others from seeing your unpublished content, you can specify a security key that provides additional security. Specify the security key by uncommenting the SecurityKey line in the content.xbx file and substituting the desired security key value. This feature is only available on development kits. See <a href="XOnlineContentSetSecurityKey.htm">XOnlineContentSetSecurityKey</a> for more information.</dd>
+
+					<dt><b>In Offering Type:</b></dt>
+					<dd>Content offerings only</dd>
+
+					<dt><b>Required/Optional:</b></dt>
+					<dd>Optional</dd>
+
+					<dt><b>Example:</b></dt>
+					<dd>
+<pre class="clsCode">
+; SecurityKey=0x00000000000000000000000000000000
+</pre>
+    </dd>
+				</dl>
+<h3><a name="IDASUFV"></a>Description Index</h3>
+<dl>
+					<dt><b>Description:</b></dt>
+					<dd>Description sections for each description index. Description indices can be designed to mean anything and are up to the publisher to define and maintain for a specific title. Description indices may be any 32-bit number and the publisher may define as many description indices as required. They do not have to be sequential. Typically, titles use description indices for localization. In such a case, each index corresponds to a language or a region</dd>
+
+					<dt><b>In Offering Type:</b></dt>
+					<dd>All</dd>
+
+					<dt><b>Required/Optional:</b></dt>
+					<dd>Required</dd>
+
+					<dt><b>Example:</b></dt>
+					<dd><p>This section contains localizable data for description index 0.</p>
+						
+<pre class="clsCode">
+[0]
+</pre>
+    
+					</dd>
+				</dl>
+<h3><a name="IDAOVFV"></a>EnumerationData</h3>
+<dl>
+					<dt><b>Description:</b></dt>
+					<dd>Enumeration BLOB returned by <a href="XOnlineOfferingEnumerate.htm">XOnlineOfferingEnumerate</a> for this content.</dd>
+
+					<dt><b>In Offering Type:</b></dt>
+					<dd>All</dd>
+
+					<dt><b>Required/Optional:</b></dt>
+					<dd>Required</dd>
+
+					<dt><b>Example:</b></dt>
+					<dd>
+<pre class="clsCode">
+EnumerationData=c:\content\data\enum.0.bin
+</pre>
+    </dd>
+				</dl>
+<h3><a name="IDAJWFV"></a>DetailsData</h3>
+<dl>
+					<dt><b>Description:</b></dt>
+					<dd>Details BLOB returned by <a href="XOnlineOfferingDetails.htm">XOnlineOfferingDetails</a> for this content. </dd>
+
+					<dt><b>In Offering Type:</b></dt>
+					<dd>All</dd>
+
+					<dt><b>Required/Optional:</b></dt>
+					<dd>Required</dd>
+
+					<dt><b>Example:</b></dt>
+					<dd>
+<pre class="clsCode">
+DetailsData=c:\content\data\details.0.bin
+</pre>
+    
+						<p>Note that it is permissible to leave gaps for description indices. This section contains localizable data for description index 2.</p>
+
+<pre class="clsCode">
+[2]
+EnumerationData=c:\content\data\enum.2.bin
+DetailsData=c:\content\data\details.2.bin
+</pre>
+    
+					</dd>
+				</dl>
+<h2><a name="IDAKXFV"></a>Content Metadata (contentmeta.xbx) and Signatures</h2>
+<p>The content signature file (contentmeta.xbx) produced by <b>BuildOffer</b> contains content signatures for each content file included in the offering. Before the title uses the downloaded content, it must verify that the content is valid and has not been tampered with. It performs the verification by calling the <a href="XLoadContentSignatures.htm">XLoadContentSignatures</a> and <a href="XLocateSignatureByName.htm">XLocateSignatureByName</a> functions to open the content signature data  and locate the content signature for a particular content file. The title then invokes <a href="XCalculateContentSignature.htm">XCalculateContentSignature</a> to calculate a signature for the content file. It compares the calculated signature with the extracted signature. If they match, the content is valid and unmodified. If the two signatures do not match, the title should not use the content.</p><p>The content signature file is similar to the signature files created by the <a href="xbox_mt_tool_xbldsigs.htm">XBldSigs</a> tool, but is used for online offerings rather than offline offerings. Each signature is a <i>named</i>, <i>automatic</i> signature for a file included in the offering.  <i>Literal</i> signatures (from either file lists or signature DLLs) cannot be specified. For more information about content signatures, see <a href="x_mt_storage_ov_signatures.htm">Content Signatures</a>.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

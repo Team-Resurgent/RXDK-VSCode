@@ -1,0 +1,191 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>DmQueryAllocationTypeName</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="DmQueryAllocationTypeName"/>
+<MSHelp:Keyword Index="F" Term="DmQueryAllocationTypeName"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1><A NAME=""></A>DmQueryAllocationTypeName</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<!--****Intro paragraph. Should be a three or four sentence summary of the topic.****-->
+<P class="intro">Retrieves the
+string description for both internal and custom memory allocations. This
+function is used in conjunction with the <a
+href="xbox_jbg_tool_xbmemdump.htm">XbMemDump</a> tool when tracking memory allocations.</P>
+<!--*********************************************************************************-->
+
+<PRE class=syntax><b>HRESULT DmQueryAllocationTypeName(</b>
+  <b>USHORT</b>  <i>AllocationType</i><b>,</b>
+  <b>LPSTR</b>   <i>pszName</i><b>,</b>
+  <b>SIZE_T</b>  <i>nSize</i>
+  <b>);</b></PRE>
+
+<H4>Parameters</H4>
+
+<dl>
+  <dt><i>AllocationType</i></dt>
+  <dd>The allocation type value whose string description should be
+      retrieved. Internal allocation types are in the range 0&#8211;13,
+      inclusive.</dd>
+
+  <dt><i>pszName</i></dt>
+  <dd>Pointer to a buffer that receives the string description of the
+      allocation type.</dd>
+
+  <dt><i>nSize</i></dt>
+  <dd>Size, in bytes, of the <i>pszName</i> buffer.</dd>
+</dl>
+
+<h4>Return Values</h4>
+
+<p class="content">If <b>DmQueryAllocationTypeName</b> successfully retrieves the
+name of an allocation type, it returns XBDM_NOERR. If the <i>AllocationType</i>
+specified has not been assigned, <b>DmQueryAllocationTypeName</b> returns
+E_INVALIDARG.</p>
+
+<h4>Remarks</h4>
+
+<p class="content">Internal memory allocation types and their corresponding type values
+are outlined in the following table:</p>
+
+<table>
+<tr>
+  <th width="25%">Constant</th>
+  <th width="10%">Value</th>
+  <th width="65%">Description</th>
+</tr>
+
+<tr>
+  <td>0</td>
+  <td>DM_ALLOCTYPE_VIRTUAL_MEMORY</td>
+  <td>Virtual memory -- A section of memory reserved by the CPU and the system
+      code to hold the tables that map physical addresses to virtual addresses.</td>
+</tr>
+<tr>
+  <td>1</td>
+  <td>DM_ALLOCTYPE_CONTIGUOUS_MEMORY</td>
+  <td>Physically contiguous memory -- Allocated using <a
+      href="xbox_mt_sll_memman_xphysicalalloc.htm">XPhysicalAlloc</a> or <a
+      href="xbox_dxg_D3D_AllocContiguousMemory.html">D3D_AllocContiguousMemory</a>. This type of memory is guaranteed
+      to always be in sequential physical pages.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td>DM_ALLOCTYPE_SYSTEM_MEMORY</td>
+  <td>System memory -- A section of memory used by the CPU and the system code to
+      hold the tables that identify physical pages and map them into the
+      physical address space.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td>DM_ALLOCTYPE_DEBUG_MEMORY</td>
+  <td>Debug memory -- Allocated by the XBDM debug manager to allow
+      remote debugging of a title over the network.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td>DM_ALLOCTYPE_KERNEL_POOL</td>
+  <td>Kernel pool -- A section of memory reserved by the system for system memory
+      allocations.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td>DM_ALLOCTYPE_DIRECTORY_OBJECT</td>
+  <td>Directory object handle</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td>DM_ALLOCTYPE_EVENT</td>
+  <td>Event handle</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td>DM_ALLOCTYPE_FILE</td>
+  <td>File handle</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td>DM_ALLOCTYPE_IO_COMPLETION</td>
+  <td>I/O completion handle</td>
+</tr>
+<tr>
+  <td>9</td>
+  <td>DM_ALLOCTYPE_MUTANT</td>
+  <td>Mutant handle</td>
+</tr>
+<tr>
+  <td>10</td>
+  <td>DM_ALLOCTYPE_SEMAPHORE</td>
+  <td>Semaphore handle</td>
+</tr>
+<tr>
+  <td>11</td>
+  <td>DM_ALLOCTYPE_TIMER</td>
+  <td>Timer handle</td>
+</tr>
+<tr>
+  <td>12</td>
+  <td>DM_ALLOCTYPE_THREAD</td>
+  <td>Thread handle</td>
+</tr>
+<tr>
+  <td>13</td>
+  <td>DM_ALLOCTYPE_HEAP</td>
+  <td>Heap memory</td>
+</tr>
+</table>
+
+<h4>Requirements</h4>
+
+<p class="content">
+<b>Header:</b> Declared in XbDm.h
+<br><b>Import Library:</b> XbDm.lib
+</p>
+
+<h4>See Also</h4>
+
+<p class="content">
+<a href="xbox_jbg_tool_xbmemdump.htm">xbmemdump</a>
+|
+<a href="xbox_lrf_debugapi_function_dminsertallocationentry.htm">DmInsertAllocationEntry</a>,
+<a href="xbox_lrf_debugapi_function_dmregisterallocationtype.htm">DmRegisterAllocationType</a>,
+<a href="xbox_lrf_debugapi_function_dmremoveallocationentry.htm">DmRemoveAllocationEntry</a>
+</p>
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2002 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirectMusicPerformance8::GetNotificationPMsg</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="IDirectMusicPerformance8::GetNotificationPMsg [C++]">
+<META NAME="MS-HKWD" CONTENT="GetNotificationPMsg (IDirectMusicPerformance8) [C++]">
+<META NAME="MS-HKWD" CONTENT="GetNotificationPMsg [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="GetNotificationPMsg (IDirectMusicPerformance8)"/>
+<MSHelp:Keyword Index="K" Term="IDirectMusicPerformance8::GetNotificationPMsg"/>
+<MSHelp:Keyword Index="F" Term="GetNotificationPMsg"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_idirectmusicperformance8_getnotificationpmsg_dxaudio"></A>IDirectMusicPerformance8::GetNotificationPMsg</H1>
+
+<P>Retrieves a pending notification message.</P>
+
+<PRE class=syntax><B>HRESULT GetNotificationPMsg(
+  DMUS_NOTIFICATION_PMSG**</B> <I>ppNotificationPMsg</I>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>ppNotificationPMsg</I></DT>
+
+<DD>Address of a variable that receives a pointer to a <A HREF="_dx_dmus_notification_pmsg_dxaudio.htm"><B>DMUS_NOTIFICATION_PMSG</B></A> structure. The application retrieving this message is responsible for calling <A HREF="_dx_idirectmusicperformance8_freepmsg_dxaudio.htm"><B>IDirectMusicPerformance8::FreePMsg</B></A> on it.
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the method succeeds, the return value is S_OK, or <A HREF="_dx_directmusic_return_values_by_name_dxaudio.htm#_dx_s_false_dxaudio"><B>S_FALSE</B></A> if there are no more notification events to return.</P>
+
+<P>If it fails, the method can return <A HREF="_dx_directmusic_return_values_by_name_dxaudio.htm#_dx_e_pointer_dxaudio"><B>E_POINTER</B></A>.</P>
+
+<H4>Remarks</H4>
+
+<P>Notification performance messages expire two seconds after they are triggered.  If your main thread will be busy for more than two seconds (loading a level, for example), you may lose these messages.  To avoid losing messages, your title can do one of the following:</P>
+
+<UL>
+	<LI>Create a thread that polls the notifications to retrieve them while the main thread is busy.</LI>
+    <LI>Choose to call <A HREF="xbox_mt_directmusicdowork_dxaudio.htm"><B>DirectMusicDoWork</B></A> yourself and always check for notifications before the call to <B>DirectMusicDoWork</B>.</LI>
+</UL>
+
+<P>Notifications are removed as part of the work handled by <B>DirectMusicDoWork</B>, so they can't go away until <B>DirectMusicDoWork</B> is called. However, <B>DirectMusicDoWork</B> must be called regularly for DirectMusic to function properly.</P>
+
+
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in dmusici.h.</P>
+
+<H4>See Also</H4>
+
+<P><A HREF="_dx_notification_and_event_handling_dxaudio.htm"><B>Notification and Event Handling</B></A> </P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

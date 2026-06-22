@@ -1,0 +1,142 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineStorageUploadFromMemory</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineStorageUploadFromMemory"/>
+<MSHelp:Keyword Index="F" Term="XOnlineStorageUploadFromMemory"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineStorageUploadFromMemory</h1>
+<p>Uploads a file attachment to title storage from memory.</p><pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineStorageUploadFromMemory(</b>
+    <b>DWORD</b> <i>dwFacility</i><b>,</b>
+    <b>DWORD</b> <i>dwUserIndex</i><b>,</b>
+    <b>LPCWSTR</b> <i>wszStorageFileName</i><b>,</b>
+    <b>FILETIME</b> <i>ftServerExpirationDate</i><b>,</b>
+    <b>PBYTE</b> <i>pbDataToUpload</i><b>,</b>
+    <b>DWORD</b> <i>cbDataToUpload</i><b>,</b>
+    <b>DWORD</b> <i>dwUploadFlags</i><b>,</b>
+    <b>HANDLE</b> <i>hWorkEvent</i><b>,</b>
+    <b>PXONLINETASK_HANDLE</b> <i>phTask</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+		<dt><i>dwFacility</i></dt>
+			<p>
+				<dd>[in]  Storage facility; this value can be one of the following:</dd>
+				<table>
+					<tr>
+						<th>Value</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>XONLINESTORAGE_FACILITY_TEAMS</td>
+						<td>Teams storage facility.</td>
+					</tr>
+					<tr>
+						<td>XONLINESTORAGE_FACILITY_PER_USER_TITLE</td>
+						<td>Per title, per user storage.</td>
+					</tr>
+				</table>
+				<p>For a complete list of facility values, see the <a href="XONLINESTORAGE_FACILITY.htm">XONLINESTORAGE_FACILITY</a> page.</p>
+			</p>
+		
+
+		<dt><i>dwUserIndex</i></dt>
+<dd>[in]  Controller index (zero-based) of the player for whom to download the attachment.</dd>
+            
+
+	<dt><i>wszStorageFileName</i></dt>
+<dd>[in]  Service's storage path for uploaded file. This path can be created using the <a href="XOnlineStorageCreateServerPath.htm">XOnlineStorageCreateServerPath</a> function.</dd>
+            
+
+	<dt><i>ftServerExpirationDate</i></dt>
+<dd>[in]  Date of expiration of this item on the server. A value of zero means that the item never expires. This value must be in UTC format.</dd>
+            
+
+	<dt><i>pbDataToUpload</i></dt>
+<dd>[in]  Buffer of data to upload.</dd>
+            
+
+	<dt><i>cbDataToUpload</i></dt>
+<dd>[in]  Size, in bytes, of the data buffer to upload.</dd>
+            
+
+	<dt><i>dwUploadFlags</i></dt>
+<dd>[in]  Flags that qualify the upload process. This value must be set to zero.</dd>
+            
+
+	<dt><i>hWorkEvent</i></dt>
+<dd>[in]  Handle to an event that is signaled when there is work to do on the asynchronous task returned by the <i>phTask</i> parameter. This parameter can be NULL if such synchronization is not required.</dd>
+            
+
+	<dt><i>phTask</i></dt>
+<dd>[out]  Pointer to a variable of type <b>XONLINETASK_HANDLE</b> that receives a task handle. Use this handle in calls to the <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> function to process the file upload.</dd>
+            
+</dl>
+<h4><a name="return"></a>Return Values</h4>
+		<p>If <b>XOnlineStorageUploadFromMemory</b> succeeds, the return value is S_OK.</p>
+		<p>If <b>XOnlineStorageUploadFromMemory</b> fails, the return value is one of the following error codes:</p>
+		<table>
+			<tr>
+				<th>Value</th>
+				<th>Description</th>
+			</tr>
+			<tr>
+				<td>XONLINE_E_STORAGE_INVALID_REQUEST</td>
+				<td>The request is invalid.</td>
+			</tr>
+			<tr>
+				<td>XONLINE_E_STORAGE_ACCESS_DENIED</td>
+				<td>The client doesn't have sufficient permissions to upload the file.</td>
+			</tr>
+			<tr>
+				<td>XONLINE_E_STORAGE_INVALID_ACCESS_TOKEN</td>
+				<td>The access token signature is invalid.</td>
+			</tr>
+			<tr>
+				<td>XONLINE_E_STORAGE_CANNOT_FIND_PATH</td>
+				<td>Name resolution failed.</td>
+			</tr>
+			<tr>
+				<td>XONLINE_E_STORAGE_INVALID_STORAGE_PATH</td>
+				<td>The storage path is invalid.</td>
+			</tr>
+			<tr>
+				<td>XONLINE_E_STORAGE_INVALID_FACILITY</td>
+				<td>The facility code is invalid.</td>
+			</tr>
+		</table>
+	<h4><a name="remarks"></a>Remarks</h4>
+		<p>This function is similar to the <a href="XOnlineStorageUploadByServerPath.htm">XOnlineStorageUploadByServerPath</a> function, except that it uploads the file from an in-memory buffer instead of a directory on disk. The specified buffer must remain valid and unmodified until the upload operation completes.</p>
+		<p>Only one upload-from-memory operation at a time is supported. </p>
+		<p>Your title must start the signature service before it can call this function.</p>
+	<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p><a href="x_mt_xonline_functions.htm">Xbox Live Functions</a></p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

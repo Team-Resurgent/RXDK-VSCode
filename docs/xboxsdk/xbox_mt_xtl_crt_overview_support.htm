@@ -1,0 +1,116 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Implementation Information</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Implementation Information, C Run-Time"/>
+<MSHelp:Keyword Index="K" Term="C run-time libraries, implementation information"/>
+<MSHelp:Keyword Index="F" Term="Implementation Information, C Run-Time"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Implementation Information</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<!--****Intro paragraph. Should be a three or four sentence summary of the topic.****-->
+<P class="intro">The Xbox Title Libraries (XTL) provide an implementation of the C run-time libraries that is targeted specifically for game titles on the Xbox game system. These libraries are a subset of the Microsoft C run-time libraries and include the Standard C++ Library (which includes STL, the Standard Template Library) and the legacy iostream library.</P>
+
+<P class="content">Because the XTL C run-time libraries implementation is customized for the Xbox game system, changes to some C run-time functions are required to accurately reflect the underlying system features.  Additionally, functions or groups of functions that are no longer applicable or that have limited usefulness have been removed.</P>
+
+<!--****Additional content paragraph. Copy and Paste this section for additional paragraphs.****-->
+<P class="content">For a list of C run-time functions that are not supported in the XTL, see <A HREF="xbox_mt_xtl_crt_unsupported.htm">Unsupported Functions</A>.</P>
+<!--********************************************************************************************-->
+
+<P class="content">Specific features of the Xbox game system that have influenced the C run-time implementation are discussed below.</P>
+
+<P class=note><B><I>Note</I></B>&nbsp;&nbsp;&nbsp;The C run-time libraries provide single-byte character as well as wide-character versions of many functions.  Except as indicated, all references in this topic to a function's availability or behavior refer to both the single-byte and wide-character versions of that function.</P>
+
+<P class=note><B><I>Note</I></B>&nbsp;&nbsp;&nbsp;The XTL C run-time libraries feature set is not yet finalized.  The information presented here will be updated as more details are determined.</P>
+<!--*********************************************************************************-->
+
+
+<H2>Standard Handles</H2>
+
+</P>The Xbox system software does not define any standard input, standard output, or standard error handles. The C run-time streams <B>stdin</B>, <B>stdout</B>, and <B>stderr</B> are therefore not initialized as valid file streams.  Operations on these streams will always return EOF, as will operations on the iostreams <B>cout</B>, <B>cin</B>, and <B>cerr</B>, and the file handles 0, 1, and 2.</P>
+
+
+<H2>Environment Variables</H2>
+
+<P>The Xbox system software does not define any environment blocks or environment variables. The C run-time functions that perform environment operations are not supported. These functions include <B>getenv</B> and <B>_putenv</B>.  The <B>_searchenv</B> function will succeed only if the file name passed in is a fully-qualified path to a file that exists.  It does not check the current working directory (there is no such thing on the Xbox game system), and it does not look in the named environment variable (because there are no environment variables) for a list of directories to search.</P>
+
+
+<H2>Command-Prompt Window</H2>
+
+<P>The Xbox game system does not have a command-prompt window. The C run-time functions that provide character-based input and output for the command-prompt window are not supported.  These functions include <B>_cgets</B>, <B>_cprintf</B>, <B>_cputs</B>, <B>_cscanf</B>, <B>_getch</B>, <B>_getche</B>, <B>_kbhit</B>, <B>_putch</B>, and <B>_ungetch</B>.</P>
+
+
+<H2>Pipes</H2>
+
+<P>The Xbox system software does not support pipes, so the C run-time functions <B>_pipe</B>, <B>_popen</B>, and <B>_pclose</B> are not supported.</P>
+
+
+<H2>Process Execution</H2>
+
+<P>Only a single process&#8212;the game title&#8212;is running at any one time on the Xbox game system. Additional concurrent processes cannot be launched. All C run-time functions that provide process execution or control are not supported. These functions include the <A HREF="xbox_mt_xtl_crt_unsupported.htm#process_exec">_exec</A> and <A HREF="xbox_mt_xtl_crt_unsupported.htm#process_exec">_spawn</A> families, <B>_cwait</B>, <B>system</B>, and <B>_getpid</B>.</P>
+
+
+<H2>Current Directory</H2>
+
+<P>There is no concept of a current working directory or current drive for a game title on the Xbox game system. The C run-time functions that deal with setting and retrieving the current directory or drive are not supported. These functions include <B>_getdrive</B>, <B>_chdrive</B>, <B>_chdir</B>, <B>_fullpath</B>, <B>_getcwd</B>, and <B>_getdcwd</B>.</P>
+
+
+<H2>Error and Assert Output</H2>
+
+<P>Error and assert messages from the C run-time libraries are not displayed in a pop-up window on the Xbox game system.  Instead, by default, those messages are directed to the debugger.  If no debugger is attached, the messages are ignored.</P>
+
+<P>The CRTDBG_MODE_WNDW report mode is not supported by _CrtSetReportMode.  The default report mode for all report types (warnings, errors, and asserts) is CRTDBG_MODE_DEBUG, meaning that, by default, the CRT will send all report types to the debugger.  Titles can change the report mode to CRTDBG_MODE_FILE if desired, but CRTDBG_FILE_STDOUT and CRTDBG_FILE_STDERR cannot be used when calling _CrtSetReportFile; a valid CRT file handle must be specified.</P>
+
+
+<H2>Command-Line and Environment Stub Functions</H2>
+
+<P>The C run-time libraries for processing the command line and the environment block are not used for game titles. Therefore, supplying the <B>_setargv</B> or <B>_setenvp</B> stub function to suppress the loading of those libraries is not necessary.</P>
+
+
+<H2>Heap Management</H2>
+
+<P>The XTL heap management libraries provide mechanisms for walking and compacting the heap, but only when the debug version of Xapilib (XapiLibD.lib) is linked to.  The C run-time functions that rely on those capabilities, including <B>_heapchk</B>, <B>_heapset</B>, <B>_heapmin</B>, and <B>_heapwalk</B>, are available only when <B>XapiLibD.lib</B> is linked in with the title.</P>
+
+
+<H2>Other Functional Differences</H2>
+
+<P>The <B>_stat</B> function always returns &#8211;1 for the <B>st_dev</B> and <B>st_rdev</B> members of the <B>_stat</B> structure. If the path passed to the <B>_stat</B> function is a root directory name&#8212;&quot;D:\&quot;, for example&#8212;the function fails and returns &#8211;1.</P>
+
+<P>The <B>_fstat</B> function's <I>handle</I> parameter can only be a file handle, not a device handle.  The function will fail and return &#8211;1 if the <I>handle</I> argument is not a file handle.</P>
+
+<P>The <B>_tzset</B> function does not check for the existence of the TZ environment variable to determine time zone information; instead, it directly queries the Xbox system software.</P>
+
+<P><B>setlocale</B> cannot be used to change the current locale, only to query it.</P>
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

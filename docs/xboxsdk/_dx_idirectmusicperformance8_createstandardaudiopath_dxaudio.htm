@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirectMusicPerformance8::CreateStandardAudioPath</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="IDirectMusicPerformance8::CreateStandardAudioPath [C++]">
+<META NAME="MS-HKWD" CONTENT="CreateStandardAudioPath (IDirectMusicPerformance8) [C++]">
+<META NAME="MS-HKWD" CONTENT="CreateStandardAudioPath [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="CreateStandardAudioPath (IDirectMusicPerformance8)"/>
+<MSHelp:Keyword Index="K" Term="IDirectMusicPerformance8::CreateStandardAudioPath"/>
+<MSHelp:Keyword Index="F" Term="CreateStandardAudioPath"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_idirectmusicperformance8_createstandardaudiopath_dxaudio"></A>IDirectMusicPerformance8::CreateStandardAudioPath</H1>
+
+<P>Creates an object that represents the stages in data flow from the performance to DirectSound buffers. This method can be used instead of <A HREF="_dx_idirectmusicperformance8_createaudiopath_dxaudio.htm"><B>IDirectMusicPerformance8::CreateAudioPath</B></A> to create a basic predefined audiopath rather than one defined in a source file.</P>
+
+<PRE class="syntax"><B>HRESULT  CreateStandardAudioPath(</B>
+    <B>DWORD</B> <I>dwType</I>,
+    <B>DWORD</B> <I>dwPChannelCount</I>,
+    <B>BOOL</B> <I>fActivate</I>,
+    <B>IDirectMusicAudioPath</B> <I>**ppNewPath</I>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>dwType</I></DT>
+
+<DD>Value that specifies the type of audiopath to create. Can be one of the following values or a combination of up to eight DirectSound <a href="xbox_mixbin_constants_dxaudio.htm">Mixbin Constants</a>.</DD>
+
+<DL>
+<DT>DMUS_APATH_DYNAMIC_3D</DT>
+
+<DD>Contains a dynamic 3D buffer. Does not send to environmental reverb.</DD>
+
+<DT>DMUS_APATH_DYNAMIC_MONO</DT>
+
+<DD>Contains a dynamic mono buffer.</DD>
+
+
+<dt>DMUS_APATH_MIXBIN_5DOT1</dt>
+
+<dd>Sends to 5.1 mixbins on channels 1 through 6.</dd>
+
+<dt>DMUS_APATH_MIXBIN_5DOT1_ENV</dt>
+
+<dd>Sends to 5.1 mixbins on channels 1 through 6 and environmental reverb on 7.</dd>
+
+<dt>DMUS_APATH_MIXBIN_5DOT1_MUSIC</dt>
+
+<dd>Sends to 5.1 mixbins on channels 1 through 6 and music reverb and chorus on 7, 8.</dd>
+
+<dt>DMUS_APATH_MIXBIN_QUAD</dt>
+
+<dd>Sends to quad mixbins on channels 1 through 4.</dd>
+
+<dt>DMUS_APATH_MIXBIN_QUAD_ENV</dt>
+
+<dd>Sends to quad mixbins on channels 1 through 4 and environmental reverb on 5.</dd>
+
+<dt>DMUS_APATH_MIXBIN_QUAD_MUSIC</dt>
+
+<dd>Sends to quad mixbins on channels 1 through 4 and music reverb and chorus on 5, 6.</dd>
+
+<DT>DMUS_APATH_SHARED_STEREO</DT>
+
+<DD>Contains a stereo buffer for a standard music setup with stereo outs and no reverb or chorus send.</DD>
+
+<DT>DMUS_APATH_SHARED_STEREOPLUSREVERB</DT>
+
+<DD>Contains a stereo buffer for an ordinary music setup with stereo outs, reverb send, and chorus send.</DD>
+
+</DL>
+
+
+<P>For more information on these audiopath types, see <A HREF="_dx_standard_audiopaths_dxaudio.htm"><B>Standard Audiopaths</B></A>.
+</DD>
+
+<DT><I>dwPChannelCount</I></DT>
+
+<DD>Number of performance channels in the path.</DD>
+
+<DT><I>fActivate</I></DT>
+
+<DD>Boolean value that specifies whether to activate the path on creation.</DD>
+
+<DT><I>ppNewPath</I></DT>
+
+<DD>Address of a variable that receives an <B>IDirectMusicAudioPath</B> interface pointer for the audiopath. See <A HREF="_dx_idirectmusicaudiopath8_dxaudio.htm"><B>IDirectMusicAudioPath8</B></A>.</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>Returns S_OK if successful, an error code otherwise. Can return one of the following error values:</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TD width=100%><A HREF="_dx_directmusic_return_values_by_name_dxaudio.htm#_dx_e_pointer_dxaudio"><B>E_POINTER</B></A></TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=100%><A HREF="_dx_directmusic_return_values_by_name_dxaudio.htm#_dx_dmus_e_not_init_dxaudio"><B>DMUS_E_NOT_INIT</B></A></TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=100%><A HREF="_dx_directmusic_return_values_by_name_dxaudio.htm#_dx_e_invalidarg_dxaudio"><B>E_INVALIDARG</B></A></TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=100%><A HREF="_dx_directmusic_return_values_by_name_dxaudio.htm#_dx_e_outofmemory_dxaudio"><B>E_OUTOFMEMORY</B></A></TD>
+</TR>
+</TABLE>
+
+<h4>Remarks</h4>
+<p>Titles can create custom mixbin audiopaths that specify up to 8 different mixbins. For multi-channel audio content, mixbins will be assigned channels in the order specified in <a href="xbox_jc_setting_individual_mixbin_destinations_dxaudio.htm">Setting Individual Mixbin Assignments</a>.</p>
+
+<p>The following example demonstrates how to specify a custom mixbin audiopath.</p>
+<pre>
+// pPerformance is a valid pointer to an IDirectMusicPerformance8 interface
+
+HRESULT hr;
+IDirectMusicAudioPath8 *pMyAudioPath;
+
+// Create an audiopath that uses the back left and back right speakers.
+hr = pPerformance-&gt;CreateStandardAudioPath(
+            ((1&lt;&lt;DSMIXBIN_BACK_LEFT) |
+             (1&lt;&lt;DSMIXBIN_BACK_RIGHT)),64,TRUE,&amp;pMyAudioPath);
+</pre>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in Dmusici.h.</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

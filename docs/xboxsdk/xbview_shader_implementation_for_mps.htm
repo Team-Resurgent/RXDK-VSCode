@@ -1,0 +1,68 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Vertex Shader Implementation for Matrix Palette Skinning</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Vertex Shader Implementation for Matrix Palette Skinning"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+<MSHelp:Keyword Index="K" Term="matrix palette skinning, vertex shader implementation"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Vertex Shader Implementation for Matrix Palette Skinning</h1>
+<p>The vertex shader implementation is very straightforward. Here is the code to calculate the weighted position:</p>
+<pre class="clsCode">
+; First bone
+mov a0.x, v2.x
+mul r2, v1. x, c[a0.x+0]
+mul r3, v1. x, c[a0.x+1]
+mul r4, v1. x, c[a0.x+2]
+
+; Second bone
+mov a0.x, v2.y
+mad r2, v1.y, c[a0.x+0], r2
+mad r3, v1.y, c[a0.x+1], r3
+mad r4, v1.y, c[a0.x+2], r4
+
+; Third bone
+mov a0.x, v2.z
+mad r2, v1.z, c[a0.x+0], r2
+mad r3, v1.z, c[a0.x+1], r3
+mad r4, v1.z, c[a0.x+2], r4
+
+; Fourth bone
+mov a0.x, v2.w
+mad r2, v1.w, c[a0.x+0], r2
+mad r3, v1.w, c[a0.x+1], r3
+mad r4, v1.w, c[a0.x+2], r4
+
+; Transform weighted position  (Use this position in final transform)
+dp4 r5.x, v0, r2
+dp4 r5.y, v0, r3
+dp4 r5.z, v0, r4
+mov r5.w, c11.w       ; Sets r5.w to 1
+</pre>
+    <p>v2 is defined to be the bone indices. Thus, v2.x is the index to the vertex shader constant used by bone 1; v2.y is the index to the vertex shader constant used by bone2; v2.z is the index to the vertex shader constant used by bone 3; and v2.w is the index to the vertex shader constant used by bone 4. v1.x is the bone weight for bone 0; v1.y is bone weight for bone 1; v1.z is the bone weight for bone 2; and v1.w is the bone weight for bone 3. This portion of the shader simply multiplies the bone matrix by the bone weight and adds in the previous result. Obviously, if there are only two bones influencing the bone matrices, two <a href="_dx_mov_graphicsd3dx.htm">mov</a> and three <a href="_dx_mad_graphicsd3dx.htm">mad</a> instructions can easily be removed from this shader! The resulting matrix is then used to transform the vertex position. This transformed position is stored in r5 and is used as the vertex position instead of the position originally passed in to the shader.</p><p>You not only need to transform the position but every other piece of dependent data as well. For example, the normal will need to be transformed as well by the resulting matrix. This code does that transformation:</p>
+<pre class="clsCode">
+; Rotate weighted normal  (Use this normal for the lighting)
+dp3 r6.x, v3, r2
+dp3 r6.y, v3, r3
+dp3 r6.z, v3, r4
+mov r6.w, c11.w
+</pre>
+    <p>where the normal is in v3, and the resulting transformed normal is stored in r6. Similarly, you would need to transform the tangent, SxT, and binormal vectors as well, if they were provided. Use the transformed versions from that point forward in the shader. In this example, the transformed normal would be used for lighting instead of the original normal. It is possible to not transform the tangent, SxT, and binormal. Any material effects dependent on these vectors would not change based on the animation. This might be a desirable optimization if the object is small enough on the screen. </p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

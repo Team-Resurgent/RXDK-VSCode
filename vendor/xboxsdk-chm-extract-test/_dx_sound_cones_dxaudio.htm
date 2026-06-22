@@ -1,0 +1,44 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Sound Cones</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Sound Cones"/>
+<MSHelp:Keyword Index="F" Term="Sound Cones"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H4><A NAME="_dx_sound_cones_dxaudio"></A>Sound Cones</H4>
+
+<P>A sound with no orientation has the same amplitude at a given distance in all directions. A sound with an orientation is loudest in the direction of orientation. The model that describes the loudness of the oriented sound is called a sound cone. Sound cones are made up of an inside (or inner) cone and an outside (or outer) cone. </P>
+
+<P>At any angle within the inner cone, the volume of the sound is just what it would be if there were no cone, after taking into account the basic volume of the buffer, the distance from the listener, the listener's orientation, and so on. </P>
+
+<P>At any angle outside the outer cone, the normal volume is attenuated by a factor set by the application. The outside cone volume is expressed in hundredths of decibels and is a negative value, because it represents attenuation from the default volume of 0.</P>
+
+<P>Between the inner and outer cones is a zone of transition from the inside volume to the outside volume. The volume decreases as the angle increases.</P>
+
+<P>The following illustration shows the concept of sound cones.</P>
+
+<P><IMG SRC="images/soundcon.gif" ALT="" BORDER=0></P>
+
+<P>Every 3D sound buffer has a sound cone, but by default a buffer behaves like an omnidirectional sound source, because the outside volume is not attenuated, and the inside and outside cone angles are 360 degrees. Unless the application changes these values, the sound does not have any apparent orientation.</P>
+
+<P>Designing sound cones properly can add dramatic effects to your application. For example, you could position a sound source in the center of a room, setting its orientation toward an open door in a hallway. Then set the angle of the inside cone so that it extends to the width of the doorway, make the outside cone a bit wider, and set the outside cone volume to inaudible. A listener moving along the hallway will begin to hear the sound only when near the doorway, and the sound will be loudest as the listener passes in front of the open door.</P>
+
+<P>An application sets the angles that define sound cones by using the <A HREF="xbox_jc_idirectsoundbuffer8_setconeangles_dxaudio.htm"><B>IDirectSoundBuffer8::SetConeAngles</B></A> method. The outside cone angle must always be equal to or greater than the inside cone angle.</P>
+
+<P>To set the orientation of sound cones, an application can use the <A HREF="xbox_jc_idirectsoundbuffer8_setconeorientation_dxaudio.htm"><B>IDirectSoundBuffer8::SetConeOrientation</B></A> method.</P>
+
+<P>An application sets the outside cone volume by using the <A HREF="xbox_jc_idirectsoundbuffer8_setconeoutsidevolume_dxaudio.htm"><B>IDirectSoundBuffer8::SetConeOutsideVolume</B></A> method.</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

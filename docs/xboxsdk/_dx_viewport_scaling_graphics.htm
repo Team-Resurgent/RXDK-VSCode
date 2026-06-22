@@ -1,0 +1,33 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Viewport Scaling</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Viewport Scaling"/>
+<MSHelp:Keyword Index="F" Term="Viewport Scaling"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_viewport_scaling_graphics"></A>Viewport Scaling</H1>
+
+<P>The dimensions used in the <B>X</B>, <B>Y</B>, <B>Width</B>, and <B>Height</B> members of the <A HREF="_dx_d3dviewport8_graphics.htm">D3DVIEWPORT8</A> structure for a viewport define the location and dimensions of the viewport on the render-target surface. These values are in screen coordinates, relative to the upper-left corner of the surface. </P>
+
+<P>Microsoft&#174; Direct3D&#174; uses the viewport location and dimensions to scale the vertices to fit a rendered scene into the appropriate location on the target surface. Internally, Direct3D inserts these values into a matrix that is applied to each vertex:</P>
+
+<P><IMG SRC="images/vpscale.gif" ALT="" BORDER=0></P>
+
+<P>This matrix simply scales vertices according to the viewport dimensions and desired depth range and translates them to the appropriate location on the render-target surface. The matrix also flips the y-coordinate to reflect a screen origin at the top-left corner with y increasing downward. After this matrix is applied, vertices are still homogeneous&#8212;that is, they still exist as [x,y,z,w] vertices&#8212;and they must be converted to non-homogeneous coordinates before being sent to the rasterizer. This is performed by way of simple division, as discussed in <A HREF="_dx_rasterization_graphics.htm">Rasterization</A>.</P>
+
+<P class=note><B><i>Note</i></B>&nbsp;&nbsp; The viewport scaling matrix incorporates the <B>MinZ</B> and <B>MaxZ</B> members of the <B>D3DVIEWPORT8</B> structure to scale vertices to fit the depth range [<B>MinZ</B>, <B>MaxZ</B>]. This represents different semantics from previous releases of Microsoft&#174; DirectX&#174;, in which these members were used for clipping. </P>
+
+<P class=note>For more information, see <A HREF="_dx_viewport_rectangle_graphics.htm">Viewport Rectangle</A> and <A HREF="_dx_clipping_volumes_graphics.htm">Clipping Volumes</A>. Applications typically set <B>MinZ</B> and <B>MaxZ</B> to 0.0 and 1.0 to cause the system to render to the entire depth range. However, you can use other values to achieve certain affects. You might set both values to 0.0 to force all objects into the foreground, or set both to 1.0 to render all objects into the background.</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

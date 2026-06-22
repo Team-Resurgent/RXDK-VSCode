@@ -1,0 +1,260 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Competitions on Xbox Live</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Competitions on Xbox Live"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+<MSHelp:Keyword Index="K" Term="online competitions"/>
+<MSHelp:Keyword Index="K" Term="tournaments, online"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Competitions on Xbox Live</h1>
+<p><i>By Michal Bortnik, Program Manager, Xbox Live</i></p><p>Seeking out competition with other players is a common reason why video game players venture online. Competitive play on Xbox <i>Live</i> today, however, is limited to little more than scoreboard postings and independent Web sites tracking related game scores. Structured online competitions still hold an untapped potential for generating a lasting player community around a title and extending shelf-life. The competitive race of differentiating from other titles via tournaments has already begun. Xbox <i>Live</i> is meeting this new challenge head-on with the Xbox <i>Live</i> Competitions services.</p><p>The target audience of this white paper is game developers who are investigating online tournaments. The goal of this document is to help you understand what's required to build tournaments on Xbox <i>Live</i> and give you a sense of the implementation costs. To accomplish that goal, this paper describes the new infrastructure for online competitions provided by Xbox <i>Live</i> and calls out common implementation issues.</p><p>This white paper does not provide specific instructions on how to use the individual functions nor does it provide best practices. For these topics, see the upcoming white paper, "Single Elimination Tournaments on Xbox <i>Live</i>."</p><h2><a name="IDA4QEV"></a></h2>
+<h3><a name="IDAAREV"></a>What do you mean by "tournament"?</h3>
+<p>The chances are that each person you ask will come up with a different definition of the word <i>tournament.</i> This is probably because we have a universe of competition formats out there, from the real-world FIFA World Cup and Olympic Games to fantasy football and BattleNet Ladders on PC.</p><p>To avoid confusion later on, you should decide:</p><ul>
+<li>Which tournament format suits your game best&#8212;Single Elimination, Multilevel, or a
+customized form of either of the two?</li>
+<li>Who manages the tournaments?</li>
+<li>Are tournaments managed and viewed on the Web, in-game, or both?</li>
+</ul>
+<p>The remainder of this section will guide you in making the best decisions.</p><h3><a name="IDANREV"></a>What tournament format?</h3>
+<p>Xbox <i>Live</i> provides a complete infrastructure for two tournament formats, namely Single Elimination (SE) and Multilevel (ML). Some amount of customization is allowed, but you still need to choose your base format. SE format is the most widely known tournament format, but ML takes better advantage of the online environment. SE offers more structure, but ML accommodates many more players. Acquaint yourself with the details of both and choose which suits your title best. If the answer is neither, then our flexible infrastructure may still meet you needs. Talk to your Technical Game Manager about the format you have in mind.</p><h3><a name="IDASREV"></a>Who manages the tournaments?</h3>
+<p>Possible answers are players, publisher or both. Publisher-managed tournaments give the
+publisher more control over each tournament, but at the same time require a real person to "baby-sit" them. Publisher-managed tournaments don't require a title to build tournament management UI because Xbox <i>Live</i> provides a Comp Manager tool for this very purpose. Lastly, publisher-managed tournaments accommodate up to 1024 players in Single Elimination format and up to 64,000 players in the Multilevel, as opposed to 128 players for player-managed tournaments in Single Elimination format.</p><p>On the other hand, implementing player-managed tournaments virtually guarantees a much higher participation, because it shifts the burden of managing tournaments onto empowered players, which typically outnumber the publisher staff. The downside of this option is the additional cost of building tournament management UI for individual players.</p><h3><a name="IDAYREV"></a>Are tournaments managed and viewed on the Web or in-game?</h3>
+<p>Playing in tournament matches is not the only part of playing in a tournament. Recruitment, registration, bracketing, stats, and some smack-talk all contribute to a superior tournament experience. But where do players go to get some of that "tournament experience"? It's clear that the game play itself happens on the Xbox, but what about everything else? The two main options here are in-game and Web. Building a complete in-game experience captures the player's complete attention, but is a far more expensive proposition than sharing the burden with the Web. Anchoring your tournament scenarios on the Web, on the other hand, offer a greater potential for customization, cross-title integration, more direct contact with players, and so on.</p><h3><a name="IDA1REV"></a>Summary of Key Tournament Options</h3>
+<table>
+<tr>
+<th>Format</th>
+<th>Managed by</th>
+<th>Managed from</th>
+<th>Max Players</th>
+<th>Round Schedule</th>
+</tr>
+<tr>
+<td>Single Elimination</td>
+<td>Players or Publisher</td>
+<td>Web or in-game</td>
+<td>128 if player-managed;<p>1024 if publisher-managed</p></td>
+<td>Back-to-back, Daily, or Weekly</td>
+</tr>
+<tr>
+<td>Multilevel</td>
+<td>Publisher only</td>
+<td>Web or in-game</td>
+<td>64,000</td>
+<td>Back-to-back only</td>
+</tr>
+</table>
+<h2><a name="IDARSEV"></a>Competitions Infrastructure Overview</h2>
+<p>This section introduces new Xbox <i>Live</i> services and tools that enable structured competitive play. After reading this section, you should have a good idea how much tournament-related functionality is already waiting for you.</p><p>The new Xbox <i>Live</i> services that you need to become familiar with are Query, Scheduling, and Arbitration services. You can access the new functionality via Client functions, Web Service functions, and the Comp Manager tool, and configure your Competition Queries using the XLAST tool.</p><h3><a name="IDAZSEV"></a>Query Service and Tournament Plug-ins</h3>
+<p>Query service supports all the "administrative" tasks of online tournaments, such as registration, recruitment, and other tournament management tasks. The Query service itself is a thin layer on top of a back-end Xbox <i>Live</i> database, providing maximum flexibility in competition scenarios. The three most important items in the Query DB are the Competitions, Entrants, and Events, storing the list of all competitions, the list of all players/teams enrolled in each competition, and a list of matches for each competition, respectively. Integrated on top of the Query service are several Tournament Plug-ins encapsulating format-specific "business logic", such as bracketing, bye-assignment, or round progression. Hand-in-hand with the Query service and Tournament Plug-ins goes the Scheduling service, coordinating all time-based activity.</p><p>The key advantage of this architecture is the flexibility in creating custom queries against the tournament data stored in the Xbox <i>Live</i> DB. Each game defines its own game-specific set of attributes and queries to retrieve them. This should remind you of the Matchmaking feature. Xbox <i>Live</i> provides the tools to construct your custom queries and a set of default queries to get off the ground quickly.</p><h3><a name="IDADTEV"></a>Arbitration Service</h3>
+<p>The Xbox <i>Live</i> Arbitration service enables accurate score reporting for all ranked games, including tournament matches. Arbitrated sessions require all players to register before the game and submit a complete score report for all players in the session. The service makes the binding decision about the final outcome of the match, looking up the past profiles of each of the players to settle any disputes. Client functions ensure that all tournament matches are arbitrated in this way.</p><h3><a name="IDAITEV"></a>Configuration Tool (XLAST)</h3>
+<p>The XLAST tool in the Xbox SDK is used for configuring Xbox <i>Live</i> features and submissions for your title. XLAST has now been enhanced with extensive functionality intended to accelerate your tournament implementation. XLAST provides an easy UI for authoring your server configuration submission and generates the client code compatible with the server configuration.</p><h3><a name="IDANTEV"></a>Competitions Manager</h3>
+<p>As mentioned above, publisher-managed competitions require the ability to interact with the Xbox <i>Live</i> Competitions service. While it is possible to build your own publisher interface with the Competitions service via Web Services, we are deploying a standardized version of such an interface in the form of a Web page on Xbox Central. Using Comp Manager, you'll be able to create and manipulate your tournaments.</p><img src="images/live_comps1.gif"><p><i><b>Illustration</b>&nbsp;&nbsp;Diagram of Competitions infrastructure vs. title-specific features.</i></p>
+<h2><a name="IDAVTEV"></a>Basic Implementation Check List</h2>
+<p>This section walks through the anatomy of a basic online competition. You will notice how much has already been done for you. Hopefully, you will also see more clearly the remaining work ahead of you.</p><p>The standard tournament system on Xbox <i>Live</i> can be broken down into the
+following elements:</p><ul>
+<li><a href="#IDA2TEV">Comp Management</a></li><li><a href="#IDAFUEV">Registration</a></li><li><a href="#IDAMUEV">Match Check-in</a></li><li><a href="#IDARUEV">Matchmaking</a></li><li><a href="#IDAUUEV">Arbitration</a></li><li><a href="#IDAAVEV">Topology</a></li><li><a href="#IDAJVEV">Xbox Live Competitions Configuration</a></li></ul>
+<h3><a name="IDA2TEV"></a>Comp Management</h3>
+<p>Once a title is configured to use the Xbox <i>Live</i> Competitions infrastructure,
+instances of tournaments can be created. As mentioned above, publisher-managed tournaments are created and administered using the Comp Manager tool. But for player-managed competitions, an interface for creating and administering a tournament must be added either in-game using Client functions (<a href="XOnlineCompetitionCreateSingleElimination.htm">XOnlineCompetitionCreateSingleElimination</a>/<a href="XOnlineCompetitionCreate.htm">XOnlineCompetitionCreate</a>) or on the Web using Web functions. For each competition created, you can store up to 7 KB of game-specific data to normalize the match settings, pre-define maps/levels, and so on.</p><h3><a name="IDAFUEV"></a>Registration</h3>
+<p>Before any tournament matches take place, players need the ability to search for and register for available competitions. Using the pre-defined XLAST-generated Competition Queries (see Defining XQS below) and the <a href="XOnlineCompetitionSearch.htm">XOnlineCompetitionSearch</a> function is the quickest way to implement effective search mechanism. Once a suitable tournament has been found, <a href="XOnlineCompetitionManageEntrant.htm">XOnlineCompetitionManageEntrant</a>(Action=CompRegister) registers a player/team for the specified tournament.</p><h3><a name="IDAMUEV"></a>Match Check-in</h3>
+<p>Once players successfully enroll in a competition and the first round begins, players use the Match Check-in mechanism to sign-in with the service. This simple <b>XOnlineCompetitionManageEntrant</b>(Action=MatchCheck-in) guarantees fair and graceful treatment in case of single or double no-shows.</p><h3><a name="IDARUEV"></a>Matchmaking</h3>
+<p>Just like any other online game session, getting together to play a comp match is arranged via the Matchmaking service, using the existing Matchmaking functions. The unique EventID for each comp match received at Match Check-in facilitates precise and definitive matchmaking queries. Once the game session is established, the competitors are ready to register for an arbitrated game session.</p><h3><a name="IDAUUEV"></a>Arbitration</h3>
+<p>All tournament matches on Xbox <i>Live</i> are arbitrated by the service in order to
+guarantee a minimum-cheating environment. Arbitration ensures a fair outcome of the match. Disconnects as well as more advanced network hacks are detected and reflected in the final score. The reason why Arbitration Registration is a separate step from Match Check-in is that Match Check-in ensures a fair treatment of no-shows if the two opponents fail to get together and establish an arbitrated match session. For example, if players A and B are scheduled to play each other, but only player A checks in for the match, instead of forfeiting both players, we award the win to player A.</p><p>Arbitration Registration can be executed via <a href="XOnlineCompetitionSessionRegister.htm">XOnlineCompetitionSessionRegister</a> after an initial exchange of information between the players. The Arbitration service maintains key information about each arbitrated session, including playerIDs, XboxIDs, and the arbitration deadline. When the majority of players submit the final scores (use <a href="XOnlineCompetitionSubmitResults.htm">XOnlineCompetitionSubmitResults</a>), or when the arbitration deadline arrives, Arbitration determines the final session score. For more details on Arbitration, see the upcoming Xbox <i>Live</i> Arbitration white paper.</p><h3><a name="IDAAVEV"></a>Topology</h3>
+<p>Most competition formats have a specific bracket or some form of current standings. For example, a typical Single Elimination bracket looks as follows:</p><img src="images/live_comps2.jpg"><p><i><b>Illustration</b>&nbsp;&nbsp;Diagram of Single Elimination bracket topology.</i></p>
+<p>Tournament players are often curious about other matches and stats in the same tournament. Displaying tournament topology is a good way to satisfy that interest. You can request information about each round and each match (event), including players, outcomes, and scores. A dedicated client function, <a href="XOnlineCompetitionTopology.htm">XOnlineCompetitionTopology</a>, allows you to specify a range of events you are interested in (for instance, my current match, or all matches in the current round) and returns the requested event details. It's up to you to define event details for your game. At the time you submit the match results, you can optionally associate up to 256 bytes of game-specific data with each event.</p><h3><a name="IDAJVEV"></a>Xbox Live Competitions Configuration</h3>
+<p>Much like Matchmaking, Competitions require initial configuration. Specifically, you need to construct a schema and a set of useful queries. A Competition schema is comprised of attributes and constants&#8212;everything you want to track or search against in your tournaments. XLAST comes with pre-defined default queries and can generate necessary client code. The default queries include:</p><ul>
+<li>Competitions available for me to join</li>
+<li>Active Competitions I have registered for</li>
+<li>All tournament matches for the current round</li>
+<li>Final tournament standings</li>
+</ul>
+<h2><a name="IDATVEV"></a>Bonus Features</h2>
+<p>With all the required pieces out of the way, it's time to get creative and have some fun.
+These bonus features enhance the competitive experience and can make your title stand out.</p><ul>
+<li><a href="#IDAXVEV">Messaging</a></li><li><a href="#IDAGWEV">Stats</a></li><li><a href="#IDAJWEV">Web Integration</a></li><li><a href="#IDAMWEV">Teams</a></li><li><a href="#IDAXWEV">Presence</a></li><li><a href="#IDA0WEV">Advanced Anti-cheating Measures</a></li><li><a href="#IDA5WEV">Trophies</a></li><li><a href="#IDACXEV">Special Content</a></li><li><a href="#IDAFXEV">Custom Tournament Formats</a></li></ul>
+<h3><a name="IDAXVEV"></a>Messaging</h3>
+<p>Tournaments are a social experience, and encouraging communication between players makes tournaments more fun for all. The Xbox <i>Live</i> Messaging system has three pre-defined message classes intended for competition scenarios. A freebie is the Match Reminder message, which is automatically sent by the service to the Xbox <i>Live</i> Inboxes of all participants just before the match start time. The exact lead time for Match Reminder messages can be specified at tournament creation. Tournament plug-ins take care of scheduling, generating, and routing the Match Reminders, but it's up to each title to expose the messages in the game UI. Match Reminders can be retrieved and rendered on an Xbox using the Xbox <i>Live</i> Messaging functions. In the future, we will enable routing of Match Reminders to player-specified email, phone, or IM handle as well.</p><p>Competition Recruitment and Competition Game Invite are two other relevant message classes. Both of these need to be generated and sent by the title using the Xbox <i>Live</i> Messaging service, which routes them to the appropriate inboxes. Competition Recruitment messages are invitations to join sent from a registered player to a friend/team member. Competition Game Invite messages make it easier to play a tournament game at a convenient alternate time in case one of the players has a conflict with the official match time.</p><p>For more details, see the upcoming Xbox <i>Live</i> Messaging white paper.</p><h3><a name="IDAGWEV"></a>Stats</h3>
+<p>How else to feel triumphant if not by seeing your Gamertag at the top of a ranking? Even if you don't win a tournament, you can still be the top scorer or the overall championship winner. Opportunities for spicing up competitive play with stats are endless. It's good news, then, that each player-managed tournament comes (optionally) with a dynamically-created Top 100 scoreboard. You can conveniently use the scoreboard for tracking tournament stats and rankings. Don't forget that you can also use some of your regular, static, scoreboards to track each competitor's aggregate historical performance in all the tournaments to date.</p><h3><a name="IDAJWEV"></a>Web Integration</h3>
+<p>There is no reason that player's competitive juices should stop flowing the moment an Xbox is powered off. Presenting all past and present tournament stats on the Web could be the first step to connecting with your players outside the Xbox. Web Service functions expose all the tournament functionality to the Web. Whether it's creating more traffic to your website, generating additional revenue for your premium customers, or launching a title with a big splash, extending the tournament experience beyond the Xbox can help you do that.</p><h3><a name="IDAMWEV"></a>Teams</h3>
+<p>Xbox <i>Live</i> Competitions are not just for single player entrants. From the 
+start, we incorporated teams/clans/groups into tournaments. It's up to you to define the role of a team in your title, especially when it comes to tournaments. For more details on Teams, see the <a href="https://xds.xbox.com/download/specs/Teams_External.doc" target="_blank">Xbox Live Teams</a> pre-release doc.</p><h3><a name="IDAXWEV"></a>Presence</h3>
+<p>In the past, gamers could see Presence information only for Friends. Now you can get info on players in your tournament, even if you have don't have them on your Friends List. If you just can't wait any longer for your weekly scheduled match time, stake out your opponent online and issue a challenge to play right away!</p><h3><a name="IDA0WEV"></a>Advanced Anti-cheating Measures</h3>
+<p>If you are serious about shutting out the cheaters from your title, you can add logic to your game code to report the other players if you detect suspicious activity. For more details, see the upcoming Xbox <i>Live</i> Arbitration white paper.</p><h3><a name="IDA5WEV"></a>Trophies</h3>
+<p>Winners love to reminisce about their victories and show off their trophies. Using the new Title-Managed Storage service, you can set up a trophy case for each player.</p><h3><a name="IDACXEV"></a>Special Content</h3>
+<p>Suppose you want to release a new map. What better way to promote new content than to hold a tournament? Downloadable content can be associated with a specific publisher-managed tournament to pack the extra punch.</p><h3><a name="IDAFXEV"></a>Custom Tournament Formats</h3>
+<p>If neither Single Elimination nor Multilevel format suits your title's needs, there is room for customizing the tournament format using scoreboards. For details, see the <a href="https://xds.xbox.com/BPProgInfo.asp?Page=content/prog_wp_statsbasedtournaments.htm" target="_blank">Stats-based Tournaments</a> white paper.</p><h2><a name="IDAOXEV"></a>Common Design Issues</h2>
+<p>These are typical issues that frequently come up in tournament system design:</p><ul>
+<li><a href="#IDASXEV">Eligibility</a></li><li><a href="#IDAVXEV">Quota on number of competitions</a></li><li><a href="#IDAYXEV">Time-zone considerations</a></li><li><a href="#IDA1XEV">Canceling a competition</a></li><li><a href="#IDA4XEV">Public vs. Private Competitions</a></li></ul>
+<h3><a name="IDASXEV"></a>Eligibility</h3>
+<p>It's usually desirable to restrict participation in a certain category of tournaments based on previous record, unlocked content, or other accomplishment. The easiest way to enforce eligibility is to set title-specific flags when you create a tournament and construct your queries to filter out ineligible tournaments from the search results.</p><h3><a name="IDAVXEV"></a>Quota on number of competitions</h3>
+<p>Each title is granted a fixed amount of space dedicated to competitions. If a title exceeds the allocated quota, no new competitions can be created until the older ones are cleaned up. To avoid this situation, we require that you place a limit on the number of comps each player can create. We will enforce that limit with the players.</p><h3><a name="IDAYXEV"></a>Time-zone considerations</h3>
+<p>One of the biggest challenges of online tournaments is getting players to arrive at the right place at the right time. Players are frequently confused or forgetful of the time-zone differences. The service tracks all the dates/times in the UMT. The game should always convert the dates/times to the player-configured time zone of the Xbox.</p><h3><a name="IDA1XEV"></a>Canceling a competition</h3>
+<p>You need to balance out the legitimate scenario of a player making a mistake and wanting to cancel a comp with the inferior player experience of signing up for a comp and not being able to play because of the cancellation. We recommend that players not be allowed to cancel a competition beyond the Comp Start date,
+unless there are no more matches scheduled.</p><h3><a name="IDA4XEV"></a>Public vs. Private Competitions</h3>
+<p>Some players are more excited about private, friends-only, competition. For each tournament you can specify the number of private slots, which are available only to Friends and Friends of Friends. For tighter controls, you can allow players to set a password at the time of tournament creation.</p><h2><a name="IDAEAFV"></a>FAQ</h2>
+<ul>
+<li><a href="#IDAHAFV">Do we allow cash tournaments?</a></li><li><a href="#IDAOAFV">What if QOS is so bad that a competition match cannot take place?</a></li><li><a href="#IDARAFV">Do we support spectator mode?</a></li><li><a href="#IDAUAFV">Do we support host migration?</a></li><li><a href="#IDAXAFV">How are we going to handle player complaints of cheating, exploits, and so on?</a></li></ul>
+<h3><a name="IDAHAFV"></a>Do we allow cash tournaments?</h3>
+<p>Yes, publishers can set up tournaments on Xbox <i>Live</i> and offer cash prizes to
+the winners. It should be clear, however, that Xbox <i>Live</i> is in no way involved in billing or prize fulfillment. All such arrangements must be settled by a publisher directly with the players (for example, using the game Web site).</p><h3><a name="IDAOAFV"></a>What if QOS is so bad that a competition match cannot take place?</h3>
+<p>This is a hard problem that we cannot completely solve on the server. Even if we address the NAT traversal issues (NAT type 5, 6, 7), due to latency issues we can never guarantee that two clients can connect. We are focusing on messaging this issue to the players to encourage better practices. We also enable the clients to be able to detect connectivity problems if those occur. Fortunately, using Match Check-in and Arbitration features, we can break connectivity-based ties in favor of players with a better reliability record. This also means that players who deploy network schemes to confuse and interfere with the tournament play will not prosper in the long term.</p><h3><a name="IDARAFV"></a>Do we support spectator mode?</h3>
+<p>We do not have support for spectator mode on the server, but titles can implement custom client-side solutions.</p><h3><a name="IDAUAFV"></a>Do we support host migration?</h3>
+<p>We do not have explicit host migration support scheme on the server.</p><h3><a name="IDAXAFV"></a>How are we going to handle player complaints of cheating, exploits, and so on?</h3>
+<p>The Arbitration service will minimize cheating and provide incentives to play fair. Players who are nevertheless affected by cheating can submit complaints using the Xbox <i>Live</i> Feedback system.</p><h2><a name="IDA2AFV"></a>Conclusion</h2>
+<p>Xbox <i>Live</i> Competitions infrastructure was built to support a wide-variety of competitive play scenarios. The set of issues covered in this white paper is equally broad. Flexibility in supporting creative scenarios was one of our main design goals. If you have a design idea, but are concerned that the existing infrastructure does not adequately support it, please contact your TGM. An alternate solution may be just what you need to create the most compelling competitive experience yet. </p><h2><a name="IDABBFV"></a>Resources</h2>
+<ul>
+<li><a href="https://xds.xbox.com/download/specs/Competitions_External.doc" target="_blank">Xbox Live Competitions</a> pre-release doc</li>
+<li>Xbox <i>Live</i> Messaging pre-release document (upcoming)</li>
+<li><a href="https://xds.xbox.com/download/specs/Teams_External.doc" target="_blank">Xbox Live Teams</a> pre-release document and the <a href="prog_wp_webservices.htm">Xbox Live 2003 Web Services</a> white paper</li>
+<li><a href="https://xds.xbox.com/BPProgInfo.asp?Page=content/prog_wp_statsbasedtournaments.htm" target="_blank">Stats-Based Tournaments</a> white paper</li>
+</ul>
+<h2><a name="IDAACFV"></a>Appendix A: Client Function Preview</h2>
+<p>These function sets are a preview of what's coming in the next Xbox SDKs. While we reserve the right to make any necessary changes, these functions are close to their final form.</p>
+<ul>
+<li><a href="#IDAECFV">Single Elimination Specific Functions</a></li><li><a href="#IDATCFV">Competition Wrapper Functions</a></li><li><a href="#IDAAFFV">Query Service Functions</a></li></ul>
+<h3><a name="IDAECFV"></a>Single Elimination Specific Functions</h3>
+<table>
+<tr>
+<td><a href="XOnlineCompetitionCreateSingleElimination.htm">XOnlineCompetitionCreateSingleElimination</a></td>
+<td>Creates an instance of a Single Elimination tournament.</td>
+</tr>
+<tr>
+<td><a href="XOnlineCompetitionTopologySingleElimination.htm">XOnlineCompetitionTopologySingleElimination</a></td>
+<td>Requests a set of tournament event details optimized for a Single Elimination tournament.</td>
+</tr>
+</table>
+<h3><a name="IDATCFV"></a>Competition Wrapper Functions</h3>
+<table>
+<tr>
+<td><a href="XOnlineCompetitionCreate.htm">XOnlineCompetitionCreate</a></td>
+<td>Creates an instance of an Xbox <i>Live</i> Competition (must specify format).</td>
+</tr>
+<tr>
+<td><a href="XOnlineCompetitionCreateGetResults.htm">XOnlineCompetitionCreateGetResults</a></td>
+<td>Returns CompID.</td>
+</tr>
+<tr>
+<td><a href="XOnlineCompetitionCancel.htm">XOnlineCompetitionCancel</a></td>
+<td>Cancels an existing tournament.</td>
+</tr>
+<tr>
+<td><a href="XOnlineCompetitionCheckin.htm">XOnlineCompetitionCheckin</a></td>
+<td>Checks a player into the match.</td>
+</tr>
+<tr>
+<td><a href="XOnlineCompetitionSessionRegister.htm">XOnlineCompetitionSessionRegister</a></td>
+<td>Registers a tournament match session with Arbitration.</td>
+</tr>
+<tr>
+<td><a href="XOnlineCompetitionSearch.htm">XOnlineCompetitionSearch</a></td>
+<td>Executes a search query (for example, available tournaments).</td>
+</tr>
+<tr>
+<td><a href="XOnlineCompetitionSearchGetResults.htm">XOnlineCompetitionSearchGetResults</a></td>
+<td>Retrieves search results.</td>
+</tr>
+<tr>
+<td><a href="XOnlineCompetitionSearch.htm">XOnlineCompetitionSearch</a></td>
+<td>Executes a search query (for example, available tournaments).</td>
+</tr>
+<tr>
+<td><a href="XOnlineCompetitionManageEntrant.htm">XOnlineCompetitionManageEntrant</a></td>
+<td>Executes a player/team action (for example, register, withdraw, check-in).</td>
+</tr>
+<tr>
+<td><a href="XOnlineCompetitionTopology.htm">XOnlineCompetitionTopology</a></td>
+<td>Requests a set of tournament event details.</td>
+</tr>
+<tr>
+<td><a href="XOnlineCompetitionTopologyGetResults.htm">XOnlineCompetitionTopologyGetResults</a></td>
+<td>Retrieves topology results.</td>
+</tr>
+<tr>
+<td><a href="XOnlineCompetitionSubmitResults.htm">XOnlineCompetitionSubmitResults</a></td>
+<td>Submits tournament match scores for Arbitration.</td>
+</tr>
+</table>
+<h3><a name="IDAAFFV"></a>Query Service Functions</h3>
+<table>
+<tr>
+<td><a href="XOnlineQueryAdd.htm">XOnlineQueryAdd</a></td>
+<td>Adds a specific row into the QueryDB (either a new comp, entrant, or event).</td>
+</tr>
+<tr>
+<td><a href="XOnlineQueryUpdate.htm">XOnlineQueryUpdate</a></td>
+<td>Updates an entry.</td>
+</tr>
+<tr>
+<td><a href="XOnlineQuerySearch.htm">XOnlineQuerySearch</a></td>
+<td>Returns a set of rows from the database.</td>
+</tr>
+<tr>
+<td><a href="XOnlineQueryFindFromIds.htm">XOnlineQueryFindFromIds</a></td>
+<td>Returns a single row from the database.</td>
+</tr>
+<tr>
+<td><a href="XOnlineQueryRemove.htm">XOnlineQueryRemove</a></td>
+<td>Removes a set of rows from the database based on the specified criteria.</td>
+</tr>
+<tr>
+<td><a href="XOnlineQueryRemoveId.htm">XOnlineQueryRemoveId</a></td>
+<td>Removes a specific row from the database.</td>
+</tr>
+<tr>
+<td><a href="XOnlineQuerySelect.htm">XOnlineQuerySelect</a></td>
+<td>Executes a tournament plug-in based on pluginID.</td>
+</tr>
+</table>
+<h2><a name="IDANGFV"></a>Appendix B: Web Service Function Preview</h2>
+<h3><a name="IDAPGFV"></a>Query Service Functions</h3>
+<table>
+<tr>
+<td><a href="XOnlineQueryAdd.htm">XOnlineQueryAdd</a></td>
+<td>Adds a specific row into database (either a new comp, entrant, or event).</td>
+</tr>
+<tr>
+<td><a href="XOnlineQueryUpdate.htm">XOnlineQueryUpdate</a></td>
+<td>Updates one or more rows in the database.</td>
+</tr>
+<tr>
+<td><a href="XOnlineQuerySearch.htm">XOnlineQuerySearch</a></td>
+<td>Returns a set of rows from the database.</td>
+</tr>
+<tr>
+<td><a href="XOnlineQueryFindFromIds.htm">XOnlineQueryFindFromIds</a></td>
+<td>Returns a single row from the database.</td>
+</tr>
+<tr>
+<td><a href="XOnlineQueryRemove.htm">XOnlineQueryRemove</a></td>
+<td>Removes a set of rows from the database based on the specified criteria.</td>
+</tr>
+<tr>
+<td><a href="XOnlineQueryRemoveId.htm">XOnlineQueryRemoveId</a></td>
+<td>Removes a specific row from the database.</td>
+</tr>
+<tr>
+<td><a href="XOnlineQuerySelect.htm">XOnlineQuerySelect</a></td>
+<td>Executes a tournament plug-in based on pluginID.</td>
+</tr>
+</table>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

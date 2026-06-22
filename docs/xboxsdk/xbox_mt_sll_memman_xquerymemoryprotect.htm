@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>XQueryMemoryProtect</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="XQueryMemoryProtect">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XQueryMemoryProtect"/>
+<MSHelp:Keyword Index="F" Term="XQueryMemoryProtect"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_xquerymemoryprotect"></A>XQueryMemoryProtect</H1>
+
+<P>The <B>XQueryMemoryProtect</B> function provides access protection and memory type information for a specified memory page.</P>
+
+<PRE class=syntax><B>DWORD XQueryMemoryProtect(
+  LPVOID</B><I> lpAddress</I>  // memory address
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>lpAddress</I></DT>
+
+<DD>[in] Pointer to the base address of the memory page to be queried.</DD>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is the access protection and memory type information for the specified memory page.</P>
+
+<P>If the function fails, the return value is zero.  The function does not use <B>SetLastError</B> to set the calling thread's last-error code.</P>
+
+<P>The value returned can be a combination of one or more of the following flags:</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=33%>Value</TH>
+<TH align=left width=67%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=33%>PAGE_READONLY</TD>
+<TD width=67%>Enables read access to the committed region of pages. An attempt to write to the committed region results in an access violation. If the system differentiates between read-only access and execute access, an attempt to execute code in the committed region results in an access violation.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=33%>PAGE_READWRITE</TD>
+<TD width=67%>Enables both read and write access to the committed region of pages.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=33%>PAGE_GUARD</TD>
+<TD width=67%>Protects the page with the underlying page protection. However, access to the region causes a "guard page entered" condition to be raised in the title. This value is a page protection modifier, only valid when used with one of the page protections other than PAGE_NOACCESS.
+</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=33%>PAGE_NOACCESS</TD>
+<TD width=67%>Disables all access to the committed region of pages. An attempt to read from, write to, or execute in the committed region results in an access violation exception, called a general protection (GP) fault.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=33%>PAGE_NOCACHE</TD>
+<TD width=67%>Allows no memory caching for memory in the committed region of pages. The hardware attributes for the physical memory will be treated as "no cache." This is not recommended for general usage. It is useful for device drivers; for example, mapping a video frame buffer with no caching. This value is a page protection modifier, and it is only valid when used with one of the page protections other than PAGE_NOACCESS.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=33%>PAGE_WRITECOMBINE</TD>
+<TD width=67%>The allocated memory has a write-combining cache policy.  This is not recommended for general usage. It is useful for device drivers; for example, mapping a video frame buffer.  Write combining is a special caching mode that batches writes to the same cache line so they can be transferred in a single bus clock. Write combining does not preserve ordering of the writes, a tradeoff that is usually acceptable for frame buffers.  This value is a page protection modifier, and it is only valid when used with one of the page protections other than PAGE_NOACCESS.</TD>
+</TR>
+</TABLE><BR>
+
+<H4>Remarks</H4>
+
+<P><B>XQueryMemoryProtect</B> can be used to query both virtual memory (allocated with <A HREF="memman_3elf.htm">VirtualAlloc</a>, <A HREF="memman_8ptk.htm">VirtualAllocEx</a>, or <A HREF="memman_6krn.htm">HeapAlloc</a>) and physical memory (allocated with <A HREF="xbox_mt_sll_memman_xphysicalalloc.htm">XPhysicalAlloc</a>).</P>
+
+<P><B>XQueryMemoryProtect</B> can be used to validate that memory at a given virtual address is write combined.  To do so, test the return value to see if the PAGE_WRITECOMBINE flag is set.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p>
+
+<H4>See Also</H4>
+<P> 
+
+<a href="xbox_mt_xtl_sll_memory_management_functions.htm">Memory Management Functions</a> |
+<A HREF="memman_30l0.htm">VirtualProtect</a>,
+<A HREF="xbox_mt_sll_memman_xphysicalprotect.htm">XPhysicalProtect</a>,
+<A HREF="xbox_mt_sll_memman_xphysicalalloc.htm">XPhysicalAlloc</a>,
+<A HREF="memman_3elf.htm">VirtualAlloc</a>,
+<A HREF="memman_8ptk.htm">VirtualAllocEx</a>,
+<A HREF="memman_6krn.htm">HeapAlloc</a>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

@@ -1,0 +1,42 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Music Values and MIDI Notes</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Music Values and MIDI Notes"/>
+<MSHelp:Keyword Index="F" Term="Music Values and MIDI Notes"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_music_values_and_midi_notes_dxaudio"></A>Music Values and MIDI Notes</H1>
+
+<P>Notes in a pattern within a DirectMusic style are not fixed notes. Rather, they are <I>music values</I> that become actual notes only when they are transposed to the current chord according to the current <I>play mode</I> and <I>subchord level</I>. </P>
+
+<P>A music value is a representation of the note's intended role. For example, a music value can specify that a note is intended to be played as the second position in the chord, up one in the scale. When that music value is applied to a particular chord, it is converted to the appropriate MIDI note&#8212;the one in the second position in the chord, up one in the scale. </P>
+
+<P>The play mode determines how to interpret the note against the chord. For example, if the mode is DMUS_PLAYMODE_NORMALCHORD, the note is interpreted against the intervals of the chord and scale, based on the root of the chord. If the mode is DMUS_PLAYMODE_FIXEDTOKEY, the note is interpreted as a linear value. </P>
+
+<P>To allow for complex harmonies with multiple parallel chord progressions, DirectMusic chords can comprise multiple subchords. The subchord level is a value in the range from 0 through 31 that determines which subchords of a chord can be used in establishing the music value. Each subchord is valid for one or more levels, as defined by the author of the music. DirectMusic Producer supports up to four subchords per chord.</P>
+
+<P>When a segment is played, each note is encapsulated in a message structure that specifies the original music value and the final MIDI note along with the play mode and subchord level that were used in transposition. Most applications don't deal directly with note messages, but tools can intercept them and alter the notes. For example, a tool could intercept a note that was transposed in a certain play mode, change the play mode, and calculate a new MIDI value before passing on the message.</P>
+
+<P>More information on music values, play modes, chords, and subchords is contained in the following reference topics:
+
+<UL>
+	<LI><A HREF="_dx_dmus_note_pmsg_dxaudio.htm">DMUS_NOTE_PMSG</A></LI>
+	<LI><A HREF="_dx_dmus_playmode_flags_dxaudio.htm">DMUS_PLAYMODE_FLAGS</A></LI>
+	<LI><A HREF="_dx_dmus_chord_param_dxaudio.htm">DMUS_CHORD_PARAM</A></LI>
+	<LI><A HREF="_dx_dmus_chord_key_dxaudio.htm">DMUS_CHORD_KEY</A></LI>
+	<LI><A HREF="_dx_dmus_subchord_dxaudio.htm">DMUS_SUBCHORD</A></LI>
+</UL>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

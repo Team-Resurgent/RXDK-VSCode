@@ -1,0 +1,159 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>D3DMULTISAMPLE_TYPE</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="D3DMULTISAMPLE_TYPE">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="D3DMULTISAMPLE_TYPE"/>
+<MSHelp:Keyword Index="F" Term="D3DMULTISAMPLE_TYPE"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_d3dmultisample_type_graphics"></A>D3DMULTISAMPLE_TYPE</H1>
+
+<P>The <B>D3DMULTISAMPLE_TYPE</b> value is used to specify the level of full-scene multisampling that the device should apply.<P>
+
+<PRE class=syntax>typedef DWORD D3DMULTISAMPLE_TYPE;</pre>
+
+<P> When specifying a <B>D3DMULTISAMPLE_TYPE</b> value you must use the following constants.<P>
+
+<H4>Constants</H4>
+
+<DL>
+<DT>D3DMULTISAMPLE_NONE</DT>
+
+<DD>No level of full-scene multisampling is available.</DD>
+
+<DT>D3DMULTISAMPLE_2_SAMPLES_MULTISAMPLE_LINEAR</DT>
+
+<DD>Two samples, multisample, applying a linear filter.</DD>
+
+<DT>D3DMULTISAMPLE_2_SAMPLES_MULTISAMPLE_QUINCUNX</DT>
+
+<DD>Two samples, multisample, applying a Quincunx filter.</DD>
+
+<DT>D3DMULTISAMPLE_2_SAMPLES_SUPERSAMPLE_HORIZONTAL_LINEAR</DT>
+
+<DD>Two samples, supersample, applying a horizontal linear filter.</DD>
+
+<DT>D3DMULTISAMPLE_2_SAMPLES_SUPERSAMPLE_VERTICAL_LINEAR</DT>
+
+<DD>Two samples, supersample, applying a vertical linear filter.</DD>
+
+<DT>D3DMULTISAMPLE_4_SAMPLES_MULTISAMPLE_LINEAR</DT>
+
+<DD>Four samples, multisample, applying a linear filter.</DD>
+
+<DT>D3DMULTISAMPLE_4_SAMPLES_MULTISAMPLE_GAUSSIAN</DT>
+
+<DD>Four samples, multisample, applying a Gaussian filter.</DD>
+
+<DT>D3DMULTISAMPLE_4_SAMPLES_SUPERSAMPLE_LINEAR</DT>
+
+<DD>Four samples, supersample, applying a linear filter.</DD>
+
+<DT>D3DMULTISAMPLE_4_SAMPLES_SUPERSAMPLE_GAUSSIAN</DT>
+
+<DD>Four samples, supersample, applying a Gaussian filter.</DD>
+
+<DT>D3DMULTISAMPLE_9_SAMPLES_MULTISAMPLE_GAUSSIAN</DT>
+
+<DD>Nine samples, multisample, applying a Gaussian filter.</DD>
+
+<DT>D3DMULTISAMPLE_9_SAMPLES_SUPERSAMPLE_GAUSSIAN</DT>
+
+<DD>Nine samples, supersample, applying a Gaussian filter.</DD>
+
+<DT>D3DMULTISAMPLE_PREFILTER_FORMAT_DEFAULT</DT>
+
+<DD>No prefiltering of the color buffer.</DD>
+
+<DT>D3DMULTISAMPLE_PREFILTER_FORMAT_X1R5G5B5</DT>
+
+<DD>Prefilter color buffer format.</DD>
+
+<DT>D3DMULTISAMPLE_PREFILTER_FORMAT_R5G6B5</DT>
+
+<DD>Prefilter color buffer format.</DD>
+
+<DT>D3DMULTISAMPLE_PREFILTER_FORMAT_X8R8B8G8</DT>
+
+<DD>Prefilter color buffer format.</DD>
+
+<DT>D3DMULTISAMPLE_PREFILTER_FORMAT_A8R8G8B8</DT>
+
+<DD>Prefilter color buffer format.</DD>
+
+</DL>
+
+<H4>Remarks</H4>
+
+<p>Gaussian and Quincunx filters are not compatible with back-buffer scaling and will generate debug spew. Titles should use linear filters only with back-buffer scaling.</p>
+
+<p></p>
+<P>A sample constant may be combined with a prefilter using ORing. Prefilters specify 
+the format of the frame buffer before the filter is applied.  For example, with the 
+pre-filter format support, a title could use a big 1280x480 16bpp prefilter back 
+buffer and the antialiased blt operation could downsample that to a 640x480 32bpp 
+postfilter front buffer. In this case, the extra color precision comes in handy 
+because it can better represent the intermediate color values produced by the 
+antialiasing filter.</P>
+
+<P>In addition to enabling full-scene multisampling when 
+<A HREF="_dx_idirect3ddevice8_reset_graphics.htm">IDirect3DDevice8::Reset</A> is inviked, 
+there will be render states that turn various aspects on and off at fine-grained 
+levels. </P>
+
+<H4>Xbox Optimizations</h4>
+
+<P>The constants for this type have been redefined.  The DirectX 8.0 implementation was defined as follows:<p>
+<PRE class=syntax>typedef enum _D3DMULTISAMPLE_TYPE {
+    D3DMULTISAMPLE_NONE            =  0,
+    D3DMULTISAMPLE_2_SAMPLES       =  2,
+    D3DMULTISAMPLE_3_SAMPLES       =  3,
+    D3DMULTISAMPLE_4_SAMPLES       =  4,
+    D3DMULTISAMPLE_5_SAMPLES       =  5,
+    D3DMULTISAMPLE_6_SAMPLES       =  6,
+    D3DMULTISAMPLE_7_SAMPLES       =  7,
+    D3DMULTISAMPLE_8_SAMPLES       =  8,
+    D3DMULTISAMPLE_9_SAMPLES       =  9,
+    D3DMULTISAMPLE_10_SAMPLES      = 10,
+    D3DMULTISAMPLE_11_SAMPLES      = 11,
+    D3DMULTISAMPLE_12_SAMPLES      = 12,
+    D3DMULTISAMPLE_13_SAMPLES      = 13,
+    D3DMULTISAMPLE_14_SAMPLES      = 14,
+    D3DMULTISAMPLE_15_SAMPLES      = 15,
+    D3DMULTISAMPLE_16_SAMPLES      = 16,
+
+    D3DMULTISAMPLE_FORCE_DWORD     = 0xffffffff
+} D3DMULTISAMPLE_TYPE;
+</PRE>
+
+<!--<P>Multisampling is valid only on a swap chain that is being created or reset with the D3DSWAPEFFECT_DISCARD swap effect.</P>-->
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in d3d8types.h.</P>
+
+<H4>See Also</H4>
+
+<P><A HREF="_dx_antialiasing_filters.htm">Antialiasing Filters</A>, 
+<A HREF="_dx_idirect3d8_checkdevicemultisampletype_graphics.htm">IDirect3D8::CheckDeviceMultiSampleType</A>, 
+<A HREF="_dx_idirect3ddevice8_createdepthstencilsurface_graphics.htm">IDirect3DDevice8::CreateDepthStencilSurface</A>, 
+<A HREF="_dx_idirect3ddevice8_createrendertarget_graphics.htm">IDirect3DDevice8::CreateRenderTarget</A>, 
+<A HREF="_dx_d3dpresent_parameters_graphics.htm">D3DPRESENT_PARAMETERS</A>, 
+<A HREF="_dx_d3dsurface_desc_graphics.htm">D3DSURFACE_DESC</A></P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

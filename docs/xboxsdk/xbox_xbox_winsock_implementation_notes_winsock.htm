@@ -1,0 +1,413 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Xbox Winsock Implementation Notes</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Xbox Winsock Implementation Notes"/>
+<MSHelp:Keyword Index="F" Term="Xbox Winsock Implementation Notes"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME="xbox_xbox_winsock_implementation_notes_winsock"></A>Xbox Winsock Implementation Notes</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+
+<P>For developers familiar with socket programming and other socket implementations, a brief description of the key features and implementation-specific functionality of the Xbox Winsock Libraries is presented here.  For detailed information please refer to the rest of the Xbox Winsock documentation.</P>
+
+<h3>TCP Implementation Notes</h3>
+
+<p class="content">
+The following table lists features implemented in the Xbox TCP stack.
+</p>
+
+<table>
+  <tr><th>Feature</th><th>Reference</th></tr>
+  <tr><td>Slow Start</td><td><a HREF="http://www.ietf.org/rfc/rfc2001.txt?number=2001">RFC 2001</a>, <a HREF="http://www.ietf.org/rfc/rfc2581.txt?number=2581">RFC 2581</a></td></tr>
+  <tr><td>Congestion Avoidance</td><td><a HREF="http://www.ietf.org/rfc/rfc2001.txt?number=2001">RFC 2001</a>, <a HREF="http://www.ietf.org/rfc/rfc2581.txt?number=2581">RFC 2581</a></td></tr>
+  <tr><td>Fast Retransmit</td><td><a HREF="http://www.ietf.org/rfc/rfc2001.txt?number=2001">RFC 2001</a>, <a HREF="http://www.ietf.org/rfc/rfc2581.txt?number=2581">RFC 2581</a></td></tr>
+  <tr><td>Fast Recovery</td><td><a HREF="http://www.ietf.org/rfc/rfc2001.txt?number=2001">RFC 2001</a>, <a HREF="http://www.ietf.org/rfc/rfc2581.txt?number=2581">RFC 2581</a></td></tr>
+  <tr><td>Exponential Backoff for Retransmission Timeout</td><td><a HREF="http://www.ietf.org/rfc/rfc1072.txt?number=1072">RFC 1072</a></td></tr>
+  <tr><td>Silly-Window Syndrome Avoidance</td><td><a HREF="http://www.ietf.org/rfc/rfc0813.txt?number=813">RFC 813</a></td></tr>
+</table>
+
+<p>
+The Xbox TCP stack does not implement the following features:
+</p>
+<ul>
+
+  <li>Nagling Coalescence -- A technique in which small packets are combined into larger ones to reduce packet overhead.</li>
+  <li>Selective Acknowledgement (SACK) -- For information on SACK, see <a HREF="http://www.ietf.org/rfc/rfc1323.txt?number=1323">RFC 1323</a> and <a HREF="http://www.ietf.org/rfc/rfc2018.txt?number=2018">RFC 2018</a></li>
+  
+</ul>
+<p>Although the Xbox TCP stack does not implement these features, it delays acknowledgements up to 200ms in order to minimize the number that are sent.</p>
+
+
+<H3>Socket Types</H3>
+<!--****Content paragraph. To use multiple paragraphs, copy and paste this tag.****-->
+<P class="content">The following socket types are supported:</P>
+<UL>
+<LI>SOCK_STREAM (TCP)</LI>
+<LI>SOCK_DGRAM (UDP or VDP)</LI>
+</UL>
+<!--*******************************************************************************-->
+
+<h3>Voice-And-Data Protocol (VDP)</h3>
+ 
+<p>
+The Xbox Winsock Libraries support the Voice-And-Data Protocol (VDP). The constant, IPPROTO_VDP, represents the protocol number for VDP. The VDP protocol is used with socket type SOCK_DGRAM. To use this protocol, create a socket as follows: 
+</p>
+<pre>SOCKET s = socket(AF_INET, SOCK_DGRAM, IPPROTO_VDP);</pre>
+ 
+<p>
+This socket behaves exactly like a UDP socket, except that messages sent or received on this socket must be in the format:
+</p> 
+<p>
+[cbGameData][GameData][VoiceData]
+</p> 
+<p>
+where [cbGameData] is a two-byte integer in Intel byte order that specifies the number of bytes of game data in the [GameData] part of the message.  The remainder of the message [VoiceData] contains voice data that the title chooses to transmit along with the game data.  It is acceptable to specify zero bytes of data in [GameData] and/or zero bytes of data in [VoiceData]; a properly formatted message will always be at least two bytes long: enough to hold the [cbGameData] part of the message.  A message in which the first two bytes specify more data than is in the entire message is invalid and is not transmitted.
+</p> 
+<p>
+On the wire, only the [GameData] portion of the message is encrypted (with padding).  The [VoiceData] portion is transmitted in the clear.
+</p> 
+<p>
+At the receiving end of a connection, a title must receive incoming VDP packets on a socket created to send and receive IPPROTO_VDP.  That is, messages of type VDP arrive only on sockets of type VDP.  The <a href="xbox_bind_winsock.htm">bind</a> function fails with WSAEADDRINUSE, if a title attempts to bind both a UDP socket and a VDP socket to the same inbound port.  
+</p> 
+
+<p>
+The security gateway code also supports VDP packets.  A server specification can have a "Protocol" option whose value is "VDP".  Such an inbound port specification causes the security gateway to reject any packets sent to that port that are not of type VDP.  For packets that are of type VDP, the security gateway decrypts the packet and constructs a normal UDP packet that contains a message in the above format. The security gateway then sends the UDP packet to the target server on the configured destination port.  
+</p> 
+
+<p>
+Responses from the server originating from the server specification's IP:port address are interpreted as having the format [cbGameData][GameData][VoiceData]. For all ports configured with "Protocol VDP", a game server should be prepared to accept UDP messages in this format, and must reply in the same format. In replies, the security gateway encrypts only the [GameData] portion on the wire.  
+</p>
+
+<p>
+A server specification that does not specify "Protocol VDP" allows TCP and/or UDP traffic to flow, but blocks inbound VDP traffic.
+</p>
+
+<H3>Socket Modes</H3>
+<!--****Content paragraph. To use multiple paragraphs, copy and paste this tag.****-->
+<P class="content">Both blocking and nonblocking sockets are supported.  By default, sockets are created with the overlapped attribute set.  Non-overlapped sockets are not supported.  However, you may perform synchronous (non-overlapped) operations by specifying NULL for the <I>lpOverlapped</I> parameter in functions that support that parameter.</P>
+<!--*******************************************************************************-->
+
+<H3>Socket I/O models</H3>
+<!--****Content paragraph. To use multiple paragraphs, copy and paste this tag.****-->
+<P class="content">The two supported input/output (I/O) models are <b>select</b> and overlapped I/O event notification. Message notification, event notification, overlapped I/O completion routines, and I/O completion ports are not supported.</P>
+<P>Each socket can have only one pending overlapped I/O send operation and only one pending overlapped I/O receive operation. Thus at most two operations can be pending per socket. The pending send operation can be <b>WSASend</b> or <b>WSASendTo</b>. The pending receive operation can be <b>WSARecv</b> or <b>WSARecvFrom</b>.
+
+
+<H3>Socket Options</H3>
+<!--****Content paragraph. To use multiple paragraphs, copy and paste this tag.****-->
+<P class="content">The following Winsock options are supported for level SOL_SOCKET:</P>
+<UL>
+<LI>SO_ACCEPTCONN</LI>
+<LI>SO_BROADCAST</LI>
+<LI>SO_DONTLINGER</LI>
+<LI>SO_EXCLUSIVEADDRUSE</LI>
+<LI>SO_LINGER</LI>
+<LI>SO_RCVBUF</LI>
+<LI>SO_RCVTIMEO</LI>
+<LI>SO_REUSEADDR</LI>
+<LI>SO_SNDBUF</LI>
+<LI>SO_SNDTIMEO</LI>
+<LI>SO_TYPE</LI>
+
+</UL>
+
+<P class="content">The following Winsock options are supported for level IPPROTO_TCP:</P>
+<UL>
+<LI>TCP_NODELAY
+
+
+<P CLASS="note"><B><I>Note</I></B>&nbsp;&nbsp;&nbsp;TCP_NODELAY is accepted, but ignored. The Xbox Secure Network Library (SNL) always does no delay.</P></LI>
+</UL>
+<P>No other socket options are supported.</P>
+
+<H3>Host Names</H3>
+
+<P><B>gethostbyname</B> and <B>gethostbyaddr</B> are not available for use by titles.  Host information is acquired through functions provided by the Xbox <i>Live</i> Library and the Xbox Secure Network Library.  For more information, see the <a href="xbox_Live_Matchmaking.htm">Playing Games with Matchmaking</a>, the <a href="whitepaper_xbox_secure_network_library_xsnl.htm">Xbox Secure Network Library</a>, and <a href="xbox_xnetxnaddrtoinaddr_xsnl.htm">XNetXnAddrToInAddr</a>.
+
+<H3>Multithreaded Access</H3>
+
+<P>Multiple threads cannot simultaneously call Xbox Winsock functions to operate on the same socket.  Either a single thread must always be used to access a given socket, or the title must use a synchronization method to serialize thread access to that socket.</P>
+
+<P>When most Xbox Winsock functions are called, the Winsock layer locks access to the socket specified.  Until the function returns, other Winsock calls on the same socket will fail.  When the function returns, it releases the lock and Winsock calls can again be made on the socket.  If a Winsock call is made on a locked socket, the call will fail, returning SOCKET_ERROR, and <B>WSAGetLastError</B> will return WSAEINPROGRESS.</P>
+
+<P>This restriction means that, for example, it is not possible to have one thread receiving from a socket while another thread is writing to that socket.</P>
+
+<P>If a title wants to access the same socket from multiple threads, it must use a synchronization mechanism, such as a critical section or mutex, to serialize access to the socket.</P>
+
+<P>This optimization means that titles that use a single thread to access a particular socket will not incur the overhead of a synchronization object automatically allocated by the system.  Only titles that desire multithreaded access will need to allocate such an object themselves, incurring the associated overhead.</P>
+
+
+
+<H3>Broadcasts and the Local Subnet</H3>
+
+<P>When the local Xbox stack sends broadcast packets, neither full broadcast packets (those sent to address 255.255.255.255) nor packets sent to a subnet broadcast address will be received by the local stack, even if the local stack's interface is a part of the subnet being broadcast to.</P>
+
+<H3>Multicast is not Supported</H3>
+
+<p>Xbox Winsock does not support sending or receiving multicasts.</p>
+
+<H3>Outbound Datagrams</H3>
+
+<P>Xbox Winsock will not fragment outbound datagrams.  The largest payload that may be sent (after overhead is accounted for) is 1304 bytes.  Detailed information concerning Xbox packet formats and overhead can be found in <a href="prog_wp_securesock.htm">Xbox Secure Sockets</a>.</P>
+
+<H3>Socket Descriptors and File Handles</H3>
+
+<P>Socket descriptors returned by Winsock are usable only in Winsock calls.  They are not treated as file handles by the system software.  They cannot be used in file handle&#8211;based calls such as <B>ReadFile</B>, <B>WriteFile</B>, <B>CloseHandle</B>, and <B>DuplicateHandle</B>, nor in C run-time file routines such as <B>_open</B>, <B>_osfhandle</B>, <B>_read</B>, and <B>_write</B>.<P>
+
+<H3>Unsupported APIs</H3>
+<!--****Content paragraph. To use multiple paragraphs, copy and paste this tag.****-->
+<P class="content">The following Winsock APIs are not supported:</P> 
+<DL>
+<DT>AcceptEx</DT>
+<DT>EnumProtocols</DT>
+<DT>GetAcceptExSockaddrs</DT>
+<DT>GetAddressByName</DT>
+<DT>gethostbyaddr</DT>
+<DT>gethostbyname</DT>
+<DT>gethostname</DT>
+<DT>GetNameByType</DT>
+<DT>getprotobyname</DT>
+<DT>getprotobynumber</DT>
+<DT>GetService</DT>
+<DT>getservbyport</DT>
+<DT>getservbyname</DT>
+<DT>GetTypeByName</DT>
+<DT>SetService</DT>
+<DT>TransmitFile</DT>
+<DT>WSAAccept</DT>
+<DT>WSAAddressToString</DT>
+<DT>WSAAsyncGetHostByAddr</DT>
+<DT>WSAAsyncGetHostByName</DT>
+<DT>WSAAsyncGetProtoByName</DT>
+<DT>WSAAsyncGetProtoByNumber</DT>
+<DT>WSAAsyncGetServByName</DT>
+<DT>WSAAsyncGetServByPort</DT>
+<DT>WSAAsyncSelect</DT>
+<DT>WSACancelAsyncRequest</DT>
+<DT>WSACancelBlockingCall</DT>
+<DT>WSAConnect</DT>
+<DT>WSADuplicateSocket</DT>
+<DT>WSAEnumNameSpaceProviders</DT>
+<DT>WSAEnumNetworkEvents</DT>
+<DT>WSAEnumProtocols</DT>
+<DT>WSAEventSelect</DT>
+<DT>WSAGetQOSByName</DT>
+<DT>WSAGetServiceClassInfo</DT>
+<DT>WSAGetServiceClassNameByClassId</DT>
+<DT>WSAHtonl</DT>
+<DT>WSAHtons</DT>
+<DT>WSAInstallServiceClass</DT>
+<DT>WSAIoctl</DT>
+<DT>WSAIsBlocking</DT>
+<DT>WSAJoinLeaf</DT>
+<DT>WSALookupServiceBegin</DT>
+<DT>WSALookupServiceEnd</DT>
+<DT>WSALookupServiceNext</DT>
+<DT>WSANtohl</DT>
+<DT>WSANtohs</DT>
+<DT>WSAProviderConfigChange</DT>
+<DT>WSARecvDisconnect</DT>
+<DT>WSARecvEx</DT>
+<DT>WSARemoveServiceClass</DT>
+<DT>WSASendDisconnect</DT>
+<DT>WSASetBlockingHook</DT>
+<DT>WSASetService</DT>
+<DT>WSASocket</DT>
+<DT>WSAStringToAddress</DT>
+<DT>WSAUnhookBlockingHook</DT>
+</DL>
+
+<H3>Functional Differences</H3>
+<!--****Content paragraph. To use multiple paragraphs, copy and paste this tag.****-->
+<P class="content">The behavior of the functions listed here differs slightly from that of the Win32 Winsock 2.0 implementation.  For a full description of each of these functions, refer to that function's reference topic.</P>
+
+<H4><A HREF="xbox_recv_winsock.htm"><B>recv</B></A></H4>
+<PRE class=syntax>
+<b>int</b>
+<b>recv(</b>
+    <b>IN  SOCKET</b> <I>s</I><b>,</b>
+    <b>OUT char FAR</b> <I>*buf</I><b>,</b>
+    <b>IN  int</b> <I>len</I><b>,</b>
+    <b>IN  int</b> <I>flags</I>
+<b>);</b>
+</PRE>
+<P><I>flags</I> must be 0.  MSG_PEEK and MSG_OOB are not supported.</P>
+
+<H4><A HREF="xbox_recvfrom_winsock.htm"><B>recvfrom</B></A></H4>
+<PRE class=syntax>
+<b>int</b>
+<b>recvfrom(</b>
+    <b>IN     SOCKET</b> <I>s</I><b>,</b>
+    <b>OUT    char FAR</b> <I>*buf</I><b>,</b>
+    <b>IN     int</b> <I>len</I><b>,</b>
+    <b>IN     int</b> <I>flags</I><b>,</b>
+    <b>OUT    struct sockaddr FAR</b> <I>*from</I><b>,</b>
+    <b>IN OUT int FAR</b> <I>*fromlen</I>
+<b>);</b>
+</PRE>
+<P><I>flags</I> must be 0.  MSG_PEEK and MSG_OOB are not supported.</P>
+
+
+<H4><A HREF="xbox_send_winsock.htm"><B>send</B></A></H4>
+<PRE class=syntax>
+<b>int</b>
+<b>send(</b>
+    <b>IN SOCKET</b> <I>s</I><b>,</b>
+    <b>IN const char FAR</b> <I>*buf</I><b>,</b>
+    <b>IN int</b> <I>len</I><b>,</b>
+    <b>IN int</b> <I>flags</I>
+<b>);</b>
+</PRE>
+<P><I>flags</I> must be 0.  MSG_DONTROUTE and MSG_OOB are not supported.</P>
+
+<H4><A HREF="xbox_sendto_winsock.htm"><B>sendto</B></A></H4>
+<PRE class=syntax>
+<b>int</b>
+<b>sendto(</b>
+    <b>IN SOCKET</b> <I>s</I><b>,</b>
+    <b>IN const char FAR</b> <I>*buf</I><b>,</b>
+    <b>IN int</b> <I>len</I><b>,</b>
+    <b>IN int</b> <I>flags</I><b>,</b>
+    <b>IN const struct sockaddr FAR</b> <I>*to</I><b>,</b>
+    <b>IN int</b> <I>tolen</I>
+<b>);</b>
+</PRE>
+<P><I>flags</I> must be 0.  MSG_DONTROUTE and MSG_OOB are not supported.</P>
+
+<H4><A HREF="xbox_socket_winsock.htm"><B>socket</B></A></H4>
+<PRE class=syntax>
+<b>SOCKET</b>
+<b>socket(</b>
+    <b>IN int</b> <I>af</I><b>,</b>
+    <b>IN int</b> <I>type</I><b>,</b>
+    <b>IN int</b> <I>protocol</I>
+<b>);</b>
+</PRE>
+<P><I>af</I> must be AF_INET.</P>
+<P><I>type</I> must be SOCK_STREAM or SOCK_DGRAM.</P>
+
+<H4><A HREF="xbox_wsacanceloverlappedio_winsock.htm"><B>WSACancelOverlappedIO</B></A></H4>
+<PRE class=syntax>
+<b>int</b>
+<b>WSACancelOverlappedIO(</b>
+    <b>SOCKET</b> <I>s</I>
+<b>);</b>
+</PRE>
+<P>Cancels all pending overlapped I/O requests on the specified socket.</P>
+
+<H4><A HREF="xbox_wsarecv_winsock.htm"><B>WSARecv</B></A></H4>
+<PRE class=syntax>
+<b>int</b>
+<b>WSARecv(</b>
+    <b>IN     SOCKET</b> <I>s</I><b>,</b>
+    <b>IN OUT LPWSABUF</b> <I>lpBuffers</I><b>,</b>
+    <b>IN     DWORD</b> <I>dwBufferCount</I><b>,</b>
+    <b>OUT    LPDWORD</b> <I>lpNumberOfBytesRecvd</I><b>,</b>
+    <b>IN OUT LPDWORD</b> <I>lpFlags</I><b>,</b>
+    <b>IN     LPWSAOVERLAPPED</b> <I>lpOverlapped</I><b>,</b>
+    <b>IN     LPWSAOVERLAPPED_COMPLETION_ROUTINE</b> <I>lpCompletionRoutine</I>
+<b>);</b>
+</PRE>
+<P><I>dwBufferCount</I> must be 1.</P>
+<P><I>lpFlags</I> must point to 0.  MSG_PEEK and MSG_OOB are not supported.  MSG_PARTIAL is not supported as an input parameter.  MSG_PARTIAL may be set on output.</P>
+<P><I>lpCompletionRoutine</I> must be NULL.</P>
+<P>Only one pending overlapped I/O receive operation (either <b>WSARecv</b> or <b>WSARecvFrom</b>) will be supported per socket.</P>
+
+<H4><A HREF="xbox_wsarecvfrom_winsock.htm"><B>WSARecvFrom</B></A></H4>
+<PRE class=syntax>
+<b>int</b>
+<b>WSARecvFrom(</b>
+    <b>IN     SOCKET</b> <I>s</I><b>,</b>
+    <b>IN OUT LPWSABUF</b> <I>lpBuffers</I><b>,</b>
+    <b>IN     DWORD</b> <I>dwBufferCount</I><b>,</b>
+    <b>OUT    LPDWORD</b> <I>lpNumberOfBytesRecvd</I><b>,</b>
+    <b>IN OUT LPDWORD</b> <I>lpFlags</I><b>,</b>
+    <b>OUT    struct sockaddr FAR</b> <I>*lpFrom</I><b>,</b>
+    <b>IN OUT LPINT</b> <I>lpFromlen</I><b>,</b>
+    <b>IN     LPWSAOVERLAPPED</b> <I>lpOverlapped</I><b>,</b>
+    <b>IN     LPWSAOVERLAPPED_COMPLETION_ROUTINE</b> <I>lpCompletionRoutine</I>
+<b>);</b>
+</PRE>
+<P><I>dwBufferCount</I> must be 1.</P>
+<P><I>lpFlags</I> must point to 0.  MSG_PEEK and MSG_OOB are not supported.  MSG_PARTIAL is not supported as an input parameter.  MSG_PARTIAL may be set on output.</P>
+<P><I>lpCompletionRoutine</I> must be NULL.</P>
+<P>Only one pending overlapped I/O receive operation (either <b>WSARecv</b> or <b>WSARecvFrom</b>) will be supported per socket.</P>
+
+
+<H4><A HREF="xbox_wsasend_winsock.htm"><B>WSASend</B></A></H4>
+<PRE class=syntax>
+<b>int</b>
+<b>WSASend(</b>
+    <b>IN  SOCKET</b> <I>s</I><b>,</b>
+    <b>IN  LPWSABUF</b> <I>lpBuffers</I><b>,</b>
+    <b>IN  DWORD</b> <I>dwBufferCount</I><b>,</b>
+    <b>OUT LPDWORD</b> <I>lpNumberOfBytesSent</I><b>,</b>
+    <b>IN  DWORD</b> <I>dwFlags</I><b>,</b>
+    <b>IN  LPWSAOVERLAPPED</b> <I>lpOverlapped</I><b>,</b>
+    <b>IN  LPWSAOVERLAPPED_COMPLETION_ROUTINE</b> <I>lpCompletionRoutine</I>
+<b>);</b>
+</PRE>
+<P><I>dwFlags</I> must be 0.  MSG_DONTROUTE, MSG_OOB, and MSG_PARTIAL are not supported.</P>
+<P><I>lpCompletionRoutine</I> must be NULL.</P>
+<P>Only one pending overlapped I/O send operation (either <b>WSASend</b> or <b>WSASendTo</b>) will be supported per socket.</P>
+
+
+
+<H4><A HREF="xbox_wsasendto_winsock.htm"><B>WSASendTo</B></A></H4>
+<PRE class=syntax>
+<b>int</b>
+<b>WSASendTo(</b>
+    <b>IN  SOCKET</b> <I>s</I>,
+    <b>IN  LPWSABUF</b> <I>lpBuffers</I><b>,</b>
+    <b>IN  DWORD</b> <I>dwBufferCount</I><b>,</b>
+    <b>OUT LPDWORD</b> <I>lpNumberOfBytesSent</I><b>,</b>
+    <b>IN  DWORD</b> <I>dwFlags</I><b>,</b>
+    <b>IN  const struct sockaddr FAR</b> <I>*lpTo</I><b>,</b>
+    <b>IN  int</b> <I>iTolen</I><b>,</b>
+    <b>IN  LPWSAOVERLAPPED</b> <I>lpOverlapped</I><b>,</b>
+    <b>IN  LPWSAOVERLAPPED_COMPLETION_ROUTINE</b> <I>lpCompletionRoutine</I>
+<b>);</b>
+</PRE>
+<P><I>dwFlags</I> must be 0.  MSG_DONTROUTE, MSG_OOB, and MSG_PARTIAL are not supported.</P>
+<P><I>lpCompletionRoutine</I> must be NULL.</P>
+<P>Only one pending overlapped I/O send operation (either <b>WSASend</b> or <b>WSASendTo</b>) will be supported per socket.</P>
+
+
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

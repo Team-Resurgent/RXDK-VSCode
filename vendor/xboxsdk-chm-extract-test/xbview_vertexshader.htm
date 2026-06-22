@@ -1,0 +1,54 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>VertexShader (XbView)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="VertexShader (XbView)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>VertexShader (XbView)</h1>
+<p>The <b>VertexShader</b> structure contains the data needed to setup the vertex shader.</p>
+<pre class="clsCode">
+#define VERTEXSHADER_MAX_STREAMS 16
+struct VertexShader 
+{
+    DWORD Handle;                // Direct3D handle to vertex shader
+    DWORD DeclarationByteCount;  // size of Declaration
+    DWORD *Declaration;          // the declaration maps streams to vertex 
+                                 // registers, and defines constants
+    DWORD FunctionByteCount;     // size of Function
+    DWORD *Function;             // function microcode maps vertex registers 
+                                 // to transformed vertices
+    DWORD VertexShaderReference; // Index into the resource list for the 
+                                 // Pass Vertex Shader resource
+    DWORD m_dwNumFrameConstants; // Stores number of vertex shader constants 
+                                 // pointing to frame matrices
+    DWORD *FrameConstants;       // Maps frame matrix data to the correct 
+                                 // vertex shader constants
+    struct StreamInput 
+    {
+        DWORD VertexBufferReference; // Index into the resource file for 
+                                     // this stream's Vertex Buffer
+        DWORD Stride;                // Vertex stride
+        DWORD Offset;                // Vertex Offset
+    } rStreamInput[VERTEXSHADER_MAX_STREAMS];
+};
+</pre>
+    <p>The Direct3D handle is set when the resource is first used by calling <a href="xbview_xbr_setvertexshaderresource.htm">XBR::SetVertexShaderResource</a>. This handle is released during the <b>XBR::Cleanup</b> call for this resource. <b>DeclarationByteCount</b> specifies the length of <b>Declaration</b>. <b>Declaration</b> is a token stream that describes the vertex shader constants that are used. <b>FunctionByteCount</b> specifies the length of the microcode used by the shader, and <b>Function</b> is that microcode. The <b>m_dwNumFrameConstants</b> member specifies the number of <b>FrameConstants</b> needed to map the bones to the correct vertex shader constants. The <b>StreamInput</b> structure defines the vertex buffers this vertex shader will use. <b>VertexBufferReference</b> is an index back into the resource list pointing to the vertex buffer for that stream. <b>Stride</b> and <b>Offset</b> define the stride and offset for the vertex buffer stream.</p><p><b>VertexShaderReference</b> is an index back into the resource list pointing to another vertex shader. The reason for this is that there are typically two vertex shader resources for a given effect to draw itself. The first vertex shader is the shader definition in the XDX file, which specifies the shader assembly code and any generic constants. This is separate from the pass version of the vertex shader because multiple passes might want to use the same vertex shader and you don't want to store it redundantly. The other vertex shader is stored in the pass context. This vertex shader refers back (hence, the <b>VertexShaderReference</b> variable) to the predefined vertex shader and uses its microcode and generic constants. The pass vertex shader can also specify additional constants as well as the vertex buffer streams that the pass context will use to draw the effect. </p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

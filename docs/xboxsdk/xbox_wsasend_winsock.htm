@@ -1,0 +1,200 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>WSASend</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="WSASend">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="WSASend"/>
+<MSHelp:Keyword Index="F" Term="WSASend"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="xbox_wsasend_winsock"></A>WSASend</H1>
+
+<P>Sends data on a connected socket.</P>
+
+<PRE class=syntax><B>int WSASend(
+  SOCKET </B><I>s</I>,<B>                                               </B>
+<B>  LPWSABUF </B><I>lpBuffers</I>,<B>                                     </B>
+<B>  DWORD</B><I> dwBufferCount</I>,<B>                                    </B>
+<B>  LPDWORD </B><I>lpNumberOfBytesSent</I>,<B>                            </B>
+<B>  DWORD </B><I>dwFlags</I>,<B>                                          </B>
+<B>  LPWSAOVERLAPPED </B><I>lpOverlapped</I>,<B>                           </B>
+<B>  LPWSAOVERLAPPED_COMPLETION_ROUTINE </B><I>lpCompletionRoutine  </I>
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>s</I></DT>
+
+<DD>[in] Descriptor identifying a connected socket.</DD>
+
+<DT><I>lpBuffers</I></DT>
+
+<DD>[in] Pointer to an array of  <A HREF="xbox_wsabuf_winsock.htm">WSABUF</A> structures. Each <B>WSABUF</B> structure contains a pointer to a buffer and the length of the buffer. This array must remain valid for the duration of the send operation.</DD>
+
+<DT><I>dwBufferCount</I></DT>
+
+<DD>[in] Number of <A HREF="xbox_wsabuf_winsock.htm">WSABUF</A> structures in the <I>lpBuffers</I> array.</DD>
+
+<DT><I>lpNumberOfBytesSent</I></DT>
+
+<DD>[out] Pointer to the number of bytes sent by this call if the I/O operation completes immediately.</DD>
+
+<DT><I>dwFlags</I></DT>
+
+<DD>[in] Unsupported; must be zero.</DD>
+
+<DT><I>lpOverlapped</I></DT>
+
+<DD>[in] Pointer to a <A HREF="xbox_wsaoverlapped_winsock.htm">WSAOVERLAPPED</A> structure.</DD>
+
+<DT><I>lpCompletionRoutine</I></DT>
+
+<DD>[in] Unsupported; must be NULL.
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If no error occurs and the send operation has completed immediately, <B>WSASend</B> returns zero.  Otherwise, a value of SOCKET_ERROR is returned, and a specific error code can be retrieved by calling <A HREF="xbox_wsagetlasterror_winsock.htm">WSAGetLastError</A>. The error code WSA_IO_PENDING indicates that the overlapped operation has been successfully initiated and that completion will be indicated at a later time. Any other error code indicates that the overlapped operation was not successfully initiated and no completion indication will occur.</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=44%>Error code</TH>
+<TH align=left width=56%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=44%>WSANOTINITIALISED</TD>
+<TD width=56%>A successful <A HREF="xbox_wsastartup_winsock.htm">WSAStartup</A> call must occur before using this function.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=44%>WSAEACCES</TD>
+<TD width=56%>The requested address is a broadcast address, but the appropriate flag was not set.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=44%>WSAEINPROGRESS</TD>
+<TD width=56%>A blocking call is in progress.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=44%>WSAENOBUFS</TD>
+<TD width=56%>The Winsock provider reports a buffer deadlock.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=44%>WSAENOTCONN</TD>
+<TD width=56%>The socket is not connected.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=44%>WSAENOTSOCK</TD>
+<TD width=56%>The descriptor is not a socket.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=44%>WSAESHUTDOWN</TD>
+<TD width=56%>The socket has been shut down; it is not possible to call <B>WSASend</B> on a socket after <A HREF="xbox_shutdown_winsock.htm">shutdown</A> has been invoked with how set to SD_SEND or SD_BOTH.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=44%>WSAEWOULDBLOCK</TD>
+<TD width=56%>Overlapped operation: There are too many outstanding overlapped I/O requests. Nonoverlapped operation: The socket is marked as nonblocking and the send operation cannot be completed immediately.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=44%>WSAEMSGSIZE</TD>
+<TD width=56%>The socket is message oriented, and the message is larger than the maximum supported by the underlying transport.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=44%>WSAEINVAL</TD>
+<TD width=56%>The socket has not been bound with <A HREF="xbox_bind_winsock.htm">bind</A> or the socket is not created with the overlapped flag.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=44%>WSAECONNRESET</TD>
+<TD width=56%>The virtual circuit was reset by the remote side.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=44%> WSAECANCELLED</TD>
+<TD width=56%>The overlapped IO request has been canceled (by <B>WSACancelOverlappedIO</B>).</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=44%>WSA_IO_PENDING</TD>
+<TD width=56%>An overlapped operation was successfully initiated and completion will be indicated at a later time.</TD>
+</TR>
+
+</TABLE><BR>
+
+<H4>Remarks</H4>
+
+<P>Only one pending overlapped I/O send operation, either <B>WSASend</B> or <B>WSASendTo</B>, is supported per socket.</P>
+
+<P>The <B>WSASend</B> function provides functionality over and above the standard <A HREF="xbox_send_winsock.htm">send</A> function in two important areas:
+
+<UL>
+	<LI>It can be used in conjunction with overlapped sockets to perform overlapped send operations.</LI>
+
+	<LI>It allows multiple send buffers to be specified making it applicable to the scatter/gather type of I/O.</LI>
+</UL>
+
+<P>The <B>WSASend</B> function is used to write outgoing data from one or more buffers on a connection-oriented socket specified by <I>s. </I>It can also be used, however, on connectionless sockets that have a stipulated default peer address established through the <A HREF="xbox_connect_winsock.htm">connect</A> function.</P>
+
+<P>Sending information uses overlapped I/O, unless both <I>lpOverlapped</I> and <I>lpCompletionRoutine</I> are NULL. In that case, the socket is treated as a nonoverlapped socket. A completion indication will occur, setting an event object, when the supplied buffer(s) have been consumed by the transport. If the operation does not complete immediately, the final completion status is retrieved through the completion routine or <A HREF="xbox_wsagetoverlappedresult_winsock.htm">WSAGetOverlappedResult</A>.</P>
+
+<P>If both <I>lpOverlapped</I> and<I> lpCompletionRoutine</I> are NULL, the socket in this function will be treated as a nonoverlapped socket and <B>WSASend</B> adopts the same blocking semantics as <A HREF="xbox_send_winsock.htm">send</A>. Data is copied from the supplied buffer(s) into the transport's buffer. If the socket is nonblocking and stream oriented, and there is not sufficient space in the transport's buffer, <B>WSASend</B> will return with only part of the title's buffers having been consumed. Given the same buffer situation and a blocking socket, <B>WSASend</B> will block until all of the title's buffer contents have been consumed.</P>
+
+<P>The array of <A HREF="xbox_wsabuf_winsock.htm">WSABUF</A> structures pointed to by the <I>lpBuffers </I>parameter is transient. If this operation is completed in an overlapped manner, it is the service provider's responsibility to capture these <B>WSABUF</B> structures before returning from this call. This enables titles to build stack-based <B>WSABUF</B> arrays.</P>
+
+<P>For message-oriented sockets, care must be taken not to exceed the maximum message size of the underlying provider. If the data is too long to pass atomically through the underlying protocol the error WSAEMSGSIZE is returned, and no data is transmitted.</P>
+
+<P>Xbox Winsock will not fragment outbound datagrams.  The largest payload that may be sent (after overhead is accounted for) is 1304 bytes.  Detailed information concerning Xbox packet formats and overhead can be found in <a href="prog_wp_securesock.htm">Xbox Secure Sockets</a>.</P>
+
+<P class=note><B>Note</B>&nbsp;&nbsp; The successful completion of a <B>WSASend</B> does not indicate that the data was successfully delivered.</P>
+
+<H4>Overlapped Socket I/O</H4>
+
+<P>If an overlapped operation completes immediately, <B>WSASend</B> returns a value of zero and the <I>lpNumberOfBytesSent</I> parameter is updated with the number of bytes sent. If the overlapped operation is successfully initiated and will complete later, <B>WSASend</B> returns SOCKET_ERROR and indicates error code WSA_IO_PENDING. In this case, <I>lpNumberOfBytesSent</I> is not updated. When the overlapped operation completes the amount of data transferred is indicated through the <I>lpcbTransfer</I> parameter in <A HREF="xbox_wsagetoverlappedresult_winsock.htm">WSAGetOverlappedResult</A>.</P>
+
+<P>The <I>lpOverlapped</I> parameter must be valid for the duration of the overlapped operation. If multiple I/O operations are simultaneously outstanding, each must reference a separate <A HREF="xbox_wsaoverlapped_winsock.htm">WSAOVERLAPPED</A> structure. </P>
+
+<P>The <I>hEvent</I> parameter of <I>lpOverlapped</I> is signaled when the overlapped operation completes if it contains a valid event object handle. A title can use <A HREF="xbox_wsawaitformultipleevents_winsock.htm">WSAWaitForMultipleEvents</A> or <A HREF="xbox_wsagetoverlappedresult_winsock.htm">WSAGetOverlappedResult</A> to wait or poll on the event object.</P>
+
+<H4>Requirements</H4>
+<p>
+<b>Header: </b>Declared in winsockx.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xnet.lib for titles that only support system link play, XOnline.lib for titles that support online play. Use the secure versions of the library file (Xnets.lib or XOnlines.lib) for final testing.
+</p>
+
+
+<H4>See Also</H4>
+
+<P>
+<a href="xbox_winsock_overview_winsock.htm">Winsock Overview</A>,
+<a href="xbox_winsock_functions_winsock.htm">Winsock Functions</A> |
+  <A HREF="xbox_wsacloseevent_winsock.htm">WSACloseEvent</A>, <A HREF="xbox_wsacreateevent_winsock.htm">WSACreateEvent</A>, <A HREF="xbox_wsagetoverlappedresult_winsock.htm">WSAGetOverlappedResult</A>, <A HREF="xbox_wsawaitformultipleevents_winsock.htm">WSAWaitForMultipleEvents</A> </P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

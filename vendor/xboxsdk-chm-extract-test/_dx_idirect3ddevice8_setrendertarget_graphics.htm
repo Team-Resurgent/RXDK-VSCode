@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirect3DDevice8::SetRenderTarget</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="IDirect3DDevice8::SetRenderTarget [C++]">
+<META NAME="MS-HKWD" CONTENT="SetRenderTarget (IDirect3DDevice8) [C++]">
+<META NAME="MS-HKWD" CONTENT="SetRenderTarget [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="SetRenderTarget (IDirect3DDevice8)"/>
+<MSHelp:Keyword Index="K" Term="IDirect3DDevice8::SetRenderTarget"/>
+<MSHelp:Keyword Index="F" Term="SetRenderTarget"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_idirect3ddevice8_setrendertarget_graphics"></A>IDirect3DDevice8::SetRenderTarget</H1>
+
+<P>Sets a new color buffer, depth buffer, or both for the device.</P>
+
+<PRE class=syntax><B>HRESULT SetRenderTarget(
+  IDirect3DSurface8*</B><I> pRenderTarget</I><B>,</B>
+<B>  IDirect3DSurface8*</B><I> pNewZStencil</I>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>pRenderTarget</I></DT>
+
+<DD>[in] Pointer to a new color buffer. If NULL, the existing color buffer is retained. If this parameter is not NULL, the reference count on the new render target is incremented. Devices always have to be associated with a color buffer.
+
+<P>The new render target surface must have been created with a valid render target format. See <a href="_dx_d3dformat_graphics.htm"><b>D3DFORMAT</b></a> for a list of valid render target formats.</p>
+</DD>
+
+<DT><I>pNewZStencil</I></DT>
+
+<DD>[in] Pointer to a new depth-stencil buffer. If there is an existing depth-stencil buffer, it is released. If this parameter is not NULL, the reference count on the new depth-stencil buffer surface is incremented. Applications can change the render target without changing the depth buffer by passing in the <I>ppZStencilSurface </I>parameter of <A HREF="_dx_idirect3ddevice8_getdepthstencilsurface_graphics.htm"><B>IDirect3DDevice8::GetDepthStencilSurface</B></A>.
+
+<P>The new depth-stencil surface must have been created with a valid depth/stencil format. See <b>D3DFORMAT</b> for a list of valid depth/stencil formats.</p>
+
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the method succeeds, the return value is D3D_OK.</P>
+
+<P><A HREF="_dx_return_values_graphics.htm#_dx_d3derr_invalidcall_graphics"><B>D3DERR_INVALIDCALL</B></A> is returned if <I>pRenderTarget</I> or <I>pNewZStencil </I>are not NULL and invalid, or if the new depth buffer is smaller than the new or retained color buffer.</P>
+
+<H4>Remarks</H4>
+
+<p>Direct3D will not perform a final release on a resource until both the hardware and Direct3D are done with that resource. The status of the lock on the resource can be determined using <a href="xbox_dxg_IDirect3DResource8_IsBusy.htm"><b>IDirect3DResource8::IsBusy</b></a>.</p>
+
+<P>Once a color buffer and a depth-stencil surface have been associated with the same device by this method, they are said to be paired.</P>
+
+<P>The previous depth-stencil surface's contents persist after a call to <B>SetRenderTarget</B> to disassociate the previous depth-stencil surface from the device. If the surface is re-associated with the device, then the contents of the surface will be unchanged, providing the color buffer to which the new depth-stencil surface is being paired is the same size and format as the color buffer to which the depth-stencil surface was most recently paired.</P>
+
+<P>Calling this method resets the current viewport of the device to the size of the current render target. This is done regardless of whether the z-buffer is the only one that is being changed.</P>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in D3d8.h.<BR>
+<B>&nbsp;&nbsp;Import Library:</B> Use D3d8.lib.</P>
+
+<H4>See Also</H4>
+
+<P><A HREF="_dx_idirect3ddevice8_createdepthstencilsurface_graphics.htm"><B>IDirect3DDevice8::CreateDepthStencilSurface</B></A>, <A HREF="_dx_idirect3ddevice8_getdepthstencilsurface_graphics.htm"><B>IDirect3DDevice8::GetDepthStencilSurface</B></A></P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

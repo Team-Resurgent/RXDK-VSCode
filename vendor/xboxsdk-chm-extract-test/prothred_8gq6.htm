@@ -1,0 +1,47 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Priority Inversion</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Priority Inversion"/>
+<MSHelp:Keyword Index="F" Term="Priority Inversion"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR></TR>
+</TABLE>
+<!--**********************************-->
+
+
+<H3><A NAME="_win32_priority_inversion"></A>Priority Inversion</H3>
+
+<P>Priority inversion occurs when two or more threads with different priorities are in contention to be scheduled. Consider a simple case with three threads: thread 1, thread 2, and thread 3. Thread 1 is high priority and becomes ready to be scheduled. Thread 2, a low-priority thread, is executing code in a critical section. Thread 1, the high-priority thread, begins waiting for a shared resource from thread 2. Thread 3 has medium priority. Thread 3 receives all the processor time, because the high-priority thread (thread 1) is waiting for shared resources from the low-priority thread (thread 2). Thread 2 won't leave the critical section because it does not have the highest priority and won't be scheduled.
+
+<P>The scheduler in the Xbox system software currently does not implement any algorithm to attempt to solve the problem of priority inversion.  Titles must design their multithreading model to ensure that they do not have low-priority threads blocking critical resources when higher-priority threads are always ready to run (thus blocking the lower-priority threads).</P>
+
+<!--
+<P>The scheduler solves this problem by randomly boosting the priority of the ready threads (in this case, the low priority lock-holders). The low priority threads run long enough to exit the critical section, and the high- priority thread can enter the critical section. If the low-priority thread doesn't get enough CPU time to exit the critical section the first time, it will get another chance during the next round of scheduling.</P>
+-->
+
+<!-- <P>If a high-priority thread is dependent on a low-priority thread that will not be allowed to run because a medium priority thread is getting all of the CPU time, the system recognizes that the high-priority thread is dependent on the low-priority thread. It will boost the low-priority thread's priority up to the priority of the high-priority thread. This will allow the thread that formerly had the lowest priority to run and release the high-priority thread that was waiting for it.</P> -->
+
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

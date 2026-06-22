@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>DmGetThreadContext</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="CreateFile">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="DmGetThreadContext"/>
+<MSHelp:Keyword Index="F" Term="DmGetThreadContext"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_createfile"></A>DmGetThreadContext</H1>
+
+<P class="content">Retrieves the <b>CONTEXT</b> for a given thread.</P>
+
+<PRE class=syntax><b>DMHRAPI DmGetThreadContext(</b>
+  <B>DWORD</B> <I>dwThreadId</I><B>,</B> 
+  <B>PCONTEXT</B> <I>pdmcr</I>
+  <b>);</b></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+
+<DT><I>dwThreadId</I></DT>
+<DD>Thread ID.</DD>
+
+<DT><I>pdmcr</I></DT>
+<DD>Pointer to the context.</DD>
+
+</DL>
+
+<H4>Return Values</H4>
+
+<P class="content">Returns XBDM_NOERR if successful, an error value otherwise.</P>
+
+
+<H4>Remarks</H4>
+
+<P class="content">A <B>CONTEXT</B> structure contains processor-specific register data. The system uses <B>CONTEXT</B> structures to perform various internal operations. Refer to the header files for a definition of this structure.</P>
+
+<H4>CONTEXT Flags</H4>
+
+<P class="content">The <b>Flags</b> member of the <b>CONTEXT</b> structure contains one or more of the following values:</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=33%>Attribute</TH>
+<TH align=left width=67%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=33%>CONTEXT_INTEGER</TD>
+<TD width=67%>Eax, Ebx, Ecx, Edx, Esi, Edi are valid.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=33%>CONTEXT_CONTROL</TD>
+<TD width=67%>Esp, Ebp, Eip, SegCs, SegSs, EFlags are valid.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=33%>CONTEXT_FULL</TD>
+<TD width=67%>A combination of CONTEXT_INTEGER and CONTEXT_CONTROL.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=33%>CONTEXT_FLOATING_POINT</TD>
+<TD width=67%>The FloatSave area is valid.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=33%>CONTEXT_EXTENDED_REGISTERS</TD>
+<TD width=67%>The ExtendedRegisters data is valid.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=33%>CONTEXT_SEGMENTS</TD>
+<TD width=67%>Not used on Xbox.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=33%>CONTEXT_DEBUG_REGISTERS</TD>
+<TD width=67%>Not used on Xbox.</TD>
+</TR>
+
+</TABLE>
+
+<P class="content">Only the values requested in <b>CONTEXT.Flags</b> are actually updated. The rest are unchanged.  Not all of the requested values are necessarily available; upon exit from <B>DmGetThreadContext</B>, <b>CONTEXT.Flags</b> specifies which registers were actually obtained. The contents of those portions of the context that were requested but not returned are undefined.</P>
+
+<h4>Requirements</h4>
+<p class="content">
+<b>Header:</b> Declared in XbDm.h and XboxDbg.h
+<br><b>Import Library:</b> Use XbDm.lib for target system code; and XboxDbg.lib for development system code.
+</p>
+
+<!--
+<H4>See Also</H4>
+<P class="content"></P>
+-->
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

@@ -1,0 +1,164 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>DMUS_OBJECTDESC</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="DMUS_OBJECTDESC  [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="DMUS_OBJECTDESC"/>
+<MSHelp:Keyword Index="F" Term="DMUS_OBJECTDESC"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_dmus_objectdesc_dxaudio"></A>DMUS_OBJECTDESC</H1>
+
+<P>Used to describe a DirectMusic object. This structure is passed to the <A HREF="_dx_idirectmusicloader8_getobject_dxaudio.htm"><B>IDirectMusicLoader8::GetObject</B></A> method to identify the object that the loader should retrieve from storage.</P>
+
+<PRE class=syntax>typedef struct _DMUS_OBJECTDESC {
+    DWORD         dwSize;
+    DWORD         dwValidData;
+    GUID          guidObject;
+    GUID          guidClass;
+    FILETIME      ftDate;
+    DMUS_VERSION  vVersion;
+    WCHAR         wszName[DMUS_MAX_NAME];
+    WCHAR         wszCategory[DMUS_MAX_CATEGORY];
+    WCHAR         wszFileName[DMUS_MAX_FILENAME];
+    LONGLONG      llMemLength;
+    LPBYTE        pbMemData;
+    IStream       *pStream;
+} DMUS_OBJECTDESC, *LPDMUS_OBJECTDESC;
+</PRE>
+
+<H4>Members</H4>
+
+<DL>
+<DT><B>dwSize</B></DT>
+
+<DD>Size of the structure, in bytes. This member must be initialized to <B>sizeof(DMUS_OBJECTDESC) </B>before the structure is passed to any method.</DD>
+
+<DT><B>dwValidData</B></DT>
+
+<DD>Flags describing which members are valid and giving further information about some members. The following values are defined:
+
+<DL>
+<DT>DMUS_OBJ_CATEGORY</DT>
+
+<DD>The <B>wszCategory</B> member is valid.</DD>
+
+<DT>DMUS_OBJ_CLASS</DT>
+
+<DD>The <B>guidClass</B> member is valid.</DD>
+
+<DT>DMUS_OBJ_DATE</DT>
+
+<DD>The <B>ftDate</B> member is valid.</DD>
+
+<DT>DMUS_OBJ_FILENAME</DT>
+
+<DD>The <B>wszFileName</B> member is valid. The presence of this flag is assumed if DMUS_OBJ_FULLPATH is set.</DD>
+
+<DT>DMUS_OBJ_FULLPATH</DT>
+
+<DD>The <B>wszFileName</B> member contains either the full path of a file or a path relative to the application directory. The directory set by <A HREF="_dx_idirectmusicloader8_setsearchdirectory_dxaudio.htm"><B>IDirectMusicLoader8::SetSearchDirectory</B></A> is not searched. If this flag is not set, <B>wszFilename</B> is always assumed to be relative to the application directory, or to the search directory if <B>SetSearchDirectory</B> has been called for this object type.</DD>
+
+<DT>DMUS_OBJ_LOADED</DT>
+
+<DD>The object is currently loaded in memory.</DD>
+
+<DT>DMUS_OBJ_MEMORY</DT>
+
+<DD>The object is in memory, and <B>llMemLength</B> and <B>pbMemData</B> are valid.</DD>
+
+<DT>DMUS_OBJ_NAME</DT>
+
+<DD>The <B>wszName</B> member is valid.</DD>
+
+<DT>DMUS_OBJ_OBJECT</DT>
+
+<DD>The <B>guidObject</B> member is valid.</DD>
+
+<DT>DMUS_OBJ_STREAM</DT>
+
+<DD>The <B>pStream</B> member contains a pointer to the data stream.</DD>
+
+<DT>DMUS_OBJ_URL</DT>
+
+<DD>The <B>wszFileName</B> member contains a URL. URLs are not currently supported by the DirectMusic loader.</DD>
+
+<DT>DMUS_OBJ_VERSION</DT>
+
+<DD>The <B>vVersion</B> member is valid.</DD>
+</DL>
+</DD>
+
+<DT><B>guidObject</B></DT>
+
+<DD>Unique identifier for this object.</DD>
+
+<DT><B>guidClass</B></DT>
+
+<DD>Unique identifier for the class of object. All the standard objects have defined identifiers consisting of "CLSID_" plus the name of the object. For example, a segment object is identified as CLSID_DirectMusicSegment. See the defines in the Dmusici.h header file. </DD>
+
+<DT><B>ftDate</B></DT>
+
+<DD>Date that the object was last edited.</DD>
+
+<DT><B>vVersion</B></DT>
+
+<DD><A HREF="_dx_dmus_version_dxaudio.htm"><B>DMUS_VERSION</B></A> structure containing version information.</DD>
+
+<DT><B>wszName</B></DT>
+
+<DD>Name of the object.</DD>
+
+<DT><B>wszCategory</B></DT>
+
+<DD>Category for the object.</DD>
+
+<DT><B>wszFileName</B></DT>
+
+<DD>File path. If DMUS_OBJ_FULLPATH is set, this is the full path; otherwise, it is the file name. If the <A HREF="_dx_idirectmusicloader8_setsearchdirectory_dxaudio.htm"><B>IDirectMusicLoader8::SetSearchDirectory</B></A> method has been called, this member must contain only a file name. </DD>
+
+<DT><B>llMemLength</B></DT>
+
+<DD>Size of data in memory.</DD>
+
+<DT><B>pbMemData</B></DT>
+
+<DD>Data in memory.</DD>
+
+<DT><B>pStream</B></DT>
+
+<DD>Address of the <B>IStream</B> interface of a custom stream that can be used to load the object into memory. In most cases this value should be NULL.See Remarks. 
+</DD>
+</DL>
+
+<H4>Remarks</H4>
+
+<P>At least one of <B>wszName</B>, <B>guidObject</B>, and <B>wszFileName</B> must be filled with valid data to retrieve the object by using the <B>IDirectMusicLoader8::GetObject</B> method. </P>
+
+<P>The name and category strings use 16-bit characters in the <B>WCHAR</B> format, not 8-bit ANSI characters. Be sure to convert as appropriate. You can use the C library <B>mbstowcs</B> function to convert from multibyte to Unicode and the <B>wcstombs</B> function to convert from Unicode back to multibyte.</P>
+
+<P>Instead of passing on object descriptor to <B>IDirectMusicLoader8::GetObject</B> or <A HREF="_dx_idirectmusicloader8_setobject_dxaudio.htm"><B>IDirectMusicLoader8::SetObject</B></A> with a filename or memory pointer, an application can pass a stream. This is done by setting the DMUS_OBJ_STREAM flag in <B>dwValidData</B> and a pointer to the stream in <B>pStream</B>. When the application calls <B>GetObject</B>, the loader saves the stream's current location, reads the object from the stream, and then restores the saved location. The application can continue reading from the stream without being affected by the call to <B>GetObject</B>.</P>
+
+<P>When <B>SetObject</B> is called with a stream, the loader makes a copy of the stream which is used if the object is later loaded. Thus an application can release a stream or continue to read from it after passing it to the loader by using <B>SetObject</B>.</P>
+
+<p>Specifing the DMUS_OBJ_MEMORY flag when loading waves and DLS collections from memory will cause those items to be stored in memory twice (once for the wave/DLS collection that is already in memory and another time for the copy). Titles should load those resources using the <b>IStream</b> interface instead.</p>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in DMusici.h.</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

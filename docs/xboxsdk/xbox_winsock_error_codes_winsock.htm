@@ -1,0 +1,248 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Winsock Error Codes</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Winsock Error Codes"/>
+<MSHelp:Keyword Index="F" Term="Winsock Error Codes"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME="xbox_winsock_error_codes_winsock"></A>Winsock Error Codes</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<P>The following is a list of possible error codes returned by the <A HREF="xbox_wsagetlasterror_winsock.htm"><B>WSAGetLastError</B></A> call, along with their extended explanations.  Some error codes defined in winsockx.h are not returned from any function; those error codes are not included in this topic.</P>
+
+<BR>
+<DL>
+
+<DT><A NAME="_win32_wsaeacces_2"></A><B>WSAEACCES</B> &nbsp;&nbsp;10013 &nbsp;&nbsp;<I>Permission denied</I>.</DT>
+<DD><P>An attempt was made to access a socket in a way forbidden by its access permissions. An example is using a broadcast address for <B>sendto</B> without broadcast permission being set using <B>setsockopt(SO_BROADCAST)</B>.</P> 
+
+<P>Another possible reason for the <B>WSAEACCES</B> error is that when the <A HREF="xbox_bind_winsock.htm"><B>bind</B></A> function is called, the same address is already bound with exclusive access. Such exclusive access is implemented by using the <B>SO_EXCLUSIVEADDRUSE</B> option.</P>
+</DD>
+
+<BR>
+<DT><A NAME="_win32_wsaeaddrinuse_2"></A><B>WSAEADDRINUSE</B> &nbsp;&nbsp;10048 &nbsp;&nbsp;<I>Address already in use</I>.</DT>
+
+<DD><P>Typically, only one usage of each socket address (protocol/IP address/port) is permitted. This error occurs if a title attempts to <A HREF="xbox_bind_winsock.htm"><B>bind</B></A> a socket to an IP address/port that has already been used for an existing socket, or a socket that wasn't closed properly, or one that is still in the process of closing. For server applications that need to <B>bind</B> multiple sockets to the same port number, consider using <A HREF="xbox_setsockopt_winsock.htm"><B>setsockopt</B></A><B>(SO_REUSEADDR)</B>. Client applications usually need not call <B>bind</B> at all&#8212;<A HREF="xbox_connect_winsock.htm"><B>connect</B></A> chooses an unused port automatically. When <B>bind </B>is called with a wildcard address (involving ADDR_ANY), a WSAEADDRINUSE error could be delayed until the specific address is committed. This could happen with a call to another function later, including <B>connect</B>, or <B>listen</B>.</P>
+</DD>
+
+<BR>
+<DT><A NAME="_win32_wsaeaddrnotavail_2"></A><B>WSAEADDRNOTAVAIL</B> &nbsp;&nbsp;10049 &nbsp;&nbsp;<I>Cannot assign requested address</I>.</DT>
+
+<DD><P>The requested address is not valid in its context. This normally results from an attempt to <A HREF="xbox_bind_winsock.htm"><B>bind</B></A> to an address that is not valid for the local machine. This can also result from <A HREF="xbox_connect_winsock.htm"><B>connect</B></A>, <A HREF="xbox_sendto_winsock.htm"><B>sendto</B></A>, or <A HREF="xbox_wsasendto_winsock.htm"><B>WSASendTo</B></A> when the remote address or port is not valid for a remote machine (for example, address or port 0).</P>
+</DD>
+
+<BR>
+<DT><A NAME="_win32_wsaeafnosupport_2"></A><B>WSAEAFNOSUPPORT</B> &nbsp;&nbsp;10047 &nbsp;&nbsp;<I>Address family not supported by protocol family</I>.</DT>
+
+<DD><P>An address incompatible with the requested protocol was used. All sockets are created with an associated address family (that is, AF_INET for Internet Protocols) and a generic protocol type (that is, SOCK_STREAM). This error is returned if an incorrect protocol is explicitly requested in the <A HREF="xbox_socket_winsock.htm"><B>socket</B></A> call, or if an address of the wrong family is used for a socket, for example, in <A HREF="xbox_sendto_winsock.htm"><B>sendto</B></A>.</P> 
+</DD>
+
+<BR>
+<DT><A NAME="_win32_wsaealready_2"></A><B>WSAEALREADY</B> &nbsp;&nbsp;10037 &nbsp;&nbsp;<I>Operation already in progress</I>. </DT>
+
+<DD><P>An operation was attempted on a nonblocking socket with an operation already in progress&#8212;that is, calling <A HREF="xbox_connect_winsock.htm"><B>connect</B></A> a second time on a nonblocking socket that is already connecting, or canceling an asynchronous request that has already been canceled or completed.</P> 
+</DD>
+
+<BR>
+<DT><A NAME="_win32_wsaeconnrefused_2"></A><B>WSAECANCELLED</B> &nbsp;&nbsp;10103 &nbsp;&nbsp;<I>Operation cancelled</I>. </DT>
+
+<DD><P>The overlapped IO request has been canceled (by <B>WSACancelOverlappedIO</B>).</P>
+</DD>
+
+<BR>
+<DT><A NAME="_win32_wsaeconnrefused_2"></A><B>WSAECONNREFUSED</B> &nbsp;&nbsp;10061 &nbsp;&nbsp;<I>Connection refused</I>. </DT>
+
+<DD><P>No connection could be made because the target machine actively refused it. This usually results from trying to connect to a service that is inactive on the foreign host&#8212;that is, one with no server application running. </P>
+</DD>
+
+<BR>
+<DT><A NAME="_win32_wsaeconnreset_2"></A><B>WSAECONNRESET</B> &nbsp;&nbsp;10054 &nbsp;&nbsp;<I>Connection reset by peer</I>. </DT>
+
+<DD><P>An existing connection was forcibly closed by the remote host. This normally results if the peer application on the remote host is suddenly stopped, the host is rebooted, or the remote host uses a hard<I> </I>close (see <A HREF="xbox_setsockopt_winsock.htm"><B>setsockopt</B></A> for more information on the <B>SO_LINGER</B> option on the remote socket.)  Operations that were in progress and subsequent operations fail with <B>WSAECONNRESET</B>.</P>
+</DD>
+
+<BR>
+<DT><A NAME="_win32_wsaefault_2"></A><B>WSAEFAULT</B> &nbsp;&nbsp;10014 &nbsp;&nbsp;<I>Bad address</I>. </DT>
+
+<DD><P>The system detected an invalid pointer address in attempting to use a pointer argument of a call. This error occurs if a title passes an invalid pointer value, or if the length of the buffer is too small. For instance, if the length of an argument, which is a <B>SOCKADDR </B>structure, is smaller than the sizeof(<B>SOCKADDR</B>). </P>
+</DD>
+
+<BR>
+<DT><A NAME="_win32_wsaehostunreach_2"></A><B>WSAEHOSTUNREACH</B> &nbsp;&nbsp;10065 &nbsp;&nbsp;<I>No route to host</I>. </DT>
+
+<DD><P>A socket operation was attempted to an unreachable host.</P>
+</DD>
+
+<BR>
+<DT><A NAME="_win32_wsaeinprogress_2"></A><B>WSAEINPROGRESS</B> &nbsp;&nbsp;10036 &nbsp;&nbsp;<I>Operation now in progress</I>. </DT>
+
+<DD><P>A blocking operation is currently executing. Winsock only allows a single blocking operation&#8212;per task or per thread&#8212;to be outstanding, and if any other function call is made (whether or not it references that or any other socket) the function fails with the WSAEINPROGRESS error. </P>
+</DD>
+
+<BR>
+<DT><A NAME="_win32_wsaeinval_2"></A><B>WSAEINVAL</B> &nbsp;&nbsp;10022 &nbsp;&nbsp;<I>Invalid argument.</I> </DT>
+
+<DD><P>Some invalid argument was supplied (for example, specifying an invalid level to the <A HREF="xbox_setsockopt_winsock.htm"><B>setsockopt</B></A> function). In some instances, it also refers to the current state of the socket&#8212;for instance, calling <A HREF="xbox_accept_winsock.htm"><B>accept</B></A> on a socket that is not listening. </P>
+</DD>
+
+<BR>
+<DT><A NAME="_win32_wsaeisconn_2"></A><B>WSAEISCONN</B> &nbsp;&nbsp;10056 &nbsp;&nbsp;<I>Socket is already connected. </I></DT>
+
+<DD><P>A connect request was made on an already-connected socket. Some implementations also return this error if <A HREF="xbox_sendto_winsock.htm"><B>sendto</B></A> is called on a connected SOCK_DGRAM socket (for SOCK_STREAM sockets, the <I>to</I> parameter in <A HREF="xbox_sendto_winsock.htm"><B>sendto</B></A> is ignored) although other implementations treat this as a legal occurrence. </P>
+</DD>
+
+<BR>
+<DT><A NAME="_win32_wsaemsgsize_2"></A><B>WSAEMSGSIZE</B> &nbsp;&nbsp;10040 &nbsp;&nbsp;<I>Message too long</I>. </DT>
+
+<DD><P>A message sent on a datagram socket was larger than the internal message buffer or some other network limit, or the buffer used to receive a datagram was smaller than the datagram itself. </P>
+</DD>
+
+<BR>
+<DT><A NAME="_win32_wsaenetdown_2"></A><B>WSAENETDOWN</B> &nbsp;&nbsp;10050 &nbsp;&nbsp;<I>Network is down</I>. </DT>
+
+<DD><P>A socket operation encountered a dead network. This could indicate a serious failure of the network system (that is, the protocol stack that Winsock runs over), the network interface, or the local network itself.</P>
+</DD>
+
+<BR>
+<DT><A NAME="_win32_wsaenobufs_2"></A><B>WSAENOBUFS</B> &nbsp;&nbsp;10055 &nbsp;&nbsp;<I>No buffer space available.</I> </DT>
+
+<DD><P>An operation on a socket could not be performed because the system lacked sufficient buffer space or because a queue was full. </P>
+</DD>
+
+<BR>
+<DT><A NAME="_win32_wsaenoprotoopt_2"></A><B>WSAENOPROTOOPT</B> &nbsp;&nbsp;10042 &nbsp;&nbsp;<I>Bad protocol option.</I> </DT>
+
+<DD><P>An unknown, invalid or unsupported option or level was specified in a <A HREF="xbox_getsockopt_winsock.htm"><B>getsockopt</B></A> or <A HREF="xbox_setsockopt_winsock.htm"><B>setsockopt</B></A> call. </P>
+</DD>
+
+<BR>
+<DT><A NAME="_win32_wsaenotconn_2"></A><B>WSAENOTCONN</B> &nbsp;&nbsp;10057 &nbsp;&nbsp;<I>Socket is not connected</I>. </DT>
+
+<DD><P>A request to send or receive data was disallowed because the socket is not connected and (when sending on a datagram socket using <A HREF="xbox_sendto_winsock.htm"><B>sendto</B></A>) no address was supplied. Any other type of operation might also return this error&#8212;for example, <A HREF="xbox_setsockopt_winsock.htm"><B>setsockopt</B></A> if the connection has been reset. </P>
+</DD>
+
+<BR>
+<DT><A NAME="_win32_wsaenotsock_2"></A><B>WSAENOTSOCK</B> &nbsp;&nbsp;10038 &nbsp;&nbsp;<I>Socket operation on nonsocket.</I></DT>
+
+<DD><P>An operation was attempted on something that is not a socket. Either the socket handle parameter did not reference a valid socket, or for <A HREF="xbox_select_winsock.htm"><B>select</B></A>, a member of an <B>fd_set</B> was not valid. </P>
+</DD>
+
+<BR>
+<DT><A NAME="_win32_wsaeprotonosupport_2"></A><B>WSAEPROTONOSUPPORT</B> &nbsp;&nbsp;10043 &nbsp;&nbsp;<I>Protocol not supported</I>. </DT>
+
+<DD><P>The requested protocol has not been configured into the system, or no implementation for it exists. For example, a <A HREF="xbox_socket_winsock.htm"><B>socket</B></A> call requests a SOCK_DGRAM socket, but specifies a stream protocol. </P>
+</DD>
+
+<BR>
+<DT><A NAME="_win32_wsaeshutdown_2"></A><B>WSAESHUTDOWN</B> &nbsp;&nbsp;10058 &nbsp;&nbsp;<I>Cannot send after socket shutdown</I>. </DT>
+
+<DD><P>A request to send or receive data was disallowed because the socket had already been shut down in that direction with a previous <A HREF="xbox_shutdown_winsock.htm"><B>shutdown</B></A> call. By calling <B>shutdown</B> a partial close of a socket is requested, which is a signal that sending or receiving, or both have been discontinued. </P>
+</DD>
+
+<BR>
+<DT><A NAME="_win32_wsaesocktnosupport_2"></A><B>WSAESOCKTNOSUPPORT</B> &nbsp;&nbsp;10044 &nbsp;&nbsp;<I>Socket type not supported.</I> </DT>
+
+<DD><P>The support for the specified socket type does not exist in this address family. For example, the optional type SOCK_RAW might be selected in a <A HREF="xbox_socket_winsock.htm"><B>socket</B></A> call, and the implementation does not support SOCK_RAW sockets at all. </P>
+</DD>
+
+<BR>
+<DT><A NAME="_win32_wsaetimedout_2"></A><B>WSAETIMEDOUT</B> &nbsp;&nbsp;10060 &nbsp;&nbsp;<I>Connection timed out.</I> </DT>
+
+<DD><P>A connection attempt failed because the connected party did not properly respond after a period of time, or the established connection failed because the connected host has failed to respond. </P>
+</DD>
+
+<BR>
+<DT><A NAME="_win32_wsaewouldblock_2"></A><B>WSAEWOULDBLOCK</B> &nbsp;&nbsp;10035 &nbsp;&nbsp;<I>Resource temporarily unavailable</I>. </DT>
+
+<DD><P>This error is returned from operations on nonblocking sockets that cannot be completed immediately, for example <A HREF="xbox_recv_winsock.htm"><B>recv</B></A> when no data is queued to be read from the socket. It is a nonfatal error, and the operation should be retried later. It is normal for WSAEWOULDBLOCK to be reported as the result from calling <A HREF="xbox_connect_winsock.htm"><B>connect</B></A> on a nonblocking SOCK_STREAM socket, since some time must elapse for the connection to be established. </P>
+</DD>
+
+<BR>
+<DT><A NAME="_win32_wsahost_not_found_2"></A><B>WSAHOST_NOT_FOUND</B> &nbsp;&nbsp;11001 &nbsp;&nbsp;<I>Host not found.</I></DT>
+
+<DD><P>No such host is known. The name is not an official host name or alias, or it cannot be found in the database(s) being queried. This error may also be returned for protocol and service queries, and means that the specified name could not be found in the relevant database. </P>
+</DD>
+
+<BR>
+<DT><A NAME="_win32_wsa_io_incomplete_2"></A><B>WSA_IO_INCOMPLETE</B> &nbsp;&nbsp;996 &nbsp;&nbsp;<I>Overlapped I/O event object not in signaled state.</I></DT>
+
+<DD><P>The title has tried to determine the status of an overlapped operation which is not yet completed. titles that use <B>WSAGetOverlappedResult </B>(with the <I>fWait</I> flag set to FALSE) in a polling mode to determine when an overlapped operation has completed, get this error code until the operation is complete. </P>
+</DD>
+
+<BR>
+<DT><A NAME="_win32_wsa_io_pending_2"></A><B>WSA_IO_PENDING</B> &nbsp;&nbsp;997 &nbsp;&nbsp;<I>Overlapped operations will complete later.</I></DT>
+
+<DD><P>The title has initiated an overlapped operation that cannot be completed immediately. A completion indication will be given later when the operation has been completed.</P>
+</DD>
+
+<BR>
+<DT><A NAME="_win32_wsanotinitialised_2"></A><B>WSANOTINITIALISED</B> &nbsp;&nbsp;10093 &nbsp;&nbsp;<I>Successful WSAStartup not yet performed.</I></DT>
+
+<DD><P>Either the title hasn't called <A HREF="xbox_wsastartup_winsock.htm"><B>WSAStartup</B></A> or <A HREF="xbox_wsastartup_winsock.htm"><B>WSAStartup</B></A> failed. The title may be accessing a socket that the current active task does not own (that is, trying to share a socket between tasks), or <B>WSACleanup</B> has been called too many times. </P>
+</DD>
+
+<BR>
+<DT><A NAME="_win32_wsano_data_2"></A><B>WSANO_DATA</B> &nbsp;&nbsp;11004 &nbsp;&nbsp;<I>Valid name, no data record of requested type.</I></DT>
+
+<DD><P>The requested name is valid and was found in the database, but it does not have the correct associated data being resolved for. The usual example for this is a host name-to-address translation attempt which uses the DNS (Domain Name Server). An MX record is returned but no A record&#8212;indicating the host itself exists, but is not directly reachable. </P>
+</DD>
+
+<BR>
+<DT><A NAME="_win32_wsasyscallfailure_2"></A><B>WSASYSCALLFAILURE</B> &nbsp;&nbsp;10107 &nbsp;&nbsp;<I>System call failure.</I></DT>
+
+<DD><P>Returned when a system call that should never fail does. For example, if a call to <B>WaitForMultipleObjects</B> fails or one of the registry functions fails trying to manipulate the protocol/name space catalogs.</P>
+</DD>
+
+<BR>
+<DT><A NAME="_win32_wsasysnotready_2"></A><B>WSASYSNOTREADY</B> &nbsp;&nbsp;10091 &nbsp;&nbsp;<I>Network subsystem is unavailable.</I> </DT>
+
+<DD><P>This error is returned by <A HREF="xbox_wsastartup_winsock.htm"><B>WSAStartup</B></A> if the Winsock implementation cannot function at this time because the underlying system it uses to provide network services is currently unavailable.</DD>
+
+<BR>
+<DT><A NAME="_win32_wsatry_again_2"></A><B>WSATRY_AGAIN</B> &nbsp;&nbsp;11002 &nbsp;&nbsp;<I>Nonauthoritative host not found.</I></DT>
+
+<DD><P>This is usually a temporary error during host name resolution and means that the local server did not receive a response from an authoritative server. A retry at some time later may be successful. </P>
+</DD>
+
+<BR>
+<DT><A NAME="_win32_wsavernotsupported_2"></A><B>WSAVERNOTSUPPORTED</B> &nbsp;&nbsp;10092 &nbsp;&nbsp;<I>Winsock version out of range.</I></DT>
+
+<DD><P>The current Winsock implementation does not support the Winsock specification version requested by the title.  Request a version supported by Xbox Winsock, such as version 2.2.</P>
+</DD>
+
+</DL>
+
+
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

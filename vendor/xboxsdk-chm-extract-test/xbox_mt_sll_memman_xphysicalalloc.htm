@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>XPhysicalAlloc</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="XPhysicalAlloc">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XPhysicalAlloc"/>
+<MSHelp:Keyword Index="F" Term="XPhysicalAlloc"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_xphysicalalloc"></A>XPhysicalAlloc</H1>
+
+<P>The <B>XPhysicalAlloc</B> function allocates a region of contiguous physical memory and returns a pointer to the newly allocated memory.</P>
+
+<PRE class=syntax><B>LPVOID XPhysicalAlloc(</B>
+<B>  SIZE_T</B><I> dwSize</I><B>,</B>                // size of region
+<B>  ULONG_PTR</B><I> ulPhysicalAddress</I><B>,</B>  // base physical address
+<B>  ULONG_PTR</B><I> ulAlignment</I><B>,</B>        // memory alignment
+<B>  DWORD</B><I> flProtect</I>               // memory protection and type
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>dwSize</I></DT>
+
+<DD>[in] Specifies the desired size, in bytes, of the region to be allocated. This value is rounded up to the nearest page size.</DD>
+
+<DT><I>ulPhysicalAddress</I></DT>
+
+<DD>[in] Specifies the desired starting address of the region to allocate. This value must be aligned on a page (4 KB) boundary. If <I>ulPhysicalAddress</I> is MAXULONG_PTR, the system determines where to allocate the region.</DD>
+
+<DT><I>ulAlignment</I></DT>
+
+<DD>[in] If <I>ulPhysicalAddress</I> is MAXULONG_PTR, then <I>ulAlignment</I> specifies the desired alignment for the starting address returned for the allocated memory.  This parameter must be a power of two that is greater than or equal to the system page size (4 KB).  Alternatively, if <I>ulAlignment</I> is zero, the default alignment (the system page size) will be used.  If <I>ulPhysicalAddress</I> is not MAXULONG_PTR, then <I>ulAlignment</I> is ignored.</P></DD>
+
+<DT><I>flProtect</I></DT>
+
+<DD>[in] Specifies the access protection and optional memory type modifiers. One of the following access protection flags must be specified:
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=33%>Value</TH>
+<TH align=left width=67%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=45%>PAGE_READONLY</TD>
+<TD width=55%>Enables read and execute access to the committed region of pages. An attempt to write to the committed region results in an access violation.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=45%>PAGE_READWRITE</TD>
+<TD width=55%>Enables read, write, and execute access to the committed region of pages.</TD>
+</TR>
+</TABLE>
+
+<P>In addition, one of the following flags may be specified to modify the characteristics of the allocated memory:</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=33%>Value</TH>
+<TH align=left width=67%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=33%>PAGE_NOCACHE</TD>
+<TD width=67%>Allows no memory caching for memory in the committed region of pages. The hardware attributes for the physical memory will be treated as "no cache." This is useful for mapping a video frame buffer with no caching.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=33%>PAGE_WRITECOMBINE</TD>
+<TD width=67%>The allocated memory has a write-combining cache policy.  This is useful for mapping a video frame buffer.  Write combining is a special caching mode that batches writes to the same cache line so they can be transferred in a single bus clock. Write combining does not preserve ordering of the writes, a tradeoff that is usually acceptable for frame buffers.</TD>
+</TR>
+</TABLE><BR>
+
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is the base address of the allocated region of pages.</P>
+
+<P>If the function fails, the return value is NULL. To get extended error information, call <A HREF="errors_3uwi.htm">GetLastError</a>. </P>
+
+<H4>Remarks</H4>
+
+<P>The <B>XPhysicalAlloc</B> function allocates contiguous physical memory and returns a pointer to the allocated memory.  If there is not enough contiguous physical memory available to satisfy the request, the function will fail.</P>
+
+<P>If MAXULONG_PTR is specified for <I>ulPhysicalAddress</I>, the system determines the address at which the physical memory will be allocated.  The returned address will be aligned according to <I>ulAlignment</I>.  For example, if <I>ulAlignment</I> is 0x2000, then <I>ulPhysicalAddress</I> will be aligned on an 8 KB boundary.</P>
+
+<P>If a value other than MAXULONG_PTR is specified for <I>ulPhysicalAddress</I>, then the memory is allocated starting at the address specified in <I>ulPhysicalAddress</I>, and <I>ulAlignment</I> is ignored.</P>
+
+<P>The allocated memory is not initialized to any known value.  If zero-initialized memory is desired, the title must explicitly set the memory contents to zero.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p><H4>See Also</H4>
+<P> 
+
+<a href="xbox_mt_xtl_sll_memory_management_functions.htm">Memory Management Functions</a>,
+<A HREF="x_mt_softarch_kernel_mem.htm#dev_system_memory"><B>Xbox Development System Memory</a> | 
+<A HREF="xbox_mt_sll_memman_xphysicalfree.htm">XPhysicalFree</a>,
+<A HREF="xbox_mt_sll_memman_xphysicalprotect.htm">XPhysicalProtect</a>,
+<A HREF="xbox_mt_sll_memman_xquerymemoryprotect.htm">XQueryMemoryProtect</a>
+</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

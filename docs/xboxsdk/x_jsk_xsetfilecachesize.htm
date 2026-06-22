@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>XSetFileCacheSize</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="XSetFileCacheSize">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XSetFileCacheSize"/>
+<MSHelp:Keyword Index="F" Term="XSetFileCacheSize"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+
+
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_xbox_xsetfilecachesize"></A>XSetFileCacheSize</H1>
+
+<P>The <B>XSetFileCacheSize</B> function changes the number of bytes reserved for the file system cache.</P>
+
+<PRE class=syntax><B>BOOL XSetFileCacheSize(</B>
+    <B>SIZE_T</B><I> dwCacheSize</I>
+<B>);</B>
+</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>dwCacheSize</I></DT>
+<DD>[in] Number of bytes that should be reserved for the file system cache.  The number of bytes is rounded up to a multiple of the page size (4 KB on the Xbox). </DD>
+
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is TRUE.</P>
+
+<P>If the function fails, the return value is FALSE.  To get extended error information, call <A HREF="errors_3uwi.htm">GetLastError</a>.</P>
+
+<H4>Remarks</H4>
+
+<P>The file system cache is used to hold file system metadata, such as directory entries and the location of file data.  A title might change the amount of memory reserved for the cache in order to tune performance based on the title's file system usage characteristics.</P>
+
+<P>It is possible to use <B>XSetFileCacheSize</B> to change the size of the file system cache to zero.  If the file system cache is set to zero bytes, calls to other file I/O libraries may fail because they can't access file system metadata.  The file system cache should only be changed to zero when the title no longer needs to access the file system. With the system cache set at zero, many file system operations will fail with ERROR_NOT_ENOUGH_MEMORY (STATUS_NO_MEMORY).</P>
+
+<P>The default size for the file system cache is 64 KB.</P>
+
+<P>The maximum size for the file system cache is 8 MB. Attempting to specify a size greater than 8 MB will cause the function to fail with ERROR_INVALID_PARAMETER.</P>
+
+<P>The <B>XSetFileCacheSize</B> function can be safely called while other file I/O is pending.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Xbox.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+
+<H4>See Also</H4>
+<P><A HREF="x_jsk_xgetfilecachesize.htm">XFileGetCacheSize</a></P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

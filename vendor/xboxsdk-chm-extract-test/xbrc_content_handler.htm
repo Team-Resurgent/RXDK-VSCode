@@ -1,0 +1,98 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Content Handler Functions (XbRC)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Content Handler Functions (XbRC)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Content Handler Functions (XbRC)</h1>
+<p>The <b>CXBParser</b> defines a set of functions for content handling, the most important of which are <a href="xbrc_content_handler.htm#start">startElement</a>, <a href="xbrc_content_handler.htm#end">endElement</a>, and <a href="xbrc_content_handler.htm#char">characters</a>. Almost all of the parser functionality in XbRC runs through these three functions.</p><ul>
+<li><a href="#start">startElement</a></li><li><a href="#end">endElement</a></li><li><a href="#char">characters</a></li><li><a href="#IDAQCN2">Other Functions</a></li></ul>
+<h2><a name="start"></a>startElement</h2>
+<pre class="clsCode">
+virtual HRESULT STDMETHODCALLTYPE startElement( wchar_t __RPC_FAR *pwchNamespaceUri,
+                                                int cchNamespaceUri,
+                                                wchar_t __RPC_FAR *pwchLocalName,
+                                                int cchLocalName,
+                                                wchar_t __RPC_FAR *pwchRawName,
+                                                int cchRawName,
+                                                ISAXAttributes __RPC_FAR* pAttributes );
+</pre>
+    <p>This handler is called when each tag start is encountered. It includes the name of the tag and its length as <i>pwchLocalName</i> and <i>cchLocalName</i>, respectively. It also includes a pointer to the attributes found for this tag in <i>pAttributes</i>. The other variables passed in are not used in XbRC.</p><h2><a name="end"></a>endElement</h2>
+<pre class="clsCode">
+virtual HRESULT STDMETHODCALLTYPE endElement( wchar_t __RPC_FAR *pwchNamespaceUri,
+                                              int cchNamespaceUri,
+                                              wchar_t __RPC_FAR *pwchLocalName,
+                                              int cchLocalName,
+                                              wchar_t __RPC_FAR *pwchRawName,
+                                              int cchRawName );
+</pre>
+    <p>This handler is called when each tag end is encountered. It includes the name of the tag and its length as <i>pwchLocalName</i> and <i>cchLocalName</i>, respectively. The other variables passed in are not used in XbRC.</p><h2><a name="char"></a>characters</h2>
+<pre class="clsCode">
+virtual HRESULT STDMETHODCALLTYPE characters( wchar_t __RPC_FAR *pwchChars,
+                                              int cchChars );
+</pre>
+    <p>This handler is called when tag character data is found. The data is included in the <i>pwchChars</i> variable and its size is set in the <i>cchChars</i> variable. The MSXML SAX parser is free to break up the character data into as many calls to this handler as it cares to.</p><h2><a name="IDAQCN2"></a>Other Functions</h2>
+<p>The remaining content handler functions are included here for completeness. Their implementations in the <b>CXBParser</b> class are very simple or, in some cases, just return after taking no action.</p><ul>
+<li><a href="#startdoc">startDocument</a></li><li><a href="#enddoc">endDocument</a></li><li><a href="#IDAPDN2">putDocumentLocator</a></li><li><a href="#IDAXDN2">startPrefixMapping</a></li><li><a href="#IDA5DN2">endPrefixMapping</a></li><li><a href="#IDAMEN2">ignorableWhitespace</a></li><li><a href="#IDAUEN2">processingInstruction</a></li><li><a href="#IDA2EN2">skippedEntity</a></li></ul>
+<h3><a name="startdoc"></a>startDocument</h3>
+<pre class="clsCode">
+virtual HRESULT STDMETHODCALLTYPE startDocument();
+</pre>
+    <p>This handler is called when SAX starts parsing the document. It is called before any parsing is done.</p><h3><a name="enddoc"></a>endDocument</h3>
+<pre class="clsCode">
+virtual HRESULT STDMETHODCALLTYPE endDocument();
+</pre>
+    <p>This handler is called when SAX finishes parsing the document. No more parsing will be done after this call.</p><h3><a name="IDAPDN2"></a>putDocumentLocator</h3>
+<pre class="clsCode">
+virtual HRESULT STDMETHODCALLTYPE 
+                         putDocumentLocator( ISAXLocator __RPC_FAR *pLocator );
+</pre>
+    <p>This handler saves the current locator. The locator is used to get the current location in the XDX file. It tells you the current line number being parsed, and it tells you the current file being parsed.</p><h3><a name="IDAXDN2"></a>startPrefixMapping</h3>
+<pre class="clsCode">
+virtual HRESULT STDMETHODCALLTYPE startPrefixMapping( wchar_t __RPC_FAR *pwchPrefix,
+                                                      int cchPrefix,
+                                                      wchar_t __RPC_FAR *pwchUri,
+                                                      int cchUri );
+</pre>
+    <p>This handler is called when a prefix is found to an XML tag that cannot be resolved as an XML namespace prefix. It is not used in XbRC.</p><h3><a name="IDA5DN2"></a>endPrefixMapping</h3>
+<pre class="clsCode">
+virtual HRESULT STDMETHODCALLTYPE endPrefixMapping( wchar_t __RPC_FAR *pwchPrefix,
+                                                    int cchPrefix );
+</pre>
+    <p>This handler is called after the <b>endElement</b> call if the element has a prefix that cannot be resolved as an XML namespace prefix. It is not used in XbRC.</p><h3><a name="IDAMEN2"></a>ignorableWhitespace</h3>
+<pre class="clsCode">
+virtual HRESULT STDMETHODCALLTYPE ignorableWhitespace( wchar_t __RPC_FAR *pwchChars,
+                                                       int cchChars );
+</pre>
+    <p>This handler is not called in the current implementation of MSXML SAX.</p><h3><a name="IDAUEN2"></a>processingInstruction</h3>
+<pre class="clsCode">
+virtual HRESULT STDMETHODCALLTYPE processingInstruction( wchar_t __RPC_FAR *pwchTarget,
+                                                         int cchTarget,
+                                                         wchar_t __RPC_FAR *pwchData,
+                                                         int cchData );
+</pre>
+    <p>This handler is called when XML processing instructions are found. It is not used in XbRC.</p><h3><a name="IDA2EN2"></a>skippedEntity</h3>
+<pre class="clsCode">
+virtual HRESULT STDMETHODCALLTYPE skippedEntity( wchar_t __RPC_FAR *pwchName,
+                                                 int cchName );
+</pre>
+    <p>This handler is called when an entity has not been seen in a declaration. It is not used in XbRC.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

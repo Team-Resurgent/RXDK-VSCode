@@ -1,0 +1,88 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>LD_DOWNLOADER</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="LD_DOWNLOADER"/>
+<MSHelp:Keyword Index="F" Term="LD_DOWNLOADER"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+    <body topmargin="0">
+        <table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+        <h1>LD_DOWNLOADER</h1>
+
+        
+        
+<p>The game title passes the <b>LD_DOWNLOADER</b> structure to Downloader.xbe as 
+                the <i>pLaunchData</i> parameter of <a href="x_jsk_xlaunchnewtitle.htm">XLaunchNewImage</a>. When 
+                Downloader.xbe reboots to the title, it passes this structure back to the title 
+                as the <i>pLaunchData</i> parameter of <b>XLaunchNewImage</b>.</p>
+
+	
+		
+
+<pre class="syntax">typedef struct _LD_DOWNLOADER{
+    DWORD dwID;
+    DWORD dwBitFilter;
+    BYTE bPremiumLogonPort;
+    BYTE Reserved1[3];
+    DWORD Reserved2;
+    XONLINE_LOGON_STATE LogonState;
+    BYTE UserDefined[MAX_LAUNCH_DATA_SIZE - (20 + XONLINE_LOGON_STATE_SIZE)];
+} LD_DOWNLOADER, *PLD_DOWNLOADER;</pre>
+                    
+                
+            
+            
+                <h4><a name="members"></a>Members</h4>
+<dl>
+<dt><b>dwID</b></dt>
+                <dd>Value that identifies the structure as downloader launch data. The 
+                    title sets this member to LAUNCH_DATA_DOWNLOADER_ID before launching Downloader.xbe.</dd>
+             <dt><b>dwBitFilter</b></dt>
+                <dd>Value that identifies a particular category of content. Only content 
+                    that has a matching bit value is presented to the player. Use the <b>dwBitFilter</b> 
+                    value to identify content for a particular language, country, or region.</dd>
+             <dt><b>bPremiumLogonPort</b></dt>
+                <dd>Zero-based controller index of the player who will select the 
+                    downloadable content. The title may specify only a single player; other players will 
+                    not be able to interact with Downloader.xbe. The specified player may not be a 
+                    guest.</dd>
+             <dt><b>Reserved1</b></dt>
+                <dd>This member is reserved. Specify zero values for the elements of this array.</dd>
+             <dt><b>Reserved2</b></dt>
+                <dd>This member is reserved. Specify zero for the value of this member.</dd>
+             <dt><b>LogonState</b></dt>
+                <dd>Logon state at the time that the title launches Downloader.xbe.</dd>
+             <dt><b>UserDefined</b></dt>
+                <dd>Opaque data provided by the title. Downloader.xbe passes this data 
+                    back to the title when it reboots.</dd>
+            </dl>
+                
+				
+            
+                <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+                
+
+        <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+    </body>
+    </html>

@@ -1,0 +1,97 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>DM_COUNTDATA</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="CreateFile">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="DM_COUNTDATA"/>
+<MSHelp:Keyword Index="F" Term="DM_COUNTDATA"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<DIV STYLE="display:none;">
+
+</DIV>
+
+
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_createfile"></A>DM_COUNTDATA</H1>
+
+<P>The <B>DM_COUNTDATA</B> structure is used (indirectly) by the <A HREF="xbox_jbh_debugapi_function_dmregisterperformancecounter.htm">DmRegisterPerformanceCounter</A> function.</P>
+
+<PRE class="syntax">typedef struct _DM_COUNTDATA {
+    LARGE_INTEGER CountValue;
+    LARGE_INTEGER RateValue;
+    DWORD CountType;
+} DM_COUNTDATA, *PDM_COUNTDATA;</PRE>
+
+<H4>Members</H4>
+
+<DL>
+
+<DT><B>CountValue</B></DT>
+<DD>Depends on <I>CountType</I>. See below.</DD>
+
+<DT><B>RateValue</B></DT>
+<DD>Depends on <I>CountType</I>. See below.</DD>
+
+<DT><B>CountType</B></DT>
+<DD>Some combination of the <B>DMCOUNT_*</B> constants. See below.</DD>
+
+</DL>
+
+
+<H4>CountType</H4>
+
+<P class="content">Every counter, when queried, needs to have the same base type (Event, Counter, or PRatio) in its <b>CountType</b> as the counter is registered with.  Beyond that, the type data can be different, and is used in a way that varies from counter to counter. The value returned in <b>CountType</b> reflects the actual data presented in the count data.</P>
+
+
+<H4>Value Counters</H4>
+
+<P class="content"><B>DMCOUNT_VALUE</B>&mdash;gets the current value of the counter, in <b>CountValue</b>.  RateValue is unused.</P>
+
+<P class="content"><B>DMCOUNT_VALUE | DMCOUNT_AVERAGE</B>&mdash;gets the moving average of the counter, over the number of 100-millisecond intervals (from 100 ms to 1 sec) specified in the low four bits (DMCOUNT_FREQUENCY) of the requested type.  The average value is <b>CountValue</b> / <b>RateValue</b>.</P>
+
+
+<H4>Event Counters</H4>
+
+<P class="content"><B>DMCOUNT_EVENT</B>&mdash;gets the current value of the counter, in <b>CountValue</b>. <b>RateValue</b> is unused.</P>
+
+<P class="content"><B>DMCOUNT_EVENT | DMCOUNT_PER*</B>&mdash;gets the event data as a time-based rate.  The data is evaluated over a number of 100-millisecond intervals (as above).  The returned value (<b>CountValue</b> / <b>RateValue</b>) is the ratio of the change in the event counter to the change in time.  Time is measured either in frames (DMCOUNT_PERFRAME), seconds (DMCOUNT_PERSEC), milliseconds (DMCOUNT_PERMSEC), or system ticks (DMCOUNT_PERTICK).  A system tick is approximately equal to one millisecond, but may not equal exactly one millisecond.  Note that only the ratio (<b>CountValue</b> / <b>RateValue</b>) can be used to interpret the value; neither component is guaranteed to represent either the difference in the event counter or the amount of time passed.</P>
+
+
+<H4>Ratio Counters</H4>
+
+<P class="content"><B>DMCOUNT_PRATIO</B>&mdash;gets the ratio data over time.  The data is evaluated over a number of 100-millisecond intervals (as above) as the ratio of the progressive difference of two values; essentially, the ratio of two progressive rate counters.  The value is returned as the ratio (<b>CountValue</b> / <b>RateValue</b>).  The data is the ratio of the difference between the current and previous numerator value to the difference between the current and previous denominator value.</P>
+
+
+
+<h4>Requirements</h4>
+<p class="content">
+<b>Header:</b> Declared in XbDm.h and XboxDbg.h
+<br><b>Import Library:</b> Use XbDm.lib for target system code; and XboxDbg.lib for development system code.
+</p>
+
+<!--
+<H4>See Also</H4>
+<P class="content"></P>
+-->
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

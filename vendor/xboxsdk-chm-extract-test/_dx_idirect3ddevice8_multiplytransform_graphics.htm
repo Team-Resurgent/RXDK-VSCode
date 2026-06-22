@@ -1,0 +1,92 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirect3DDevice8::MultiplyTransform</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="IDirect3DDevice8::MultiplyTransform [C++]">
+<META NAME="MS-HKWD" CONTENT="MultiplyTransform (IDirect3DDevice8) [C++]">
+<META NAME="MS-HKWD" CONTENT="MultiplyTransform [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="MultiplyTransform (IDirect3DDevice8)"/>
+<MSHelp:Keyword Index="K" Term="IDirect3DDevice8::MultiplyTransform"/>
+<MSHelp:Keyword Index="F" Term="MultiplyTransform"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_idirect3ddevice8_multiplytransform_graphics"></A>IDirect3DDevice8::MultiplyTransform</H1>
+
+<P>Multiplies a device's world, view, or projection matrices by a specified matrix. </P>
+
+<PRE class=syntax><B>HRESULT MultiplyTransform(
+  D3DTRANSFORMSTATETYPE</B><I> State</I><B>,</B>
+<B>  CONST D3DMATRIX*</B> <I>pMatrix</I>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>State</I></DT>
+
+<DD>[in] Member of the <A HREF="_dx_d3dtransformstatetype_graphics.htm"><B>D3DTRANSFORMSTATETYPE</B></A> enumerated type, or the <A HREF="_dx_d3dts_worldmatrix_graphics.htm"><B>D3DTS_WORLDMATRIX</B></A> macro that identifies which device matrix is to be modified. The most common setting, D3DTS_WORLDMATRIX(0), modifies the world matrix, but you can specify that the method modify the view or projection matrices, if needed. </DD>
+
+<DT><I>pMatrix</I></DT>
+
+<DD>[in] Pointer to a <A HREF="_dx_d3dmatrix_graphics.htm"><B>D3DMATRIX</B></A> structure that modifies the current transformation. 
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the method succeeds, the return value is D3D_OK.</P>
+
+<P><A HREF="_dx_return_values_graphics.htm#_dx_d3derr_invalidcall_graphics"><B>D3DERR_INVALIDCALL</B></A> if one of the arguments is invalid.</P>
+
+<H4>Remarks</H4>
+
+<P>The multiplication order is <I>pMatrix </I>times <I>State</I>.</P>
+
+<P>An application might use the <B>MultiplyTransform</B> method to work with hierarchies of transformations. For example, the geometry and transformations describing an arm might be arranged in the following hierarchy.</P>
+
+<PRE>shoulder_transformation
+    upper_arm geometry
+    elbow transformation
+        lower_arm geometry
+        wrist transformation
+            hand geometry
+</PRE>
+
+<P>An application might use the following series of calls to render this hierarchy. Not all the parameters are shown in this pseudocode.</P>
+
+<PRE>IDirect3DDevice8::SetTransform(D3DTS_WORLDMATRIX(0), 
+    shoulder_transform)
+IDirect3DDevice8::DrawPrimitive(upper_arm)
+IDirect3DDevice8::MultiplyTransform(D3DTS_WORLDMATRIX(0), 
+    elbow_transform)
+IDirect3DDevice8::DrawPrimitive(lower_arm)
+IDirect3DDevice8::MultiplyTransform(D3DTS_WORLDMATRIX(0), 
+    wrist_transform)
+IDirect3DDevice8::DrawPrimitive(hand)
+</PRE>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in D3d8.h.<BR>
+<B>&nbsp;&nbsp;Import Library:</B> Use D3d8.lib.</P>
+
+<H4>See Also</H4>
+
+<P><A HREF="_dx_idirect3ddevice8_drawprimitive_graphics.htm"><B>IDirect3DDevice8::DrawPrimitive</B></A>, <A HREF="_dx_idirect3ddevice8_settransform_graphics.htm"><B>IDirect3DDevice8::SetTransform</B></A>, <A HREF="_dx_d3dts_world_graphics.htm"><B>D3DTS_WORLD</B></A>, <A HREF="_dx_d3dts_worldn_graphics.htm"><B>D3DTS_WORLD<I>n</I></B></A>, <A HREF="_dx_d3dts_worldmatrix_graphics.htm"><B>D3DTS_WORLDMATRIX</B></A></P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

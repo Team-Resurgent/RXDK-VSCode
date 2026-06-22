@@ -1,0 +1,121 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Xbox Vertex Performance</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Xbox Vertex Performance"/>
+<MSHelp:Keyword Index="F" Term="Xbox Vertex Performance"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Xbox Vertex Performance</H1>
+<p><i>By Mike Abrash</i></p>
+<!--***********************************************************-->
+
+<!--****Intro paragraph. Should be a three or four sentence summary of the topic.****-->
+
+<p>There are two major vertex-related factors limiting performance: bandwidth and vertex calculations. These are important to any program that tries to get maximum performance on Microsoft Xbox. The specific case we studied, the robot in the Carol & Tamer robot demo, suffers from both: bandwidth, because of 44-byte vertices, poor vertex sharing, and use of trilists instead of tristrips; and vertex calculations, because of the use of a point light and texgen.
+</p>
+
+<p class=note><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;You can use the <b>BenMarkX</b> sample to explore all the phenomena discussed below. It's what we used to figure a lot of this out.</p>
+
+<p>Note also that the vertex cache is actually a 16-entry FIFO; there's no reordering and no LRU. However, the FIFO sometimes is effectively between 10 and 15 entries rather than 16 entries. In all the instances discussed below, it is effectively 15 entries, so all optimization is for a 15-vertex cache. 
+</p>
+
+<p>Bandwidth varies with locality. We're never going to understand all the details of NV15 vertex buffer fetching over AGP, nor is it important that we do (NVIDIA NV20 and the Xbox GPU are going to be different), but we have figured out good general principles. It is best to read sequentially through memory, touching each vertex once. However, it's much faster to touch memory that's in the same memory page (inside the RAM, not the AGP/CPU page) than to cross pages. Thus, if you have a tristrip that snakes back and forth like this (I'm just showing triangle order, not vertices, and the vertices between the rows are shared):</p>
+
+<pre> 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27
+55 54 53 52 51 50 49 48 47 46 45 44 43 42 41 40 39 38 37 36 35 34 33 32 31 30 29 28</pre>
+
+<p>then even though the 16-entry vertex cache always blows out (each vertex misses the cache on the second row, hence 2X as many vertices fetched over AGP), the bandwidth is still sufficient to support about 85 percent of the performance you get with this:</p>
+
+<pre> 0  1  2  3  4  5  6  7  8  9
+19 18 17 16 15 14 13 12 11 10</pre>
+
+<p>where every vertex is fetched exactly once. There may be some internal memory caching at work here too, but since this phenomenon works for pretty wide cases, it appears that it's probably just much faster to fetch something in the same page as recent fetches. The net effect is that in the second case above, about 500 Mb/s is fetched over AGP, while in the first case, nearly 700 Mb/s is fetched, so clearly there's a significant win from locality.</p>
+
+<p>The preceding discussion might make it seem as if bandwidth isn't really that big a problem-use indexed tristrips to keep bandwidth relatively low and get the guaranteed 3X vertex caching tristrips always give you, share all vertices, and you're set. This ignores two things, however. </p>
+
+<p>First, the above result is in a system in which very little is going on other than the GPU grabbing vertices. The CPU is virtually idle. If the CPU is making heavy memory demands, the GPU will have to share AGP bandwidth with the CPU and the extra vertex fetches will become more expensive.</p>
+
+<p>Second, this result is for a case in which per-vertex calculations are cheap-one directional light. The vertex cache helps with bandwidth, but it's potentially even more important that it saves on per-vertex calculations. For example, if you turn on one spotlight in the BenMarkX sample, the first case above drops to 62 percent of the second case. With increasing use of texgen, hardware lighting, and custom vertex shading programs with Microsoft DirectX 8.0 (all of which also help save bandwidth as well), saving per-vertex calculations will become an ever more important benefit of the vertex cache.</p>
+
+<p>So what are the implications of this? The simplest response is to use tristrips generated by a tristripper that vertex-optimizes the strips. (A tristripper is provided as part of the Strip sample located in Microsoft Xbox SDK\Samples\Xbox\Common. The Strip sample show how to use the Stripify function and demonstrates its performance characteristics.) Such tristrips are not typical tristrips, because of the need to optimize for the vertex cache. For sufficiently large meshes, the ideal tristrip is organized as follows (I'll call this "typewriter" style because of the up-and-to-the-left "carriage return"):
+</p>
+
+<pre>30 31 32 33 34 35 36 37 38 39 40 41 42 43 44
+ |\ |\ |\ |\ |\ |\ |\ |\ |\ |\ |\ |\ |\ |\ |
+15 16 17 18 19 20 21 22 23 24 25 26 27 28 29
+ |\ |\ |\ |\ |\ |\ |\ |\ |\ |\ |\ |\ |\ |\ |
+ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14</pre>
+
+<p>The drawing order is:
+0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14 (degenerate triangles to prime the vertex cache)
+0, 0 (degenerate triangles to move left)
+15, 1, 16, 2, 17, 3, 18, 4, 19, 5, 20, 6, 21, 7, 22, 8, 23, 9, 24, 10, 25, 11, 26, 12, 27, 13, 28, 14, 29
+29, 15, 15 (degenerate triangles to move left)
+30, 16...</p>
+
+<p>This has 4 degenerate triangles per row (although it only costs 8 bytes of bandwidth for extra indices plus triangle setup time, but triangle setup doesn't appear to be a limiting factor on NV15 and should be even less so on the Xbox GPU). It gets optimal vertex caching.</p>
+
+<p>Meshes wider than this should be broken into stacks like the one above. Stacks that are 6 vertices wide or less and short stacks/small meshes (because of the priming cost) should be done as follows (I'll call this "S" style):</p>
+
+<pre>18 19 20 21 22 23
+ |\ |\ |\ |\ |\ |
+17 16 15 14 13 12
+ | /| /| /| /| /|
+ 1  3  5  7  9 11
+ |\ |\ |\ |\ |\ |
+ 0  2  4  6  8 10</pre>
+ 
+<p>The drawing order is:
+0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
+11 (degenerate triangles to move up)
+12, 9, 13, 7, 14, 5, 15, 3, 16, 1, 17
+17 (degenerate triangles to move up)
+18, 16, 19, 15, 20, 14, 21, 13, 22, 12, 23</p>
+
+<p>This has 2 degenerate triangles per row and gets optimal vertex caching for a mesh of this width. However, if it gets any wider it falls out of the vertex cache, and putting adjacent stacks of S tristrips together runs slower than equivalent typewriter tristrips because of the lost vertex sharing at the edges between the stacks.</p>
+
+<p>Note that the vertex cache has 16 entries, but in actual use it may effectively be 15 entries in size. (I have heard it may even be 14, but have not observed this.)</p>
+
+<p>Vertices should be stored in order of first appearance of their index in the index list. In conjunction with S or typewriter tristrips, this results in sequential memory access for vertices, which is good. (In fact, if there are no stacks-if the mesh width can be covered within the vertex cache-both memory access and caching are optimal with this approach.)</p>
+
+<p>Note also that it may pay to pack tristrips so that if multiple stacks are needed, the stacks are sized to fit within a single page and a minimum number of page crossings are needed. Alternatively, the vertices along the edges between stacks could be duplicated, which increases the memory footprint slightly but allows completely sequential vertex fetching. In both cases, however, I'm speculating, and experiments are needed to determine what works best.</p>
+
+<p>One great thing about all this is that for static meshes, this optimization can be precalculated and gotten into near-optimal state. (For real-world meshes, getting it optimal is probably NP-complete, but it should be easy to come close.) </p>
+
+<p>It's harder for procedurally generated meshes, although the more of the above considerations they follow, the better they'll run. At a minimum, always use tristrips, which have one-third the index bandwidth and guarantee 3X vertex caching (less along edges, but in that ballpark overall). Understand, though, that procedurally-generated geometry will have a significant handicap in that it will have to come over the front-side bus from the CPU, which is limited to 1 Gb/s. So if it's used, it should probably be in moderation in conjunction with lots of static meshes and/or generated occasionally as opposed to every frame.</p>
+
+<p>I can't think of any reason at the moment why any Xbox game should ever use trilists for static meshes (especially because the Xbox GPU will process tristrips faster than trilists, even disregarding bandwidth and caching considerations). Trilists may be better for dynamically generated geometry due to the expense of generating tristrips. Any kind of mesh with reasonable vertex caching is, of course, much better than individual triangles with no sharing.</p>
+
+<p>All the factors we've found that slow down Carol & Tamer-44-byte vertices, poor vertex sharing, use of trilists instead of tristrips, a point light, and texgen-are addressed by the above suggestions. (Certainly, removing 12 bytes of u, v, and w for the texgen'd texture also helps; they're not needed because texgen creates the texcoords.)</p>
+
+<p>Bear in mind that the higher-order surfaces (HOS) processor generates high-quality meshes with about 4-5X vertex caching into a separate HOS cache. The 4-5X vertex caching does a good job of saving per-vertex calculations, and there's potentially a large bandwidth savings from sending only the patch information over AGP-the vertices and indices themselves are entirely handled inside the chip.</p>
+
+<p>These results are for NV15 pulling vertex buffers over AGP at 1 Gb/s, maximum. Xbox will be very different, with a unified memory architecture yielding 5+ Gb/s for the GPU's use. However, that 5+ Gb/s will have to be shared with fill, texture, and video scanning demands. Also, the Xbox GPU will be able to process a lot more vertices and triangles than NV15-triangle setup is 5X as fast, and vertex processing is 3-5X as fast. So in general, the above analysis, tips, and tristrip optimization should apply well to the Xbox GPU. Use of vertex compression, vertex shading, and front-to-back drawing to reduce bandwidth demands will also be useful techniques to avoid bandwidth squeezes on Xbox. </p>
+
+
+<!--*******************************************************************************-->
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

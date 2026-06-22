@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Stock Text. Do not change.****-->
+<TITLE>Compiler Warning (level 3) C4686</TITLE>
+<!--**********************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="C4686"/>
+<MSHelp:Keyword Index="F" Term="C4686"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Stock Text. Do not change.****-->
+<H1 class="heading"><A NAME="c4686"></A>Compiler Warning (level 3) C4686</H1>
+<!--**********************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<P><b>'<i>user-defined type</i>' : possible change in behavior, change in UDT return 
+calling convention</b></P>
+
+<P>A class template specialization was not defined before it was used in a 
+return type. Anything that instantiates the class will resolve C4686; declaring an 
+instance or accessing a member (C&lt;int&gt;::anything) are also options.</p>
+
+<p>This warning is off by default.</p>
+
+<p>The following example generates C4686:</p>
+
+<pre class = "code">// C4686.cpp
+// compile with: /W3
+#pragma warning (default : 4686)
+template &lt;class T&gt;
+class C;
+
+template &lt;class T&gt;
+C&lt;T&gt; f(T);
+
+template &lt;class T&gt;
+class C {};
+
+int main()
+{
+   f(1);   // C4686
+}
+
+template &lt;class T&gt;
+C&lt;T&gt; f(T)
+{
+   return C&lt;int&gt;();
+}</pre>
+
+<p>Try the following approach instead.</p>
+
+<pre class = "code">// C4686b.cpp
+#pragma warning (default : 4686)
+template &lt;class T&gt;
+class C {};
+
+template class C&lt;int&gt;;
+
+template &lt;class T&gt;
+C&lt;T&gt; f(T);
+
+int main()
+{
+   f(1);
+}
+
+template &lt;class T&gt;
+C&lt;T&gt; f(T)
+{
+   return C&lt;int&gt;();
+}
+</pre>
+
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+
+</BODY>
+</HTML>

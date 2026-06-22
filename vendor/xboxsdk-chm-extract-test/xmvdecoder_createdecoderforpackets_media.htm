@@ -1,0 +1,114 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XMVDecoder_CreateDecoderForPackets</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XMVDecoder_CreateDecoderForPackets"/>
+<MSHelp:Keyword Index="F" Term="XMVDecoder_CreateDecoderForPackets"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XMVDecoder_CreateDecoderForPackets</h1>
+<p>Loads a Xbox Media Video (XMV) file from a buffer into a decoder.</p>
+<pre class="syntax" xml:space="preserve"><b>HRESULT __stdcall</b> <b>XMVDecoder_CreateDecoderForPackets(</b>
+    <b>DWORD</b> <i>Flags</i><b>,</b>
+    <b>void</b> *<i>pFirst4096</i><b>,</b>
+    <b>DWORD</b> <i>Context</i><b>,</b>
+    <b>PFNXMVGETNEXTPACKET</b> <i>pfnGetNextPacket</i><b>,</b>
+    <b>PFNXMVRELEASEPREVIOUSPACKET</b> <i>pfnReleasePreviousPacket</i><b>,</b>
+    <b>XMVDecoder</b> **<i>ppDecoder</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+			<dt><i>Flags</i></dt>
+<dd>[in]  May be zero or one of the following flags ORed together:
+				<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+					<tr>
+<td>XMVFLAG_UNSYNCHRONIZED_PLAYBACK</td>
+<td>Disables synchronization between the audio and the video. This flag is useful only when using <a href="xmvdecoder_getnextframe_media.htm">XMVDecoder:GetNextFrame</a> to play back the video. When this flag is set, regardless of the timing, the decoder will return a frame with every call to <b>XMVDecoder::GetNextFrame</b> (except when it's waiting for data to load).</td>
+</tr>
+					<tr>
+<td>XMVFLAG_FULL_LOOP</td>
+<td>The movie will loop until either <a href="xmvdecoder_terminateloop_media.htm">XMVDecoder::TerminateLoop</a> or <a href="xmvdecoder_terminateplayback_media.htm">XMVDecoder::TerminatePlayback</a> is called.</td>
+</tr>
+					<tr>
+<td>XMVFLAG_SYNC_ON_NEXT_VBLANK</td>
+<td>Indicates that the decoder should synchronize playback on the next vertical blank. <a href="xmvdecoder_getnextframe_media.htm">XMVDecoder::GetNextFrame</a> will return the frame that is due before the next vertical blank, so that the frame can be prepared and displayed early. The default behavior is to return only the frame that is currently due.</td>
+</tr>
+				</table>
+</dd>
+			<dt><i>pFirst4096</i></dt>
+<dd>[in]  Pointer to the first 4,096 bytes of the first packet (which contains all of the header information needed to finish setting up the decoder).</dd>
+			<dt><i>Context</i></dt>
+<dd>[in]  Context passed to the callback functions, typically a pointer to a decoder object.</dd>
+			<dt><i>pfnGetNextPacket</i></dt>
+<dd>[in]  Address of a callback function of type <a href="pfnxmvgetnextpacket_media.htm">PFNXMVGETNEXTPACKET</a></dd>.
+			<dt><i>pfnReleasePreviousPacket</i></dt>
+<dd>[in]  Address of a callback function of type <a href="pfnxmvreleasepreviouspacket_media.htm">PFNXMVRELEASEPREVIOUSPACKET</a></dd>
+			<dt><i>ppDecoder</i></dt>
+<dd>[out]  Address of a variable that receives a pointer to the <a href="xmvdecoder_media.htm">XMVDecoder</a> interface, which will decode and play the file.</dd>
+		</dl>
+<h4><a name="return"></a>Return Values</h4>Returns S_OK if successful; returns an error code otherwise.<h4><a name="remarks"></a>Remarks</h4>
+<p>The buffer must contain one complete packet as formatted by the <a href="xmvtool_tool.htm">XMVTool</a>. The output .xmv file (from the tool) is formatted as follows:</p>
+
+<pre class="clsCode">
+// First packet
+DWORD NextPacketSize;  // size of the next packet
+DWORD ThisPacketSize;  // size of this packet
+DWORD MaxPacketSize;   // size of the largest packet in the file
+// Packet data
+// ...
+
+// All other packets
+DWORD NextPacketSize;  // size of the next packet in the file
+// Packet data
+// ...
+</pre>
+    
+
+		<p>All sizes mentioned above include the header information inside the packets.</p>
+		
+		<p>The loading of the first packet must be done manually because the decoder requires the first 4,096 bytes to be loaded so it can create itself. The decoder will first call the <i>pfnGetNextPacket</i> callback to get the first packet, and will then call <i>pfnReleasePreviousPacket</i> when it is safe to start loading the next packet over the previous packet.</p>
+		
+		<p>The created decoder will call <i>pfnGetNextPacket</i> after it finishes decoding the final image from the current buffer to get the next buffer from which to decode. The previous buffer may still be in use and cannot be destroyed until <i>pfnReleaseLastPacket</i> is called. If the data is not ready, this function will return NULL.</p>
+		
+		<p>The decoder will call <i>pfnReleasePreviousPacket</i> when it is completely finished with a buffer. At this point, the memory for this buffer can be safely reclaimed for other uses. Typically, the memory will be freed after <i>pfnGetNextPacket</i> is called to obtain the next buffer from which to decode.</p>
+
+		<p>During the normal process of decoding, the decoder will start with a call to <i>pfnGetNextPacket</i> to obtain the first packet. The decoder will then alternate calls to <i>pfnGetNextPacket</i> and <i>pfnReleasePreviousPacket</i>. The only exception is if, at the end of the video where the next packet size is zero, <a href="xmvdecoder_reset_media.htm">XMVDecoder::XMVReset</a> is called after <i>pfnReleasePreviousPacket</i> is called. In this case, <i>pfnReleasePreviousPacket</i> will be called a second time with a nonzero <i>NextPacketSize</i> before <i>pfnReleasePreviousPacket</i> is called again.</p>
+		
+		<p>An overlap between the previous buffer and the current buffer must occur to ensure that there is no hitch in the audio stream during playback. <i>pfnReleasePreviousPacket</i> will always be called after every successful call (one that does not return NULL) to <i>pfnGetNextPacket</i>. In fact, <i>pfnReleasePreviousPacket</i> will always be called after every successful call even if there is no previous buffer to be released (such as for the first frame).</p>
+				
+		<p>This routine allocates one virtual allocation that contains all internal data structures. If the movie contains ADPCM or 5.1 audio, the memory for the packets must also be allocated as contiguous memory (using <a href="xbox_mt_sll_memman_xphysicalalloc.htm">XPhysicalAlloc</a>).</p>
+
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xmv.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xmv.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p><a href="xmvtool_tool.htm">XMVTool</a> | <a href="xmvdecoder_createdecoderforfile_media.htm">XMVDecoder_CreateDecoderForFile</a></p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

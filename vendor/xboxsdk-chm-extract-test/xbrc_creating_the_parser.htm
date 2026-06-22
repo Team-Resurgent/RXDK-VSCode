@@ -1,0 +1,46 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Creating the Parser (XbRC)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Creating the Parser (XbRC)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Creating the Parser (XbRC)</h1>
+<p>XbRC makes use of the MSXML SAX parser. This parser is created by the following:</p>
+<pre class="clsCode">
+CoInitialize( NULL ); 
+ISAXXMLReader* pRdr = NULL;
+HRESULT hr = CoCreateInstance( __uuidof( SAXXMLReader40 ), NULL, CLSCTX_ALL, 
+                               __uuidof( ISAXXMLReader ), (void **)&amp;pRdr );
+</pre>
+    <p>After creating the MSXML SAX parser, we have to point it at two handlers&#8212;the content handler and the error handler. The content handler will be called as SAX finds each new start tag, each end tag, tag data, and so on. This is done by calling:</p>
+<pre class="clsCode">
+pRdr-&gt;putContentHandler( g_pXBParser );
+</pre>
+    <p>The error handler is called if, and when, the MSXML SAX parser encounters an error in the XML file. This error can be generated internally by SAX, or we can generate the error as our content handler runs if we find problems. This handler is setup by calling:</p>
+<pre class="clsCode">
+pRdr-&gt;putErrorHandler( g_pXBParser );
+</pre>
+    <p>Both handlers are included in the same class in XbRC, the <b>CXBParser</b> class. The <b>CXBParser</b> class defines a set of functions for each handler. </p><ul>
+<li><a href="xbrc_content_handler.htm">Content Handler Functions</a></li>
+<li><a href="xbrc_error_handler.htm">Error Handler Functions</a></li>
+</ul>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

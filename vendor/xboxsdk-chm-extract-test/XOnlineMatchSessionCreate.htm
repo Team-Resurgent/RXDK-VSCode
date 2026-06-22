@@ -1,0 +1,167 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineMatchSessionCreate</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineMatchSessionCreate"/>
+<MSHelp:Keyword Index="F" Term="XOnlineMatchSessionCreate"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineMatchSessionCreate</h1>
+<p>Initializes a session creation request.</p><pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineMatchSessionCreate(</b>
+    <b>DWORD</b> <i>dwPublicFilled</i><b>,</b>
+    <b>DWORD</b> <i>dwPublicOpen</i><b>,</b>
+    <b>DWORD</b> <i>dwPrivateFilled</i><b>,</b>
+    <b>DWORD</b> <i>dwPrivateOpen</i><b>,</b>
+    <b>DWORD</b> <i>dwNumAttributes</i><b>,</b>
+    <b>PXONLINE_ATTRIBUTE</b> <i>pAttributes</i><b>,</b>
+    <b>HANDLE</b> <i>hWorkEvent</i><b>,</b>
+    <b>PXONLINETASK_HANDLE</b> <i>phTask</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+            <dt><i>dwPublicFilled</i></dt>
+<dd>[in]  Number of public slots currently occupied in the game session.</dd>
+            
+            <dt><i>dwPublicOpen</i></dt>
+<dd>[in]  Number of unoccupied public slots in the game session.</dd>
+            
+            <dt><i>dwPrivateFilled</i></dt>
+<dd>[in]  Number of private slots currently occupied in the game session.</dd>
+            
+            <dt><i>dwPrivateOpen</i></dt>
+<dd>[in]  Number of unoccupied private slots in the game session.</dd>
+            
+            <dt><i>dwNumAttributes</i></dt>
+<dd>[in]  Number of attributes that will be advertised for this session. This number is equal to the number of <a href="XONLINE_ATTRIBUTE.htm">XONLINE_ATTRIBUTE</a> structures pointed to by the <i>pAttributes</i> parameter.</dd>
+            
+            <dt><i>pAttributes</i></dt>
+<dd>[in, out]  Pointer to an array of <a href="XONLINE_ATTRIBUTE.htm">XONLINE_ATTRIBUTE</a> structures for the attributes to advertise for this session. The <a href="XOnlineMatchSessionCreate.htm">XOnlineMatchSessionCreate</a> function ignores the value of the <b>fChanged</b> member in these structures. All attributes are set to the specified values regardless of whether <b>fChanged</b> is TRUE or FALSE. The <b>fChanged</b> member is used only by <a href="XOnlineMatchSessionUpdate.htm">XOnlineMatchSessionUpdate</a>.</dd>
+            
+            <dt><i>hWorkEvent</i></dt>
+<dd>[in, optional]  Handle to a caller-created event object. This object will be signaled when there is work to do by calling <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a>. The caller may pass in NULL instead, indicating that the caller will poll <b>XOnlineTaskContinue</b> itself.</dd>
+            
+            <dt><i>phTask</i></dt>
+<dd>[out]  Address of an <b>XONLINETASK_HANDLE</b> variable that receives a valid handle for this session. After the task has been pumped to completion, call <a href="XOnlineMatchSessionGetInfo.htm">XOnlineMatchSessionGetInfo</a> to obtain the ID of the new session.</dd>
+            
+        </dl>
+<h4><a name="return"></a>Return Values</h4>
+
+    <p>If <b>XOnlineMatchSessionCreate</b> succeeds, it returns S_OK.</p>
+	<p>If <b>XOnlineMatchSessionCreate</b> fails, it returns one of the following error codes.</p>
+
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>E_OUTOFMEMORY</td>
+<td>Insufficient memory. Free some memory.</td>
+</tr>
+<tr>
+<td>WSAEADDRNOTAVAIL</td>
+<td>See <a href="xbox_winsock_error_codes_winsock.htm">Winsock Error Codes</a> for more information. </td>
+</tr>
+<tr>
+<td>WSACONNRESET</td>
+<td>See <b>Winsock Error Codes</b> for more information. </td>
+</tr>
+<tr>
+<td>Other</td>
+<td>See <a href="xbox_online_errors.htm">Online Errors</a> for information about other possible errors.</td>     
+</tr>
+</table>
+   
+<p>The following table lists the possible values that <b>XOnlineTaskContinue</b> may return when called with the handle for the task created by <b>XOnlineMatchSessionCreate</b>.</p>
+
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>XONLINE_E_MATCH_INVALID_SEARCH_REQ</td>
+<td>The request is invalid. The wrong number of attributes was passed to a stored procedure. More detailed error information is returned by <b>XOnlineTaskContinue</b> when the search completes. For debugging purposes, call <b>XOnlineTaskContinue</b> to find out what went wrong.
+</td>
+</tr>
+<tr>
+<td>XONLINE_E_MATCH_STRING_TOO_LONG</td>
+<td>The attribute string for the create, update, or search operation is longer then 400 characters,  or the string wasn't terminated with a null character. Limit string length to 400 wide characters, and ensure that the string is properly terminated.</td>
+</tr>
+<tr>
+<td>XONLINE_E_MATCH_BLOB_TOO_LONG</td>
+<td>The BLOB for the create, update, or search operation is longer then 800 bytes. Limit BLOB length to 800 bytes.</td>
+</tr>
+<tr>
+<td>XONLINE_E_MATCH_INVALID_ATTR_TYPE</td>
+<td>The attribute type for the create, update, or search operation is something other than player or session. </td>
+</tr>
+<tr>
+<td>XONLINE_E_MATCH_INVALID_SESSION_ID</td>
+<td>The specified session ID is not a valid session ID returned by <b>XOnlineMatchSessionGetInfo</b> or <a href="XOnlineMatchSessionFindFromID.htm">XOnlineMatchSessionFindFromID</a>. </td>
+</tr>
+<tr>
+<td>XONLINE_E_MATCH_INVALID_OFFSET</td>
+<td>One of the attribute/parameter offsets in the request was invalid. The attribute ID was OR'd with an invalid data type. Ensure that the attribute ID is OR'd with a valid attribute data type mask (X_ATTRIBUTE_DATATYPE_INTEGER,  X_ATTRIBUTE_DATATYPE_STRING, or X_ATTRIBUTE_DATATYPE_BLOB)</td>
+</tr>
+<tr>
+<td>XONLINE_E_MATCH_INVALID_PARAM</td>
+<td>The data type that was passed to the stored procedure is not valid. Ensure that the data type sent to the stored procedure is the expected type.</td>
+</tr>
+<tr>
+<td>XONLINE_E_MATCH_INVALID_TITLE_ID</td>
+<td>The title is not properly registered on the Matchmaking server. The attribute ID is invalid. Check the XMS file generated by MatchSim to ensure that the correct attribute ID is OR'd with the correct data type mask.</td>
+</tr>
+
+</table>
+
+
+
+        <h4><a name="remarks"></a>Remarks</h4>
+            <p>The <b>XOnlineMatchSessionCreate</b> function advertises a gaming session so that other players can participate. The <b>XOnlineMatchSessionCreate</b> function is called from the Xbox that is <i>hosting</i> the online-game session.</p>
+
+            <p>After <b>XOnlineMatchSessionCreate</b> has completed, call <b>XOnlineMatchSessionGetInfo</b> to obtain the session ID for the online-game session.</p>
+
+            <p>A private player is a player who is specifically invited to join the online-game session or joined the session directly from their friends list. A public player is a player who finds the session through a matchmaking search. Matchmaking searches only return sessions that have openings for public players&#8212;that is, sessions in which <i>dwPublicOpen</i> is nonzero.</p>
+
+            <p>The <i>dwPublicFilled</i> parameter should be set to the number of people playing on the current console. It should never be zero unless the player advertising the session will not be playing in the session (very unlikely).</p>
+
+            <p>Set the value of <i>dwPublicFilled</i> to the number of people playing on the local Xbox console. As new players join the session, update the number of players using the <b>XOnlineMatchSessionUpdate</b> function.</p>
+
+            <p>Some online-game sessions are private&#8212;that is, invitation only. For these games, it is still necessary to call <b>XOnlineMatchSessionCreate</b> in order to obtain a session ID with which to invite other players. When calling <b>XOnlineMatchSessionCreate</b>, specify zero for the <i>dwPublicOpen</i> parameter.</p>
+
+            <p>Attributes are per-session, not per-player. Therefore, you cannot have multiple instances of the same attribute in a given online-game session.</p>
+
+            <p>Attributes are represented by the <b>XONLINE_ATTRIBUTE</b> structure. The type of an attribute is either integer, string, or binary object. An integer occupies eight bytes (<b>ULONGLONG</b>). A string has a maximum size of 400 wide characters (800 bytes). Strings are NULL terminated. A binary object has maximum size of 800 bytes, and is not NULL terminated.</p>
+            <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+             <a href="xbox_Live_Matchmaking.htm">Playing Games with Matchmaking</a> | <a href="x_mt_xonline_functions.htm">Xbox Live Functions</a> | <a href="XOnlineMatchSessionDelete.htm">XOnlineMatchSessionDelete</a>, <a href="XOnlineMatchSessionGetInfo.htm">XOnlineMatchSessionGetInfo</a>, <a href="XOnlineMatchSessionUpdate.htm">XOnlineMatchSessionUpdate</a>
+        </p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

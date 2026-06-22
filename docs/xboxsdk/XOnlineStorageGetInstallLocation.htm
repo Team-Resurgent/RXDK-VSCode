@@ -1,0 +1,142 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineStorageGetInstallLocation</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineStorageGetInstallLocation"/>
+<MSHelp:Keyword Index="F" Term="XOnlineStorageGetInstallLocation"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineStorageGetInstallLocation</h1>
+            <p>
+                Retrieves the path to the 
+                storage item file downloaded by <a href="XOnlineStorageDownload.htm">XOnlineStorageDownload</a>.
+            </p>
+        <pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineStorageGetInstallLocation(</b>
+    <b>DWORD</b> <i>dwFacility</i><b>,</b>
+    <b>LPCWSTR</b> <i>wszStoragePath</i><b>,</b>
+    <b>LPSTR</b> <i>szLocation</i><b>,</b>
+    <b>DWORD</b> *<i>pdwLocationSize</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+            <dt><i>dwFacility</i></dt>
+				<p>
+					<dd>[in]  Indicates storage facility. May be one of the following:</dd>
+					<table>
+						<tr>
+							<th>Value</th>
+							<th>Description</th>
+						</tr>
+						<tr>
+							<td>XONLINESTORAGE_FACILITY_STATS</td>
+							<td>Game-clips (stats with attachments) facility.</td>
+						</tr>
+						
+						<tr>
+							<td>XONLINESTORAGE_FACILITY_TEAMS</td>
+							<td>Teams storage facility.</td>
+						</tr>
+						<tr>
+							<td>XONLINESTORAGE_FACILITY_PER_TITLE</td> 
+							<td>Title-managed global storage.</td>
+						</tr>
+						<tr>
+							<td>XONLINESTORAGE_FACILITY_PER_USER_TITLE</td>
+							<td>Per title, per user storage.</td>
+						</tr>
+					</table>
+					<p>For a complete list of facility values, see the <a href="XONLINESTORAGE_FACILITY.htm">XONLINESTORAGE_FACILITY</a> page.</p>
+				</p>
+            
+            <dt><i>wszStoragePath</i></dt>
+                <p>
+<dd>[in]  The service's storage path for the storage item. For game clips, this path can be obtained by calling <a href="XOnlineStatRead.htm">XOnlineStatRead</a>. This path is stored in the <i>lpString</i> member of the <a href="XONLINE_STAT.htm">XONLINE_STAT</a> structure that has a <i>wID</i> member equal to XONLINE_STAT_ATTACHMENT_PATH. For all other facilities, this path can be constructed by using the <a href="XOnlineStorageCreateServerPath.htm">XOnlineStorageCreateServerPath</a> function.</dd>
+                </p>
+            
+            <dt><i>szLocation</i></dt>
+                <p>
+<dd>[out]  Pointer to a buffer that receives the path to the downloaded attachment file. 
+The size of this buffer should be XONLINESTORAGE_MAX_PATH.</dd>
+                </p>
+            
+            <dt><i>pdwLocationSize</i></dt>
+                <p>
+                    <dd>[in, out]  Pointer to a <b>DWORD</b> variable.</dd>
+                    <p>On input, this variable specifies the size of the buffer pointed to by the <i>szLocation</i> parameter.</p>
+                    <p>On output, this variable specifies the number of bytes written to the buffer including the terminating NULL character.</p>
+                </p>
+            
+        </dl>
+<h4><a name="return"></a>Return Values</h4>
+            
+                <p>If <b>XOnlineStorageGetInstallLocation</b> succeeds, the return value is S_OK.</p>
+                <p>If <b>XOnlineStorageGetInstallLocation</b> fails, the return value is one of the 
+                    following error codes.</p>
+
+                <table>
+                    <tr>
+                        <th>Value</th>
+                        <th>Description</th>
+                    </tr>
+                    <tr>
+                        <td>XONLINE_E_STORAGE_INVALID_STORAGE_PATH</td>
+                        <td>Invalid storage path.</td>
+                    </tr>
+                    <tr>
+                        <td>XONLINE_E_STORAGE_INVALID_FACILITY</td>
+                        <td>Invalid facility code.</td>
+                    </tr>
+                    <tr>
+                        <td>HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER)</td>
+                        <td>The buffer pointed to by the <i>szLocation</i> parameter is not 
+                        large enough to hold the  path. The required length is returned in the <b> 
+                        DWORD</b> pointed to by the <i>pcbLocation</i> parameter.</td>
+                    </tr>
+                    <tr>
+                        <td>Other</td>
+                        <td>See <a href="xbox_online_errors.htm">Online Errors</a> for information about 
+                        other possible errors.</td>
+                    </tr>
+                </table>
+            
+
+        <h4><a name="remarks"></a>Remarks</h4>
+            <p>
+                If the buffer pointed to by the <i>szLocation</i> parameter is not 
+                large enough to hold the path, <b>XOnlineStorageGetInstallLocation</b> returns 
+                HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER), and the required length is 
+                returned in the <b>DWORD</b> pointed to by the <i>pcbLocation</i> 
+                parameter.
+            </p>
+        <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+        <a href="x_mt_xonline_functions.htm">Xbox Live Functions</a> | <a href="xbox_Live_Clips.htm">Game Clips</a> | <a href="XOnlineStorageDownload.htm">XOnlineStorageDownload</a>, <a href="XOnlineStorageGetProgress.htm">XOnlineStorageGetProgress</a>
+        </p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

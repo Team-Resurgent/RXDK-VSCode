@@ -1,0 +1,68 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IsBadCodePtr</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="IsBadCodePtr">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="IsBadCodePtr"/>
+<MSHelp:Keyword Index="F" Term="IsBadCodePtr"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_isbadcodeptr"></A>IsBadCodePtr</H1>
+
+<P>The <B>IsBadCodePtr</B> function determines whether the title has read access to the memory at the specified address.</P>
+
+<PRE class=syntax><B>BOOL IsBadCodePtr(
+  FARPROC</B><I> lpfn</I>   // memory address
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>lpfn</I></DT>
+
+<DD>[in] Pointer to an address in memory. 
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the title has read access to the specified memory, the return value is zero.</P>
+
+<P>If the title does not have read access to the specified memory, the return value is nonzero. To get extended error information, call <A HREF="errors_3uwi.htm">GetLastError</a>. </P>
+
+<H4>Remarks</H4>
+
+<P>If the application is compiled as a debugging version and the title does not have read access to all bytes in the specified memory range, the function causes a first-chance exception, which may break into the debugger. Leaving the debugger, the function continues as usual and returns a nonzero value.  This behavior is by design, as a debugging aid.  The exception will cause a debugger break only if the debugger is configured to break on first-chance exceptions as well as unhandled exceptions.</P>
+
+<P><B>IsBadCodePtr</B> checks the read access only at the specified address and does not guarantee read access to a range of memory.</P>
+
+<P>In a preemptive multitasking environment, it is possible for some other thread to change the access to the memory being tested. Even when the function indicates that the title has read access to the specified memory, you should use structured exception handling when attempting to access the memory. Use of structured exception handling enables the system to notify the title if an access violation exception occurs, giving the title an opportunity to handle the exception.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p><H4>See Also</H4>
+<P> 
+
+<a href="xbox_mt_xtl_sll_memory_management_functions.htm">Memory Management Functions</a> | 
+<A HREF="memman_2ynm.htm">IsBadReadPtr</a>,  <A HREF="memman_4jxu.htm">IsBadStringPtr</a>,  <A HREF="memman_3f1u.htm">IsBadWritePtr</a> </P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

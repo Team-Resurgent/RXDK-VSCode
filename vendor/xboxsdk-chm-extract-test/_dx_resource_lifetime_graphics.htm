@@ -1,0 +1,63 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Resource Lifetime</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Resource Lifetime"/>
+<MSHelp:Keyword Index="F" Term="Resource Lifetime"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Resource Lifetime</H1>
+<!--***********************************************************-->
+
+<!--****Intro paragraph. Should be a three or four sentence summary of the topic.****-->
+<p>The lifetime of a resource determines when the resource can be locked or destroyed.  A resource is considered to be "in use" or "busy" if any of the following three conditions are true:</p>
+
+<ol>
+	<li>The resource is set on <B>IDirect3DDevice8</B> through <a href="_dx_idirect3ddevice8_setrendertarget_graphics.htm">IDirect3DDevice8::SetRenderTarget</a>, <a href="_dx_idirect3ddevice8_settexture_graphics.htm">IDirect3DDevice8::SetTexture</a>, <a href="xbox_dxg_Idirect3ddevice8_setpalette.htm">IDirect3DDevice8::SetPalette</a>, or <a href="_dx_idirect3ddevice8_setstreamsource_graphics.htm">IDirect3DDevice8::SetStreamSource</a>.</li>
+	<li>The resource is being used by a Draw command that is in the graphics processor's push-buffer but has not yet been processed.  This happens when the resource is set on <B>IDirect3DDevice8</B> and one of the Draw methods is called.</li>
+	<li>The resource is being used by a Draw command that is currently being processed by the graphics processor.  The GPU can start processing the next commands in the push-buffer before it has finished the current command.</li>
+</ol>
+
+<p>Any resource that is currently set on <B>IDirect3DDevice8</B> is always considered to be in use because a Draw command may have been pushed that uses the resource. Such a resource cannot be destroyed and can be locked only if the graphics processor has finished processing all commands in its push-buffer. Resources should always be unset from <B>IDirect3DDevice8</B> before attempting to lock them.</p>
+
+<p>A resource currently set on <B>IDirect3DDevice8</B> will have a nonzero value stored in the <b>INTREFCOUNT</b> field of its <b>Common</b> DWORD.</p>
+
+<p>Determining whether a resource that is not set on <B>IDirect3DDevice8</B> is still in use requires that the driver be able to determine whether all of the commands before a specific point in the push-buffer have been fully processed. The driver does this by inserting a fence that can then be queried as to whether it has been executed.</p>
+
+<p>Direct3D always sets the <B>Lock</B> DWORD on a resource when it is unset from <B>IDirect3DDevice8</B> to the fence that will be inserted into the push-buffer next.  Locking or destroying the resource will block until that fence has been executed or, if the fence has not yet been pushed, when the graphics processor has finished all its work. </p> 
+
+<p>A title can query whether a resource would block by calling <a href="xbox_dxg_IDirect3DResource8_IsBusy.htm">IDirect3DResource8::IsBusy</a>, which returns TRUE either if the resource is currently set on <B>IDirect3DDevice8</B> or if the fence in <B>Lock</B> has not yet been executed.  <a href="xbox_dxg_IDirect3DResource8_Deregister.htm">IDirect3DResource8::BlockUntilNotBusy</a> will wait until <b>IDirect3DResource8::IsBusy</b> would return FALSE or until the graphics processor is idle. If either of these methods can determine that the resource is not in use, the <b>Lock</b> field is set to zero.</p>
+ 
+<p>The graphics driver will automatically insert fences periodically throughout the push-buffer at intervals set by <a href="xbox_dx_graphics_IDirect3D8_SetPushBufferSize.htm">IDirect3D8::SetPushBufferSize</a>, but it also supports manually inserting fences by calling <a href="_dx_idirect3ddevice8_insertfence_graphics.htm">IDirect3DDevice8::InsertFence</a>, which returns a DWORD, guaranteed not to be zero, that describes the fence. <a href="_dx_idirect3ddevice8_isfencepending_graphics.htm">IDirect3DDevice8::IsFencePending</a> will return TRUE if a fence has not yet been executed. <a href="_dx_idirect3ddevice8_blockonfence_graphics.htm">IDirect3DDevice8::BlockOnFence</a> returns only after the fence has been executed. </p> 
+
+<p>The fence that is stored in a resource represents the next fence that will be pushed at some point in the future. <b>IDirect3DResource8::IsBusy</b> and <b>IDirect3DDevice8::IsFencePending</b> will continue to return TRUE until that fence gets pushed and executed, which can be done either automatically or through <b>IDirect3DDevice8::InsertFence.</b></p>
+
+<p>All of the resources used and unset from <B>IDirect3DDevice8</B> before a fence was inserted can be safely locked, modified, or destroyed once that fence has executed.  This can be useful as a mechanism for destroying multiple resources that are allocated in a single allocation without having to query whether each resource is busy.</p>
+
+
+
+<!--*******************************************************************************-->
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

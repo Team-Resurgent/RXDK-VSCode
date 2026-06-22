@@ -1,0 +1,142 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>UIX_EXIT_INFO</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="UIX_EXIT_INFO"/>
+<MSHelp:Keyword Index="F" Term="UIX_EXIT_INFO"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+    <body topmargin="0">
+        <table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+        <h1>UIX_EXIT_INFO</h1>
+
+        
+        
+<p>Feature exit information obtained with the <a href="ILiveEngine_GetExitInfo.htm">ILiveEngine::GetExitInfo</a> method.</p>
+
+	
+		
+
+<pre class="syntax">typedef struct _UIX_EXIT_INFO{
+    UIX_FEATURE FeatureID;
+    UIX_EXIT_CODE_TYPE ExitCode;
+    HRESULT hr;
+    PVOID pExitData;
+} UIX_EXIT_INFO, *PUIX_EXIT_INFO;</pre>
+                    
+                
+            
+            
+                <h4><a name="members"></a>Members</h4>
+<dl>
+	<dt><b>FeatureID</b></dt>
+<dd>Feature for which exit information was returned. The exit information is for the feature that most recently exited and thus caused the UIX_DOWORK_FEATURE_EXIT flag to be set.</dd>
+
+	<dt><b>ExitCode</b></dt>
+<p><dd>Value indicating the exit code for the feature.</dd>
+		<table>
+			<tr>
+<th>Exit Code</th>
+<th>Description</th>
+</tr>
+			<tr>
+				<td>UIX_EXIT_NONE</td>
+				<td>The feature is still active (has not exited).</td>
+			</tr>
+			<tr>
+				<td>UIX_EXIT_LOGON_SUCCESSFUL</td>
+				<td>The logon feature logged on successfully.</td>
+			</tr>
+			<tr>
+				<td>UIX_EXIT_LOGON_FAILED</td>
+				<td>The logon feature exited but failed to log on. This value is also returned when the network connection is lost and the logon feature is not currently active.</td>
+			</tr>
+			<tr>
+				<td>UIX_EXIT_LOGON_USER_EXIT</td>
+				<td>The player exited the logon feature.</td>
+			</tr>
+			<tr>
+				<td>UIX_EXIT_FRIENDS_NORMAL_EXIT</td>
+				<td>The friends feature exited as usual.</td>
+			</tr>
+			<tr>
+				<td>UIX_EXIT_FRIENDS_JOIN_GAME</td>
+				<td>The friends feature exited because the player accepted a game invite.</td>
+			</tr>
+			<tr>
+				<td>UIX_EXIT_FRIENDS_JOIN_GAME_CROSS_TITLE</td>
+				<td>The friends feature exited because the player accepted a cross-title game invite.</td>
+			</tr>
+			<tr>
+				<td>UIX_EXIT_FRIENDS_SIGNED_OUT</td>
+				<td>The friends feature exited because the player selected the <b>Sign Out</b> button on the friends screen. Before the friends feature exits and returns this code, it calls the <a href="ILiveEngine_LogOff.htm">ILiveEngine::LogOff</a> method.</td>
+			</tr>
+			<tr>
+				<td>UIX_EXIT_PLAYERS_NORMAL_EXIT</td>
+				<td>The UI test feature exited normally. This exit code is available in debug builds only.</td>
+			</tr>
+		</table>
+		<p>After a successful logon (with the value UIX_EXIT_LOGON_SUCCESSFUL), the title must  call the <a href="XOnlineGetServiceInfo.htm">XOnlineGetServiceInfo</a> function for each service requested at logon in the <b>LogonServiceIDs</b> member of the <a href="UIX_LOGON_PARAMS.htm">UIX_LOGON_PARAMS</a> structure. The title then checks the returned <b>HRESULT</b> types to verify which services were successfully connected to. If a service critical to the title failed, the title should log off the Xbox <i>Live</i> service.</p>
+		<p>If a title must determine the problem that caused the UIX_EXIT_LOGON_FAILED value to be returned, the title can check the <b>hr</b> member of this structure.</p>
+	</p>
+
+	<dt><b>hr</b></dt>
+<dd>Success or failure result code returned by the feature.</dd>
+
+	<dt><b>pExitData</b></dt>
+<p>
+		<dd>Exit data returned by the feature. This data varies depending on the feature and exit code, as follows.</dd>
+		<table>
+			<tr>
+<th>FeatureID value</th>
+<th>ExitCode value</th>
+<th>pExitData value</th>
+</tr>
+			<tr>
+<td>UIX_LOGON_FEATURE</td>
+<td>UIX_EXIT_LOGON_SUCCESSFUL</td>
+<td>A pointer to a <a href="UIX_LOGON_EXIT_DATA.htm">UIX_LOGON_EXIT_DATA</a> structure that contains the controller port assignments</td>
+</tr>
+			<tr>
+<td>UIX_FRIENDS_FEATURE</td>
+<td>UIX_EXIT_FRIENDS_JOIN_GAME</td>
+<td>A pointer to the <a href="XONLINE_FRIEND.htm">XONLINE_FRIEND</a> structure of the friend that sent the game invite</td>
+</tr>
+		</table>
+		<p>The <b>pExitData</b> member is NULL for any other combination of <b>FeatureID</b> and <b>ExitCode</b> member values.</p>
+	</p>
+
+</dl>
+                
+				
+            
+                <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Uix.h.</p>
+            
+                <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="ILiveEngine_GetExitInfo.htm">ILiveEngine::GetExitInfo</a>,
+<a href="XONLINE_USER.htm">XONLINE_USER</a>
+</p>
+
+        <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+    </body>
+    </html>

@@ -1,0 +1,109 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XACT_PARAMETER_ENTRY</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XACT_PARAMETER_ENTRY"/>
+<MSHelp:Keyword Index="F" Term="XACT_PARAMETER_ENTRY"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+    <body topmargin="0">
+        <table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+        <h1>XACT_PARAMETER_ENTRY</h1>
+
+        
+        
+
+
+	
+		
+
+<pre class="syntax">typedef struct _XACT_PARAMETER_ENTRY{
+    WORD wScope;
+    WORD wFlags;
+    WORD wCategoryIndex;
+    WORD wStepCount;
+    FLOAT flStepSize;
+    FLOAT flStartValue;
+    union {
+        PXACTSOUNDCUE pSoundCue;
+        PXACTSOUNDBANK pSoundBank;
+    } u;
+    PCSTR pszFriendlyName;
+} XACT_PARAMETER_ENTRY, *PXACT_PARAMETER_ENTRY;</pre>
+                    
+                
+            
+            
+                <h4><a name="members"></a>Members</h4>
+<dl>
+			<dt><b>wScope</b></dt>
+				<dd>Indicates the scope of the control. See the <a href="xbox_xactparametercontrolscope_dxaudio.htm">XACT_PARAMETER_CONTROL_SCOPE</a> section for valid values.</dd>
+			<dt><b>wFlags</b></dt>
+				<dd>Flags indicating the parameter entry behavior. Can be zero or the following:</dd>
+				<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+					<tr>
+<td>XACT_FLAG_PARAMETER_CONTROL_IMMEDIATE</td>
+<td>Indicates that the RPC entry's change should be applied before <a href="xbox_ixactengine_setparametercontrol_dxaudio.htm">SetParameterControl</a> returns, rather than deferring it to the next <a href="xbox_xactenginedowork_dxaudio.htm">XACTEngineDoWork</a> call.<p>This flag is specific to each entry in the <a href="xbox_xactparametercontroldesc_dxaudio.htm">XACT_PARAMETER_CONTROL_DESC</a> entry array, so only those entries with the flag set will be processed immediately.</p><p>If this flag is specified and the step count is greater than zero, only the first step will be processed immediately. The remaining steps will not be processed until <b>XACTEngineDoWork</b> is called.</p></td>
+</tr>
+					
+				</table>
+			<dt><b>wCategoryIndex</b></dt>
+				<dd>Value indicating the category index to use (see the <a href="xbox_ixactengine_globalpause_dxaudio.htm">IXACTEngine::GlobalPause</a> and <a href="xbox_ixactengine_setmastervolume_dxaudio.htm">IXACTEngine::SetMasterVolume</a> pages for examples). The <b>wScope</b> member must be set to eXACTParameterControlScope_Global when specifying this index.</dd>
+			<dt><b>wStepCount</b></dt>
+				<dd>Number of steps applied to the control. The value for this parameter is valid as long as <b>flStartValue</b> + <b>flStepSize</b> * <b>wStepCount</b> falls within the range of 0 to 1.</dd>
+			<dt><b>flStepSize</b></dt>
+				<dd>Indicates the amount to adjust the control per step. The valid range for this parameter is between -1.0 and 1.0, inclusive.</dd>
+			<dt><b>flStartValue</b></dt>
+				<dd>Indicates the starting value of the control. The valid range for this parameter is between 0.0 and 1.0, inclusive.</dd>
+			
+				<dt><b>pSoundCue</b></dt>
+					<dd>A pointer to a valid sound cue instance. This value must be specified if the <b>wScope</b> value is eXACTParameterControlScope_SoundCueInstance.</dd>
+				<dt><b>pSoundBank</b></dt>
+					<dd>Not currently supported.</dd>
+			
+			<dt><b>pszFriendlyName</b></dt>
+				<dd>String value representing the friendly name of the control as defined in the XACT authoring tool by the sound designer or composer. The name is case-sensitive. Names for sliders used for slider-driven variations are defined in Xact.h as follows:</dd>
+
+<pre class="clsCode">
+#define XACT_PARAMETER_CONTROL_MASTER_VOLUME    "=MasterVolume"
+#define XACT_PARAMETER_CONTROL_SOUND_VARIATION  "=SoundVariation"
+#define XACT_PARAMETER_CONTROL_WAVE_VARIATION   "=WaveVariation"
+</pre>
+    
+		</dl>
+                <h4><a name="remarks"></a>Remarks</h4>
+			<p>Ramped parameter controls (where <b>wStepCount</b> is greater than 0) are processed during calls to <b>XACTEngineDoWork</b>. So to get a rough idea of the duration of the change, it would be calculated as <b>wStepCount</b> * <i>DoWorkCallInterval</i>, where <i>DoWorkCallInterval</i> is how often <b>XACTEngineDoWork</b> is called on average.</p>
+		
+				
+            
+                <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xact.h.</p>
+            
+                <h4><a name="seealso"></a>See Also</h4>
+<p><a href="xbox_xactparametercontroldesc_dxaudio.htm">XACT_PARAMETER_CONTROL_DESC</a>, <a href="xbox_ixactengine_setparametercontrol_dxaudio.htm">SetParameterControl</a></p>
+
+        <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+    </body>
+    </html>

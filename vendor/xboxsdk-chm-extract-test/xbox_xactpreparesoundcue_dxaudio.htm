@@ -1,0 +1,101 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XACT_PREPARE_SOUNDCUE</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XACT_PREPARE_SOUNDCUE"/>
+<MSHelp:Keyword Index="F" Term="XACT_PREPARE_SOUNDCUE"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+    <body topmargin="0">
+        <table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+        <h1>XACT_PREPARE_SOUNDCUE</h1>
+
+        
+        
+<p>Contains information for preparing/playing a sound cue.</p>
+
+	
+		
+
+<pre class="syntax">typedef struct _XACT_PREPARE_SOUNDCUE{
+    DWORD dwFlags;
+    DWORD dwCueIndex;
+    PXACTSOUNDSOURCE pSoundSource;
+    PCXACT_PARAMETER_CONTROL_DESC pParameterControls;
+} XACT_PREPARE_SOUNDCUE, *PXACT_PREPARE_SOUNDCUE;
+
+typedef const XACT_PREPARE_SOUNDCUE *PCXACT_PREPARE_SOUNDCUE;</pre>
+                    
+                
+            
+            
+                <h4><a name="members"></a>Members</h4>
+<dl>
+			<dt><b>dwFlags</b></dt>
+				<dd>Flags affecting prepare/play:</dd>
+				<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+					<tr>
+<td>XACT_FLAG_SOUNDCUE_PRIME</td>
+<td>Indicates that the sound cue should be primed.</td>
+</tr>
+					<tr>
+<td>XACT_FLAG_SOUNDCUE_AUTORELEASE</td>
+<td>Causes the cue to be automatically released when playback is finished (no sound cue pointer is returned). This has no effect on subsequent playback of the cue.</td>
+</tr>
+					<tr>
+<td>XACT_FLAG_SOUNDCUE_PREPARED</td>
+<td>This flag must be set when passing a valid sound cue instance from a prior call to the <a href="xbox_ixactsoundbank_prepare_dxaudio.htm">IXACTSoundBank::Prepare</a> or <a href="xbox_ixactsoundbank_prepareex_dxaudio.htm">IXACTSoundBank::PrepareEx</a> method.<p>This flag is not valid for use with the XACT_FLAG_SOUNDCUE_USE_LAST_VARIATION flag.</p></td>
+</tr>
+					<tr>
+<td>XACT_FLAG_SOUNDCUE_USE_LAST_VARIATION</td>
+<td>Indicates that the sound cue should use the last sound selected, assuming that multiple sounds are associated with the cue. That sound will continue to be selected until the function is called without specifying XACT_FLAG_SOUNDCUE_USE_LAST_VARIATION, at which point the sounds are selected at random again.<p>This does not affect wave variations. If the sound has a play event with wave variations, the waves will be selected at random. Similarly, pitch and volume variations are unaffected by this flag.</p><p>If no previous sound has been selected before using this flag, a sound will be selected at random.</p><p>This flag is not valid for use with the XACT_FLAG_SOUNDCUE_PREPARED flag.</p></td>
+</tr>
+				</table>
+							
+			<dt><b>dwCueIndex</b></dt>
+				<dd>Value indicating the index of the sound cue to be prepared/played.</dd>
+			
+			<dt><b>pSoundSource</b></dt>
+				<dd>Pointer to an <a href="xbox_ixactsoundsource_dxaudio.htm">IXACTSoundSource</a> created using the <a href="xbox_ixactengine_createsoundsource_dxaudio.htm">IXACTEngine::CreateSoundSource</a> method.</dd>
+				<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;This member must be NULL when the structure is used as a parameter for the <b>IXACTSoundBank::PrepareEx</b> method.</p>
+			
+			<dt><b>pParameterControls</b></dt>
+				<dd>Pointer to an optional array of parameter controls. The parameter controls passed to <a href="xbox_ixactsoundbank_playex_dxaudio.htm">IXACTSoundBank::PlayEx</a> and <a href="xbox_ixactsoundbank_prepareex_dxaudio.htm">IXACTSoundBank::PrepareEx</a> must all be of the SoundCueInstance scope (see the <a href="xbox_xactparameterentry_dxaudio.htm">XACT_PARAMETER_ENTRY</a> section for more information.) Global sliders are not allowed. In addition, the <b>pSoundCue</b> member of all entries must be NULL.</dd>
+			
+		</dl>
+                
+				
+            
+                <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xact.h.</p>
+            
+                <h4><a name="seealso"></a>See Also</h4>
+<p>
+			<a href="xbox_ixactsoundbank_playex_dxaudio.htm">IXACTSoundBank::PlayEx</a>, <a href="xbox_ixactsoundbank_prepareex_dxaudio.htm">IXACTSoundBank::PrepareEx</a>
+		</p>
+
+        <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+    </body>
+    </html>

@@ -1,0 +1,76 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Using Unicode and ANSI Functions</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Using Unicode and ANSI Functions"/>
+<MSHelp:Keyword Index="F" Term="Using Unicode and ANSI Functions"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR></TR>
+</TABLE>
+<!--**********************************-->
+
+<H2 class="heading"><A NAME=""></A>Using Unicode and ANSI Functions</H2>
+
+<P>When calling an XTL function that has text arguments, you must know whether the function accepts ANSI or Unicode characters, and you must pass in a string type that correctly matches the type expected by the function.</P>
+
+<P>Some functions are implemented as both ANSI and Unicode versions, some as ANSI or Unicode only, and some as functions that require both ANSI and Unicode parameters. In general, Unicode versions are provided for functions that deal with strings that may eventually be displayed to the user. For optimal performance, ANSI versions are provided for functions that deal with strings used internally by the title, such as filenames.  </P> 
+
+<P>This means that in your code you will likely have calls to both ANSI and Unicode functions and be working with both ANSI and Unicode strings.</P>
+
+<P><A HREF="xbox_mt_xtl_sll_strings_oview_unifunc.htm"><B>XTL String Functions</B></A> lists the versions supported by the various string functions.</P>
+
+<BR>
+<P>As an example, the <A HREF="filesio_5n8l.htm"><B>DeleteFile</B></A> function accepts only ANSI strings:</P>
+
+<PRE>char szName[] = "ai_parms.txt";
+DeleteFile( szName );
+</PRE>
+
+<P>While the <A HREF="x_jsk_xsetnickname.htm"><B>XSetNickname</B></A> function accepts only Unicode strings:</P>
+
+<PRE>WCHAR wszName[] = L"Joey";
+XSetNickName( wszName, TRUE );
+</PRE>
+
+<P>And the <A HREF="x_jsk_xdeletesavegame.htm"><B>XDeleteSaveGame</B></A> function requires one ANSI parameter and one Unicode parameter:</P>
+
+<PRE>CHAR szPath[50];
+WCHAR wszGameName[50];
+
+lstrcpy( szPath, "t:\\saves" );
+lstrcpyW( wszGameName, L"AtTheBeach" );
+XDeleteSaveGame( szPath, wszGameName );
+</PRE>
+
+<P>Some functions have both ANSI and Unicode versions, and you can choose which version you want to use by adding, or omitting, a <I>W</I> (which stands for wide character) to the end of the function name.  An example of this is the <B>lstrcpy</B> function above; the <B>lstrcpy</B> version is ANSI, and the <B>lstrcpyW</B> version is Unicode.  You can also refer to the ANSI version by using <B>lstrcpyA</B> as the function name (the <I>A</I> stands for ANSI).  So in this example, <B>lstrcpy</B> and <B>lstrcpyA</B> refer to the same function, the ANSI version of <B>lstrcpy</B>.</P>
+
+<P>By default, for functions that have both ANSI and Unicode versions, omitting the final <I>A</I> or <I>W</I> results in the ANSI version being used.  This default can be changed using the UNICODE compiler define, discussed in <A HREF="xbox_mt_xtl_sll_strings_oview_unitypes.htm"><B>XTL String Data Types</B></A>.<P>
+
+<P>A string literal can be specified as Unicode by prepending an <I>L</I> to the beginning of the string literal.  An example of this is seen above:</P>
+
+<PRE>lstrcpyW( wszGameName, L"AtTheBeach" );</PRE>
+
+<P>This line of code uses the Unicode string L"AtTheBeach" as the second argument to the Unicode function <B>lstrcpyW</B>.  String literals without the prepended <I>L</I> are ANSI.</P>
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

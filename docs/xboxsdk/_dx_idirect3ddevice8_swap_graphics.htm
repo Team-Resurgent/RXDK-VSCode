@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirect3DDevice8::Swap</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Swap (IDirect3DDevice8)"/>
+<MSHelp:Keyword Index="K" Term="IDirect3DDevice8::Swap"/>
+<MSHelp:Keyword Index="F" Term="Swap"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_idirect3ddevice8_swap_graphics"></A>IDirect3DDevice8::Swap</H1>
+
+<P><b>Swap</b> is an alternative to <a href="_dx_idirect3ddevice8_present_graphics.htm"><b>IDirect3DDevice8::Present</b></a>. It allows the title to either implement their own back-buffer to front-buffer copy routine, or to write to the front-buffer after the copy is done but before the flip is complete. This function is only useful for devices that are using either antialiasing or the D3DSWAPEFFECT_COPY mode.</P>
+
+<PRE class=syntax><B>DWORD Swap(</B>
+  <b>DWORD</B> <I>Flags</I>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>Flags</I></DT>
+<DD>[in] Must be one of the following values:
+
+<table>
+<tr>
+<th>Value</th>
+<th>Definition</th>
+</tr>
+
+<tr>
+<td>D3DSWAP_DEFAULT</td>
+<td>Presents the contents of the next-in-sequence back-buffer owned by the device. Using D3DSWAP_DEFAULT is equivalent to calling <b>IDirect3DDevice8::Present</b>.</td>
+</tr>
+
+<tr>
+<td>D3DSWAP_COPY</td>
+<td>This allows the title to render to the front-buffer after the copy from the back-buffer to the front-buffer, but before the front-buffer page-flip is initiated. D3DSWAP_COPY allows the title to do things like rendering its HUD or text after any back-buffer scaling and filtering is done. In this way, the title can avoid scaling artifacts in its HUD and text when <a href="_dx_idirect3ddevice8_setbackbufferscale_graphics.htm"><b>IDirect3DDevice8::SetBackBufferScale</b></a> is used with non-integer scaling factors, and avoid extra filtering from the antialiasing filter. 
+<br><br>D3DSWAP_COPY is intended for use when <b>BackBufferCount</b> is 2. It can also potentially be used when the <b>BackBufferCount</b> is 1 and the <b>FullScreen_PresentationInterval</b> is not D3DPRESENT_INTERVAL_IMMEDIATE if the rendering is done fast enough to beat the CRT raster. Be aware that long interupts may interfere with this if the rendering is done near the top of the screen.
+<br><br>The title must call <b>Swap</b> with D3DSWAP_FINISH when done.</td>
+</tr>
+
+<tr>
+<td>D3DSWAP_BYPASSCOPY</td>
+<td>This sets up the hardware to allow the title to implement their own back-buffer to front-buffer copy routine. Direct3D will swap the front-buffer structure pointers, if necessary, initiate synchronization with the page-flip handlers, set texture 0 the antialiasing source, and set the render target to the front-buffer destination. 
+
+<br><br>The title needs to do its own copy using standard Direct3D routines and then call <b>Swap</b> with D3DSWAP_FINISH when done.</td>
+</tr>
+
+<tr>
+<td>D3DSWAP_FINISH</td>
+<td>This sets the hardware to complete the synchronization with the page-flip handlers, handles gamma changes, and restores texture 0 and the render target to the value they held before using either D3DSWAP_COPY or D3DSWAP_BYPASSCOPY.</td>
+</tr>
+</table></DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>The function returns the current swap count.</P>
+
+<h4>Remarks</h4>
+
+<p>A maximum of two swaps can be simultaneously enqueued in the push-buffer at one time. If a swap occurs while two swaps are already enqueued the push-buffer, Direct3D will do a <a href="_dx_idirect3ddevice8_blockonfence_graphics.htm"><b>BlockOnFence</b></a> until one of the pending swaps is handled by the GPU.</p>
+
+<p class=note><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;In addition to the swaps enqueued in the push-buffer, there may be up to <b>BackBufferCount</b> swaps which have already been handled by the GPU but which are pending their vertical blank before being shown.</p>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in D3d8.h.<BR>
+<B>&nbsp;&nbsp;Import Library:</B> Use D3d8.lib.</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>
+

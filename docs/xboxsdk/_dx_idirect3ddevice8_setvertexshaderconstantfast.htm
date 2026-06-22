@@ -1,0 +1,64 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>IDirect3DDevice8::SetVertexShaderConstantFast</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="F" Term="SetVertexShaderConstantFast"/>
+<MSHelp:Keyword Index="K" Term="SetVertexShaderConstantFast (IDirect3DDevice8)"/>
+<MSHelp:Keyword Index="K" Term="IDirect3DDevice8::SetVertexShaderConstantFast"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>IDirect3DDevice8::SetVertexShaderConstantFast</h1>
+<p>Sets values in the vertex constant array. This function is is just like <a href="_dx_idirect3ddevice8_setvertexshaderconstant_graphics.htm">SetVertexShaderConstant</a> except it has less CPU overhead and doesn't keep a copy of the constant data, even when running on a non-D3DCREATE_PUREDEVICE device.</p>
+<pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>SetVertexShaderConstantFast(</b>
+    <b>INT</b> <i>Register</i><b>,</b>
+    <b>CONST void</b> *<i>pConstantData</i><b>,</b>
+    <b>DWORD</b> <i>ConstantCount</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+			<dt><i>Register</i></dt>
+<dd>[in]  Register address at which to start loading data into the vertex constant array.</dd>
+			<dt><i>pConstantData</i></dt>
+<dd>[in]  Pointer to the data block holding the values to load into the vertex constant array. The size of the data block is (<i>ConstantCount</i> * 4 * sizeof(float)). </dd>
+			<dt><i>ConstantCount</i></dt>
+<dd>[in]  Number of constants to load into the vertex constant array. Each constant is comprised of four floating-point values.</dd>
+		</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>Returns S_OK if successful, an error code otherwise.</p>
+<h4><a name="remarks"></a>Remarks</h4>
+<p>Since <b>SetVertexShaderConstantFast</b> doesn't keep track of the constants it sets, <a href="_dx_idirect3ddevice8_getvertexshaderconstant_graphics.htm">GetVertexShaderConstant</a> will not work for any constants set by <b>SetVertexShaderConstantFast</b> (it will return stale data), and state blocks that use vertex shader constants may also not work.</p>
+
+<p>This is the method used to load the constant registers for the vertex shader program. When loading transformation matrices, the application should transpose them row/column and load them into consecutive constant registers.</p>
+
+<p>There are either 96 or 192 constant registers available for use, depending on the constant mode as set by <a href="xbox_dxg_IDirect3DDevice8_setshaderconstantmode.htm">IDirect3DDevice8::SetShaderConstantMode</a>. The permissible register range is 0 through 95 when in D3DSCM_96CONSTANTS mode, and &#8211;96 through 95 otherwise. Registers D3DVS_XBOX_RESERVEDCONSTANT1 and D3DVS_XBOX_RESERVEDCONSTANT2 (&#8211;38 and &#8211;37) are reserved, and may never be used, unless constant mode D3DSCM_NORESERVEDCONSTANTS is used in conjunction with a screenspace vertex shader. If D3DSCM_NORESERVEDCONSTANTS is set using <b>SetShaderConstantMode</b>, then all constants are available.</p>
+
+ <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in D3d8.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use D3d8.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p><a href="_dx_idirect3ddevice8_setrendertargetfast_graphics.htm">IDirect3DDevice8::SetRenderTargetFast</a></p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

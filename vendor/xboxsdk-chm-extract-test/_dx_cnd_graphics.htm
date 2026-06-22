@@ -1,0 +1,70 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>cnd</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="cnd">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="cnd"/>
+<MSHelp:Keyword Index="F" Term="cnd"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_cnd_graphics"></A>cnd</H1>
+
+<P>Performs a conditional operation, comparing the value in r0.a with 0.5.</P>
+
+<PRE class=syntax>cnd   tDest, tSrc0, tSrc1, tSrc2
+</PRE>
+
+<H4>Registers</H4>
+
+<DL>
+<DT><B>tDest</B></DT>
+
+<DD>Destination register, holding the result of the operation.</DD>
+
+<DT><B>tSrc0</B></DT>
+
+<DD>Source register, specifying the input argument. This must be r0.a.</DD>
+
+<DT><B>tSrc1</B></DT>
+
+<DD>Source register, specifying the input argument.</DD>
+
+<DT><B>tSrc2</B></DT>
+
+<DD>Source register, specifying the input argument.
+</DD>
+</DL>
+
+<H4>Remarks</H4>
+
+<P>This instruction can only be used to compare the value in r0.a with 0.5. If the alpha (r0.a) is greater than 0.5, then the first source is returned as the result; otherwise, the second source is returned. </P>
+
+<P>The following example shows how this instruction might be used.</P>
+
+<PRE>cnd d, r0.a, s1, s2    ; d = ( r0.a &gt;0.5 ? s1 : s2 )
+</PRE>
+
+<P>To compare two values you can use the following pixel shader code, since a - (b - 0.5) = a - b + 0.5.</P>
+
+<PRE>sub r0, v0,   v1_bias
+cnd r0, r0.a, c0, c1
+</PRE>
+
+<P>As mentioned above, r0.a is the only value that can be placed in the first source argument.</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

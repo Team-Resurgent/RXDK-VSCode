@@ -1,0 +1,71 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Reflectance Model</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Reflectance Model"/>
+<MSHelp:Keyword Index="F" Term="Reflectance Model"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_reflectance_model_graphics"></A>Reflectance Model</H1>
+
+<P>After adjusting the light intensity for any attenuation effects, Microsoft&#174; Direct3D&#174; computes how much of the remaining light reflects from a vertex given the angle of the vertex normal and the direction of the incident light. Direct3D skips to this step for directional lights because they don't attenuate over distance.</P>
+
+<P>The system considers two reflection types, <a href="#_dx_diffuse_reflection_model_graphics">diffuse</a> and <a href="#_dx_specular_reflection_model_graphics">specular</a>, and uses a different formula to determine how much light is reflected for each. After calculating the amounts of light reflected, Direct3D applies these new values to the diffuse and specular reflectance properties of the current material. The resulting color values are the diffuse and specular components that the rasterizer uses to produce Gouraud shading and specular highlighting.</P>
+
+<H3><A NAME="_dx_diffuse_reflection_model_graphics"></A>Diffuse Reflection Model</H3>
+
+<P>Microsoft&#174; Direct3D&#174; uses the following formula to compute diffuse reflection factors.</P>
+
+<P><IMG SRC="images/diffrefl.gif" ALT="" BORDER=0></P>
+
+<P>In this formula, <I>R<SUB>d</SUB></I> is the diffuse reflectance factor, <I>D</I> is the direction that the light travels to the vertex, and <I>N</I> is the vertex normal. Vector <I>D</I> is normalized; vector <I>N</I> is normalized only if the <A HREF="_dx_d3drenderstatetype_graphics.htm#_dx_d3drs_normalizenormals_graphics">D3DRS_NORMALIZENORMALS</A> render state is enabled. The light's direction vector is reversed by multiplying it by &#8211;1 to create the proper association between the direction vector and the vertex normal. This formula produces values that range from &#8211;1.0 to 1.0, which are clamped to the range of 0.0 to 1.0 and used to scale the intensity of the light reflecting from the vertex. </P>
+
+<P>After the diffuse reflection formula is applied, the scaled light is then applied to the diffuse reflectance formula to determine the diffuse component at that vertex. The formula that combines ambient and diffuse reflection to create the diffuse component for the vertex looks like this:</P>
+
+<P><IMG SRC="images/diffamb.gif" ALT="" BORDER=0></P>
+
+<P>In the preceding formula, <I>D<SUB>v</SUB></I> is the diffuse component being calculated for the vertex, <I>I<SUB>a</SUB></I> is the ambient light level in the scene, and <I>A</I> is the light intensity for a light source that has been attenuated for distance and spotlight effects (attenuation from <A HREF="_dx_light_attenuation_over_distance_graphics.htm">Light Attenuation Over Distance</A> multiplied by <A HREF="_dx_spotlight_falloff_model_graphics.htm">Spotlight Falloff Model</A>). The <I>L</I> variables represent the light's properties, and the <I>V</I> entries represent the vertex color, where the subscripts <I>a</I>, <I>d</I>, and <I>e</I> applied to each denote the type of color&#8212;ambient, diffuse, or emissive. As the formula notation states, the system computes <I>I<SUB>a</SUB>V<SUB>a</SUB> + V<SUB>e</SUB></I> once, adding <I>A(R<SUB>d</SUB>V<SUB>d</SUB>L<SUB>d +</SUB> V<SUB>a</SUB>L<SUB>a</SUB>)</I> for every active light.</P>
+
+<P>If the <A HREF="_dx_d3drenderstatetype_graphics.htm#_dx_d3drs_colorvertex_graphics">D3DRS_COLORVERTEX</A> render state is enabled, the system selects colors for <I>V</I> based on the values set for the render states <A HREF="_dx_d3drenderstatetype_graphics.htm#_dx_d3drs_ambientmaterialsource_graphics">D3DRS_AMBIENTMATERIALSOURCE</A> and <A HREF="_dx_d3drenderstatetype_graphics.htm#_dx_d3drs_diffusematerialsource_graphics">D3DRS_DIFFUSEMATERIALSOURCE</A> (or if two-sided lighting is enabled, <A HREF="_dx_d3drenderstatetype_graphics.htm#_dx_d3drs_backambientmaterialsource_graphics">D3DRS_BACKAMBIENTMATERIALSOURCE</A> and <A HREF="_dx_d3drenderstatetype_graphics.htm#_dx_d3drs_backdiffusematerialsource_graphics">D3DRS_BACKDIFFUSEMATERIALSOURCE</A>). Set these render states to a member of the <A HREF="_dx_d3dmaterialcolorsource_graphics.htm">D3DMATERIALCOLORSOURCE</A> enumerated type to cause the system to use the current material, or a color from the vertex, as the color source.</P>
+
+<H3><A NAME="_dx_specular_reflection_model_graphics"></A>Specular Reflection Model</H3>
+
+<P>Modeling specular reflection requires that the system not only know the direction that light is traveling, but also the direction to the viewer's eye. The system uses a simplified version of the Phong specular-reflection model, which employs a <I>halfway vector</I> to approximate the intensity of specular reflection. This halfway vector exists midway between the vector to the light source and the vector to the eye. Microsoft&#174; Direct3D&#174; provides applications with two ways to compute the halfway vector, which is controlled by the <A HREF="_dx_d3drenderstatetype_graphics.htm#_dx_d3drs_localviewer_graphics">D3DRS_LOCALVIEWER</A> render state. If <B>D3DRS_LOCALVIEWER</B> is set to TRUE, the system calculates the halfway vector using the position of the camera and the position of the vertex, along with the light's direction vector. The following formula illustrates this.</P>
+
+<P><IMG SRC="images/halfwayvector_localviewer.gif" ALT="" BORDER=0></P>
+
+<P>In the preceding formula, <I>norm</I> is an operator that normalizes an input vector, <I>VC</I> is the vector that exists from the position of the vertex to the position of the viewpoint or eye, and <I>L<SUB>d</SUB></I> is the light's direction vector. </P>
+
+<P>Determining the halfway vector in this manner can be computationally expensive. Alternatively, you can set D3DRS_LOCALVIEWER to FALSE. This instructs the system to act as though the viewpoint is infinitely distant on the z-axis. This setting is less computationally expensive, but much less accurate, so it is best used by applications that use orthogonal projection. When D3DRS_LOCALVIEWER is set to FALSE, Direct3D determines the halfway vector by the following formula.</P>
+
+<P><IMG SRC="images/halfwayvector_nonlocalviewer.gif" ALT="" BORDER=0></P>
+
+<P>This formula is similar to the first formula, but substitutes the vector <I>I</I> (0, 0, &#8211;1), which points at a viewpoint infinitely distant on the z-axis, instead of computing the vector <I>VC</I>.</P>
+
+<P>After determining the halfway vector, <I>H</I>, the system uses the following formula to compute specular reflection.</P>
+
+<P><IMG SRC="images/specrefl.gif" ALT="" BORDER=0></P>
+
+<P>In the preceding formula, <I>R<SUB>s</SUB></I> is the specular reflectance, <I>N</I> is the vertex normal, <I>H</I> is the halfway vector, and <I>p</I> is the specular reflection power of the current material, as specified by the <B>Power</B> member of the material's <A HREF="_dx_d3dmaterial8_graphics.htm">D3DMATERIAL8</A> structure. Vector <I>H</I> is normalized, and vector <I>N</I> is normalized only if the <A HREF="_dx_d3drenderstatetype_graphics.htm#_dx_d3drs_normalizenormals_graphics">D3DRS_NORMALIZENORMALS</A> render state is enabled.</P>
+
+<P>As with the diffuse reflectance formula, this formula produces values that range from &#8211;1.0 to 1.0, which are clamped to the range of 0.0 to 1.0 and used to scale the light reflecting from the vertex. Also similar to the diffuse reflection model, the remaining light is applied to a formula that derives the specular component at that vertex:</P>
+
+<P><IMG SRC="images/speccomp.gif" ALT="" BORDER=0></P>
+
+<P>In this formula, <I>S<SUB>v</SUB></I> is the specular color being computed. <I>A</I> is the light from a single light source that has been attenuated for distance and spotlight effects; for more information, see <A HREF="_dx_light_attenuation_over_distance_graphics.htm">Light Attenuation Over Distance</A> and <A HREF="_dx_spotlight_falloff_model_graphics.htm">Spotlight Falloff Model</A>. The <I>R<SUB>s</SUB></I> variable is the previously calculated specular reflectance, <I>V<SUB>s</SUB></I> is the specular component for the vertex, and <I>L<SUB>s</SUB></I> is the specular light color output by the light. </P>
+
+<P>If the <A HREF="_dx_d3drenderstatetype_graphics.htm#_dx_d3drs_colorvertex_graphics">D3DRS_COLORVERTEX</A> render state is enabled, the system selects the color source for <I>V</I> based on the value of the render state <A HREF="_dx_d3drenderstatetype_graphics.htm#_dx_d3drs_specularmaterialsource_graphics">D3DRS_SPECULARMATERIALSOURCE</A> (or if two-sided lighting is enabled, <A HREF="_dx_d3drenderstatetype_graphics.htm#_dx_d3drs_backspecularmaterialsource_graphics">D3DRS_BACKSPECULARMATERIALSOURCE</A>). These render states can be set to a member of the <A HREF="_dx_d3dmaterialcolorsource_graphics.htm">D3DMATERIALCOLORSOURCE</A> enumerated type to cause the system to use the current material or one of the color components for the vertex as the color source.</P>
+
+<P>For more information, see <A HREF="#_dx_diffuse_reflection_model_graphics">Diffuse Reflection Model</A>.</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

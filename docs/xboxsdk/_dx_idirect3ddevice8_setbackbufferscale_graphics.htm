@@ -1,0 +1,73 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirect3DDevice8::SetBackBufferScale</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="SetBackBufferScale (IDirect3DDevice8)"/>
+<MSHelp:Keyword Index="K" Term="IDirect3DDevice8::SetBackBufferScale"/>
+<MSHelp:Keyword Index="F" Term="SetBackBufferScale"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_idirect3ddevice8_setbackbufferscale_graphics"></A>IDirect3DDevice8::SetBackBufferScale</H1>
+
+<P><b>SetBackBufferScale</b> allows the title to dynamically scale the size of the back-buffer rendering in order to potentially improve fill rate.</P>
+
+<PRE class=syntax><B>HRESULT SetBackBufferScale(</B>
+  <b>float</B> <I>x</I><b>,
+  float</b> <i>y</i>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>x</I></DT>
+<DD>[in] The horizontal scaling factor. This value must be larger than 0.0f.</DD>
+
+<DT><I>y</I></DT>
+<DD>[in] The vertical scaling factor. This value must be larger than 0.0f.</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the method succeeds, the return value is S_OK.</P>
+
+<h4>Remarks</h4>
+
+<p>The Quincunx and Guassian filters are not compatible with back-buffer scaling and their use will generate debug spew.</p>
+
+<p><b>SetBackBufferScale</b> causes all transforms to be scaled in screen space by the specified factor. Both <a href="_dx_idirect3ddevice8_present_graphics.htm">IDirect3DDevice8::Present</a> and <a href="_dx_idirect3ddevice8_swap_graphics.htm">IDirect3DDevice8::Swap</a> automatically adjust the source rectangle size of the copy to account for the scaling.</p>
+
+<p>A scale factor of (1.0f, 1.0f) always means that the full back buffer is getting used, regardless of any antialiasing. The scale factors can be larger than 1.0 only if the title supplied its own buffer surfaces in the <a href="_dx_d3dpresent_parameters_graphics.htm">D3DPRESENT_PARAMETERS</a> and those surfaces are large enough.</p>
+
+<p>If there is no antialiasing being done, and if the <b>SwapEffect</b> member of <b>D3DPRESENT_PARAMETERS</b> is D3DSWAPEFFECT_FLIP, calling <b>SetBackBufferScale</b> will automatically convert the <b>SwapEffect</b> to D3DSWAPEFFECT_COPY in order to accomplish the necessary scaling.</p>
+
+<p>Calling <b>SetBackBufferScale</b> essentially invalidates the current contents of the back buffer. If it is being used at all, it should be called before any rendering, right after the previous <b>Swap</b> or <b>Present</b>.</p>
+
+<p><b>SetBackBufferScale</b> can be with <b>Swap</b> and a device with a <b>BackBuffer</b> of two and whose <b>FullScreen_PresentationInterval</b> is D3DPRESENT_INTERVAL_IMMEDIATE in order to do all scene rendering at the scaled resolution, and then to draw a HUD or text in the final step at the non-scaled resolution.</p>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in D3d8.h.<BR>
+<B>&nbsp;&nbsp;Import Library:</B> Use D3d8.lib.</P>
+
+<H4>See Also</H4>
+
+<p><a href="_dx_antialiasing_overview.htm">Antialiasing</a> | <a href="_dx_idirect3ddevice8_getbackbufferscale_graphics.htm">IDirect3DDevice8::GetBackBufferScale</a></p>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

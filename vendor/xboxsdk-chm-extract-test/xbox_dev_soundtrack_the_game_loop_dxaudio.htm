@@ -1,0 +1,56 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>The Game Loop</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="The Game Loop"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+  <MSHelp:Keyword Index="K" Term="game loop, creating for XACT soundtracks"/>
+  <MSHelp:Keyword Index="K" Term="soundtracks, game loop for "/>
+  <MSHelp:Keyword Index="K" Term="XACT soundtracks, game loop"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>The Game Loop</h1>
+<p>Here is the simple main loop that works in conjunction with the subroutines discussed in previous topics. Once initialization is complete, we enter the main loop.  <a href="xbox_xactenginedowork_dxaudio.htm">XACTEngineDoWork</a> is a function defined in the XACT libraries and is responsible for driving internal XACT processing (for example, sending notifications). After that, we're free to act on notifications received from XACT and input state changes received from the user.</p>
+<pre class="clsCode">
+//
+//  Main loop for XACT soundtrack sample
+//
+void main( void )
+{
+    CreateXACTEngine();
+    CreateSoundBank();
+    DownloadDSPEffectsImage();
+    RegisterXACTNotifications();
+    EnumerateSoundtracks();
+    SetXACTPlayList( 0 );
+    InitializeInput();
+
+    // Main Loop
+    while( TRUE )
+    {
+        XACTEngineDoWork();
+        ProcessXACTNotifications();
+        ProcessInput();
+    }
+}
+</pre>
+    <p>To successfully compile and link the code in the entire <b>Soundtrack Management Using XACT</b> section, you'll need to link with xactengi.lib and dsound.lib (or their equivalent debug versions).</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

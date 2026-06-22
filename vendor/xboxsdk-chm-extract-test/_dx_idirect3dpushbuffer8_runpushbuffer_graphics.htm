@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirect3DPushBuffer8::RunPushBuffer</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="IDirect3DPushBuffer8::RunPushBuffer [C++]">
+<META NAME="MS-HKWD" CONTENT="RunPushBuffer (IDirect3DPushBuffer8) [C++]">
+<META NAME="MS-HKWD" CONTENT="RunPushBuffer [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="RunPushBuffer (IDirect3DPushBuffer8)"/>
+<MSHelp:Keyword Index="K" Term="IDirect3DPushBuffer8::RunPushBuffer"/>
+<MSHelp:Keyword Index="F" Term="RunPushBuffer"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_IDirect3DPushBuffer8_RunPushBuffer_graphics"></A>IDirect3DPushBuffer8::RunPushBuffer</H1>
+
+<P>Used only within a <a href="_dx_idirect3dpushbuffer8_beginfixup_graphics.htm"><b>IDirect3DPushBuffer8::BeginFixup</b></a>/<a href="_dx_idirect3dpushbuffer8_endfixup_graphics.htm"><b>IDirect3DPushBuffer8::EndFixup</b></a> bracket to modify the corresponding call to <a href="_dx_idirect3ddevice8_runpushbuffer_graphics.htm"><b>IDirect3DDevice8::RunPushBuffer</b></a> as it was recorded in the push-buffer. This method runs the push-buffer.</P>
+
+<PRE class=syntax><B>HRESULT RunPushBuffer(
+  DWORD</b> <i>Offset</i>,
+  <B>IDirect3DPushBuffer8</b> <i>*pPushBuffer</i>, 
+  <b>IDirect3DFixup8</b> <i>*pFixup</i>
+<b>);</b>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+
+<dt><i>Offset</i></dt>
+<dd>[in] The offset determined during the recording in the push-buffer as returned from <a href="_dx_idirect3ddevice8_getpushbufferoffset_graphics.htm"><b>IDirect3DDevice8::GetPushBufferOffset</b></a> just before <b>IDirect3DDevice8::RunPushBuffer</b> was recorded.</dd>
+
+<DT><I>pPushBuffer</I></DT>
+
+<DD>[in, out] Pointer to the push-buffer to run.</DD>
+
+<DT><I>pFixup</I></DT>
+
+<DD>[in] Pointer to the <a href="_dx_idirect3dfixup8_graphics.htm"><b>IDirect3DFixup8</b></a> object that will be applied to the push-buffer. 
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the method succeeds, the return value is S_OK.</P>
+
+<h4>Remarks</h4>
+
+<p>This fix-up can be done only if both the destination push-buffer and the source push-buffer are not D3DPUSHBUFFER_RUN_USING_CPU_COPY types.</p>
+
+<p>Before <b>IDirect3DDevice8::RunPushBuffer</b> is called, the caller is responsible for setting Direct3D in exactly the same state as when the push-buffer was originally recorded.  The only exceptions to this are any render states that are marked in <a href="_dx_d3drenderstatetype_graphics.htm"><b>D3DRENDERSTATETYPE</b></a> as being processed immediately, and any state that is "fixed-up."</p>
+
+<p>If a push-buffer records a reference to any resource that is freed and then re-created before playback, any references to that object will have to be explicitly fixed-up to account for the potentially new physical address.  Note that this implies that for push-buffer resources that are pre-built, all resource references within the push-buffer will have to be fixed up.</p>
+
+<p>The fix-up can be assumed to persist (it's never necessary to apply the same fix-up twice in a row).</p>
+
+<p><b>IDirect3DDevice8::RunPushBuffer</b> has no means of referencing any objects, so all object lifetimes must be controlled via other means, such as <a href="_dx_idirect3ddevice8_insertfence_graphics.htm"><b>IDirect3DDevice8::InsertFence</b></a>.</p>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in D3d8.h.<BR>
+<B>&nbsp;&nbsp;Import Library:</B> Use D3d8.lib.</P>
+
+<H4>See Also</H4>
+
+<P><a href="_dx_pushbuffer_overview_graphics.htm"><b>Push-Buffer Overview</b></a></P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

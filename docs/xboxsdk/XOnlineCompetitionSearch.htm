@@ -1,0 +1,142 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineCompetitionSearch</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineCompetitionSearch"/>
+<MSHelp:Keyword Index="F" Term="XOnlineCompetitionSearch"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineCompetitionSearch</h1>
+            <p>Searches the competitions dataset for result lists using a specific query ID.</p>
+        <pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineCompetitionSearch(</b>
+    <b>DWORD</b> <i>dwQueryID</i><b>,</b>
+    <b>DWORD</b> <i>dwTarget</i><b>,</b>
+    <b>DWORD</b> <i>dwPage</i><b>,</b>
+    <b>DWORD</b> <i>dwResultsPerPage</i><b>,</b>
+    <b>DWORD</b> <i>dwNumSearchAttributes</i><b>,</b>
+    <b>const XONLINE_ATTRIBUTE</b> *<i>pSearchAttributes</i><b>,</b>
+    <b>DWORD</b> <i>dwNumResultAttributeSpecs</i><b>,</b>
+    <b>const XONLINE_ATTRIBUTE_SPEC</b> *<i>pResultAttributeSpecs</i><b>,</b>
+    <b>HANDLE</b> <i>hWorkEvent</i><b>,</b>
+    <b>PXONLINETASK_HANDLE</b> <i>phTask</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+            <dt><i>dwQueryID</i></dt>
+				<dd>[in]  ID of the search query. Obtain this ID from 
+				<a href="xbox_tool_xlast_competitions_queries.htm">XLAST</a>.</dd>
+			
+            <dt><i>dwTarget</i></dt>
+				<dd>[in]  ID of the target of the query.</dd>
+            
+			
+            <dt><i>dwPage</i></dt>
+				<dd>[in]  Page number of the results being requested. Page numbers start with 0.</dd>
+            
+			
+            <dt><i>dwResultsPerPage</i></dt>
+				<dd>[in]  Number of entries per page of results. Maximum is 255.</dd>
+            
+			
+            <dt><i>dwNumSearchAttributes</i></dt>
+				<dd>[in]  Number of search attributes in the array specified by the 
+				<i>pSearchAttributes</i> parameter.</dd>
+            
+			
+            <dt><i>pSearchAttributes</i></dt>
+				<dd>[in]  Pointer to an array of <a href="XONLINE_ATTRIBUTE.htm">XONLINE_ATTRIBUTE</a> structures, each specifying the 
+				parameter ID and value for the search to be performed. These attributes must be of the same 
+				type and in the same order as listed in the <b>Parameters</b> tab for the query in 
+				<b>XLAST</b>.</dd>
+            
+			
+            <dt><i>dwNumResultAttributeSpecs</i></dt>
+				<dd>[in]  Number of result attribute specifiers.</dd>
+            
+			
+            <dt><i>pResultAttributeSpecs</i></dt>
+				<dd>[in]  Starting address of an array of <a href="XONLINE_ATTRIBUTE_SPEC.htm">XONLINE_ATTRIBUTE_SPEC</a> structures that specify the 
+				type and size, in bytes, of each result attribute. The <b>dwType</b> member of the 
+				first attribute spec must be set to XONLINE_QUERY_ENTITY_ID. The remainder of the attribute specs 
+				must match the list and ordering of return values specified under the 
+				<b>Return Values</b> tab for this query in 
+				<b>XLAST</b>.</dd>
+			
+            <dt><i>hWorkEvent</i></dt>
+				<dd>[in, optional]  Handle of an event you want to associate with this task. If you do not 
+				want to assign an event, set this parameter to NULL.</dd>
+            
+			
+            <dt><i>phTask</i></dt>
+				<dd>[out]  Pointer to an <b>XONLINETASK_HANDLE</b> type. The handle is associated 
+				with the task started by <b>XOnlineCompetitionSearch</b>. Use this handle in calls to 
+				<a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> to perform work associated with this task. When the task is complete, 
+				call <a href="XOnlineCompetitionSearchGetResults.htm">XOnlineCompetitionSearchGetResults</a> to get the search results. Call 
+				<a href="XOnlineTaskClose.htm">XOnlineTaskClose</a> to close the task.</dd>
+            
+			
+        </dl>
+<h4><a name="return"></a>Return Values</h4>
+            
+                <p>Returns S_OK if successful, an error code otherwise. The error codes returned by this function 
+				include the following.</p>
+				<table>
+					<tr>
+						<th>Error Code</th>	<th>Description</th>
+					</tr>
+					<tr>
+						<td>XONLINE_E_QUERY_UNEXPECTED_ATTRIBUTE</td>
+						<td>The list of attributes in the <i>pSearchAttributes</i> parameter 
+						does not match the list of attributes on the server, which were specified by XLAST.</td>
+					</tr>
+					<tr>
+						<td>XONLINE_E_QUERY_SPEC_COUNT_MISMATCH</td>
+						<td>The number of attributes listed in the <i>pResultAttributeSpecs</i> parameter 
+						does not match the list of return values on the server, which were specified by XLAST.</td>
+					</tr>
+					<tr>
+						<td>XONLINE_E_QUERY_ATTRIBUTE_TOO_LONG</td>
+						<td>A string or BLOB (binary block of data) type attribute listed in 
+						<i>pSearchAttributes</i> or <i>pResultAttributeSpecs</i> specifies a 
+						length that is smaller than the data stored on the server.</td>
+					</tr>
+					<tr>
+						<td>XONLINE_E_QUERY_DATASET_NOT_FOUND</td>
+						<td>The target, specified in the <i>dwTarget</i> parameter, was not found on the 
+						server.</td>
+					</tr>
+					<tr>
+						<td>XONLINE_E_QUERY_PROCEDURE_NOT_FOUND</td>
+						<td>The search query, specified in the <i>dwQueryID</i> parameter was not found 
+						on the server.</td>
+					</tr>
+				</table>
+            
+        <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

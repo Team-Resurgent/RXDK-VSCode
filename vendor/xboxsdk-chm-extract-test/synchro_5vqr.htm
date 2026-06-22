@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Wait Functions</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Wait Functions"/>
+<MSHelp:Keyword Index="F" Term="Wait Functions"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR></TR>
+</TABLE>
+<!--**********************************-->
+
+<H2><A NAME="_win32_wait_functions"></A>Wait Functions</H2>
+
+<P>The XTL provides a set of <I>wait functions</I> that allow a thread to block its own execution. The wait functions do not return until the specified criteria have been met. The type of wait function determines the set of criteria used. When a wait function is called, it checks whether the wait criteria have been met. If the criteria have not been met, the calling thread enters the wait state. It uses no processor time while waiting for the criteria to be met.</P>
+
+<P>There are three types of wait functions:
+
+<UL>
+	<LI>single-object</LI>
+
+	<LI>multiple-object</LI>
+
+	<LI>alertable</LI>
+</UL>
+
+<H4>Single-object Wait Functions</H4>
+
+<P>The <A HREF="synchro_5h2s.htm"><B>SignalObjectAndWait</B></A>, <A HREF="synchro_4ldg.htm"><B>WaitForSingleObject</B></A>, and <A HREF="synchro_5yrc.htm"><B>WaitForSingleObjectEx</B></A> functions require a handle to one synchronization object. These functions return when one of the following occurs:
+
+<UL>
+	<LI>The specified object is in the signaled state.</LI>
+
+	<LI>The time-out interval elapses. The time-out interval can be set to INFINITE to specify that the wait will not time out.</LI>
+</UL>
+
+<P>The <B>SignalObjectAndWait</B> function enables the calling thread to atomically set the state of an object to signaled and wait for the state of another object to be set to signaled.</P>
+
+<H4>Multiple-object Wait Functions</H4>
+
+<P>The <A HREF="synchro_9xbn.htm"><B>WaitForMultipleObjects</B></A> and <A HREF="synchro_5lbs.htm"><B>WaitForMultipleObjectsEx</B></A> functions enable the calling thread to specify an array containing one or more synchronization object handles. These functions return when one of the following occurs:
+
+<UL>
+	<LI>The state of any one of the specified objects is set to signaled or the states of all objects have been set to signaled. You control whether one or all of the states will be used in the function call.</LI>
+
+	<LI>The time-out interval elapses. The time-out interval can be set to INFINITE to specify that the wait will not time out.</LI>
+</UL>
+
+<P>When waiting for the states of all objects to be set to signaled, these multiple-object functions do not modify the states of the specified objects until the states of all objects have been set signaled. For example, the state of a mutex object can be signaled, but the calling thread does not get ownership until the states of the other objects specified in the array have also been set to signaled. In the meantime, some other thread may get ownership of the mutex object, thereby setting its state to nonsignaled.</P>
+
+<H4>Alertable Wait Functions</H4>
+
+<P>The <A HREF="synchro_5h2s.htm"><B>SignalObjectAndWait</B></A>, <A HREF="synchro_5lbs.htm"><B>WaitForMultipleObjectsEx</B></A><B>,</B> and <A HREF="synchro_5yrc.htm"><B>WaitForSingleObjectEx</B></A> functions differ from the other wait functions in that they can optionally perform an <I>alertable wait operation</I>. In an alertable wait operation, the function can return when the specified conditions are met, but it can also return if the system queues an I/O completion routine or an APC for execution by the waiting thread.
+
+</P>
+
+<H4>Wait Functions and Synchronization Objects</H4>
+
+<P>The wait functions can modify the states of some types of synchronization objects. Modification occurs only for the object or objects whose signaled state caused the function to return. Wait functions can modify the states of synchronization objects as follows: 
+
+<UL>
+	<LI>The count of a semaphore object decreases by one, and the state of the semaphore is set to nonsignaled if its count is zero. </LI>
+
+	<LI>The states of mutex and auto-reset events are set to nonsignaled. </LI>
+
+	<LI>The state of a synchronization timer is set to nonsignaled.</LI>
+
+	<LI>The states of manual-reset event, manual-reset timer, and thread objects are not affected by a wait function. </LI>
+</UL>
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

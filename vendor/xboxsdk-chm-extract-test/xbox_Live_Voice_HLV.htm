@@ -1,0 +1,32 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>The Xbox High-Level Voice (XHV) Library</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="The Xbox High-Level Voice (XHV) Library"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>The Xbox High-Level Voice (XHV) Library</h1>
+<p>This section presents an overview of the Xbox High-Level Voice (XHV) library in the following topics.</p><ul>
+<li><a href="#IDARQEV">Basic Concepts</a></li><li><a href="#IDA3QEV">Initialization</a></li><li><a href="#IDA1REV">Using the XHV Library</a></li></ul>
+<h2><a name="IDARQEV"></a>Basic Concepts</h2>
+<p>The XHV library provides a simplified, yet powerful and flexible interface for using the voice capabilities of the Xbox on Xbox Live. The design of the library is such that anyone who is inputting voice data is called a <i>talker</i>. Talkers can be local or remote. Local talkers are players whose headsets are connected to the Xbox on which the title is currently running. Remote talkers are players who are connected to other Xbox consoles and whose voice data is being received via Xbox <i>Live</i>.</p><p>With the XHV library, your game can incorporate voice mail, live chats, and speech recognition. Used well, these capabilities enable players to easily accomplish many tasks that would normally require a keyboard. Voice input often simplifies game interfaces. It can also increase usability and player involvement.</p><h2><a name="IDA3QEV"></a>Initialization</h2>
+<p>To begin using the XHV library, your game must first create a pointer to the XHV engine's interface. Do this by calling the <a href="XHVEngineCreate.htm">XHVEngineCreate</a> function. When your game calls <b>XHVEngineCreate</b>, pass it an <a href="XHV_RUNTIME_PARAMS.htm">XHV_RUNTIME_PARAMS</a> structure to set the initialization parameters. In particular, the game must set the maximum number of local and remote talkers. By default, the maximum number of remote talkers is 30. However, it is recommended that you set a lower maximum to prevent the player's network connection from bogging down.</p><p>With the <a href="IXHVEngine.htm">IXHVEngine</a> pointer returned by <b>XHVEngineCreate</b>, your game initializes the voice engine by calling <a href="IXHVEngine_EnableProcessingMode.htm">IXHVEngine::EnableProcessingMode</a>. If your game is doing speach recognition, it next calls <a href="IXHVEngine_RegisterSpeechRecognitionBank.htm">IXHVEngine::RegisterSpeechRecognitionBank</a> followed by <a href="XHVEngine_SelectVocabulary.htm">IXHVEngine::SelectVocabulary</a>. Next, the game calls <a href="XHVEngine_SetProcessingMode.htm">IXHVEngine::SetProcessingMode</a> to set the processing mode for specific local talkers. Finally, it registers local talkers by calling <a href="XHVEngine_RegisterLocalTalker.htm">IXHVEngine::RegisterLocalTalker</a> and registers remote talkers using <a href="XHVEngine_RegisterRemoteTalker.htm">IXHVEngine::RegisterRemoteTalker</a>.</p><h2><a name="IDA1REV"></a>Using the XHV Library</h2>
+<p>The most important task that must be performed for proper functioning of the XHV library is to call the <a href="IXHVEngine_DoWork.htm">IXHVEngine::DoWork</a> method. This method "pumps" the voice processing task. This should be done a minimum of 30 times per sectiond. Therefore, your game must call <b>IXHVEngine::DoWork</b> in its main processing loop.</p><p>To find out which remote users are in a conversation with a local player, call <a href="XHVEngine_GetRemoteTalkers.htm">IXHVEngine::GetRemoteTalkers</a>. Your game can determine whether a remote player is talking by calling <a href="IXHVEngine_IsTalking.htm">IXHVEngine::IsTalking</a>. If a remote player is talking, your game invokes <a href="IXHVEngine_SubmitIncomingVoicePacket.htm">IXHVEngine::SubmitIncomingVoicePacket</a> to send the incoming voice data for that remote player to the engine. This call is made in the game's main loop after calling <b>IXHVEngine::DoWork</b>.</p><p>Voice mail functionality is implemented with the <a href="XHVEngine_VoiceMailPlay.htm">IXHVEngine::VoiceMailPlay</a>, <a href="XHVEngine_VoiceMailRecord.htm">IXHVEngine::VoiceMailRecord</a>, and <a href="XHVEngine_VoiceMailStop.htm">IXHVEngine::VoiceMailStop</a>.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

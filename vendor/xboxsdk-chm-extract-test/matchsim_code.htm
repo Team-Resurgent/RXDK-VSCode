@@ -1,0 +1,448 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Generating Matchmaking Code</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Generating Matchmaking Code"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+<MSHelp:Keyword Index="K" Term="matchmaking code, adding to a title"/>
+<MSHelp:Keyword Index="K" Term="add matchmaking code to a title"/>
+<MSHelp:Keyword Index="K" Term="matchmaking classes"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Generating Matchmaking Code</h1>
+<p>The MatchSim tool can generate classes that make it simple to add matchmaking code to a title.  
+Those classes, their methods, and use are described here.</p>
+<ul>
+<li><a href="#IDA5QM2">Exporting Code</a></li><li><a href="#IDA1RM2">Matchmaking Classes</a></li><li><a href="#IDADUM2">CSession</a></li><li><a href="#IDADZN2">CQueryNameQuery</a></li><li><a href="#IDAD1N2">CQueryNameQueryResults</a></li><li><a href="#IDA31N2">CQueryNameResult</a></li><li><a href="#IDAP2N2">Tying it all together...</a></li><li><a href="#QoS_Probing_Listening">QoS Probing and Listening</a></li></ul>
+<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;For an example that uses MatchSim generated code, see the 
+<a href="xbox_lrf_samp_net_simplematch.htm">SimpleMatch Sample</a>.</p><h2><a name="IDA5QM2"></a>Exporting Code</h2>
+<p>To export your query definition as C++ code, click the <b>Export Code</b> 
+	button on the toolbar (it is marked with a "C++" icon), or click <b>Export Code</b> 
+	on the <b>Match</b> menu. Matchmaking Simulator exports two files:</p><ul>
+		<li>
+		  	<p>A .cpp source file, containing wrappers for the 
+			<a href="XOnlineMatchSearch.htm">XOnlineMatchSearch</a> function.</p>
+		</li>
+	
+	  	<li>
+			<p>A .h file, containing definitions required by 
+			the .cpp file and declarations of functions contained in the .cpp file.</p>
+		</li>
+	</ul>
+<p>To use the functions in the .cpp file, simply #include the .h file in your title's 
+	code and link in the .cpp file when you build your title.</p><h2><a name="IDA1RM2"></a>Matchmaking Classes</h2>
+<p>The MatchSim code wizard generates the following classes:</p><table>
+<tr>
+<th>Class</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>CBlob</td>
+<td>A helper class generated if a BLOB session attribute is defined by the title. (A BLOB is a binary object of some length.)</td>
+</tr>
+<tr>
+<td>CSession</td>
+<td>A class representing a hosted game session. There is only one of these generated for am .xms file.</td>
+</tr>
+<tr>
+<td>C<i>QueryName</i>Query</td>
+<td>A class representing a query defined in the .xms file. A class is generated for each query.</td>
+</tr>
+<tr>
+<td>C<i>QueryName</i>QueryResults</td>
+<td>A class representing a results collection for a query.</td>
+</tr>
+<tr>
+<td>C<i>QueryName</i>Result</td>
+<td>A class representing a single result for a query (a member of C<i>QueryName</i>QueryResults).</td>
+</tr>
+</table>
+<p>Here's a look at each of these classes in turn, assuming that code is being generated for the XDK Matchmaking sample.</p><p>The Matchmaking sample defines the following attributes:</p><ul>
+<li>GameType: Integer</li>
+<li>PlayerLevel: String</li>
+<li>SessionName: String</li>
+<li>GameStyle: Binary (BLOB)</li>
+<li>OwnerName: String</li>
+</ul>
+<p>The sample also defines two queries:</p><ul>
+<li>OptiMatch - a query used for finding matches. All parameters are optional, and it is used for QuickMatch type searched as well. The parameters are:
+<ul>
+<li>GameType</li>
+<li>PlayerLevel</li>
+<li>GameStyle</li>
+</ul>
+</li>
+
+<li>FindSessionByID - used to locate a session based in the session ID.</li>
+</ul>
+<h2><a name="IDADUM2"></a>CSession</h2>
+<p>A single CSession class is generated for an .xms file. The class contains the following methods:</p><table>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr> 
+<tr>
+<td>HRESULT Create()</td>
+<td>Initiates session creation. Internally, this creates a new task.</td>
+</tr> 
+<tr>
+<td>HRESULT Delete()</td>
+<td>Initiates session deletion.</td>
+</tr> 
+<tr>
+<td>BOOL Exists()</td>
+<td>TRUE if the session is active (advertised on the server).</td>
+</tr>
+<tr>
+<td>CBlob GetQosResponse()</td>
+<td>Gets the current QoS "go-away" response.</td>
+</tr>
+<tr>
+<td>BOOL IsCreating()</td>
+<td>TRUE if the session is currently being created.</td>
+</tr>
+<tr>
+<td>BOOL IsDeleting()</td>
+<td>TRUE if the session is currently being deleted.</td>
+</tr>
+<tr>
+<td>BOOL IsListening()</td>
+<td>TRUE if the session is currently listening for QoS probes.</td>
+</tr>
+<tr>
+<td>BOOL IsUpdating()</td>
+<td>TRUE if the session is currently being updated.</td>
+</tr>
+<tr>
+<td>VOID Listen( BOOL bEnable = TRUE, DWORD dwBitsPerSec = 0 )</td>
+<td>Perform manual QoS listening.</td>
+</tr>
+<tr>
+<td nowrap="">HRESULT Process()</td>
+<td>Worker method. Call this method from inside the game loop.</td>
+</tr> 
+<tr>
+<td>VOID Reset()</td>
+<td>Reset the session object back to a known, idle state.  Use after a catastrophic error.</td>
+</tr>
+<tr>
+<td nowrap="">VOID SetQosResponse( CBlob Value )</td>
+<td>Sets the QoS "go-away" response.</td>
+</tr>
+<tr>
+<td>HRESULT Update()</td>
+<td>Updates the current session (uploads modified session attributes; see below).</td>
+</tr> 
+</table>
+<p>In addition, properties are generated for each of the session attributes. An extension to visual C++ is used to provide a convenient syntax for dealing with these properties:</p>
+<pre class="clsCode">
+// Attribute Accessors
+    
+__declspec( property( put = SetGameType, get=GetGameType ) ) ULONGLONG GameType;
+ULONGLONG GetGameType();
+VOID SetGameType( ULONGLONG Value );
+ 
+__declspec( property( put = SetPlayerLevel, get=GetPlayerLevel ) ) WCHAR * PlayerLevel;
+WCHAR * GetPlayerLevel();
+VOID SetPlayerLevel( WCHAR * Value );
+ 
+__declspec( property( put = SetSessionName, get=GetSessionName ) ) WCHAR * SessionName;
+WCHAR * GetSessionName();
+VOID SetSessionName( WCHAR * Value );
+ 
+__declspec( property( put = SetGameStyle, get=GetGameStyle ) ) CBlob GameStyle;
+CBlob GetGameStyle();
+VOID SetGameStyle( CBlob Value );
+ 
+__declspec( property( put = SetOwnerName, get=GetOwnerName ) ) WCHAR * OwnerName;
+WCHAR * GetOwnerName();
+VOID SetOwnerName( WCHAR * Value );
+
+__declspec( property( put = SetQosResponse, get=GetQosResponse ) ) CBlob QosResponse;
+CBlob GetQosResponse();
+VOID SetQosResponse( CBlob Value );
+</pre>
+    <p>So, for example, to set the GameType:</p>
+<pre class="clsCode">
+CSession Session;
+ 
+Session.GameType = 0; // VC++ extension
+// or
+Session.SetGameType(0); // C++ standard
+</pre>
+    <p>Note that the compiler generates the same code for either case.</p><p>To retrieve the GameType, a title can do:</p>
+<pre class="clsCode">
+ULONGLONG Type = Session.GameType;
+//or
+ULONGLONG Type = Session.GetGameType();
+</pre>
+    <p>Notice that the GameStyle property uses the CBlob helper class. The purpose of the CBlob helper class is to make dealing with binary attributes easier. The BLOB class looks like:</p>
+<pre class="clsCode">
+class CBlob
+{
+public:
+    CBlob() : m_wLength( 0 ), m_pvData( NULL ) {}
+    CBlob( WORD wLength, const PVOID pvData ) : m_wLength( wLength), m_pvData( pvData) {}
+    CBlob( const CBlob &amp; b ) { *this = b; }
+    CBlob &amp; operator=( const CBlob &amp; b ) 
+    { m_wLength = b.Length; m_pvData = b.Data; return *this; }
+    BOOL operator==( const CBlob &amp; b ) const  
+    { return m_wLength == b.Length &amp;&amp; memcmp( m_pvData, b.Data, b.Length ) == 0; }
+    BOOL IsNull() { return m_pvData == NULL; }
+    __declspec( property( put = SetData, get=GetData ) ) const PVOID Data;
+    const PVOID GetData() const { return m_pvData; }
+    VOID SetData( const PVOID pvData ) { m_pvData = pvData; }
+    __declspec( property( put = SetLength, get=GetLength ) ) WORD Length;
+    WORD GetLength() const { return m_wLength; }
+    VOID SetLength( WORD wLength ) { m_wLength = wLength; }
+};
+</pre>
+    <p>A BLOB is considered NULL if the data member is NULL.  A handle macro definition is also generated:</p>
+<pre class="clsCode">
+#define NULL_BLOB CBlob( 0, NULL )
+</pre>
+    <p>To make declaring BLOB literals convenient, an addition macro is defined:</p>
+<pre class="clsCode">
+// Macro for declaring "BLOB literals" (much like the _T() macro does for strings)
+#define B( length, ptr ) CBlob( length, (const PVOID) ptr )
+</pre>
+    <p>This means you can set the GameStyle property using the following code:</p>
+<pre class="clsCode">
+Session.GameStyle = B( 5, "heavy" );
+</pre>
+    <p>Accessing information about the BLOB is also easy:</p>
+<pre class="clsCode">
+WORD wBlobLen = Session.GameStyle.Length;
+PCHAR pData = (PCHAR) Session.GameStyle.Data;
+</pre>
+    <p>In addition to generating properties for each of the session attributes, the standard matchmaking public/private slot information is also included: PublicFilled, PublicOpen, PrivateFilled, and PrivateOpen.</p><h3><a name="IDAVXM2"></a>Integrating CSession into a Title</h3>
+<p>How a developer chooses to integrate CSession into a game is a matter of taste.  The key thing to remember is that Process() must be called in order for the internal task handles to be serviced.</p><h4><a name="IDA0XM2"></a>Creating the Session</h4>
+<p>Here is the code to create a session:</p>
+<pre class="clsCode">
+Session.PublicFilled = 1;
+Session.PublicOpen = MAX_PUBLIC_SLOTS - Session.PublicFilled;
+Session.PrivateFilled = 0;
+Session.PrivateOpen = MAX_PRIVATE_SLOTS - Session.PrivateFilled;
+Session.SessionName = L"The Pit";
+Session.GameType = SLAYER;
+Session.OwnerName = L"danimal";
+Session.GameStyle = B( 5, "heavy" );
+Print( L"Creating new Session" );
+
+HRESULT hr = Session.Create();
+
+if( hr != S_OK ) Error( L"Session Creation failed with 0x%x", hr );
+</pre>
+    <p>Note that the session is not created immediately.  You still need to call Process() and either check for XONLINETASK_S_SUCCESS, or check that Session.Exists() returns TRUE:</p>
+<pre class="clsCode">
+Session.Process();
+...
+if( Session.Exists())
+{
+    // do something...
+}
+</pre>
+    <h4><a name="IDAJYN2"></a>Updating the Session</h4>
+<p>The Update method on the session object may be called when the title wishes to update the session information.</p>
+<pre class="clsCode">
+Session.PublicFilled++; // Player joined
+Session.PublicOpen--;
+Session.Update();
+</pre>
+    <p>Note that the session is not updated immediately.  You still need to call Process().  You can used the Updating() method to see if the session is in the process of being updated.</p><p>One handy feature is that you can call Update() even if an update or create operation is already in progress.  This is handy for when players join a session; you can simply update the public/private slot information and call Update() without having to worry about it.</p><h4><a name="IDAVYN2"></a>Deleting the Session</h4>
+<p>Deleting the session is easy:</p>
+<pre class="clsCode">
+Session.Delete();
+</pre>
+    <p>The session is not deleted immediately.  You still need to call Process().  You can use the Deleting() method to determine whether the object is still being deleted:</p>
+<pre class="clsCode">
+do
+{
+    hr = XOnlineTaskContinue( hLogonTask );
+    if( FAILED( hr ) ) Error( L"Logon Task Failed with 0x%x", hr );
+    hr = Session.Process();
+} while ( Session.Deleting() );
+</pre>
+    <h2><a name="IDADZN2"></a>CQueryNameQuery</h2>
+<p>For each query defined, a class is generated. The wizard generates a COptiMatchQuery class for the OptiMatch query. The methods are:</p><table>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr> 
+<tr>
+<td>void Cancel()</td>
+<td>Cancels an outstanding query and QoS probing.</td>
+</tr> 
+<tr>
+<td>void Clear()</td>
+<td>Clears the results list.</td>
+</tr> 
+<tr>
+<td>BOOL Done()</td>
+<td>Returns TRUE if the query has completed (may or may not have succeeded).</td>
+</tr> 
+<tr>
+<td>BOOL IsProbing()</td>
+<td>Indicates whether session probing has completed or is still ongoing.</td>
+</tr>
+<tr>
+<td>BOOL IsRunning()</td>
+<td>Returns TRUE if the query is currently executing.</td>
+</tr> 
+<tr>
+<td>HRESULT Probe()</td>
+<td>Begins probing sessions to obtain QoS bandwidth measurements.</td>
+</tr>
+<tr>
+<td nowrap="">HRESULT Process()</td>
+<td>Worker method.  Call this method to sevice the query task.</td>
+</tr> 
+<tr>
+<td>HRESULT Query()</td>
+<td>The Query method is used to execute the query. Depending on the parameters defined for the query, the method may contain one or more arguments for each query parameter.</td>
+</tr>
+<tr>
+<td nowrap="">BOOL Succeeded()</td>
+<td>Returns TRUE if the query completed successfully.</td>
+</tr> 
+</table>
+<p>As an example, the OptiMatch query defines three parameters (GameType, PlayerLevel, and GameStyle), so the Query method that is generated looks like this:</p>
+<pre class="clsCode">
+HRESULT Query(
+    ULONGLONG GameType, // Optional: X_MATCH_NULL_INTEGER to omit
+    WCHAR * PlayerLevel, // Optional: NULL to omit
+    CBlob GameStyle // Optional: NULL_BLOB to omit
+);
+</pre>
+    <p>Here's an example of how you might call this:</p>
+<pre class="clsCode">
+COptiMatchQuery FindQuery;
+ 
+Print( L"Searching for sessions..." );
+ 
+HRESULT hr = FindQuery.Query( X_MATCH_NULL_INTEGER, NULL, NULL_BLOB );
+ 
+if( FAILED( hr ) ) Error( L"Session Search failed with 0x%x", hr );
+ 
+// Keep servicing the query until it completes.
+// The logon task, hLogonTask, must also be serviced in order 
+// to remain connected. 
+ 
+do
+{
+     hr = XOnlineTaskContinue( hLogonTask );
+     if( FAILED( hr ) ) Error( L"Logon Task Failed with 0x%x", hr );
+     hr = FindQuery.Process();
+ 
+} while( FindQuery.Running() );
+ 
+if( !FindQuery.Succeeded() ) Error( L"Search Task Failed with %x\n", hr );
+</pre>
+    <p>The Query object also has a member that contains the results of the query:</p>
+<pre class="clsCode">
+COptiMatchQueryResults Results;
+</pre>
+    <h2><a name="IDAD1N2"></a>CQueryNameQueryResults</h2>
+<p>The results of the query are represented by a collection class.  For the OptiMatch query, the wizard generates the COptiMatchQueryResults class.  The class contains the following members:</p><table>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr> 
+<tr>
+<td>DWORD Size()</td>
+<td>Number of results.</td>
+</tr>
+<tr>
+<td nowrap="">C<i>QueryName</i>Result &amp;operator[]( DWORD i )</td>
+<td>Array access for the collection (see below for info on COptiMatchResult).</td>
+</tr> 
+</table>
+<h2><a name="IDA31N2"></a>CQueryNameResult</h2>
+<p>The wizard generates a class for a single result of a query.   The generated class contains properties for each of the return attributes defined by the query.  In addition, the standard session information (such as SessionID, KeyExchangeKey, and so on) is returned.  QoS information is included if the <b>QoS code generation</b> check box was checked.  Here is what is generated for the OptiMatch query:</p>
+<pre class="clsCode">
+class COptiMatchResult
+{
+public:
+    // The query return attributes must come first, and in the order
+    // returned by the query
+    ULONGLONG  GameType;
+    WCHAR      PlayerLevel[XATTRIB_PLAYER_LEVEL_MAX_LEN+1];
+    WCHAR      SessionName[XATTRIB_SESSION_NAME_MAX_LEN+1];
+    __declspec( property( get=GetGameStyle ) ) CBlob GameStyle;
+    CBlob GetGameStyle() { return CBlob( blobGameStyleLength, blobGameStyle ); }
+
+private:
+    WORD       blobGameStyleLength;
+    BYTE       blobGameStyle[XATTRIB_GAME_STYLE_MAX_LEN];
+
+public:
+    WCHAR      OwnerName[XATTRIB_OWNER_NAME_MAX_LEN+1];
+    XNKID      SessionID;
+    XNKEY      KeyExchangeKey;
+    XNADDR     HostAddress;
+    DWORD      PublicOpen;
+    DWORD      PrivateOpen;
+    DWORD      PublicFilled;
+    DWORD      PrivateFilled;
+    XNQOSINFO* pQosInfo;
+};
+</pre>
+    <p>Note that for BLOB return attributes, accessor functions are generated along with the same Visual C++ extension code used in the CSession class. This makes accessing BLOB information easier.</p><p>Also, since the code <b>QoS code generation</b> check box was checked, the <b>pQosInfo</b> field was added. The title can use this information to get the results of QoS probing to that host.</p><h2><a name="IDAP2N2"></a>Tying it all together...</h2>
+<p>Once a query is complete, the <b>Results</b> member of the query object contains the results. Here's an example of how the results would be accessed after the sample query code shown above has finished:</p>
+<pre class="clsCode">
+for( DWORD i = 0; i &lt; FindQuery.Results.Size(); ++i )
+{
+    XNQOSINFO *pqos = FindQuery.Results[i].pQosInfo;
+    Print( L"Session: %s  Bandwidth:  up = %lu, down = %lu", 
+           FindQuery.Results[i].SessionName, pqos-&gt;dwUpBitsPerSec,
+           pqos-&gt;dwDnBitsPerSec );            
+}
+</pre>
+    <h2><a name="QoS_Probing_Listening"></a>QoS Probing and Listening</h2>
+<p>After querying for a session, C<i>QueryName</i>Query probes for connectivity but not for bandwidth measurements.  Unreachable hosts are removed from the list of matching sessions.  Once the initial probing (which is transparent to the title) is done, the search results are available to the title.  Once the title has a list of sessions, it can call the C<i>QueryName</i>Query::Probe() method to begin probing sessions in order to obtain bandwidth measurements:</p>
+<pre class="clsCode">
+HRESULT Probe();
+</pre>
+    <p>Probing begins when Probe() is called. The title can then use the C<i>QueryName</i>Query::IsProbing() method to determine whether or not probing has completed:</p>
+<pre class="clsCode">
+BOOL IsProbing();
+</pre>
+    <p>The title can initially display the list of available sessions and then update the list as QoS results come back. The QoS information is returned in the <b>pQosInfo</b> member of the generated query result.  <b>pQosInfo</b> is NULL until results are available.</p><p>The CSession object automatically performs QoS listening, but titles can manually control listening if desired.  CSession::Create automatically calls <a href="xbox_XNetQosListen_xsnl.htm">XNetQosListen</a> to listen for probes.  CSession::Delete calls <b>XNetQosListen</b> with XNET_QOS_LISTEN_DISABLE before deleting the session from the Xbox <i>Live</i> service, then starts a 15-second timer and begins sending "go away" responses.  When the timer expires, <b>XNetQosListen</b> is called again, but with XNET_QOS_LISTEN_RELEASE to terminate the session's QoS listening.  The "go away" response is set with CSession::SetQosResponse() or with the CSession "QosResponse" property (a CBlob object):</p>
+<pre class="clsCode">
+Session.QosResponse = B(5, "Hello");
+</pre>
+    <p>If the QosResponse property is updated while the session is listening, <b>XNetQosListen</b> is called to update the response.</p><p>Titles that want to keep the session advertised during game play, but don't want to keep listening for QoS probes, or want to throttle the bandwidth, can perform manual QoS listening with the CSession::Listen() method:</p>
+<pre class="clsCode">
+VOID Listen( BOOL bEnable = TRUE, DWORD dwBitsPerSec = 0 );
+</pre>
+    <p><i>bEnable</i> specifies whether to listen or not. <i>dwBitsPerSec</i> specifies the bandwidth to use, in bits per second (which must be 4096 or greater, or zero to use the default, as per <b>XNetQosListen</b>). If <i>bEnable</i> is FALSE, then a timeout period is entered in which "go-away" responses are sent in response to probes.  To end listening immediately without entering the timeout period, specify NO_WAIT in <i>dwBitsPerSec</i>. Here are some examples using Listen():</p>
+<pre class="clsCode">
+Session.Listen( TRUE ); // Start listening using default bandwidth settings
+
+Session.Listen(); // Same as above
+
+Session.Listen( TRUE, 4096 ); // Change bandwidth (if already listening), or start listening (if not already)
+
+Session.Listen( FALSE ); // Stop listening, enter timeout period sending "go-away" responses
+
+Session.Listen( FALSE, NO_WAIT ); // Cease listening and release QoS resources
+</pre>
+    <p>When doing automatic QoS management, CSession itself uses the Listen() method.</p><p>QoS listening code is not generated for the CSession object unless there is at least one query that has QoS probing support specified.</p><p>Games that remove the session after the game starts do not need to perform further QoS processing for the session; it is automatically handled by CSession.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

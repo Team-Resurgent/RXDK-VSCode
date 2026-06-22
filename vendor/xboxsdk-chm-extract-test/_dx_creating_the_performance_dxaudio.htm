@@ -1,0 +1,64 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Creating the Performance</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Creating the Performance"/>
+<MSHelp:Keyword Index="F" Term="Creating the Performance"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H3><A NAME="_dx_creating_the_performance_dxaudio"></A>Creating the Performance</H3>
+
+<P>The performance object is the overall manager of playback. Among the tasks it performs are the following:
+
+<UL>
+	<LI>Managing ports and audiopaths</LI>
+
+	<LI>Mapping channels to audiopaths</LI>
+
+	<LI>Playing and stopping segments</LI>
+
+	<LI>Dispatching messages</LI>
+
+	<LI>Managing tools and timing</LI>
+</UL>
+
+<P>Most applications have a single performance object, but it is possible to have more than one performance with different parameters, such as master tempo or volume.</P>
+
+<P>The following code example creates a performance and obtains a pointer to the <A HREF="_dx_idirectmusicperformance8_dxaudio.htm"><B>IDirectMusicPerformance8</B></A> interface:</P>
+
+<PRE>IDirectMusicPerformance8* pPerf;
+ 
+if (FAILED(DirectMusicCreateInstance(
+        CLSID_DirectMusicPerformance,
+        NULL,
+        IID_IDirectMusicPerformance8,
+        (void**)&amp;pPerf
+    )))
+{
+    pPerf = NULL;
+}
+</PRE>
+
+<P>After the performance is created, it must be initialized by calling the <A HREF="_dx_idirectmusicperformance8_initaudio_dxaudio.htm"><B>IDirectMusicPerformance8::InitAudioX</B></A> method. </P>
+
+<P>The following code example initializes the performance. It creates a standard default audiopath with 16 performance channels and all available features on the port. </P>
+
+<PRE>
+ 
+if (SUCCEEDED(pPerf-&gt;InitAudioX(DMUS_APATH_SHARED_STEREOPLUSREVERB, 16, 0)))
+{
+    // Performance initialized.
+}
+</PRE>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

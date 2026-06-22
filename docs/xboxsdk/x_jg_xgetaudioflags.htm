@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>XGetAudioFlags</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="XGetAudioFlags">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XGetAudioFlags"/>
+<MSHelp:Keyword Index="F" Term="XGetAudioFlags"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_xbox_xgetaudioflags"></A>XGetAudioFlags</H1>
+
+<P>The <B>XGetAudioFlags</B> function returns the global audio settings set in the Dashboard.</P>
+
+<PRE class=syntax><B>DWORD XGetAudioFlags();</B></PRE>
+
+<H4>Parameters</H4>
+
+<p>None.</p>
+
+<H4>Return Values</H4>
+
+<p>The return value is a 32-bit value. The lower 16 bits contain exactly one of the following values:</P>
+<TABLE><TR><TH>VALUE</TH><TH>MEANING</TH>
+<TR><TD>XC_AUDIO_FLAGS_STEREO</TD><TD>Stereo</TD></TR>
+<TR><TD>XC_AUDIO_FLAGS_MONO</TD><TD>Mono</TD></TR>
+<TR><TD>XC_AUDIO_FLAGS_SURROUND</TD><TD>Dolby Surround Sound</TD></TR>
+</TABLE>
+
+<P>The upper 16 bits of the return value contain a combination of zero or more of the following values.</P>
+<TABLE><TR><TH>VALUE</TH><TH>MEANING</TH>
+<TR><TD>XC_AUDIO_FLAGS_ENABLE_AC3</TD><TD>Dolby Digital Enabled</TD></TR>
+<TR><TD>XC_AUDIO_FLAGS_ENABLE_DTS</TD><TD>DTS Enabled</TD></TR>
+</TABLE>
+
+<P>Use the following macros from Xbox.h to test for these values:</P>
+<UL>
+<LI>XC_AUDIO_FLAGS_BASIC</LI>
+<LI>XC_AUDIO_FLAGS_ENCODED</LI>
+</UL>
+
+<BR>
+<P><B>Examples:</B></P>
+<PRE>
+if ( XC_AUDIO_FLAGS_BASIC( dwSpeakerConfig ) == XC_AUDIO_FLAGS_STEREO )
+                                        
+if ( XC_AUDIO_FLAGS_ENCODED( dwSpeakerConfig ) &amp; XC_AUDIO_FLAGS_ENABLE_AC3 )
+</PRE>
+ 
+<P><B>Notes:</B></P>
+
+<P>The XC_AUDIO_FLAGS_ENABLE_AC3 flag occurs only in combination with the XC_AUDIO_FLAGS_SURROUND flag.</P>
+ 
+<P>The XC_AUDIO_FLAGS_ENABLE_DTS flag may occur in combination with any of the other flags.</P>
+
+<H4>Remarks</H4>
+<p>
+The <b>XGetAudioFlags</b> function retrieves the current Dashboard audio settings, whereas the <a href="xbox_directsoundoverridespeakerconfig_dxaudio.htm">GetSpeakerConfig</a> function retrieves the current active settings. Typically, these are the same. However, they will differ if the application has called <a href="xbox_directsoundoverridespeakerconfig_dxaudio.htm">DirectSoundOverrideSpeakerConfig</a>.
+</p>
+															 
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Xbox.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+
+<H4>See Also</H4>
+
+<P>
+<A HREF="x_mt_settings_functions.htm">Settings Functions</a> |
+<a href="x_jg_xgetavpack.htm">XGetAVPack</a>,
+<a href="x_jg_xgetvideoflags.htm">XGetVideoFlags</a>
+</P>
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

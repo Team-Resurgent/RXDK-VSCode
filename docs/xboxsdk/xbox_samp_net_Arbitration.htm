@@ -1,0 +1,60 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Arbitration Sample</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Arbitration Sample"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Arbitration Sample</h1>
+<h2><a name="IDA2UYK"></a>Description</h2>
+<p>Arbitration is an attempt to minimize online cheating. Xbox <i>Live</i> prevents
+ many kinds of cheating by encrypting all packets and preventing modified
+ code from running. Arbitration helps to deal with other types of cheating, such as pulling the
+ network cable, blocking ports, and packet flooding.</p><p>After creating a session and having at least one other player join the session,
+ the session creator can start an arbitrated session. This will trigger the
+ other boxes to register for arbitration. The "game" then appears. The game menu looks like this.</p>
+<pre class="clsCode">
+  player1 - 0 points
+  player2 - 0 points
+
+  Score Point
+  Score Point (not sent)
+  End Game
+</pre>
+    <p>From the game menu, players can score points, which should show up on the other players'
+		screens. They can also score points that are not broadcast,	to intentionally cause results
+		discrepancies.</p><p>Eventually, the game is ended (by any player), which triggers reporting of results by all
+		players. If there are any discrepancies in the results, this will be reported. Note that the
+		first box to submit results will never find any discrepancies because there is no data to
+		differ from. However, subsequent boxes will report any discrepancies they find.</p><h2><a name="IDADXYK"></a>Required Files and Media</h2>
+<p>Copy the media tree to the target machine before running this sample.</p><h2><a name="IDAHXYK"></a>Programming Notes</h2>
+<p>This sample is based on the MatchMaking sample, and most of the code that is not in
+		ArbitrationManager.cpp is not related to arbitration.</p><p>This sample demonstrates the normal flow of arbitration. Matchmaking is used to find a
+		game; players join the game and wait in a lobby. At some point, a decision is made to start 
+		an arbitrated game. The host tells the other players to register, and then registers 
+		last. After registering, the host gets the XUIDS of all of the players and sends them to 
+		all of the players. Any players who don't register in time are disconnected (not currently
+		demonstrated).</p><p>Then a regular game is played. Points are scored, with the option to score points that
+		aren't sent to the other players (simulating a dropped packet that the game doesn't handle
+		well). Players can choose to quit the game, in which case they will suffer a drop penalty.
+		Eventually somebody ends the game, and all players submit their results.</p><p>Some things that are not demonstrated are host migration, robust network protocols, and
+		other features that would complicate the sample without adding value related to demonstrating
+		arbitration.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

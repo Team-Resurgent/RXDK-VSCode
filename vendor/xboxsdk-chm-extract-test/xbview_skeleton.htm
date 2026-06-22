@@ -1,0 +1,70 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Skeleton (XbView)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Skeleton (XbView)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Skeleton (XbView)</h1>
+<p>The <b>Skeleton</b> structure represents a hierarchy of <a href="xdx_element_frame.htm">frame nodes</a>. It also implements the functionality by which the hierarchy is updated and concatenated together with any animation data. Each resource file can have multiple skeletons defined. Indeed, for skinned animation there are usually three separate hierarchies: </p><ol>
+	<li>The skin mesh itself in its own object space.</li>
+	<li>The hierarchy of bones needed to animate the skin. </li>
+	<li>The hierarchy of bone inverse rest matrices used to construct the bone matrices used for skinning. These are in a separate hierarchy because they come pre-concatenated and inverted from Deep Exploration, and we don't want to do anything to them. </li>
+</ol>
+<pre class="clsCode">
+struct Skeleton 
+{
+    DWORD    m_FrameCount; // total number of frames
+    XGMATRIX *m_rMatrix;   // cumulative transformations computed from 
+                           // frame hierarchy in depth-first traversal
+    Frame    *m_pRoot;     // root of frame hierarchy
+	
+    //------------------------------------------------------------------------
+    // Set root of frame hierarchy and allocate matrix array
+    // to hold one matrix per node in the hierarchy. 
+    HRESULT SetRoot(Frame *pRoot);
+
+    //------------------------------------------------------------------------
+    // Do depth-first traversal of frame hierarchy to compute the
+    // matrix palette.
+    HRESULT UpdateTransformations( XBR *pXBR = NULL, FLOAT fTimeStamp = 0.0f, 
+                                   BOOL bInterpolate = FALSE );
+	
+    //------------------------------------------------------------------------
+    // Find the bounding box of the frames (does not include any mesh 
+    // geometry). 
+    // Uses current matrix palette in m_rMatrix as computed by 
+    // UpdateTransformations. 
+    HRESULT ComputeBoundingBox(XGVECTOR3 *pvMin, XGVECTOR3 *pvMax);
+
+    XGMATRIX *GetFrameMatrix( const CHAR *strFrameId );
+};
+</pre>
+    <p>The <b>m_FrameCount</b> member tells us how many <b>frame nodes</b> are in this hierarchy; <b>m_rMatrix</b> is an array of matrices holding the results of the concatenation done by the <b>UpdateTransformations</b> function. The <b>m_pRoot</b> pointer points to the first frame node in the hierarchy. By using the <b>m_pChild</b> and <b>m_pNext</b> pointers in the root node, one can traverse the entire hierarchy.</p><p>The <b>SetRoot</b> function sets the <b>m_pRoot</b> pointer and allocates the <b>m_rMatrix</b> array to hold the concatenation. The <b>UpdateTransformations</b> function concatenates the frame hierarchy together and stores the results at each node. This function also concatenates in the animation data, if present, with each node in the hierarchy. The function starts at the root node of the hierarchy and traverses the hierarchy concatenating the matrices as it goes. <b>UpdateTransformations</b> also calls <a href="xbview_xbr_getanimationdata.htm">XBR::GetAnimationData</a> for each node as it traverses the hierarchy. If the animation data exists, <b>GetAnimationData</b> returns S_OK, which tells <b>UpdateTransformations</b> to concatenate in the animation data. The animation data is returned as a set of matrices containing rotation, translation, and scale data. The final matrix with animation data is concatenated according to this formula:</p>
+<pre class="clsCode">
+mRotation * mScale * pFrame-&gt;m_Matrix * mTranslation
+</pre>
+    <p>Since matrix multiplication is not commutative, you cannot create a simple animation matrix by multiplying the rotation, scale, and translation together and then multiplying that by the frame. In other words:</p>
+<pre class="clsCode">
+( mRotation * mScale * mTranslation ) * pFrame-&gt;m_Matrix !=
+	mRotation * mScale * pFrame-&gt;m_Matrix * mTranslation)
+</pre>
+    <p>Each node in the hierarchy is limited to a maximum number of children and siblings. That maximum number is defined at 200 at present. <b>ComputeBoundingBox</b> calculates the bounding box that would contain all of the frame nodes. It does not take into account any of the geometry. <b>GetFrameMatrix</b> returns the concatenated matrix for the <a href="xbview_frame.htm">Frame</a> node named by the <i>strFrameId</i> passed in. </p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

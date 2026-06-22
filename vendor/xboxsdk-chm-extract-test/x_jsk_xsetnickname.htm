@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>XSetNickname</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="XSetNickname">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XSetNickname"/>
+<MSHelp:Keyword Index="F" Term="XSetNickname"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+
+
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_xbox_xsetnickname"></A>XSetNickname</H1>
+
+<P>The <B>XSetNickname</B> function adds a nickname to the local Xbox nickname cache.</P>
+
+<PRE class=syntax><B>BOOL XSetNickname(</B>
+    <B>LPCWSTR</B> <I>lpNickname</I>,
+    <B>BOOL</B> <I>fPreserveCase</I>
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>lpNickname</I></DT>
+<DD>[in] Pointer to a null-terminated string that specifies the nickname to be added to the cache.  The name is limited to MAX_NICKNAME characters (including the terminating null character).</DD>
+
+<DT><I>fPreserveCase</I></DT>
+<DD>[in] Flag indicating whether the function should preserve the case of <I>lpNickname</I> if the nickname already exists in the cache.
+
+<P>If TRUE, and the nickname specified already exists in the cache, the  name in the cache will be overwritten with the capitalization of the nickname specified in <I>lpNickname</I>.  If FALSE, and the nickname specified already exists in the cache, the capitalization of the existing nickname entry will be kept.</P>
+
+<P>If the nickname does not already exist in the cache, the capitalization of <I>lpNickname</I> will be preserved regardless of the value specified for <I>fPreserveCase</I>.</P>
+</DD>
+
+
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is TRUE.</P>
+
+<P>If the function fails, the return value is FALSE.</P>
+
+<P>If the function fails, it does not call <B>SetLastError</B>. A title cannot call <B>GetLastError</B> for extended error information.</P>
+
+<H4>Remarks</H4>
+
+<P><B>XSetNickname</B> adds the specified nickname to the top of the cache as the most recent nickname or moves the nickname to the top of the cache if that nickname already exists.  If the cache is full and a new nickname is added, the oldest nickname is removed.  When nicknames are enumerated, they are returned in order from the newest to the oldest.</P>
+
+<P>The nickname cache can contain only one version of each nickname and does not differentiate between nicknames based on case sensitivity.  For example, a title cannot store both &quot;Bigdogz&quot; and &quot;biGdogZ&quot; in the cache simultaneously.</P>
+
+<P>The <I>fPreserveCase</I> parameter specifies the action to take if the nickname being added already exists in the cache.  If <I>fPreserveCase</I> is set to TRUE, the capitalization of the nickname specified in <I>lpNickname</I> will be used and will override the capitalization of the existing nickname in the cache.  If <I>fPreserveCase</I> is FALSE, the case of <I>lpNickname</I> will be ignored; the capitalization of the existing nickname in the cache will be kept as is.  If the nickname does not already exist in the cache, the capitalization of <I>lpNickname</I> will be used regardless of the value specified for <I>fPreserveCase</I>.</P>
+
+<P>However, each nickname is associated with the title that added it to the cache, and a nickname is considered to already exist in the cache only if the nickname matches <I>and</I> it was added by the calling title.  It is possible for two different titles to both add the same nickname (with either identical or different capitalization) to the cache.  The nickname will have two entries in the cache, each associated with the title that added it.  If an enumeration is done for all nicknames in the cache, the most recent nickname added will be returned.  If the enumeration specifies that only nicknames associated with the title are enumerated, only the nickname added by the calling title will be returned.</P>
+
+<P>The maximum number of nicknames that can be stored in the cache is determined by the system, but will generally be 20 or more names.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Xbox.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+<BR><A HREF="xbox_mt_xtl_sll_strings_oview_unioview.htm">Unicode</a>:</B> Implemented as Unicode only.<BR>
+<H4>See Also</H4>
+<P>
+<A HREF="x_jsk_xfindfirstnickname.htm">XFindFirstNickname</a>,
+<A HREF="x_jsk_xfindnextnickname.htm">XFindNextNickname</a>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

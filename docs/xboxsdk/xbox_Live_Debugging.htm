@@ -1,0 +1,56 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Debugging and Testing Games for Xbox Live</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Debugging and Testing Games for Xbox Live"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Debugging and Testing Games for Xbox Live</h1>
+<ul>
+<li><a href="#IDAPAEV">Partnernet</a></li><li><a href="#IDA5AEV">Debugging Two Xbox Consoles at Once</a></li><li><a href="#IDALCEV">Testing and Debugging with MatchSim</a></li><li><a href="#IDARCEV">Testing and Debugging with NetSim</a></li><li><a href="#IDAJDEV">Measuring Packet Loss Using the Quality of Service (QoS) APIs</a></li></ul>
+<h2><a name="IDAPAEV"></a>Partnernet</h2>
+<p>The Xbox <i>Live</i> team provides a network that hosts test servers specifically intended for game development testing. This network is called PartnerNet. Only games approved for Xbox <i>Live</i> have access to PartnerNet. To obtain approval, contact your account manager. Once you have approval, you will be given a title ID to use when building your project for online testing.</p><p>All developers with an open Internet connection can test the Xbox SDK samples from the most recent SDK against PartnerNet. These samples expose the full range of the services provided by Xbox <i>Live</i> and are an excellent way to begin preliminary research into online functionality for your title.</p><p>If you have trouble connecting to Partnernet, please refer to the Xbox Live page on Xbox Central. There you will find links to the current status for PartnerNet, setup for Xbox consoles to connect against PartnerNet, and troubleshooting information in the event that you can't connect.</p><h2><a name="IDA5AEV"></a>Debugging Two Xbox Consoles at Once</h2>
+<p>You can do this in Microsoft Visual Studio using the following procedure:</p><ol>
+					<li>Launch Visual Studio. </li>
+					<li>Load the project you wish to debug.</li>
+					<li>In the project's <b>Properties</b> dialog box, select the <b>Debugger properties</b>.</li>
+					<li>Set the <b>Remote Machine</b> option to the name of the first Xbox.</li>
+					<li>Launch the debugger. </li>
+					<li>Start a second instance of Visual Studio. </li>
+					<li>Load the project you wish to debug again.</li>
+					<li>In the project's <b>Properties</b> dialog box, select the <b>Debugger</b> properties.</li>
+					<li>Set the <b>Remote Machine</b> option to the name of the second Xbox.</li>
+					<li>Launch the debugger. </li>
+				</ol>
+<p>The machine that Visual Studio copies XBEs to is controlled by a separate registry entry at:</p>
+<pre class="clsCode">
+HKEY_CURRENT_USER\Software\Microsoft\XboxSDK\XboxName
+</pre>
+    <h2><a name="IDALCEV"></a>Testing and Debugging with MatchSim</h2>
+<p>When creating fake sessions in MatchSim, those sessions never show up in matchmaking searches on the client. It appears to the developer that QoS probing is rejecting those sessions. This is because MatchSim does not support QoS listening for fake sessions. When testing with MatchSim, you will either need to create sessions with real hosts or temporarily disable QoS probing in your client code to prevent rejection of the fake sessions.</p><h2><a name="IDARCEV"></a>Testing and Debugging with NetSim</h2>
+<p>You can test your title under a limited-bandwidth, high-latency environment with the <a href="xbox_tool_netsim.htm">Network Simulator tool</a> for Xbox. Netsim operates as a packet forwarder that can be configured to add latency, limit bandwidth, or drop packets. </p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Netsim will not work with system link play.</p><p>Some common problems with NetSim:</p><ul>
+				<li>Because NetSim operates as a "virtual" NIC, NetSim requires a separate IP address from that assigned to the PC it is running on.</li>
+				<li>Furthermore, don't use multiple netcards in the NetSim PC. NetSim's "virtual" LAN driver was designed to allow NetSim to run on machines with only a single netcard. If you try to use NetSim on a multi-NIC machine, the virtual LAN driver randomly chooses one to use. This can complicate NetSim setup.</li>
+				<li>It is preferable to assign the Xbox dev kit a higher NetSim address, for example, 10.0.100.2 instead of 10.0.1.2. The source port assigned to the outgoing traffic is determined by the x in 10.0.x.y, and most firewalls block traffic in the lower port range. Using a higher port will increase your chances of the traffic not getting filtered on its way out.</li>
+				<li>NetSim cannot be used to test system link play in games.</li>
+			</ul>
+<h2><a name="IDAJDEV"></a>Measuring Packet Loss Using the Quality of Service (QoS) APIs</h2>
+<p>While <a href="xbox_XNetQosLookup_xsnl.htm">XNetQoSLookup</a> will return a rough measurement of packets lost in the returned <b>XNQOSINFO</b> structure, this is not an altogether useful way to determine packet loss. Packet loss tends to happen in bursts in the real world, and most games will not want to send out enough probes over a long enough period of time to obtain accurate numbers. The implication is that games should not determine up front the approximate packet loss of a given connection prior to starting a game session across that connection. Games must respond robustly to packet loss as per the TCR and, if necessary to maintain a stable game experience, determine packet loss in an ongoing manner.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

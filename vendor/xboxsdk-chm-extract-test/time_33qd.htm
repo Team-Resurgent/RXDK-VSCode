@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>SetFileTime</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="SetFileTime">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="SetFileTime"/>
+<MSHelp:Keyword Index="F" Term="SetFileTime"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_setfiletime"></A>SetFileTime</H1>
+
+<P>The <B>SetFileTime</B> function sets the date and time that a file was created, last accessed, or last modified. </P>
+
+<PRE class=syntax><B>BOOL SetFileTime(
+  HANDLE</B><I> hFile</I><B>,                     </B>// handle to file
+<B>  CONST FILETIME</B><I> </I><B>*</B><I>lpCreationTime</I><B>,   </B>// creation time
+<B>  CONST FILETIME</B><I> </I><B>*</B><I>lpLastAccessTime</I><B>, </B>// last-access time
+<B>  CONST FILETIME</B><I> </I><B>*</B><I>lpLastWriteTime</I>   // last-write time
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>hFile</I></DT>
+
+<DD>[in] Handle to the file for which to set the dates and times. The file handle must have been created with GENERIC_WRITE access to the file. </DD>
+
+<DT><I>lpCreationTime</I></DT>
+
+<DD>[in] Pointer to a <A HREF="time_0fzm.htm">FILETIME</A> structure that contains the date and time the file was created. This parameter can be NULL if the application does not need to set this information. </DD>
+
+<DT><I>lpLastAccessTime</I></DT>
+
+<DD>[in] Pointer to a <B>FILETIME</B> structure that contains the date and time the file was last accessed. The last access time includes the last time the file was written to, read from, or (in the case of executable files) run. This parameter can be NULL if the application does not need to set this information. </DD>
+
+<DT><I>lpLastWriteTime</I></DT>
+
+<DD>[in] Pointer to a <B>FILETIME</B> structure that contains the date and time the file was last written to. This parameter can be NULL if the application does not want to set this information.  
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is nonzero.</P>
+
+<P>If the function fails, the return value is zero. To get extended error information, call <A HREF="errors_3uwi.htm">GetLastError</A>. </P>
+
+<H4>Remarks</H4>
+
+<P>For FATX (the file system used by the Xbox hard disk), only year values between 2000 and 2127 (inclusive) are valid.</P>
+
+<P>Not all file systems can record creation and last access time, and not all file systems record them in the same manner. For example, on FATX, create time, write time, and last access time all have a  resolution of 2 seconds. Therefore, <B>GetFileTime</B> may not return the same file time information set using the <A HREF="time_33qd.htm">SetFileTime</A> function.  FATX records times on disk using UTC rather than local file time.</P>
+ 
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p><H4>See Also</H4>
+<P> 
+
+<A HREF="xbox_mt_xtl_sll_file_io_functions.htm">File I/O Functions</A> | 
+<A HREF="time_0fzm.htm">FILETIME</A>,  <A HREF="filesio_05id.htm">GetFileSize</A>,  <A HREF="time_5r51.htm">GetFileTime</A></P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

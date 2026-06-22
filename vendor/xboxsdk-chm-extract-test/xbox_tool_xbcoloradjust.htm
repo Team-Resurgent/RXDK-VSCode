@@ -1,0 +1,39 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Xbox Color Adjust Tool (XbColorAdjust)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Xbox Color Adjust Tool (XbColorAdjust)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+<MSHelp:Keyword Index="K" Term="XbColorAdjust"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Xbox Color Adjust Tool (XbColorAdjust)</h1>
+<h2><a name="IDALQYK"></a>Warning</h2>
+<p>Make sure you use XbColorAdjust on a properly calibrated television under typical lighting conditions. Also, be sure to run through multiple areas and levels to make sure the gamma ramp you choose is appropriate for your entire game.</p>
+<h2><a name="IDAOQYK"></a>General Use</h2>
+<p>The XbColorAdjust tool is a utility for content creators (artists, product managers, and so on) that allows real-time adjustment of the Xbox hardware gamma ramp.</p><p>To use the tool, you must modify the project slightly. You'll need to include a single file in the main rendering .cpp file for your project, and add a single line of code before the <b>D3D::Present</b> call. After you've made those minor changes, you can run XbColorAdjust and connect to your Xbox from your PC using the <b>Connect to Xbox</b> button.</p><p>You can immediately use the different sliders to adjust the look of your game. The curve at the top is updated in real time to show you the gamma ramp for the current setting. If you click on <b>Shader mode</b>, XbColorAdjust will create a custom shader which mimics the gamma ramp specified. In shader mode, you get access to the following additional features:</p><ul>
+<li>You can compare two gamma settings in <b>Split screen mode</b>.</li>
+<li>You can preview saturation changes. Saturation adjustment requires additional pixel shader instructions, so there is no way to get this in the final game without shader programmer assistance.</li>
+<li>You can take gamma-adjusted screen shots using XbCapture.</li>
+<li>You can see the current histogram for the right half of the screen.</li>
+</ul>
+<p>The changes you make always affect the currently set 'Main Setting' preset (Setting A, B, or C). In split screen mode this is always shown on the right side of your TV screen, and you can specify which setting is shown on the left side. However, all changes made will only affect the currently set 'Main Setting'.</p><p>There are also three ways to get your settings in the game. If you click on the 'save gamma ramp' button, you will be able to save a .GMA file which can then be imported as part of your art pipeline (i.e. for level specific gamma ramps). If you click on 'copy code to clipboard', you will be able to paste the requisite code into an email for the programmer to 
+ include. Lastly, you can just write down the Gamma, Brightness, Contrast, Red, Green, and Blue values and have the programmer call XbColorAdjustX::SetGammaRampFromValues function right after the D3D device is created.</p><p>Talk with your development team to decide on which path is right for you.</p><h2><a name="IDAERYK"></a>Programming Notes</h2>
+<p>To make the Dolphin sample run with XbColorAdjust, you would edit dolphin.cpp, and #include xbcoloradjustx.h. (You may need to copy it into your project path.) Then, right before the <b>Present</b> call, add <b>XbColorAdjustX::Update()</b>. Then you are all set.</p><p>The exported .GMA file is merely the 768 bytes of a <a href="_dx_d3dgammaramp_graphics.htm">D3DGAMMARAMP</a> structure written out directly in binary format.</p><p>If your artists paste you the auto-generated function, you will get a code snippet for a function, <b>SetCustomGammaRamp</b>, which must be called only once after D3D device creation. You can adjust the values in this function at will.</p><p>You also can call <b>XbColorAdjust::SetGammaRampFromValues</b>. This lets you specify contrast, brightness, gamma, red, green, and blue adjustment directly (using the same code as you would get with the copy-paste method).</p><p>The source code for the application is included in the Tools\Win32\Graphics\XbColorAdjust directory in the XDK. XbColorAdjustX.h (the file to include on the Xbox side) is also located in this directory.</p><p>If you have problems with shader state being trampled, you may need to add additional save/restore states to the state block in XbColorAdjustX.h. Most of the common ones have been caught, but some might have slipped through.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

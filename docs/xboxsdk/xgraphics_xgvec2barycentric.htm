@@ -1,0 +1,97 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>XGVec2BaryCentric</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="XGVec2BaryCentric">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XGVec2BaryCentric"/>
+<MSHelp:Keyword Index="F" Term="XGVec2BaryCentric"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_d3dxvec2barycentric_graphicsd3dx"></A>XGVec2BaryCentric</H1>
+
+<P>Returns a point in Barycentric coordinates, using the specified 2D vectors.</P>
+
+<PRE class=syntax><B>XGVECTOR2* XGVec2BaryCentric(
+</B>  <B>XGVECTOR2* </B><I>pOut</I><B>,</B>
+<B>  CONST XGVECTOR2* </B><I>pV1</I><B>,</B>
+<B>  CONST XGVECTOR2* </B><I>pV2</I><B>,</B>
+<B>  XGVECTOR2* </B><I>pV3</I><B>,</B>
+  <B>FLOAT</B> <I>f</I><B>,</B>
+<B>  FLOAT </B><I>g</I>
+<B>); </B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>pOut</I></DT>
+
+<DD>[in, out] Pointer to the <A HREF="xgraphics_xgvector2.htm"><B>XGVECTOR2</B></A> structure that is the result of the operation.</DD>
+
+<DT><I>pV1</I></DT>
+
+<DD>[in] Pointer to a source <B>XGVECTOR2</B> structure.</DD>
+
+<DT><I>pV2</I></DT>
+
+<DD>[in] Pointer to a source <B>XGVECTOR2</B> structure.</DD>
+
+<DT><I>pV3</I></DT>
+
+<DD>[in] Pointer to a source <B>XGVECTOR2</B> structure.</DD>
+
+<DT><I>f</I></DT>
+
+<DD>[in] Weighting factor. See Remarks.</DD>
+
+<DT><I>g</I></DT>
+
+<DD>[in] Weighting factor. See Remarks.
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>Pointer to a <B>XGVECTOR2</B> structure in Barycentric coordinates.</P>
+
+<H4>Remarks</H4>
+
+<P>The <B>XGVec2BaryCentric</B> function provides a way to understand points in and around a triangle, independent of where the triangle is actually located. This function returns the resulting point by using the following equation: V1 + f(V2-V1) + g(V3-V1). </P>
+
+<P>Any point in the plane V1V2V3 can be represented by the Barycentric coordinate (<I>f</I>,<I>g</I>).The parameter <I>f</I> controls how much V2 gets weighted into the result, and the parameter <I>g</I> controls how much V3 gets weighted into the result. Lastly, 1-<I>f</I>-<I>g</I> controls how much V1 gets weighted into the result.</P>
+
+<P>Note the following relations.
+
+<UL>
+	<LI>If (f&gt;=0 &amp;&amp; g&gt;=0 &amp;&amp; 1-f-g&gt;=0), the point is inside the triangle V1V2V3.</LI>
+
+	<LI>If (f==0 &amp;&amp; g&gt;=0 &amp;&amp; 1-f-g&gt;=0), the point is on the line V1V3.</LI>
+
+	<LI>If (f&gt;=0 &amp;&amp; g==0 &amp;&amp; 1-f-g&gt;=0), the point is on the line V1V2.</LI>
+
+	<LI>If (f&gt;=0 &amp;&amp; g&gt;=0 &amp;&amp; 1-f-g==0), the point is on the line V2V3.</LI>
+</UL>
+
+<P>Barycentric coordinates are a form of general coordinates. In this context, using Barycentric coordinates simply represents a change in coordinate systems. What holds true for Cartesian coordinates holds true for Barycentric coordinates.</P>
+
+<P>The return value for this function is the same value returned in the <I>pOut</I> parameter. In this way, the <B>XGVec2BaryCentric</B> function can be used as a parameter for another function.</P>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in xgmath.h.<BR>
+<B>&nbsp;&nbsp;Import Library:</B> Use xgraphics.lib.</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

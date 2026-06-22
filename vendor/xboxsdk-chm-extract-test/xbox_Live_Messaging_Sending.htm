@@ -1,0 +1,60 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Sending Messages</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Sending Messages"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Sending Messages</h1>
+<p>Titles typically send messages in the context of performing a particular group of tasks. Because these tasks are common to most games, the Xbox <i>Live</i> libraries provide specialized functions to create these messages. The following table indicates which function is appropriate for each task.</p><table>
+			<tr>
+				<th>Function</th>
+				<th>Task</th>
+			</tr>
+			<tr>
+				<td><a href="XOnlineGameInviteSend.htm">XOnlineGameInviteSend</a></td>
+				<td>Sending game invitations</td>
+			</tr>
+			<tr>
+				<td><a href="XOnlineFriendsRequestEx.htm">XOnlineFriendsRequestEx</a></td>
+				<td>Sending friend requests</td>
+			</tr>
+			<tr>
+				<td><a href="XOnlineTeamMemberRecruit.htm">XOnlineTeamMemberRecruit</a></td>
+				<td>Sending team recruitment messages</td>
+			</tr>
+		</table>
+<p>Each of the functions in the preceding table enables the title to pass in a message they have created. If none is passed in, a default message will be created and sent. Titles primarily use the optional <i>hMsg</i> parameter to pass in messages with voice, text, or custom title data attached to the message.</p><p>Titles send custom messages by calling the <a href="XOnlineMessageSend.htm">XOnlineMessageSend</a> function. Messages can be sent from a player to another player within the title. They can also be sent by a publisher to all of the users for that title. The Xbox <i>Live</i> service does not monitor the substance of user communications, so text and voice messages are not vetted for profanity. The policy for this is that messages are controlled by the community through the feedback mechanism, and take-down is possible. Although the service handles full message queues, the title must ensure that players do not spam each other by creating excessive numbers of messages. The server does not screen for this; message sending can be throttled on the Xbox.</p><ul>
+<li><a href="#IDA0JIV">User-to-User Messaging</a></li><li><a href="#IDAAKIV">Sending Messages from a Publisher</a></li><li><a href="#IDAKKIV">Message Revocation</a></li><li><a href="#IDAWKIV">Responding to Full Message Queues</a></li><li><a href="#IDAKLIV">Communication Banning</a></li></ul>
+<h2><a name="IDA0JIV"></a>User-to-User Messaging</h2>
+<p>When a client sends a message, it builds the required properties for the type of the message being sent and then creates a list of XUIDs the message will be sent to. The list may contain up to 100 XUIDs. The XUIDs could be the player's teammates, friends, players in a game/tournament, and so on. Note that your game cannot send a message to a team XUID. It's also important to keep in mind that the messaging service does not validate one user's rights to send to another user. Instead, your title should control this.</p><h2><a name="IDAAKIV"></a>Sending Messages from a Publisher</h2>
+<p>The messaging service supports publisher-created messages targeting users of a specific title. The server sets certain properties on the message at the time of receipt, such as the sent time when the message is placed in a recipient's queue. Users are presented with publisher messages only for the titles that they own. Users cannot reply to publisher messages.</p><p>In order to make messaging viable for external devices in the future, titles need to follow certain guidelines for the use of the voice and text members. In particular, the optional voice attachments must be created using the approved XDK codecs. It is also recommended that the required text property contain characters from the languages and characters supported in the Dashboard.</p><p>Publishers should not use messaging as a generic way to share game data, state, assets, tunables, and so on, to all players of your title. Titles wishing to do that should use title storage to accomplish these types of transactions. Publishers may not use messaging or storage to advertise products on another platform.</p><h2><a name="IDAKKIV"></a>Message Revocation</h2>
+<p>A message sender is allowed to revoke any message that they send using the <a href="XOnlineMessageRevoke.htm">XOnlineMessageRevoke</a> function. This function accepts parameters that are very similar to the reply returned from the send API, so that any client or 
+			service sending messages can easily store the send reply if they later anticipate needing to 
+			revoke the message. The <b>XOnlineMessageRevoke</b> function accepts the same limit of 100 recipients in one call that the <b>XOnlineMessageSend</b> does.</p><h2><a name="IDAWKIV"></a>Responding to Full Message Queues</h2>
+<p>When a user's message queue is full (at 125 messages) and he or she receives a new message, the messaging service determines which message will be deleted to make room for the new message. A user sending a message never gets an error that the recipient's queue is full. Instead, an old message is always deleted to make room for a new one. This enables a user to continue to receive new, potentially important messages. The game must warn users when their queue is full (or almost full) so that they know they are losing messages.</p><p>The messaging service's deletion algorithm implements the following scheme when the queue is full.</p><ol>
+			<li>If the user has more than 10 messages from the current title, the oldest message from that title is deleted.</li>
+			<li>If the user has more than 10 messages from the sender of the newly arrived message, the oldest message from that sender is deleted.</li>
+			<li>If neither (1) nor (2) applies, the oldest message in the user's queue is deleted.</li>
+			<li>Xbox <i>Live</i> service messages are never deleted.</li>
+			</ol>
+<h2><a name="IDAKLIV"></a>Communication Banning</h2>
+<p>Text and voice attachments in messages are subject to the TCR on communication banning. Thus, if a user is voice banned, or his or her parent has set parental controls to disable voice, the title is not able to display these message fields. Similarly, if a user has muted another player, he or she should not send or receive voice attachments in messages to or from that user. See <a href="XOnlineIsUserVoiceAllowed.htm">XOnlineIsUserVoiceAllowed</a> and <a href="XONLINE_USER.htm">XONLINE_USER</a> for more information.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

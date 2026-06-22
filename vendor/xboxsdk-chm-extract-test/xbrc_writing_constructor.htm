@@ -1,0 +1,116 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Writing the Constructor (XbRC)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Writing the Constructor (XbRC)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Writing the Constructor (XbRC)</h1>
+<p>The next step to extend XbRC is to write the constructor that takes the parsed data and adds it to the class derived from <b>XBRCRawData</b>. In the example, this would mean writing the constructor for <a href="xbrc_adding_new_class.htm#xbrccubemapdata">XBRCCubeMapData</a>. The constructor for the new class derived from <b>XBRCRawData</b> takes the attributes pointer passed in and uses it to gather the data from the XML element you are parsing. Note that the attribute tags being compared are all wide-character strings. All of the error messages are also in wide-character format to help in localizing the Xbox Preview Pipeline. Here is the source for the cube map constructor:</p>
+<pre class="clsCode">
+XBRCCubeMapData::XBRCCubeMapData( ISAXAttributes *pAttributes )
+{
+    m_dwSize = 0;
+    m_dwLevels = 0;
+
+    m_pCubeMap = NULL;
+    m_dwSizeSpecified = FALSE;
+
+    int iAttributeCount;
+    HRESULT result = pAttributes-&gt;getLength( &amp;iAttributeCount );
+    if( FAILED( result ) )
+    {
+               // Appropriate error handling here.
+    }
+
+    for( int iAttribute = 0; iAttribute &lt; iAttributeCount; iAttribute++ ) 
+    {
+        WCHAR *pwchLocalName;
+        int cchLocalName;
+        result = pAttributes-&gt;getLocalName( iAttribute, &amp;pwchLocalName, 
+                                            &amp;cchLocalName );
+        if( FAILED( result ) )
+        {
+                    // Appropriate error handling here.
+        }
+
+        WCHAR *pwchValue;
+        int cchValue;
+        result = pAttributes-&gt;getValue( iAttribute, &amp;pwchValue, &amp;cchValue );
+        if( FAILED( result ) )
+        {
+                    // Appropriate error handling here.
+        }
+
+        if( Match( g_strXBRC_id, pwchLocalName, cchLocalName ) )
+        {
+            m_strIdentifier = CXBParser::CharString( pwchValue, cchValue );
+            if( m_strIdentifier.length() &gt; 256 )
+            {
+                        // Appropriate warning handling here.
+                m_strIdentifier.resize(256);
+            }
+        }
+        else if( Match( g_strXBRC_Filter, pwchLocalName, cchLocalName ) )
+        {
+            m_strFilter  = CXBParser::CharString( pwchValue, cchValue );
+        }
+        else if( Match( g_strXBRC_Format, pwchLocalName, cchLocalName ) )
+        {
+            m_strFormat = CXBParser::CharString( pwchValue, cchValue );
+        }
+        else if( Match( g_strXBRC_Size, pwchLocalName, cchLocalName ) )
+        {
+            m_dwSize = atoi( CXBParser::CharString( pwchValue, cchValue ) );
+            m_dwSizeSpecified = TRUE;
+        }
+        else if( Match( g_strXBRC_Levels, pwchLocalName, cchLocalName ) )
+        {
+            m_dwLevels = atoi( CXBParser::CharString( pwchValue, cchValue ) );
+        }
+        else
+        {
+            // Do we need to fail if we find an attribute we don't recognize?
+            // Or can we just continue after informing the user?
+            g_pXBParser-&gt;UnexpectedToken( pwchLocalName, cchLocalName, E_FAIL );
+			g_pXBParser-&gt;m_bErrorSuppress = false;
+        }
+    }
+
+    m_dwResourceType = XBRC_CUBEMAP;
+
+    if( g_bVerbose )
+    {
+        WCHAR msg[1024];
+        WCHAR msg2[2048];
+        ZeroMemory( msg2, 2048 );
+        g_LoadString( IDS_XBRC_FOUNDRESOURCE, msg, 1024 );
+
+        _snwprintf( msg2, 2040, msg, g_strXBRC_CubeMap, 
+                    m_strIdentifier.data() );
+
+        g_pXBParser-&gt;XBRC_Message( msg2 );
+    }
+}
+</pre>
+    <p>At present, it is a fatal error if you find an attribute you don't understand while parsing a particular resource type.  </p><h4><a name="seealso"></a>See Also</h4>
+<p><a href="xbrc_writing_tag_handlers.htm">Previous Step</a>, <a href="xbrc_writing_adddata.htm">Next Step</a></p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

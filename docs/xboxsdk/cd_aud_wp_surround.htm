@@ -1,0 +1,124 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Authoring for and Implementing Multichannel Audio Playback</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Authoring for and Implementing Multichannel Audio Playback"/>
+<MSHelp:Keyword Index="F" Term="Authoring for and Implementing Multichannel Audio Playback"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1 class="heading"><A NAME=""></A>The Surround Experience:<br>
+Authoring for and Implementing Multichannel Audio Playback</H1> 
+
+<p><i>By Scott Selfon, Audio Content Consultant, Content and Design Team, Xbox Advanced Technology Group</i></P>
+
+<P><I>This is part of a series of "column-style" white papers on various aspects of the Xbox audio system. If you would like to see a specific area addressed, please send e-mail to</I> <a href="mailto:content@xbox.com">content@xbox.com</a>.</P>
+
+<h2>Introduction</h2>
+<p>One of the most unique features of the audio system of the Xbox&#174; video game system from Microsoft is its ability to simultaneously encode for two standardized multichannel audio formats: Dolby&#174; Digital and Dolby&#174; Surround. This white paper will discuss authoring and implementation strategies for taking advantage of multichannel encoding, as well as 3D positioning, 5.1 panning, and down-mixing issues.</p>
+
+<h2>Choosing Your Output Formats</h2>
+<p>The owner of the Xbox console chooses the audio settings from the Xbox Dashboard. Depending on the A/V adapter they have plugged in, the options will vary among the following:</p>
+<ul>
+<li>Mono (only option available on RF adapter)</li>
+<li>Stereo</li>
+<li>Dolby Surround</li>
+</ul>
+<p>On the enhanced S-video and HDTV adapters, two additional options will be present, each of which are "yes/no":</p>
+<ul>
+<li>Dolby Digital</li>
+<li>DTS (generally used for DVD playback only)</li>
+</ul>
+
+<h2>An Introduction to the Multichannel Formats</h2>
+
+<p>Before we begin to discuss specifics on multichannel authoring, a bit of information on the two Dolby multichannel formats.</p>
+<p><b>Dolby Digital</b> provides for six discrete channels of audio data to be provided, generally on a digital stream (on Xbox, this is toslink optical, provided on the enhanced S-video and HDTV adapters): left, center, right, left surround, right surround, and low frequency effects (LFE). The first five channels are full spectrum, and the LFE is low pass filtered and reserved for 120 Hz and below.<SUP>1</SUP></P> 
+<p><b>Dolby Surround</b> provides for four channels of encoded data to be provided on a traditional analog or digital two-channel stream. For Xbox, the stereo RCA-style audio output will be presented in Dolby Surround. In addition, if the user has turned off Dolby Digital from the Xbox Dashboard, the optical output will send Dolby Surround data. The four channels are left, center, right, and a monaural surround. It is also variably known as "LtRt encoding" and "matrix encoding." <i>Dolby&#174; Pro Logic&#174;</i> is the term used for the <u>decode</u> process, while <i>Dolby Surround</i> is used for the <u>encode</u> process. Note that the Xbox does not perform Dolby ProLogic II encoding.</p>
+<p>Let's talk first about the differences here. Note first that Dolby Surround does not have an LFE channel. For this reason, while the LFE will provide extra "punch" for things like explosions on a Dolby Digital system, you should avoid placing a sound <i>exclusively</i> in the LFE channel, because it will be lost when played back on a Dolby Surround or stereo system. Similarly, if you had a stereo mix coming out of your two surround speakers, the content would be played mono on a Dolby Surround system. While no data would be lost, this might not be the desired behavior and should be kept in mind when authoring content.</p>
+<p>A more complete explanation of the Dolby Digital and Dolby Surround encoding methods and concepts can be found at their game designers site&#8212;please visit <a href="http://www.dolby.com/disk" target="blank"><B>http://www.dolby.com/disk</B></a> or send an e-mail message to <A href="mailto:games@dolby.com">games@dolby.com</a>.</p>
+<p>There are several different ways to take advantage of the Xbox audio system's multichannel formats, which will be discussed in the following sections.</p>
+
+<h2>HRTF Encoding: 3-D Positioning of Voices</h2>
+<p>Perhaps the easiest way to obtain multichannel audio playback is to make use of the 64 "3-D" Head-Related Transfer Function (HRTF) voices provided on the Xbox Media Communications Processor (MCP). These voices are processed in hardware<SUP>2</SUP> and give you perceptual 3-D positioning via Doppler, filtering, and other processing. They also give you Interactive 3-D Level 2 (I3DL2) occlusion and obstruction (sounds getting filtered as they pass through or around objects), all still processed in hardware. By contrast, speaker panning (discussed below) will only place a sound into one or more speakers with volume control; perceptual processing will require additional effort by the developer.</p>
+<p>Remember that you are not limited to 64 HRTF processed sounds. By using chaining/submixing and multipass effects,<SUP>3</SUP> more than one sound source can be routed to a 3-D voice, allowing for more complex and dynamic 3-D-positioned sounds. The 64 voices only means that you'll be limited to 64 unique independently positionable sound sources.</p>
+<p>Content meant to be played through a 3-D voice should typically be authored as a mono-format data source, though both XACT (Xbox Audio Creation Tool) and DirectSound can automatically mix down any multichannel waves that are submixed. The programmer takes advantage of the 3-D voices by setting the DSBCAPS_CTRL3D flag when creating a Microsoft&#174; DirectSound&#174; buffer or stream, or by creating an XACT sound source using the XACT_FLAG_SOUNDSOURCE_3D flag. They then use the DirectSound3D or XACT libraries to control (x,y,z) positions of source and listener.<SUP>4</SUP> Note that there are actually two different coefficient tables that you can choose from, one offering full elevation control in a larger table (for objects that can move above or below the listener), and a smaller set optimized for horizontal positioning only.</p>
+<p>Note that in DirectSound, HRTF positioning defaults to use a four-channel pan: left, right, left surround, and right surround. The center and LFE channels are not used by default. A programmer can easily add these by using any of the "5CHANNEL" mixbin constants when creating the buffer (or by setting the mixbins later on a buffer previously created). XACT does default to use all five positioned speakers, and the content creator can specify whether the LFE channel should be used. Again, a programmer can adjust the mixbin assignments for this sound source to solely use the four directional speakers if they wish.</p>
+
+<h2>5.1 Speaker Panning</h2>
+<p>A second method for obtaining 5.1 content playback is to place sounds in specific speakers. This technique is available for all 192 of the so-called "2-D" voices. Two techniques, with code that can be easily adopted for your specific title, are demonstrated in the Xbox Development Kit sample titled 'Pan3D'. Remember that each 2-D voice can output to up to eight separate mixbins,<SUP>5</SUP> each output with independent volume control. This means that you can take a sound and "pan" it by simultaneously altering its volume through the five directional speakers (as well as the LFE if you so wish).</p>
+<p>This sort of panning can be quite effective for sounds that are extra-filmic, and in many cases sounds with perceived (and moving) physical sources as well. Remember that you don't get the Doppler shifting (at least not without manually pitch shifting the voice) or filtering that characterizes HRTF-encoded audio. For that reason, an object moving around you in 3-D space will not necessarily sound as convincing to the player if 5.1 speaker panning is used as it will through the 64 HRTF voices. But for acoustic aspects not directly tied to the environment of the game, such as user interface noises and underscore, 5.1 panning can be quite effective.</p>
+<p>Speaker panning also provides the potential for several "quick and dirty" ways to get multichannel audio. For instance, a stereo music track could be sent to the rear speakers at half volume. An explosion could be sent to the LFE channel as well as the main speakers. User interface sounds could be panned through the speakers based on their position on the screen or the player's current orientation.</p>
+<p>5.1 speaker panning is also the most typical way to route sounds directly to the speakers the HRTF encoder does not use, namely the center and LFE channels. For sounds that are anchored to the screen (such as dialogue), the most common way to play them back is to pan them to the center channel. And for explosions and other "meaty" sounds, you may elect to author a "rumble" track that is routed solely to the LFE, accompanying a panned or HRTF-positioned explosion. Remember that the LFE channel is reserved for data in the sub-120-Hz range, so you can author "rumble" tracks at extremely low sampling rates (and thus keep their file sizes quite small).</p>
+
+<h2>Hybrid Technique: Transitioning Sound Sources from Anchored to Mobile</h2>
+<p>The filmic tradition of 5.1 playback reserves the center channel for sounds that are "anchored" to the screen. In games, this could translate to dialog, first-person narrative, user interface sounds, and so on. But what happens when the source of dialog starts off on-screen, then starts moving&#8212;or our player spins away from the sound source. Exclusive use of 5.1 panning might not provide convincing filtering on the noise that is now potentially behind us. Similarly, the four-channel HRTF 3D voice doesn't get sent to the center channel, causing the dialog to instead be sent to the left and right channels at equal volumes.</p>
+<p>Here is a case where a combination of HRTF encoding and panning might be employed. We begin by routing this sound to both a 2D and a 3D voice (potentially through chaining). When the sound source is at the center of the screen, we send it at full volume to the center channel while simultaneously dropping the volume of the 3D voice to nothing. When the sound source moves away from the center of the screen, we pan down the center channel and raise the volume of the 3-D voice. Of course, this uses twice as many voices, but for cases where the object is constantly moving or anchored to the screen for extended periods, there's no reason to keep both voices allocated. The two voices would only be used simultaneously during the transition from panning to HRTF.</p>
+
+<h2>Pre-Rendered Multichannel Audio</h2>
+<p>This method is actually just a special case of 5.1 panning, but it deserves its own discussion. As an alternative to HRTF encoding a mono sound or manually panning a mono or stereo sound to multiple speakers, you can author your own pre-rendered six-channel audio streams. Note that we're generally talking about .wav files with six interleaved channels, which follow the WaveFormatEx<SUP>6</SUP> multichannel wave format. We are not referring to 5.1 <i>encoded</i> audio streams (generally called Dolby Digital bit streams or AC-3), which will be discussed in the next topic.</p>
+<p>Pre-rendered multichannel audio is ideal for things like cut scenes, prerecorded music, and background ambiences. Your developer still has the flexibility to adjust the mix in realtime if desired, using the same 5.1 panning techniques from above. You can also easily mix pre-rendered with realtime-rendered multichannel audio.</p>
+<p>There are a few issues to keep in mind when authoring in this manner. First of all, remember that many users will have stereo or Dolby Surround capability but not Dolby Digital. The Xbox MCP will mix down to these formats for you automatically, but the LFE channel information will be lost. In addition, sounds unique to the left or right surround channels will be mixed to a mono surround channel. For these reasons, you might in some cases author a "4.0" (left, center, right, mono surround) mix of your content in addition to the 5.1 version. Either one can be chosen dynamically by the game depending on what the user has selected in the Dashboard. However, you do not have any way of determining whether the user is listening through the optical or analog outputs, so seeing how your 5.1 mix sounds when downmixed is still an important factor to consider.</p>
+<p>Of course, the most critical issues in this kind of authoring is going to be file size and bandwidth for playback. True, a 5.1 wave file is going to be three times the size of a corresponding stereo wave file. But there are ways to limit the size:</p>
+<UL>
+<li><b>Streaming</b>: The programmer can set the buffer size to be fairly small.</li>
+<li><b>Sampling rate</b>: Remember that the Xbox MCP up-samples everything to 48 kHz in hardware using multipoint interpolation to minimize aliasing. So you can author a 5.1 stream at lower sampling rates as appropriate for the content.</li>
+<li><b>Compression</b>: While adaptive differential pulse code modulation (ADPCM) does not support six-channel wave files, you could create three separate stereo ADPCM files (or six separate mono files) and play all of them at the same time. ADPCM decompression is performed in hardware, so there is no CPU hit for doing this. This would also give you the added benefit of being able to control the sampling rate of each file independently. If you isolated the LFE into its own file, you could use an extremely low sampling rate (because the channel is reserved for data in the sub-120-Hz range). Both DirectSound and XACT can guarantee that each of the streams will start playing back sample-synchronously (the former through  IDirectSound8::SynchPlayback).</li>
+</ul>
+<p>Bandwidth is, of course, helped by performing some of the techniques given above to minimize source file size. You might make use of hard-disk caching to ensure you always have a steady stream of content ready for playback even when other processes are using the DVD. Of course, the best way to optimize bandwidth is to ensure that all needed content is positioned close together on the DVD, as well as making use of the outermost DVD tracks (which get more bandwidth due to the DVD's constant angular velocity<SUP>7</SUP>). In addition, always use asynchronous non-buffered I/O on your content reads. XACT automatically builds wave banks that conform to these guidelines.</p>
+<p>Full motion video (cut scene) solutions that support multichannel audio may employ their own combination of the above techniques or other techniques to optimize your audio content for their delivery format. Consult their documentation or technical support contacts for more information.</p>
+
+<h2><a name="preencoded">Pre-Encoded Multichannel Audio</a></h2>
+<p>The final method discussed here for obtaining multichannel audio is to deliver your own encoded Dolby Digital or DTS bit streams on the DVD. Due to the issues discussed below, this is not generally recommended. In these cases, you are completely bypassing the Xbox MCP and writing directly to the analog and digital outputs. While a pre-encoded Dolby Digital bit stream does provide a file size improvement over an unencoded 48-kHz six-channel stream, there are a few caveats to authoring in this manner.</p>
+<p>First of all, remember that you are bypassing the Xbox MCP entirely. This means that the bit stream you write to the analog and digital outputs is exclusive; you won't be able to mix in any other sounds, dynamic or static.<SUP>8</SUP> This will generally limit the usefulness of pre-encoded audio data to cut scenes and other linear, non-interactive parts of games. Also, the process of switching between the Xbox MCP and your custom bit stream may not be glitch-free.</p>
+<p>You also have to keep in mind what the user has specified as their audio setup in the Xbox Dashboard. If they say they do not have a Dolby Digital or DTS decoder, the optical output must still present a pulse code modulation (PCM) stereo stream. Similarly, the analog outputs must always present audio data when the digital outputs do. So while pre-encoded content alone may be smaller than the corresponding interleaved six-channel wave content, you will now have to deliver content in multiple formats. For the simplest case, that would probably be stereo (potentially Dolby Surround encoded) and your multichannel encoded format.</p>
+<p>With these restrictions and limitations in mind, pre-encoded content would probably be most useful for pre-rendered cut scenes, but even here has been rarely attempted.</p>
+
+<h2>Wrap-Up</h2>
+<p>We've now discussed the primary ways to get multichannel output from the Xbox. For straightforward playback of realtime 3D-positioned content, the 64 hardware HRTF voices are probably the easiest option. For sounds that are intended for a specific speaker, or for 3-D positioned sounds where the subtleties of spatial positioning aren't as important, 5.1 or direct speaker panning provides this functionality.</p>
+<p>For sounds that don't need to be dynamically generated, such as pre-rendered music and ambience, you might consider authoring 5.1 wave files rather than panning or HRTF encoding. Alternatively, you can play multiple mono or stereo streams and gain the ability to use compression and multiple sampling rates.
+</p>
+
+
+<p>For more information about the Xbox audio hardware or multichannel audio formats, please consult the Xbox Audio Best Practices Guide or the Xbox Development Kit documentation, or or send an e-mail message to <a href="mailto:content@xbox.com">content@xbox.com</a>.</p>
+
+<BR>
+<HR ALIGN="left" WIDTH="300">
+<P class="footnote"><SUP>1</SUP>&nbsp;The Xbox low pass filters the LFE channel as it is created. Incidentally, most Dolby Digital decoders will low pass filter the LFE channel as well.</p>
+<P class="footnote"><SUP>2</SUP>&nbsp;There is actually a small amount of CPU overhead required to perform the mathematics relating to the transform. However, the filtering, pitch shifting, four-channel positioning, and mixing are all accomplished in hardware.</p>
+<P class="footnote"><SUP>3</SUP>&nbsp;For more information on chaining, submixing, and multipass effects, please see the white paper <a href="cd_aud_wp_chaining.htm">Chaining, Submixing, and Multipass Effects</a> or Chapter 3, <a href="cd_aud_wp_bp_chap3.htm">Xbox Audio Hardware</A>, of the Xbox Audio Best Practices Guide.</p>
+<P class="footnote"><SUP>4</SUP>&nbsp;A common question is how to manage multiple concurrent "listeners." Xbox only supports a single listener (because in general, everyone playing on a console will be listening through the same set of speakers). However, you could arrange your world such that sounds meant for one player would be positioned in one direction (for instance, the left) and sounds meant for another player would favor another direction. Alternatively, you could create multiple 'virtual' listeners that overlap in their use of the speakers. See the white paper titled "Do You Hear What I Hear?: Implementing Multiple Listeners in a 3D Space" for more details.</P>
+<P class="footnote"><SUP>5</SUP>&nbsp;If you play stereo content through a "2-D" voice, the left and the right channels can each be independently mixed to four mixbins.</P>
+<P class="footnote"><SUP>6</SUP>&nbsp;Some wave editing and mixing software applications support the WaveFormatEx format for wave files. For those that do not, the wavmerge tool, available online as part of the Xbox Development Kit, will take four or six mono wave files and marge them into a 4.0 or 5.1 wave file. See "Chapter 5-Xbox Audio Content Development Tools" of the Xbox Audio Best Practices Guide for more details.</p>
+<P class="footnote"><SUP>7</SUP>&nbsp;For more information on bandwidth of the hard disk and DVD as well as sample bit rates for various stream types, see Chapter 3, <a href="cd_aud_wp_bp_chap3.htm">Xbox Audio Hardware</A>, of the Xbox Audio Best Practices Guide.</p>
+<P class="footnote"><SUP>8</SUP>&nbsp;Presumably, one could decode the stream, mix in new sounds in software, and re-encode the stream, but at a large CPU and latency cost.</p>
+
+<BR><BR>
+<SMALL>Thursday, July 12, 2001</SMALL>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>
+
+
+
+
+
+
+
+
+
+
+	

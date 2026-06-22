@@ -1,0 +1,161 @@
+name: Build VSIX
+
+on:
+  push:
+    branches: [main, master]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      publish_release:
+        description: 'Attach VSIX to a GitHub Release (uses tag v<package.json version> if not on a tag)'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  NODE_VERSION: '20'
+
+jobs:
+  build:
+    name: Build cross-platform VSIX
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.SUBMODULES_TOKEN }}
+          # Full history so submodule checkout can reach pinned SHAs (not just branch tips).
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build VSIX
+        run: ./scripts/build-vsix.ps1 -ExtensionRoot $env:GITHUB_WORKSPACE
+
+      - name: Upload VSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rxdk-vscode-vsix
+          path: rxdk-vscode-*.vsix
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 90
+
+      - name: Write job summary
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $vsix = Get-ChildItem -Path $env:GITHUB_WORKSPACE -Filter 'rxdk-vscode-*.vsix' |
+            Sort-Object LastWriteTime -Descending |
+            Select-Object -First 1
+          if (-not $vsix) {
+            throw 'VSIX not found after build'
+          }
+          $sizeMb = [math]::Round($vsix.Length / 1MB, 2)
+          @(
+            '### RXDK VSIX build',
+            '',
+            '| Artifact | Size |',
+            '|----------|------|',
+            "| ``$($vsix.Name)`` | ${sizeMb} MB |",
+            '',
+            'Host tools are bundled for `win-x64`, `linux-x64`, `osx-x64`, and `osx-arm64` under `out/sdk/tools/<rid>/`.',
+            'Xbox headers/libs come from committed `RXDK-Libs/out/` (no MSVC build on CI).',
+            'Compiling Xbox titles still requires **Windows + Visual Studio (x86)** locally.',
+            '',
+            'Install locally:',
+            '```powershell',
+            './scripts/install-extension.ps1 -Target both',
+            '```'
+          ) | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8
+
+  release:
+    name: Publish GitHub Release
+    needs: build
+    if: |
+      github.event_name != 'pull_request' && (
+        startsWith(github.ref, 'refs/tags/v') ||
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_release == 'true')
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download VSIX artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: rxdk-vscode-vsix
+          path: dist
+
+      - name: Resolve release tag
+        id: meta
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            tag="${GITHUB_REF#refs/tags/}"
+            prerelease=false
+          else
+            tag="vsix-${GITHUB_RUN_NUMBER}"
+            prerelease=true
+          fi
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "prerelease=${prerelease}" >> "$GITHUB_OUTPUT"
+          echo "Release tag: ${tag} (prerelease=${prerelease})"
+
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(dist/*.vsix)
+          if [[ ${#files[@]} -eq 0 ]]; then
+            echo "No VSIX files in dist/" >&2
+            exit 1
+          fi
+          args=(
+            release create "${{ steps.meta.outputs.tag }}"
+            --title "RXDK VSCode ${{ steps.meta.outputs.tag }}"
+            --generate-notes
+          )
+          if [[ "${{ steps.meta.outputs.prerelease }}" == "true" ]]; then
+            args+=(--prerelease)
+          fi
+          gh "${args[@]}" "${files[@]}"
+
+      - name: Write release summary
+        shell: bash
+        run: |
+          {
+            echo "### GitHub Release"
+            echo ""
+            echo "- Tag: \`${{ steps.meta.outputs.tag }}\`"
+            echo "- Pre-release: \`${{ steps.meta.outputs.prerelease }}\`"
+            echo "- Artifact: \`rxdk-vscode-*.vsix\`"
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,340 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Stock Text. Do not change.****-->
+<TITLE>Xbox Shader Assembler Error Codes</TITLE>
+<!--**********************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Xbox Shader Assembler Error Codes"/>
+<MSHelp:Keyword Index="F" Term="Xbox Shader Assembler Error Codes"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Stock Text. Do not change.****-->
+<H1 class="heading"><A NAME="Xbox_Shader_Assembler_Error_Codes"></A>Xbox Shader Assembler Error Codes</H1>
+<!--**********************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<body>
+
+
+<table class="tblcontrols">
+  <tr>
+    <th>Code</td>
+    <th>Description</td>
+  </tr>
+  <tr>
+    <td>1</td>
+    <td>Unknown preprocessor directive. The source contains a line that starts 
+    with #, but isn't one of the known preprocessor directives. An example would 
+    be:<p>#myDirective blah</p>
+    <p>&nbsp;</td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td>Error directive. The source contains an &quot;#error&quot; preprocessor directive. 
+    For example:<p>#error This file is obsolete.</p>
+    <p>&nbsp;</td>
+  </tr>
+  <tr>
+    <td>3</td>
+    <td>Symbol expected. A symbol was expected, but was not found. For example:<p>
+    #define + // error: + is not a symbol.</p>
+    <p>&nbsp;</td>
+  </tr>
+  <tr>
+    <td>4</td>
+    <td>Symbol already defined. The source is trying to redefine an existing 
+    symbol. For example:<p>#define COLOR v2<br>
+    #define COLOR v3 // Error: symbol COLOR is already defined</p>
+    <p>If you really want to do this, use #undef to undefine the symbol before 
+    redefining it:</p>
+    <p>#define COLOR v2<br>
+    #undef COLOR<br>
+    #define COLOR v3</p>
+    <p>&nbsp;</td>
+  </tr>
+  <tr>
+    <td>5</td>
+    <td>Can't Open File. The source is trying to include a file that does not 
+    exist. For example:<p>#include &quot;NoSuchFile.h&quot; // Error if NoSuchFile.h does 
+    not exist</td>
+  </tr>
+  <tr>
+    <td>6</td>
+    <td>Too many levels of include. The source has used too many levels of 
+    nested includes. The maximum is 20 levels. One way this can happen is if a 
+    file accidentally includes itself:<p>// MyFile.h<br>
+    #include &quot;MyFile.h&quot; // Error, infinite recursion</td>
+  </tr>
+  <tr>
+    <td>7</td>
+    <td>Missing Resolver. The source contains an &quot;#include&quot; statement, but the 
+    XGAssembleShader function was called with a NULL resolver. To fix this error 
+    either remove the #include statement, or supply a resolver.</td>
+  </tr>
+  <tr>
+    <td>8</td>
+    <td>File name is not quoted. The source contains an #include statement 
+    without double-quotes or angle-brackets around the file name. For example:<p>
+    #include MyFile.h // Error - need double-quotes or angle brackets..<br>
+    #include &gt;MyFile.h&lt; // Error - The angle brackets need to by in the other 
+    order.<br>
+    #include &quot;MyFile.h&quot; // OK<br>
+    #include &lt;MyFile.h&gt; // OK</td>
+  </tr>
+  <tr>
+    <td>9</td>
+    <td>File Name Missing. The source contains an #include statement, but no 
+    file name. For example:<p>#include</p>
+    <p>&nbsp;</td>
+  </tr>
+  <tr>
+    <td>10</td>
+    <td>Include Name Too Long. The file path specified in the #include statement 
+    is too long. The maximum length is MAX_PATH characters long.</td>
+  </tr>
+  <tr>
+    <td>11</td>
+    <td>Expanded Macro Too Long. The fully expanded statement is too large to 
+    fit into available RAM. </td>
+  </tr>
+  <tr>
+    <td>12</td>
+    <td>Source Line Too Long. A line of the source is too large to fit into 
+    available RAM.</td>
+  </tr>
+  <tr>
+    <td>13</td>
+    <td>Expected Macro Name. The source had a &quot;macro&quot; statement, without a macro 
+    name:<p>macro // Error need to specify a macro name.</td>
+  </tr>
+  <tr>
+    <td>14</td>
+    <td>Expected endm. The source had a &quot;macro&quot; statement, but the file ended 
+    before an &quot;endm&quot; statement was seen.</td>
+  </tr>
+  <tr>
+    <td>15</td>
+    <td>Macro Argument Syntax Error. A &quot;#define&quot; statement was encountered, but 
+    the argument list had syntax errors. The argument list should start with a 
+    '(', contain one or more symbols separated by commas, and end with a ')'. 
+    For example:<p>#define MYDEFINE(X,Y,+)&nbsp; // Error - '+' is not a valid 
+    macro argument name</td>
+  </tr>
+  <tr>
+    <td>16</td>
+    <td>Expected macro parameter. In a &quot;macro&quot; definition, a '%' character was 
+    encountered, but was not followed by a macro parameter name. For example:<p>
+    macro MyMacro a,b<br>
+&nbsp; mov r0,%c // Error - c is not a parameter of this macro.<br>
+    endm</td>
+  </tr>
+  <tr>
+    <td>17</td>
+    <td>Too many levels of IF. This source file has too many levels of nested 
+    #if or #ifdef statements. The limit is 20 levels. Each file has its own 
+    limit, so when one file is included in another, each file can have up to 20 
+    levels of nested &quot;#ifdef&quot; statements.</td>
+  </tr>
+  <tr>
+    <td>18</td>
+    <td>Unexpected &quot;#else&quot;. The source file contains an &quot;#else&quot; statement 
+    without a preceding &quot;#if&quot;, &quot;#elif&quot; or &quot;#ifdef&quot; statement.</td>
+  </tr>
+  <tr>
+    <td>19</td>
+    <td>Unexpected &quot;#endif&quot;. The source file contains an &quot;#endif&quot; statement 
+    without a preceding &quot;#if&quot;, &quot;#else&quot;, &quot;#elif&quot; or &quot;#ifdef&quot; statement.</td>
+  </tr>
+  <tr>
+    <td>20</td>
+    <td>Expected &quot;#endif&quot;. The source file contains an &quot;#if&quot; or &quot;#ifdef&quot; 
+    statement, but does not contain a corresponding &quot;#endif&quot; statement.</td>
+  </tr>
+  <tr>
+    <td>21</td>
+    <td>Don't Handle &quot;#if&quot;. The source file contains an &quot;#if&quot; statement. &quot;#if&quot; 
+    statements are not currently handled. Consider using &quot;#ifdef&quot; instead.</td>
+  </tr>
+  <tr>
+    <td>22</td>
+    <td>Don't Handle &quot;#elif&quot;. The source file contains an &quot;#elif&quot; statement. 
+    &quot;#elif&quot; statements are not currently handled. Consider using &quot;#ifdef&quot; 
+    instead.</td>
+  </tr>
+  <tr>
+    <td>23</td>
+    <td>Unterminated C-style comment. The file contains the start of a C-style 
+    comment, &quot;/*&quot;, but does not contain the end of the C-style comment, &quot;*/&quot;.</td>
+  </tr>
+  <tr>
+    <td>100</td>
+    <td>Warning: Unknown Pragma. The source file contains a #pragma statement 
+    with an unknown pragma type. This is not an error, but it usually indicates 
+    a misspelling of the pragma name. An example would be:<p>#pragma 
+    screenspace2 // error - intended to write screenspace</td>
+  </tr>
+  <tr>
+    <td>101</td>
+    <td>Unsupported Preprocessor Directive. The source file contains an unknown 
+    or unsupported preprocessor directive. This is similar to error 1, except 
+    that error 1 is generated by the preprocessor, while this error is generated 
+    by the assembler. One way to cause this error would be to disable the 
+    preprocessor, so that preprocessor directives are sent to the assembler.
+    </td>
+  </tr>
+  <tr>
+    <td>102</td>
+    <td>Invalid Version. The shader source file is for a version number that is 
+    not supported by the shader assembler. An example would be:<p>vs.10.10 // 
+    Error, version 10.10 is not supported.</td>
+  </tr>
+  <tr>
+    <td>103</td>
+    <td>Complement Not Supported. The compliment operator is not supported in 
+    vertex shaders. It is only supported in pixel shaders. </td>
+  </tr>
+  <tr>
+    <td>104</td>
+    <td>Complement Cannot be Used with Other Modifiers. The compliment operator 
+    cannot be used with other modifiers.</td>
+  </tr>
+  <tr>
+    <td>105</td>
+    <td>Validation error. The validator has found a potential problem with your 
+    shader, such as reading from a temporary variable before it has been written 
+    to.</td>
+  </tr>
+  <tr>
+    <td>106</td>
+    <td>Syntax error. The syntax of the shader source is incorrect. This is a 
+    catch-all error that can be caused by many specific mistakes. Double-check 
+    the syntax of your source code near the line where the error was reported.</td>
+  </tr>
+  <tr>
+    <td>107</td>
+    <td>Illegal register in index expression. You can only use the index 
+    register, a0.x, in an index expression. For example:<p>mov r0, c[a0.y] // 
+    error, must be a0.x<br>
+    mov r0, c[r0.x] // error, must be a0.x</td>
+  </tr>
+  <tr>
+    <td>108</td>
+    <td>Duplicate A0.x. A0.x can only appear once in an index expression. For 
+    example:<p>mov r0,c[a0.x+a0.x] // Illegal - a0 can only appear once.</td>
+  </tr>
+  <tr>
+    <td>109</td>
+    <td>Internal Assembler Error. The assembler has discovered that its internal 
+    state is inconsistent.</td>
+  </tr>
+  <tr>
+    <td>110</td>
+    <td>Invalid write mask. The specified mask is invalid. Examples<p>mov 
+    r0.s,r2 // Illegal - 's' is not a valid mask element.</td>
+  </tr>
+  <tr>
+    <td>111</td>
+    <td>Invalid swizzle. The specified swizzle is invalid. Example:<p>mov 
+    r0,r2.xyzs // Illegal - 's' is not a valid swizzle element.</td>
+  </tr>
+  <tr>
+    <td>112</td>
+    <td>Invalid register. The specified register is invalid for this type of 
+    shader. Example:<p>mov r0,r100 // Illegal, there is no register 100.</td>
+  </tr>
+  <tr>
+    <td>113</td>
+    <td>Unexpected destination modifier. Source modifiers are not allowed on 
+    destinations. Example:<p>mov -r0,r1 // Illegal, you can't negate the 
+    destination register.<br>
+    mov r0,-r1 // OK - it's fine to negate a source register.</p>
+    <p>&nbsp;</td>
+  </tr>
+  <tr>
+    <td>114</td>
+    <td>Invalid destination register. The specified destination register is 
+    invalid, probably because it cannot be written to. Example:<p>mov c[0],r0 // 
+    Invalid in a normal 'vs' style shader. This statement would be OK in a 'xvsw' 
+    shader.</td>
+  </tr>
+  <tr>
+    <td>115</td>
+    <td>Invalid write mask. For a pixel shader, the only valid masks are '.rgb', 
+    '.a', and '.rgba'</td>
+  </tr>
+  <tr>
+    <td>116</td>
+    <td>Invalid source register. The specified source register is invalid, 
+    because it cannot be read from. Example:<p>mov r0,oPos // Can't read from 
+    oPos</td>
+  </tr>
+  <tr>
+    <td>117</td>
+    <td>Invalid constant. A register other than a C register was specified for a 
+    'def' instruction. For example:<p>def c0,0,0,0,0 // OK<br>
+    def c[a0.x],0,0,0,0 // Error - can't use relative addressing in a def 
+    statement.<br>
+    def r0,0,0,0,0 // Error - can only use 'c' registers in a def statement.</td>
+  </tr>
+  <tr>
+    <td>118</td>
+    <td>Expected version statement. The shader has to start with a version 
+    statement. This is typically 'xvs.1.1' for vertex shaders, and 'xps.1.1' for 
+    pixel shaders.</td>
+  </tr>
+  <tr>
+    <td>600</td>
+    <td>Too many instructions. You have specified too many instructions for a 
+    valid shader.</td>
+  </tr>
+  <tr>
+    <td>601</td>
+    <td>No temporary registers available. This error can occur in complicated 
+    vertex shaders when the source contains a &quot;log&quot;, &quot;exp&quot;, or &quot;frc&quot; macro 
+    instruction. These three instructions sometimes require the use of a 
+    temporary register. The assembler tries to find a temporary ('r') register 
+    that is not being used by your shader program. If no register can be found, 
+    this error is generated.</td>
+  </tr>
+  <tr>
+    <td>602</td>
+    <td>Warning: Unsupported Macro. In normal DirectX 8 the &quot;log&quot; and &quot;exp&quot; 
+    macro instructions are supposed to be more precise than the &quot;logp&quot; and &quot;expp&quot; 
+    primitive instructions. But on Xbox these two macro instructions are no more 
+    precise than their primitive versions. This warning is generated to remind 
+    you to consider changing your shader to use &quot;logp&quot; and &quot;expp&quot; directly.</td>
+  </tr>
+</table>
+
+<H4>See Also</H4>
+
+<P><a href="xbox_jbh_dxref_assembleshader.htm"><b>XGAssembleShader</b></a>, <a href="xbox_jbh_tool_xsasm.htm"><b>Xbox Shader Assembler Tool (xsasm)</b></a></P>
+<!--*********************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>
+

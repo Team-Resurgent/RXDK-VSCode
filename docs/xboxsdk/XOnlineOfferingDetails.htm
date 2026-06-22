@@ -1,0 +1,130 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineOfferingDetails</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineOfferingDetails"/>
+<MSHelp:Keyword Index="F" Term="XOnlineOfferingDetails"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineOfferingDetails</h1>
+            <p>Creates an asynchronous task to retrieve the details associated with a specified online offering.</p>
+        <pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineOfferingDetails(</b>
+    <b>DWORD</b> <i>dwUserIndex</i><b>,</b>
+    <b>XOFFERING_ID</b> <i>OfferingId</i><b>,</b>
+    <b>DWORD</b> <i>dwLanguage</i><b>,</b>
+    <b>DWORD</b> <i>dwDescriptionIndex</i><b>,</b>
+    <b>PBYTE</b> <i>pbBuffer</i><b>,</b>
+    <b>DWORD</b> <i>dwBufferSize</i><b>,</b>
+    <b>HANDLE</b> <i>hWorkEvent</i><b>,</b>
+    <b>PXONLINETASK_HANDLE</b> <i>phTask</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+            <dt><i>dwUserIndex</i></dt>
+<dd>[in]  Controller index (zero-based) of the user who would be purchasing the offering. The user must have been successfully logged on with a previous call to <a href="XOnlineLogon.htm">XOnlineLogon</a>.</dd>
+            
+            <dt><i>OfferingId</i></dt>
+<dd>[in]  Unique identifier associated with the offering to be installed. This identifier is obtained from an <a href="XONLINEOFFERING_INFO.htm">XONLINEOFFERING_INFO</a> structure when available offerings are enumerated.</dd>
+            
+            <dt><i>dwLanguage</i></dt>
+<p>
+                    <dd>[in]  Value that specifies the language used to determine the formatting of prices in the details results. <i>dwLanguage</i> must be one of the following values:</dd>
+                    <table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+                        <tr>
+<td>XC_LANGUAGE_ENGLISH</td>
+<td>English</td>
+</tr>
+                        <tr>
+<td>XC_LANGUAGE_JAPANESE</td>
+<td>Japanese</td>
+</tr>
+                        <tr>
+<td>XC_LANGUAGE_GERMAN</td>
+<td>German</td>
+</tr>
+                        <tr>
+<td>XC_LANGUAGE_FRENCH</td>
+<td>French</td>
+</tr>
+                        <tr>
+<td>XC_LANGUAGE_SPANISH</td>
+<td>Spanish</td>
+</tr>
+                        <tr>
+<td>XC_LANGUAGE_ITALIAN</td>
+<td>Italian</td>
+</tr>
+                        <tr>
+<td>XC_LANGUAGE_KOREAN</td>
+<td>Korean</td>
+</tr>
+                        <tr>
+<td>XC_LANGUAGE_TCHINESE</td>
+<td>Chinese (Traditional)</td>
+</tr>
+                        <tr>
+<td>XC_LANGUAGE_PORTUGUESE</td>
+<td>Portuguese</td>
+</tr>
+                    </table>
+                    <p>To specify the language currently in use by the Xbox console (in other words, the language set by the user through the Dashboard), pass the return value of <a href="x_jg_xgetlanguage.htm">XGetLanguage</a> as <i>dwLanguage</i>.</p>
+                </p>
+            <dt><i>dwDescriptionIndex</i></dt>
+<dd>[in]  The details BLOB that should be retrieved for this offering.  This is a title-specific index into the ordered list of detail BLOBs that the title submitted for the specified offering.  Typically, this value will be used to differentiate between the available description languages for the offering, but the specific use of this value is up to the title.</dd>
+            
+            <dt><i>pbBuffer</i></dt>
+<dd>[out, optional]  Pointer to a buffer that will be used by the function to store details results for the operation.  The details results are obtained with a call to <a href="XOnlineOfferingDetailsGetResults.htm">XOnlineOfferingDetailsGetResults</a> rather than read directly from this buffer.  If this parameter is NULL, the function will automatically allocate a buffer.</dd>
+            
+            <dt><i>dwBufferSize</i></dt>
+<dd>[in]  Size, in bytes, of the buffer pointed to by <i>pbBuffer</i>.  If <i>pbBuffer</i> is NULL, this parameter specifies the size of the results buffer that the function will automatically allocate.  The <a href="XOnlineOfferingDetailsMaxSize.htm">XOnlineOfferingDetailsMaxSize</a> function should be used to determine the buffer size needed to process the details information, including the details BLOB data.</dd>
+            
+            <dt><i>hWorkEvent</i></dt>
+<dd>[in, optional]  Handle to an event that will be signaled when there is work to be done on the details retrieval task. This parameter can be NULL if no such event is required.</dd>
+            
+            <dt><i>phTask</i></dt>
+<dd>[out]  Address of an <b>XONLINETASK_HANDLE</b> that receives the offering details task. This task sends the details request to the offering service and receives the response. This handle must be pumped to completion by <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a>. After the task has completed, call <b>XOnlineOfferingDetailsGetResults</b> to extract the offering details. <a href="XOnlineTaskClose.htm">XOnlineTaskClose</a> must then be called to close the task.</dd>
+            
+        </dl>
+<h4><a name="return"></a>Return Values</h4>
+            <p>Returns S_OK if the function succeeds.</p>
+        <h4><a name="remarks"></a>Remarks</h4>
+            <p> <b>XOnlineOfferingDetails</b> returns an asynchronous task that must be pumped with <b>XOnlineTaskContinue</b> until that function returns XONLINETASK_S_RESULTS_AVAIL, indicating that details results are available. <b>XOnlineOfferingDetailsGetResults</b> can then be called to retrieve the details results.</p>
+
+            <p>Once the results have been retrieved, <b>XOnlineTaskContinue</b> will return XONLINETASK_S_SUCCESS for the task, indicating that the task has completed and can be closed with <b>XOnlineTaskClose</b>.</p>
+
+        <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+             <a href="x_mt_xonline_functions.htm">Xbox Live Functions</a> | <a href="XOnlineOfferingDetailsGetResults.htm">XOnlineOfferingDetailsGetResults</a>, <a href="XOnlineOfferingDetailsMaxSize.htm">XOnlineOfferingDetailsMaxSize</a>, <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a>
+        </p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

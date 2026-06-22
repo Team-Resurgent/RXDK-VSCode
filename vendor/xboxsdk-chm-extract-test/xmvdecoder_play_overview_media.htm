@@ -1,0 +1,104 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Using XMVDecoder::Play</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Using XMVDecoder::Play"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Using XMVDecoder::Play</h1>
+<p>The simplest method of playing an XMV file is to use <a href="xmvdecoder_play_media.htm">XMVDecoder::Play</a>. The example below demonstrates all of the steps necessary to play back the file using this method.</p><ol>
+<li>You have to create both an IDirect3Device8 and an IDirectSound8 object.
+
+<pre class="clsCode">
+IDirectSound8    *pSound  = NULL;
+IDirect3D8       *pD3D    = NULL;
+IDirect3DDevice8 *pDevice = NULL;
+
+DirectSoundCreate( NULL, &amp;pSound, NULL );
+
+pD3D = Direct3DCreate8( D3D_SDK_VERSION );
+
+// Set up the presentation parameters.
+D3DPRESENT_PARAMETERS d3dPP;
+ZeroMemory( &amp;d3dPP, sizeof( D3DPRESENT_PARAMETERS ) );
+
+d3dPP.BackBufferWidth                 = 640;
+d3dPP.BackBufferHeight                = 480;
+d3dPP.BackBufferFormat                = D3DFMT_LIN_A8R8G8B8;
+d3dPP.BackBufferCount                 = 1;
+d3dPP.SwapEffect                      = D3DSWAPEFFECT_DISCARD;
+d3dPP.FullScreen_RefreshRateInHz      = 60;
+d3dPP.FullScreen_PresentationInterval = D3DPRESENT_INTERVAL_ONE;
+d3dPP.EnableAutoDepthStencil          = TRUE;
+d3dPP.AutoDepthStencilFormat          = D3DFMT_D24S8;
+
+pD3D-&gt;CreateDevice( D3DADAPTER_DEFAULT, 
+                    D3DDEVTYPE_HAL,
+                    0,
+                    D3DCREATE_HARDWARE_VERTEXPROCESSING,
+                    &amp;d3dPP,
+                    &amp;pDevice );
+</pre>
+    
+</li>
+
+<li>Next, you must create the decoder and load the XMV file using <a href="xmvdecoder_createdecoderforfile_media.htm">XMVDecoder_CreateDecoderForFile</a>.
+
+<pre class="clsCode">
+XMVDecoder *pDecoder = NULL;
+
+XMVDecoder_CreateDecoderForFile( XMVFLAG_FULL_LOOP, 
+                                 "d:\media\MyVideo.xmv", 
+                                 &amp;pDecoder );
+</pre>
+    
+
+</li>
+
+<li>In order to play back audio, you need to enable at least one audio stream. While it is possible to embed multiple audio streams into an XMV file, typically you want to play only one at at time. If you are trying to enable multiple streams, you can get the number of audio streams in the XMV file by calling <a href="xmvdecoder_getvideodescriptor_media.htm">XMVDecoder::GetVideoDescriptor</a>. This example enables only the first stream by calling <a href="xmvdecoder_enableaudiostream_media.htm">XMVDecoder::EnableAudioStream</a>.
+
+<pre class="clsCode">
+pDecoder-&gt;EnableAudioStream(i, 0, NULL, NULL );
+</pre>
+    
+</li>
+
+<li>Either <a href="_dx_idirect3ddevice8_present_graphics.htm">IDirect3DDevice8::Present</a> or <a href="_dx_idirect3ddevice8_swap_graphics.htm">IDirect3DDevice8::Swap</a> must be called at least once after the device is created in order for the video mode to be set correctly. If no rendering has occured, you will need to call it explictly.
+
+
+<pre class="clsCode">
+pDevice-&gt;Clear( 0, NULL, 0, D3DCLEAR_TARGET, 0, 0.0, 0 );
+pDevice-&gt;Swap( D3DSWAP_DEFAULT );
+</pre>
+    </li>
+
+
+<li>Finally, start the playback using <a href="xmvdecoder_play_media.htm">XMVDecoder::Play</a>.
+
+<pre class="clsCode">
+pDecoder-&gt;Play( XMVFLAG_FULL_LOOP, NULL );
+</pre>
+    
+<p>XMV files that are creating using XMVFLAG_FULL_LOOP will block the thread that they are playing on until either <a href="xmvdecoder_terminateloop_media.htm">XMVDecoder::TerminateLoop</a> or <a href="xmvdecoder_terminateplayback_media.htm">XMVDecoder::TerminatePlayback</a> is called.</p>
+</li>
+
+</ol>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

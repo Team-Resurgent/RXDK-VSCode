@@ -1,0 +1,129 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Xbox Live Signatures</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Xbox Live Signatures"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Xbox Live Signatures</h1>
+<p>To protect customers and optimize the online gaming experience, the Xbox <i>Live</i> service seeks to maximize the security of content that is distributed through Xbox <i>Live</i>.  Whether the data consists of bonus levels, game statistics and rankings, game replays, or even user-created content such as custom tracks, fields, or team emblems, a user who downloads data from Xbox <i>Live</i> should feel confident that the data is accurate, reliable, and non-malicious.</p><p>Xbox <i>Live</i> content created by publishers is cryptographically signed at the time of creation, and titles are required to verify the content against secure signatures distributed with the content.  Titles can thus be assured that the content being downloaded or accessed has not been modified.  Dynamic content created locally by the user or title must likewise be treated securely, especially if that data will be uploaded to Xbox <i>Live</i> and shared with other users.  Dynamically created content that always resides in memory and is never written to storage can be considered secure, but content written to storage becomes vulnerable.</p><p>Unsigned data located on a writeable Xbox storage device (the hard disk or memory units) is vulnerable to attack and modification.  It is possible that malicious users may attempt to access and alter data on the Xbox console from outside the secure environment of an executing Xbox title.  For this reason, offline titles use save game signatures to cryptographically sign content that is written to Xbox storage and then later retrieved for use by the title.  Doing so ensures that, outside of the possibility of determining or cracking the title-specific key used to sign the data, the content was not modified after it was written to the storage device.</p><p>For Xbox <i>Live</i>, an even greater level of security is applied to content or data that will be used by a title online or uploaded to the Xbox <i>Live</i> service after the data has been written to storage.  The extra security is achieved by signing data with <i>Xbox Live signatures</i>.  Xbox Live signatures are similar to save game signatures in that they are used to sign data written to storage, but differ in that the signature is stronger and contains additional information.  Xbox Live signatures have the following additional security features beyond save game signatures:</p><ul>
+<li>Xbox Live signatures use an Xbox Live key that is available to titles only while they are connected to Xbox <i>Live</i>.  Because a console and title executing while connected to Xbox <i>Live</i> must meet stricter security requirements than when executing offline, this Xbox Live key is more secure than the keys used to sign save games.</li>
+<li>Xbox Live signatures contain information about the title and Xbox that produced the signature, as well as the connected users and time when the signature was produced.  This information allows for better tracking and control of signatures.</li>
+<li>Xbox Live signatures can be expired or denied by the signature service at some time after the signature was issued.  A signature's validity is tested by querying the signature service, not by performing a local comparison with re-signed data (as is done with save game signatures). Because of this difference, the signature service can be configured to expire or deny a signature based on time, title, Xbox, or users associated with the signature.  This mechanism could be used in response to a discovered security issue or other security policy.</li>
+</ul>
+<p>Titles may wish to sign data using both a save game signature and an Xbox Live signature, so that the data could be used both offline and online.  Data signed only with an Xbox Live signature would be usable only while online, because the signature service is required in order to verify the signature with <a href="XOnlineSignatureVerify.htm">XOnlineSignatureVerify</a>.</p><p>Xbox Live signatures are used only to sign and verify data stored locally.  Titles should continue to use <a href="x_mt_storage_ov_signatures.htm">Content Signatures</a> to verify data downloaded from Xbox <i>Live</i>.</p><h2><a name="IDA3BN2"></a>Signing Data</h2>
+<p>When data is written to storage it must be signed, and the signature either stored with the data or stored in such a way that it can be associated with the data and later retrieved.</p><p>To sign data that will be written to storage:</p><ol>
+<li>Use <a href="x_mt_xcalculatesignaturebegin.htm">XCalculateSignatureBegin</a> with XCALCSIG_FLAG_ONLINE to calculate a signature over the data.</li>
+<li>Save the calculated signature to storage along with the data.</li>
+</ol>
+<p>A running digest can be updated in memory with <a href="x_mt_xcalculatesignatureupdate.htm">XCalculateSignatureUpdate</a> as the data itself is being generated and written to the hard disk (for example, a ghost race being written to the hard drive as the race is progressing).  When the race is complete, the completed digest of the game data is signed with <a href="x_mt_xcalculatesignatureend.htm">XCalculateSignatureEnd</a>, and the calculated signature written to storage alongside the data.  Because the running digest value is not written to storage before being signed, it is not susceptible to attacks on, or modification of, the storage device.</p><p>Using the XCALCSIG_FLAG_ONLINE flag requires that:</p><ul>
+<li>The title is currently logged onto the Xbox <i>Live</i> service.</li>
+<li>The XONLINE_SIGNATURE_SERVICE service ID was specified when the title called <a href="XOnlineLogon.htm">XOnlineLogon</a>, and a connection was successfully made to the signature service.</li>
+<li>The title linked with xonlines.lib.</li>
+</ul>
+<p>The following example code demonstrates signing data with an Xbox Live signature.</p>
+<pre class="clsCode">
+// Logon to Xbox Live.
+DWORD rgServices[] = { XONLINE_SIGNATURE_SERVICE };
+hr = XOnlineLogon( ... , rgServices, &amp;hLogon);
+// XOnlineTaskContinue(hLogon) until XONLINE_S_LOGON_CONNECTION_ESTABLISHED
+
+// Allocate memory for the live signature.
+DWORD dwOnlineSignatureSize = XCalculateSignatureGetSize( XCALCSIG_FLAG_ONLINE );
+PVOID pvOnlineSignature = HeapAlloc( GetProcessHeap(), 0, dwOnlineSignatureSize );
+
+// Begin signature calculation.
+HANDLE hCalcSig = XCalculateSignatureBegin( XCALCSIG_FLAG_ONLINE );
+
+// Calculate digest over the data.  Repeat as necessary based on data size.
+XCalculateSignatureUpdate( hCalcSig, pbData, cbData );
+
+// Retrieve the live signature.
+XCalculateSignatureEnd( hCalcSig, pvOnlineSignature );
+
+// Save the signature somewhere, likely at the beginning or end of the data file.
+
+// Free signature memory.
+HeapFree( GetProcessHeap(), 0, pvOnlineSignature );
+</pre>
+    <h2><a name="IDAJDN2"></a>Verifying Signed Data</h2>
+<p>The verification step is performed before using previously stored data or uploading that data to the Xbox <i>Live</i> service.  The data must have been signed with an Xbox Live signature at the time the data was written to storage.</p><p>To verify data previously signed and written to storage:</p><ol>
+<li>Load the data and the Xbox Live signature saved with the data.</li>
+<li>Use <a href="x_mt_xcalculatesignaturebegin.htm">XCalculateSignatureBegin</a> with XCALCSIG_FLAG_DIGEST to calculate a digest over the data.</li>
+<li>Verify that the signature and data are valid by calling <a href="XOnlineSignatureVerify.htm">XOnlineSignatureVerify</a> with the Xbox Live signature and the calculated digest.</li>
+</ol>
+<p>Do not verify data signed with an Xbox Live signature by simply re-signing the data and comparing the new signature with the old signature.  This procedure works for save game signatures, but does not work for Xbox Live signatures because 1) the key used to sign data contains a timestamp and thus varies from session to session, and 2) verification must be done via the signature service while connected to Xbox <i>Live</i> so that the signature service can perform the extra security checks involved in validating the signature.</p><p>The <b>XOnlineSignatureVerify</b> function can verify multiple digest/signature pairs, so that a title that needs to verify multiple signatures need make only one request to the signature server.</p><p>Data read from volatile storage (the hard disk or memory units) may be uploaded to the Xbox <i>Live</i> service or used online only if that data was initially stored with an Xbox Live signature, and then verified as valid, at the time of use or upload, with <b>XOnlineSignatureVerify</b>.</p><p>The following example code demonstrates verifying data previously signed with an Xbox Live signature.</p>
+<pre class="clsCode">
+// Logon to Xbox Live.
+DWORD rgServices[] = { XONLINE_SIGNATURE_SERVICE };
+hr = XOnlineLogon( ... , rgServices, &amp;hLogon);
+// XOnlineTaskContinue(hLogon) until XONLINE_S_LOGON_CONNECTION_ESTABLISHED
+
+// Allocate memory for the digest and signature.
+DWORD dwDigestSize = XCalculateSignatureGetSize( XCALCSIG_FLAG_DIGEST );
+PVOID pvDigest = HeapAlloc( GetProcessHeap(), 0, dwDigestSize );
+
+DWORD dwOnlineSignatureSize = XCalculateSignatureGetSize( XCALCSIG_FLAG_ONLINE );
+PVOID pvOnlineSignature = HeapAlloc( GetProcessHeap(), 0, dwOnlineSignatureSize );
+
+// Start the digest.
+HANDLE hCalcSig = XCalculateSignatureBegin( XCALCSIG_FLAG_DIGEST );
+
+// Repeat as necessary based on data size.
+do {
+    ReadFile( hFile, pbData, cbData, &amp;cbData, NULL );
+    XCalculateSignatureUpdate( hCalcSig, pbData, cbData );
+} while ( cbData );
+
+// Get the digest (SHA)
+XCalculateSignatureEnd( hCalcSig, pvDigest );
+
+// Retreive the previously saved Xbox Live signature.
+TitleCall_LoadLiveSignature( pvOnlineSignature );
+
+// Verify the signature with the signature service.
+XONLINE_SIGNATURE_TO_VERIFY xstv;
+XONLINETASK_HANDLE hVerify;
+HRESULT hr, *phrVerify;
+DWORD cResults;
+
+// Fill in XONLINE_SIGNATURE_TO_VERIFY.
+CopyMemory( xstv.rgbDigest, pvDigest, dwDigestSize );
+CopyMemory( &amp;xstv.xonsig, pvOnlineSignature, dwOnlineSignatureSize );
+ 
+// Contact the signature verification service to verify the signature.
+hr = XOnlineSignatureVerify( &amp;xstv, 1, NULL, &amp;hVerify );
+do {
+    hr = XOnlineTaskContinue( hVerify );
+} while ( !XONLINETASK_STATUS_AVAILABLE(hr) );
+
+// hrVerify receives the verification results for the signature-digest pair.
+XOnlineSignatureVerifyGetResults( hVerify, &amp;phrVerify, &amp;cResults );
+if( S_OK != phrVerify[0] ) {
+    HandleInvalidContent();
+}
+
+// Free signature memory and the online task.
+HeapFree( GetProcessHeap(), 0, pvDigest );
+HeapFree( GetProcessHeap(), 0, pvOnlineSignature );
+XOnlineTaskClose( hVerify );
+</pre>
+    <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

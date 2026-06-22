@@ -1,0 +1,256 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Xbox Movie Capture Tool (XbMovie)</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Xbox Movie Capture Tool (XbMovie)"/>
+<MSHelp:Keyword Index="K" Term="Movie Capture"/>
+<MSHelp:Keyword Index="K" Term="XbMovie"/>
+<MSHelp:Keyword Index="F" Term="Xbox Movie Capture Tool (XbMovie)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1><A NAME=""></A>Xbox Movie Capture Tool (XbMovie)</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<!--****Intro paragraph. Should be a three or four sentence summary of the topic.****-->
+<P class="intro">The Xbox Movie Capture tool (XbMovie) captures video output from
+a title running on an Xbox Development Kit console. After capturing frames from
+the title, XbMovie can use a variety of codecs to export the captured video to an AVI file.</P>
+<!--*********************************************************************************-->
+
+<PRE>USAGE: xbmovie</PRE>
+
+<H3 class="overview">User Interface</H3>
+
+<p class="content">When first started, XbMovie presents you with a dialog
+box similar to the following:</p>
+
+<p class="content"><img src="images/xbox_tool_xbmovie_ui.jpg" width="315"
+height="516" alt="" border="0"></p>
+
+<p class="content">You can change the size of the video that XbMovie captures
+by selecting an option from the <b>Size</b> group. The default is <b>1/4
+size</b>, which produces a video one-fourth the width and one-fourth the height
+of the Xbox display resolution. Smaller frame sizes require less time to
+capture and allow the game to run at a faster frame rate.</p>
+
+<p class="content">To change the color depth that XbMovie captures, choose one
+of the <b>Format</b> options. The <b>16 bpp</b> option captures color at 16
+bits per pixel, and the <b>24 bpp</b> option uses 24 bits per pixel color. If
+you require a high frame rate for your captured video, the <b>16 bpp</b> option
+will give you slightly better frame rate than the <b>24 bpp</b> option.</p>
+
+<p class="content">The <b>Cache frames on Xbox hard disk</b> option, which is
+selected by default, tells XbMovie to first save captured video on the Xbox
+console hard disk. Once capture is complete, XbMovie copies the cached frames
+from the console to your development system. In most cases, caching to the Xbox
+hard disk makes for faster frame rate in the running game title, but the entire
+capture operation may take longer overall because of the time required to copy the
+cache.</p>
+
+<p class="note"><B>Note</B>&nbsp;&nbsp;&nbsp;When the <b>Cache frames on Xbox
+hard disk</b> option is selected, the captured movie can be no larger that the
+free space available on the Xbox console hard disk.</p>
+
+<p class="content">Clicking the <b>Advanced Options</b> button displays the
+<b>Advanced Options</b> dialog box, which is pictured below:</p>
+
+<p class="content"><img src="images/xbox_tool_xbmovie_advanced_options.jpg"
+width="546" height="602" alt="" border="0"></p>
+
+<p class="content">The <b>Filter by Debug Marker</b> option tells XbMovie
+to capture only geometry that has been marked by the <a
+href="_dx_idirect3ddevice8_setdebugmarker_graphics.htm">SetDebugMarker</a>
+function. Only objects drawn with the indicated debug marker will appear in the
+video captured by XbMovie.</p>
+
+<p class="content">Select the <b>Minimum time between captured frames</b>
+option to set a minimum period of time (in milliseconds) that must elapse
+between each frame captured by XbXray. If a game title renders a frame in less
+than the minimum period specified in this option, XbXray does not capture that
+frame. You can use this option to skip unnecessary capture of frames when a
+game title has little complex rendering to perform. At such times, the title's
+frame rate can climb high enough to result in far more captured frames than are
+needed in the AVI file.</p>
+
+<p class="content">The <b>Override Presentation Interval</b> options allow you
+to override the presentation interval used by the game title as it displays
+frames. Overriding the presentation interval may be useful in situations where
+the extra processing required by XbMovie to capture frames pushes the amount of
+time required to render a frame beyond the vertical blank (vblank) time.
+Because the title is taking longer to render some frames than the time allowed
+between screen refreshes, some frames are rendered at 60 fps while others are
+rendered effectively at 30 fps, resulting in choppy video capture. Selecting
+different presentation override options may smooth the captured movie.</p>
+
+<p class="content">The following table describes the effects of choosing each
+available option.</p>
+
+<table>
+  <tr>
+    <th>Option</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td><b>D3DPRESENT_INTERVAL_ONE</b></td>
+    <td>The title swaps a frame at each screen refresh.</td>
+  </tr>
+  <tr>
+    <td><b>D3DPRESENT_INTERVAL_TWO</b></td>
+    <td>The title swaps a frame at every other screen refresh.</td>
+  </tr>
+  <tr>
+    <td><b>D3DPRESENT_INTERVAL_THREE</b></td>
+    <td>The title swaps a frame at every third screen refresh.</td>
+  </tr>
+  <tr>
+    <td><b>D3DPRESENT_INTERVAL_IMMEDIATE</b></td>
+    <td>The title swaps frames immediately.</td>
+  </tr>
+  <tr>
+    <td><b>D3DPRESENT_INTERVAL_ONE_OR_IMMEDIATE</b></td>
+    <td>The title swaps a frame at each screen refresh, but it swaps
+	immediately if rendering a frame takes longer than a single screen
+	refresh.</td>
+  </tr>
+  <tr>
+    <td><b>D3DPRESENT_INTERVAL_TWO_OR_IMMEDIATE</b></td>
+    <td>The title swaps a frame at every other screen refresh, but it swaps
+	immediately if rendering a frame takes longer than two screen
+	refreshes.</td>
+  </tr>
+  <tr>
+    <td><b>D3DPRESENT_INTERVAL_THREE_OR_IMMEDIATE</b></td>
+    <td>The title swaps a frame at every third screen refresh, but it swaps
+	immediately if rendering a frame takes longer than three screen
+	refreshes.</td>
+  </tr>
+</table>
+
+<p class="content">The <b>Optional path for temporary working file on the
+PC</b> text box allows you to specify a location where XbMovie should write the
+temporary file it uses when creating an AVI file. If you have captured a large
+number of frames from the Xbox console, this temporary file can be quite large,
+so you may want to specify a drive that has plenty of available space. By
+default, XbMovie uses the drive from which it is run. XbMovie always
+deletes the temporary file upon exit.</p>
+
+<p class="content">Select the <b>Write output frames with equal time stamps</b>
+option if you want the AVI to display each captured frame for exactly the same
+period of time. By default, XbMovie saves a time stamp for each frame as the frame is
+captured. When writing the AVI file, XbMovie attempts to make sure each frame
+is displayed at approximately the same time it was captured, relative to
+neighboring frames in the movie. Building the AVI file from timestamp
+information may cause some frames to display longer than others. Game titles
+that are frame-based rather than time-based benefit from having the <b>Write
+output frames with equal time stamps</b> option turned on, because their
+in-game animation appears more smooth.</p>
+
+
+<h3 class="overview">Capturing Video</h3>
+
+<p class="content">Make sure the scene you wish to capture is running on the
+Xbox console. Select <b>Begin Capture</b> to start capturing frames. The caption
+on the <b>Begin Capture</b> button changes to <b>End Capture</b> while XbMovie
+is busy capturing video. When you have collected as much video as you need,
+select <b>End Capture</b>. If you selected <b>Cache frames on
+Xbox hard disk</b>, XbMovie now downloads the captured frames from the
+Xbox console to your development system.</p>
+
+<p class="content">Once the video has been downloaded from the console, XbMovie
+displays statistics about the captured video in the <b>OUTPUT</b> frame, as
+shown in the following image:</p>
+
+<p class="content"><img src="images/xbox_tool_xbmovie_captured.jpg" width="312"
+height="515" alt="" border="0"></p>
+
+
+<h3 class="overview">Writing an AVI File</h3>
+
+<p class="content">To write an AVI file from the captured frames, follow these
+steps:</p>
+
+<ol>
+  <li><p class="content">Adjust the frame rate of the AVI by changing the value
+      in the <b>Playback framerate</b> text box.</p> 
+	  <p class="content">By default, the frame rate
+      displayed in this box is equal to the average frame rate at which XbMovie
+      captured the movie from the Xbox console.</p>
+  </li>
+  <li><p class="content">Set a location and file name for the AVI file in the
+      text box next to the <b>Write AVI File</b> button.</p> 
+	  <p class="content">By default, XbMovie
+      writes an AVI file to <code>c:\XboxMovie.avi</code>.</p>
+  </li>
+  <li><p class="content">Select <b>Write AVI File</b>.</p> 
+  <p class="content">XbMovie
+      displays the <b>Video Compression</b> dialog box, as shown
+      below:</p>
+
+      <p class="content"><img src="images/xbox_tool_xbmovie_video_compression.jpg"
+      width="284" height="162" alt="" border="0"></p>
+  </li>
+  <li><p class="content">From the
+      <b>Compressor</b> drop-down list, choose a codec to compress the video.</p></Li>
+	
+	  <p class="content">To adjust the video quality and select other codec options, do the following:</p>
+	  <UL>
+	  <Li>Some codecs allow you to adjust the
+      compression quality; use the <b>Compression Quality</b> slider to adjust
+      the quality.</Li>
+	  <Li>Some codecs also have more advanced configuration choices
+      available; select <b>Configure</b> to access codec-specific
+      configuration options.</Li>
+	  <Li>If you intend to further compress or format the
+      AVI output with another tool, write the movie using the <b>Full Frames
+      (Uncompressed)</b> option.</li>
+  <li><p class="content">To begin writing the AVI file, select <b>OK</b>.</p>
+  </li>
+</ol>
+
+
+<h3 class="overview">Remarks</h3>
+
+<p class="content">XbMovie can only capture frames from a
+game title compiled with the libraries in the May 2002 or later XDK. Also, the
+Xbox development console on which the title is running must be recovered with
+the recovery disc from the May 2002 or later XDK.</p>
+
+
+<h3 class="overview">See Also</h3>
+
+<p class="content">
+<a href="_dx_idirect3ddevice8_setdebugmarker_graphics.htm">SetDebugMarker</a>
+</p>
+
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2002 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

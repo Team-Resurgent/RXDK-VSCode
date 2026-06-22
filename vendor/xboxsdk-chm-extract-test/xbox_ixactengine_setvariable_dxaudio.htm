@@ -1,0 +1,80 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>IXACTEngine::SetVariable</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="F" Term="SetVariable"/>
+<MSHelp:Keyword Index="K" Term="SetVariable (IXACTEngine)"/>
+<MSHelp:Keyword Index="K" Term="IXACTEngine::SetVariable"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>IXACTEngine::SetVariable</h1>
+<p>Sets the current value of a specified global XACT trigger variable.  Changing the value of a trigger variable causes transitions in XACT interactive audio cues that are based on that variable.</p>
+<pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>SetVariable(</b>
+    <b>DWORD</b> <i>dwVariable</i><b>,</b>
+    <b>WORD</b> <i>wValue</i><b>,</b>
+    <b>DWORD</b> <i>dwApply</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+			<dt><i>dwVariable</i></dt>
+				<dd>[in]  Trigger variable to set.  Valid values are 0 to 31 (XACT_GLOBAL_VARIABLE_MIN_INDEX to XACT_GLOBAL_VARIABLE_MAX_INDEX).</dd>
+			
+			<dt><i>wValue</i></dt>
+				<dd>[in]  Value to set.  Valid values are 0 to 65535, but note that interactive audio cues only use the values 0 to 10000 (XACT_GLOBAL_VARIABLE_MIN_VALUE to XACT_GLOBAL_VARIABLE_MAX_VALUE).</dd>
+			
+			<dt><i>dwApply</i></dt>
+				<dd>[in]  Specifies when the new value should be applied.  Must be one of the following values:
+				<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+				<tr>
+<td>DS3D_IMMEDIATE</td>
+<td>The variable's value is changed immediately.</td>
+</tr>
+				<tr>
+<td>DS3D_DEFERRED</td>
+<td>The variable's value change is deferred until a subsequent call to <b>SetVariable</b> (for a different variable) specifies DS3D_IMMEDIATE.</td>
+</tr>
+				</table>
+				</dd>
+			
+		</dl>
+<h4><a name="return"></a>Return Values</h4>
+            <p>Returns DS_OK if successful, an error code otherwise.</p>
+        <h4><a name="remarks"></a>Remarks</h4>
+		<p>Each XACT interactive audio cue is dependent on a particular trigger variable, as set in the cue's <b>Interactive Audio</b> tab.  Run-time, programmatic changes to the value of the trigger variable cause transitions in the interactive audio cue based on weights assigned to the cue.  The <i>wValue</i> values 0 to 10000 map to the interactive audio cue weights 0.00 to 100.00.  Any value greater than 10000 (or otherwise not in the range of weights as set for the cue) is out of range and causes a stop transition.</p>
+		<p>To change multiple variables at once (without causing cue transitions each time a variable is changed), specify DS3D_DEFERRED in <i>dwApply</i> for each variable change except the final one.  Specify DS3D_IMMEDIATE for the final variable change to cause that variable change, and all deferred changes, to be committed at once.</p>
+		<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in XACT.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use XACTEng.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+		<a href="xbox_ixactengine_getvariable_dxaudio.htm">IXACTEngine::GetVariable</a>
+		</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

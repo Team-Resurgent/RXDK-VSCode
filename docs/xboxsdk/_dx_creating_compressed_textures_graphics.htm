@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Creating Compressed Textures</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Creating Compressed Textures"/>
+<MSHelp:Keyword Index="F" Term="Creating Compressed Textures"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H4><A NAME="_dx_creating_compressed_textures_graphics"></A>Creating Compressed Textures</H4>
+
+<P>After creating a device that supports a compressed texture format on the adapter, you can create a compressed texture resource. Call <A HREF="_dx_idirect3ddevice8_createtexture_graphics.htm"><B>IDirect3DDevice8::CreateTexture</B></A> and specify a compressed texture format for the <I>Format</I> parameter.</P>
+
+<P>Before loading an image into a texture object, retrieve a pointer to the texture surface by calling the <A HREF="_dx_idirect3dtexture8_getsurfacelevel_graphics.htm"><B>IDirect3DTexture8::GetSurfaceLevel</B></A> method.</P>
+
+<P>Now you can use any Direct3DX function that begins with D3DXLoadSurface to load an image into the surface that was retrieved by using <B>GetSurfaceLevel</B>. These functions handle conversion to and from compressed texture formats.</P>
+
+<P>You can create and convert compressed texture (DDS) files using the <A HREF="xbox_jbh_tool_dxtex.htm"><B>DXTex Tool</B></A> supplied with the SDK. You can also create your own DDS files.</P>
+
+<P>The advantage of this behavior is that an application can copy the contents of a compressed surface to a file without calculating how much storage is required for a surface of a particular width and height in the specific format.</P>
+
+<P>The following table shows the five types of compressed textures. For more information on how the data is stored, see <A HREF="_dx_compressed_texture_formats_graphics.htm"><B>Compressed Texture Formats</B></A>. You only need this information if you are writing your own compression routines. </P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=20%>FOURCC</TH>
+<TH align=left width=48%>Description</TH>
+<TH align=left width=32%>Alpha-premultiplied?</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=20%>DXT1</TD>
+<TD width=48%>Opaque / one-bit alpha</TD>
+<TD width=32%>N/A</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=20%>DXT2</TD>
+<TD width=48%>Explicit alpha</TD>
+<TD width=32%>Yes</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=20%>DXT3</TD>
+<TD width=48%>Explicit alpha</TD>
+<TD width=32%>No</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=20%>DXT4</TD>
+<TD width=48%>Interpolated alpha</TD>
+<TD width=32%>Yes</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=20%>DXT5</TD>
+<TD width=48%>Interpolated alpha</TD>
+<TD width=32%>No</TD>
+</TR>
+</TABLE><BR>
+
+<P><B>Note</B>&nbsp;&nbsp;When you transfer data from a non-premultiplied format to a premultiplied format, Direct3D scales the colors based on the alpha values. Transferring data from a premultiplied format to a non-premultiplied format is not supported. If you try to transfer data from a premultiplied-alpha source to a non-premultiplied-alpha destination, the method returns D3DERR_INVALIDCALL. If you transfer data from a premultiplied-alpha source to a destination that has no alpha, the source color components, which have been scaled by alpha, are copied as is.</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

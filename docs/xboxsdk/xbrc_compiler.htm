@@ -1,0 +1,27 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Compiler (XbRC)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Compiler (XbRC)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Compiler (XbRC)</h1>
+<p>The compiler phase of XbRC is much simpler than the <a href="xbrc_parsing.htm">parsing phase</a>.</p><p><img src="images/xbrc_fig3.jpg"></p><p>We simply iterate over the main list of containers that we have and call their compile member functions. This is done by calling <b>CXBParser::Compile</b>. Each container on the main list has its compile function called, and the result is checked. If the result was an error that was not XBRC_COMPILE_NOT_NEEDED, we stop compiling at that point and XbRC exits with this error code. If the result was XBRC_COMPILE_NOT_NEEDED, we did not need to recompile this container because the existing intermediate file is OK and will be linked in at link time. If the result was S_OK, we write an intermediate file so that we can check dependencies during the compile phase when this resource is recompiled in the future. This allows an artist to change a single texture in the XDX file and not have to wait on all of the other textures to recompile when they are working with the Xbox Preview Pipeline.</p><p>Each container's compile function is very similar. First, they check dependencies to see if a recompile is necessary. If not, they return XBRC_COMPILE_NOT_NEEDED, and you move to the next container in the list to compile. Otherwise, the container calls its compiler data member and instructs it to construct the resource in memory from the data supplied in the container. The container compile function then returns S_OK if the compiler data member calls had no problems or the error that the compiler data member calls generated. If the container compiler returns S_OK, the Xbox resource data footprint is written to an intermediate file so that you don't have to recompile if the data hasn't changed. Then the linker can just grab the data footprint and put it into the resource file. Again, if the container compiler returns an error at this point, all compilation ceases and the error code is returned out of XbRC.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

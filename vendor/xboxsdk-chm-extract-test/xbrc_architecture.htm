@@ -1,0 +1,35 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XbRC Architecture</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XbRC Architecture"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XbRC Architecture</h1>
+<p>The Xbox Resource Compiler (XbRC) is broken up into several stages:</p><ol>
+		<li><a href="xbrc_creating_the_parser.htm">Creating the parser</a>. XbRC uses the MSXML SAX parser.</li>
+		<li><a href="">Parsing the XDX File</a>. The MSXML SAX parser run the XDX file and calls the XbRC parser code back as it finds each tag start, tag end, or element data. It also calls the XbRC code back with errors encountered during the parsing.</li>
+		<li><a href="xbrc_compiler.htm">Compile the Data</a>. After the parsing is complete, the compiler makes use of the MSXML4 XML parser to parse the file into a series of classes that act as containers for the parsed data. These containers are then compiled into the data needed to create the exact memory footprints needed for Xbox resources. These footprints are created during the link phase, which also combines all of the resources into a single file. The compiler also does dependency checking to insure that work is not done unless it needs to be.</li>
+		<li><a href="xbrc_optimizer.htm">Optimize</a>. The compiler calls the optimize member function of each container class. Presently, no optimization is done, but it would be easy to add things such as a triangle stripper to this phase.</li>
+		<li><a href="xbrc_linker.htm">Link</a>. Finally, the compiler calls each link member function of each container class. The linker removes duplicated resources that are the same type with the same identifier. For example, if you had two textures with the same identifier defined in two different places, the compiler will merge these into a single resource with the same identifier. </li>
+		
+		</ol>
+<p><img src="images/xbrc_fig1.jpg"></p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

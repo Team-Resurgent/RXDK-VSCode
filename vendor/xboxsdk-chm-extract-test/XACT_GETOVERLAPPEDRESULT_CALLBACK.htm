@@ -1,0 +1,77 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XACT_GETOVERLAPPEDRESULT_CALLBACK</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XACT_GETOVERLAPPEDRESULT_CALLBACK"/>
+<MSHelp:Keyword Index="F" Term="XACT_GETOVERLAPPEDRESULT_CALLBACK"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XACT_GETOVERLAPPEDRESULT_CALLBACK</h1>
+<p>Title-defined function called by XACT to determine the status of pending overlapped operations.</p><pre class="syntax" xml:space="preserve"><b>BOOL __stdcall</b> <b>XACT_GETOVERLAPPEDRESULT_CALLBACK(</b>
+    <b>HANDLE</b> <i>hFile</i><b>,</b>
+    <b>LPOVERLAPPED</b> <i>lpOverlapped</i><b>,</b>
+    <b>LPDWORD</b> <i>lpNumberOfBytesTransferred</i><b>,</b>
+    <b>BOOL</b> <i>bWait</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+<dt><i>hFile</i></dt>
+<dd>Handle to a file. This is the handle specified when the overlapped operation was started by a call to the title's read file callback.</dd>
+<dt><i>lpOverlapped</i></dt>
+<dd>Pointer to the <a href="synchro_8tf6.htm">OVERLAPPED</a> structure specified when the overlapped operation was started.</dd>
+<dt><i>lpNumberOfBytesTransferred</i></dt>
+<dd>Pointer to a variable that receives the number of bytes transferred by a read or write operation.</dd>
+<dt><i>bWait</i></dt>
+<dd>Specifies whether the function should wait for the pending overlapped operation to be completed. If TRUE, the function does not return until the operation has been completed. If FALSE and the operation is still pending, the function returns FALSE and the <a href="errors_3uwi.htm">GetLastError</a> function returns ERROR_IO_INCOMPLETE.</dd>
+</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>If the function succeeds, the return value is TRUE.</p>
+<p>If the function fails, the return value is zero. To get extended error information, call <a href="errors_3uwi.htm">GetLastError</a>.</p>
+<h4><a name="remarks"></a>Remarks</h4>
+<p>This function is analogous to the system <a href="synchro_75v8.htm">GetOverlappedResult</a> function.  When determining the status of pending overlapped operations, the XACT engine calls the title's overlapped result callback instead of the system <b>GetOverlappedResult</b> function.  The advantage of registering a callback is that the title can manage XACT's disk input to prioritize it along with the game's other I/O.</p>
+
+<p>The simplest implementation of this callback function is to call <b>GetOverlappedResult</b> and return its return value.</p>
+
+<p>XACT makes extensive use of the <a href="synchro_738k.htm">HasOverlappedIoCompleted</a> macro, which references the <b>Internal</b> member of the <b>OVERLAPPED</b> structure passed in <i>lpOverlapped</i>.  Titles must properly set this flag to indicate the status of the overlapped operation.  The <b>HasOverlappedIoCompleted</b> macro is defined as follows:</p>
+
+
+<pre class="clsCode">
+#define HasOverlappedIoCompleted(lpOverlapped) ((lpOverlapped)-&gt;Internal != STATUS_PENDING)
+</pre>
+    
+
+<p>The XACT overlapped result callback is registered using the <a href="xbox_xactenginesetfileiocallbacks.htm">XACTEngineSetFileIOCallbacks</a> function.</p>
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xact.h.</p>
+            <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="XACT_FILEIO_CALLBACKS.htm">XACT_FILEIO_CALLBACKS</a>,
+<a href="XACT_READFILE_CALLBACK.htm">XACT_READFILE_CALLBACK</a>,
+<a href="xbox_xactenginesetfileiocallbacks.htm">XACTEngineSetFileIOCallbacks</a>,
+<a href="synchro_8tf6.htm">OVERLAPPED</a>,
+<a href="synchro_75v8.htm">GetOverlappedResult</a>
+</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

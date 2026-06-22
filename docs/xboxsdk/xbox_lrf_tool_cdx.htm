@@ -1,0 +1,957 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Content/Demo for Xbox (CDX)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Content/Demo for Xbox (CDX)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+  <MSHelp:Keyword Index="K" Term="CDX tool"/>
+  <MSHelp:Keyword Index="K" Term="demo content, testing with CDX"/>
+  <MSHelp:Keyword Index="K" Term="kiosk discs, testing with CDX"/>
+  <MSHelp:Keyword Index="K" Term="add customized art to a background using CDX"/>
+  <MSHelp:Keyword Index="K" Term="art, adding custom backgrounds in CDX"/>
+  <MSHelp:Keyword Index="K" Term="skins, using in CDX"/>
+  <MSHelp:Keyword Index="K" Term="marketing discs, testing with CDX"/>
+  <MSHelp:Keyword Index="K" Term="Demo Fixer, using with CDX"/>
+  <MSHelp:Keyword Index="K" Term="XDemos Demo Launcher, replaced by CDX"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Content/Demo for Xbox (CDX)</h1>
+<p>The Content/Demo for Xbox (CDX) tool is a pre-certified Xbox
+application (called CDX.xbe) that serves three main purposes:</p>
+
+<ol>
+  <li>It drives kiosk and other marketing discs.</li>
+  <li>It can be used to test demo content for use in kiosk or marketing discs.</li>
+  <li>It can be included with a shipping Xbox title for the purpose of
+      "cross-sell" marketing, allowing demos of other Xbox games to be included
+      with the main title on the same disc.</li>
+</ol>
+
+<p>CDX displays a hierarchical menu structure that is fully customizable. Developers
+can use it to deliver movies in XMV or Bink format, playable demos, downloadable 
+music, and game content to the Xbox. The menu that CDX displays must contain at least 
+one menu item. The number of submenus and content items that the menu structure can 
+contain is limited only by available disk space. The CDX program itself imposes no 
+limitations in this regard.</p>
+
+<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;CDX is a replacement for the older XDemos Demo Launcher.</p>
+<p>This reference page describes the CDX tool, as well as the contents of the CDX.inx 
+file, in the following topics.</p><ul>
+<li><a href="#IDASEEV">CDX Files</a></li><li><a href="#IDASFEV">Configuring CDX</a></li><li><a href="#IDAPMFV">Art Skinning</a></li><li><a href="#IDA31FV">Sound Skinning</a></li></ul>
+<h2><a name="IDASEEV"></a>CDX Files</h2>
+<p>CDX requires configuration, font, art, and sound files in a specific location 
+in order to run properly. The files that CDX requires must reside in a directory 
+called <i>CDXMedia</i>.</p><p>The file CDX.xbe, which is the executable for the CDX program, must be in 
+the same directory as the <i>CDXMedia</i> directory. The directory they
+reside in can be anywhere on the disk. However, if the path name to CDX.xbe exceeds 64 
+characters, CDX canot launch any content. Instead, it displays a warning that it can't 
+construct an appropriate return path name.</p><p>You can use the CDX tool on a disk with a game, or on a standalone demo disk. If you
+use CDX on a disk with a game to launch demos for other games, your game should launch 
+CDX. In this case. the file CDX.xbe can reside in any directory on the DVD, provided that
+it is in the same directory as <i>CDXMedia</i>. When you use CDX as a
+standalone product containing demos, previews, and so forth, you must rename the file 
+CDX.xbe to Default.xbe.</p><p>The following files must be present in the CDXMedia folder:</p><ul>
+  <li>Font file. Typically, this will be the standard Arial Unicode font
+      (ArialUni.ttf), but you may use any font. If Unicode characters are to be
+      displayed, the font must be a Unicode font.</li>
+  <li>CDX.inx. This is the configuration file for CDX. The file defines what
+      content appears in the CDX menu and how CDX behaves.</li>
+  <li>CDXCustom.xpr. This is a packed resource file that contains art for
+      customizing the appearance of the CDX user interface.</li>
+  <li>CDX.xsb, CDX.xwb. These are <a href="xbox_xact_dxaudio.htm">XACT</a>
+      sound bank and wave bank files, which define the sounds that CDX makes as
+      the user interacts with it.</li>
+</ul>
+<h2><a name="IDASFEV"></a>Configuring CDX</h2>
+<p>CDX.inx is a Unicode text file. The file is divided into several sections,
+called item entries. Each item entry defines either menu items or behavior for the 
+CDX program. You may also include comments in the file. Any line beginning with a 
+pound sign (#) is a comment. The CDX tool ignores all characters from the pound sign 
+to the end of the line.</p><ul>
+<li><a href="#IDAZFEV">MainMenu Section</a></li><li><a href="#IDAFGEV">Submenu Section</a></li><li><a href="#IDA0AFV">Content Items</a></li><li><a href="#GlobalConfig">Global Configuration</a></li><li><a href="#IDA2LFV">Attract Video Lists</a></li></ul>
+<h3><a name="IDAZFEV"></a>MainMenu Section</h3>
+<p>The MainMenu section, which is demarcated with the label [MainMenu], defines the top-level menu items that appear in the CDX interface. It can contain either links to content items or to submenus. There must be an item entry in the CDX.inx file for every content item and submenu. The 
+MainMenu section must appear first in CDX.inx. The following example demonstrates how the 
+MainMenu section for a demo disk might look.</p>
+<pre class="clsCode">
+[MainMenu]
+DemoSubmenu
+VideoSubmenu
+LaunchDemo
+LaunchVideo
+LaunchSong
+</pre>
+    <p>This example shows that each item in the MainMenu section is the name of either a 
+submenu or a launchable piece of content (executable, video, or song). Submenus must 
+be listed before individual content items in the main menu. Submenus can contain other 
+submenus.</p><p>The name of an item listed in the MainMenu section corresponds to a named item entry 
+that occurs later in the CDX.inx file. For example, the DemoSubmenu item corresponds to a 
+section named [DemoSubmenu].</p><h3><a name="IDAFGEV"></a>Submenu Section</h3>
+<p>Every submenu, whether it is listed in the main menu or a submenu, requires a 
+definition in the CDX.inx file. Like the main menu, submenus contain references to 
+playable demo content (XBEs), videos (WMV or BIK files), or songs (WMA files). A 
+typical submenu might look like this:</p>
+<pre class="clsCode">
+[DemoSubmenu]
+Action="Submenu"
+DisplayName="Demos"
+Description="Take a test run with some of the hottest games available."
+PlayableDemo1
+PlayableDemo2
+</pre>
+    <p>As the DemoSubmenu illustrates, submenus must contain specific parameters (strings). The 
+first is always Action, whose setting describes the action the item should take. In the 
+preceding example, it tells the CDX tool to treat the item as a submenu. The submenu 
+displays a list of available demo and video content. DisplayName specifies the descriptive 
+name that appears in the menu that calls the submenu. Description is a short paragraph that 
+provides a longer description of what the submenu contains. CDX displays the paragraph when
+the user highlights the submenu in the menu from which it is called.</p><p>All submenus in the CDX.inx file can contain the following properties, usually in
+the order shown in the table.</p><table>
+	<tr>
+		<th>Keyword</th> <th>Possible Values</th> <th>Description</th>
+	</tr>
+	<tr>
+		<td>Action</td> 
+		<td>"SubMenu"</td> 
+		<td>Specifies that the current item entry is a submenu. </td>
+	</tr>
+	<tr>
+		<td>DisplayName</td> 
+		<td>Programmer-specified string in quotes.</td> 
+		<td>Specifies the string that appears in the menu from which the submenu is 
+		called.</td>
+	</tr>
+	<tr>
+		<td>Description</td> 
+		<td>Programmer-specified string in quotes.</td> 
+		<td>Specifies a paragraph of text that CDX displays when the submenu is 
+		selected in the menu from which it is called.</td>
+	</tr>
+	<tr>
+		<td>Preview</td>
+		<td>Fully-qualified path name</td>
+		<td>Specifies the path to an image that CDX displays in its preview pane when
+		the submenu is selected.</td>
+	</tr>
+</table>
+<p>Following the Action, DisplayName, and Description lines are the names of
+item entries for demos, videos, or songs that are available in this submenu.
+The name of an item entry listed in the submenu section corresponds to a named
+section that occurs later in the CDX.inx file. For example, the PlayableDemo1
+item corresponds to a section named [PlayableDemo1].</p><p>You may provide multiple names and descriptions for a submenu in different
+languages. The following table outlines the keywords you use to specify
+text for a particular language.</p><table>
+  <tr>
+<th>Language</th>     <th>DisplayName Keyword</th> <th>Description Keyword</th> <th>FileName Keyword</th> <th>Preview Keyword</th>
+</tr>
+  <tr>
+<td>English</td>      <td>DisplayName_EN</td>       <td>Description_EN</td>    <td>FileName_EN</td>    <td>Preview_EN</td>
+</tr>
+  <tr>
+<td>Japanese</td>     <td>DisplayName_JA</td>       <td>Description_JA</td>    <td>FileName_JA</td>    <td>Preview_JA</td>
+</tr>
+  <tr>
+<td>German</td>       <td>DisplayName_DE</td>       <td>Description_DE</td>    <td>FileName_DE</td>    <td>Preview_DE</td>
+</tr>
+  <tr>
+<td>French</td>       <td>DisplayName_FR</td>       <td>Description_FR</td>    <td>FileName_FR</td>    <td>Preview_FR</td>
+</tr>
+  <tr>
+<td>Spanish</td>      <td>DisplayName_ES</td>       <td>Description_ES</td>    <td>FileName_ES</td>    <td>Preview_ES</td>
+</tr>
+  <tr>
+<td>Italian</td>      <td>DisplayName_IT</td>       <td>Description_IT</td>    <td>FileName_IT</td>    <td>Preview_IT</td>
+</tr>
+  <tr>
+<td>Korean</td>       <td>DisplayName_KO</td>       <td>Description_KO</td>    <td>FileName_KO</td>    <td>Preview_KO</td>
+</tr>
+  <tr>
+<td>Chinese</td>      <td>DisplayName_TW</td>       <td>Description_TW</td>    <td>FileName_TW</td>    <td>Preview_TW</td>
+</tr>
+  <tr>
+<td>Portuguese</td>   <td>DisplayName_BR</td>       <td>Description_BR</td>    <td>FileName_BR</td>    <td>Preview_BR</td>
+</tr>
+</table>
+<p>For example, to specify a German display name and description, use the
+DisplayName_DE and Description_DE keywords.</p>
+<pre class="clsCode">
+[MenuWithGerman]
+DisplayName="English"
+Description="In English"
+DisplayName_DE="Deutsch"
+Description_DE="Auf Deutsch"
+</pre>
+    <p>If the keyword for a particular language is not present, CDX defaults to the
+DisplayName and Description lines, which must always be provided.</p><h3><a name="IDA0AFV"></a>Content Items</h3>
+<p>A section defining a particular demo, video, or song resembles a submenu definition.
+However, there are some differences, as the following table illustrates.
+
+<table>
+	<tr>
+		<th>Parameter</th> <th>Possible Values</th> <th>Description</th>
+	</tr>
+	<tr>
+		<td>Action</td> 
+		<td>"Submenu", "Demo", "SoundTrack", "Video", "SavedGame", "OfflineContent"</td> 
+		<td>Specifies how the CDX tool treats the current item entry.</td>
+	</tr>
+	<tr>
+		<td>Attract</td> <td>"0","1"</td> <td>A value of 0 tells CDX not to include the
+		item in the attract mode loop. Setting this parameter to 1 makes CDX include 
+		it.</td>
+	</tr>
+	<tr>
+		<td>BlocksNeeded</td> 
+		<td>Integer value greater than zero in quotes.</td>
+		<td>Manually specifies the number of blocks needed to save a game. The Xbox 
+		TCRs require that if a user attempts to save a game to an Xbox with a full hard 
+		disk, a message is displayed prompting the user to free a specific number of 
+		blocks. CDX automatically calculates how many blocks need to be freed. However,
+		games and demos that write a large number of folders or a large amount of 
+		content to the T sector of the Xbox may need to manually calculate the number 
+		of blocks required. </td>
+	</tr>
+	<tr>
+		<td>Description</td> 
+		<td>Programmer-specified string in quotes.</td> 
+		<td>Specifies a paragraph of text that CDX displays when the item is 
+		selected in the menu from which it is called.</td>
+	</tr>
+	<tr>
+		<td>DisplayName</td> 
+		<td>Programmer-specified string in quotes.</td> 
+		<td>Specifies the string that appears in the menu from which the item is 
+		called.</td>
+	</tr>
+	<tr>
+		<td>FileName</td> 
+		<td>Fully-qualified path name in quotes.</td>
+		<td>Specifies the path to the file that CDX launches when the user selects 
+		the current item. All non-menu item entries must have this parameter.</td>
+	</tr>
+	<tr>
+		<td>FullScreenVolume</td>
+		<td>Integer value in the range 0&#8211;100, inclusive, in quotes.</td>
+		<td>Sets the percentage of sound volume used to play the video in 
+		full-screen mode.</td>
+	</tr>
+	<tr>
+		<td>LoadingScreen</td> 
+		<td>Fully-qualified path name in quotes.</td> 
+		<td>Specifies the complete path and file name of a .png image to display while 
+		the demo is loading.</td>
+	</tr>
+	<tr>
+		<td>LongSave</td> 
+		<td>"0","1"</td>
+		<td>Enables or disables a long save message, which is used for downloadable content.
+		If LongSave is set to "1", a long save message is displayed when content takes longer 
+		than 3 seconds to download. LongSave is "0" by default, so it is not necessary to set
+		it to "0" in the item entry.</td>
+	</tr>
+	<tr>
+		<td>OfferingID</td>
+		<td>Hexadecimal integer in quotes.</td> 
+		<td>Specifies a required identifier for downloadable content. CDX uses this 
+		parameter to differentiate one package from another.  OfferingID must be 
+		specified in conjunction with the TitleID parameter. </td>
+	</tr>
+	<tr>
+		<td>Parameter1</td> 
+		<td>Path name in quotes.</td> 
+		<td>Used for items whose Action parameter equals "SoundTrack". Specifies the 
+		name of the soundtrack to which CDX downloads the song. This parameter must 
+		match the DefaultSoundTrack parameter. For more information, see 
+		<a href="#GlobalConfig">Global Configuration</a>.</td>
+	</tr>
+	<tr>
+		<td>Parameter2</td> 
+		<td>Sound track name in quotes.</td> 
+		<td>Used for items whose Action parameter equals "SoundTrack". Specifies the name 
+		of a downloaded soundtrack in the Xbox Dashboard. This parameter must match 
+		the name in the header portion of the .wma file that contains the song.</td>
+	</tr>
+	<tr>
+		<td>Preview</td>
+		<td>Fully-qualified path name in quotes.</td>
+		<td>Specifies the path to an image that CDX displays in its preview pane when
+		the item is selected.</td>
+	</tr>
+	<tr>
+		<td>PreviewVolume</td> 
+		<td>Integer value in the range 0&#8211;100, inclusive, in quotes.</td>
+		<td>Specifies the percentage of the sound volume to use while CDX plays the 
+		preview that appears when the user highlights the current item in a menu.</td>
+	</tr>
+	<tr>
+		<td>Rating</td> 
+		<td>"0" = Rating Pending, "1" = Adult Only, "2" = Mature, "3" = Teen, 
+		"4" = Everybody, "5" = Kids to Adults, "6" = Early Childhood</td> 
+		<td>Selects the ESRB rating for the demo. The CDX tool compares this value to
+		the Xbox Dashboard parental control setting to determine whether it can 
+		launch the demo. Setting this rating is usually necessary because ESRB 
+		usually will not rate demos. Typically, only demos for released games have 
+		ratings.</td>
+	</tr>
+	<tr>
+		<td>RemapPath</td>
+		<td>"0","1"</td>
+		<td>Provided for demos that are hard-coded to run from the root directory of
+		the disk. A value of 0 disables remapping. A value of 1 enables a demo to be 
+		launched by CDX despite the fact that the XBE is not in the root directory.</td>
+	</tr>
+	<tr>
+		<td>RemapAndLaunchBackTo</td>
+		<td>Fully-qualified path name in quotes.</td>
+		<td>Remaps the D drive for the current demo to the directory containing the
+		demo. CDX then fills in the return path name with the value of this parameter.</td>
+	</tr>
+	<tr>
+		<td>RunNext</td> 
+		<td>Name, in quotes, of the next item to run.</td> 
+		<td>Specifies the item entry that CDX executes when the current item is 
+		finished.</td>
+	</tr>
+	<tr>
+		<td>Timeout</td> 
+		<td>Integer value in quotes</td> 
+		<td>Sets the amount of idle time, in seconds, before the demo returns control 
+		to CDX because of inactivity.</td>
+	</tr>
+	<tr>
+		<td>TitleID</td> 
+		<td>Hexadecimal integer in quotes.</td> 
+		<td>Contains a unique identifier for each title.</td>
+	</tr>
+</table>
+</p><p>The following example illustrates how to use the content item parameters.</p>
+<pre class="clsCode">
+[LaunchDemo]
+Action="Demo"
+DisplayName="MyGame Playable Demo"
+Description="Play MyGame, the coolest thing since sliced bread."
+Preview="Demos\MyGame\MyGame.png"
+FileName="Demos\MyGame\MyGame.xbe"
+
+[LaunchVideo]
+Action="Video"
+DisplayName="AnotherGame Trailer"
+Description="Watch a trailer for AnotherGame."
+Preview="Videos\AnotherGame\AnotherGame.png"
+FileName="Videos\AnotherGame\AnotherGame.bik"
+Attract="1"
+
+[LaunchSoundtrack]
+Action="Soundtrack"
+DisplayName="A Song"
+Description="Listen to, and download, a song."
+Preview="Soundtracks\ASong\ASong.png"
+FileName="Soudntracks\ASong\ASong.wma"
+RunNext="LaunchVideo"
+</pre>
+    <p>To specify a menu item that launches an XBE, use "Demo" for the value of the Action
+parameter. To create a menu item that plays a video, specify "Video" for the
+Action parameter. To create a menu item that plays a song and enables the user to
+add that song to a soundtrack on the Xbox console, specify "Soundtrack" as the
+value of the Action parameter. Like a submenu definition, the definition for a 
+content item contains DisplayName and Description parameters. You can provide display 
+names and descriptions in multiple languages, using the same syntax as you would 
+for a submenu definition.</p><p>The Preview parameter specifies the complete path and file name of a .png
+image file, or of a small .bik or .xmv movie, displayed when the user
+highlights this particular menu item.</p><p>Use the FileName parameter to specify the complete path and file name of the
+XBE, video, or song that CDX should launch when the user selects this
+particular menu item.</p><p>Menu items can be chained sequentially. To specify a menu item to be executed 
+when the current menu item is finished, use the RunNext parameter. In the 
+preceding example, the RunNext parameter at the end of the LaunchSoundtrack menu 
+item tells the CDX program to execute the LaunchVideo menu item after the
+LaunchSoundtrack finishes.</p><p>Videos also may have an Attract parameter, which determines whether or not
+the video will be played automatically to attract attention to a kiosk. CDX
+randomly selects videos that are marked with an Attract value of "1" and plays
+them during idle periods. CDX ignores videos that are marked with an Attract
+value of "0" when running in attract mode.</p><h3><a name="GlobalConfig"></a>Global Configuration</h3>
+<p>CDX also supports a [Config] section, which it uses for global settings that affect
+all of CDX and the content it displays. The [Config] section of the CDX.inx file 
+can contain the following configuration parameters.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Some global parameters have individual counterparts, which should never be used 
+in conjunction with one another.</p><table>
+  <tr>
+  	<th>Parameter</th> <th>Possible Values</th> <th>Description</th>
+  </tr>
+  <tr>
+  	<td>AButtonImage</td>
+	<td>Fully-qualified path name in quotes.</td>
+	<td>Specifies the path of the PNG file that CDX uses to display the A button 
+	image.</td>
+  </tr>
+  <tr>
+  	<td>AmbientDirectory</td>
+	<td>Path name in quotes.</td>
+	<td>Specifies the path to a directory containing WMA tracks that CDX plays 
+	as ambient music.</td>
+  </tr>
+  <tr>
+  	<td>AppTitle</td>
+	<td>String in quotes.</td>
+	<td>Specifies the application title CDX displays in the main menu.</td>
+  </tr>
+  <tr>
+  	<td>AttractModeDelay</td>
+	<td>Integer in quotes.</td>
+	<td>Specifies the number of seconds of inactivity before CDX launches its 
+	attract mode and begins playing videos or demos. Do not use this in 
+	conjunction with ScreenSaverDelay.</td>
+  </tr>
+  <tr>
+  	<td>BackgroundMovie</td>
+	<td>Fully-qualified path name in quotes.</td>
+	<td>Specifies the path for the video that CDX plays in the background. CDX draws
+	the user interface elements on the movie as it plays.</td>
+  </tr>
+  	<td>BButtonImage</td>
+	<td>Fully-qualified path name in quotes.</td>
+	<td>Specifies the path of the PNG file that CDX uses to display the B button 
+	image.</td>
+  <tr>
+  	<td>ButtonImageHeight</td>
+	<td>Integer in quotes.</td>
+	<td>Specifies the height, in pixels, of the button images.</td>
+  </tr>
+  <tr>
+  	<td>ButtonImageStyle</td>
+	<td>"Top", "Bottom", "Right", or "Left".</td>
+	<td>Specifies where the button text will be placed in relation to the button 
+	image.</td>
+  </tr>
+  <tr>
+  	<td>ButtonImageWidth</td>
+	<td>Integer in quotes.</td>
+	<td>Specifies the width, in pixels, of the button images.</td>
+  </tr>
+  <tr>
+  	<td>CallerTitle</td>
+	<td>Name, in quotes, of the title that calls CDX.</td>
+	<td>Specifies the name of the game title that launches CDX, assuming that CDX is 
+	being used on a game disc as a cross-sell demo launcher.</td>
+  </tr>
+  <tr>
+  	<td>DefaultAttractTimeout</td>
+	<td>Integer number of seconds, in quotes.</td>
+	<td>Specifies the default idle time, in seconds, before a demo returns control 
+	to CDX because of inactivity.  This should never be used if any of the demos 
+	use the Timeout parameter.</td>
+  </tr>
+  <tr>
+  	<td>DefaultPreviewImage</td>
+	<td>Fully-qualified path name in quotes.</td>
+	<td>Specifies the complete path and file name of the image to be used as a 
+	default for the preview window. If no Preview parameter is specified for a 
+	piece of content, the name specified in DefaultPreviewImage is used.</td>
+  </tr>
+  <tr>
+  	<td>FontFileName</td>
+	<td>Path name in quotes.</td>
+	<td>Specifies a fully-qualified path and file name for the display font used 
+	by CDX.</td>
+  </tr>
+  <tr>
+  	<td>KioskMode</td>
+	<td>"0","1"</td>
+	<td>Disables or enables kiosk-specific functionality. Enabling kiosk mode disables
+	the lost controller message. To be TCR-compliant, applications should enable kiosk
+	mode only for use in kiosks. By default, the KioskMode parameter is "0", so it is 
+	not necessary to set it to "0" in the item entry.</td>
+  </tr>
+  <tr>
+  	<td>PreviewOverlayImage</td>
+	<td>Path name in quotes.</td>	
+	<td>Specifies the path of a transparent overlay that can be used to alter the 
+	shape of the preview window.</td>
+  </tr>
+  <tr>
+	  <td>ScreenSaverDelay</td>
+	  <td>Integer number of seconds in quotes.</td>
+	  <td>Specifies the number of seconds of idle time before CDX dims its screen.</td>
+  </tr>
+  <tr>
+  	<td>Website</td>
+	<td>URL in quotes.</td>
+	<td>Specifies the Web site message text. Example:"XBox.com"</td>
+  </tr>
+</table>
+<h3><a name="IDA2LFV"></a>Attract Video Lists</h3>
+<p>In addition to the Attract parameter that is available for a video, you may
+make explicit lists of video content that CDX plays, both when it is launched
+and when CDX has been left idle.</p><p>To create a list of videos that play as soon as CDX starts up, add an
+[IntroAttract] section to your CDX.inx file, as shown in the following example:</p>
+<pre class="clsCode">
+[IntroAttract]
+Video1
+Video2
+Video3
+</pre>
+    <p>CDX plays the videos in the [IntroAttract] section in the same order that
+they appear in the list.</p><p>To create a list of videos that play when CDX is left idle, add an
+[IdleAttract] section to your CDX.inx file, as shown in the following
+example:</p>
+<pre class="clsCode">
+[IdleAttract]
+Video1
+Video2
+Sound1
+Video3
+Demo1
+Demo2
+Demo3
+Sound2
+</pre>
+    <p>The [IdleAttract] section may contain videos, demos, and sound tracks. The [IntroAttract]
+section can contain only videos.</p><h2><a name="IDAPMFV"></a>Art Skinning</h2>
+<p>You can customize the art used for the CDX background and for the screen
+displayed while loading a demo. The art must be contained in a packed resource
+file named CDX.xpr, which you create by running the <a href="xbox_jbh_tool_bundler.htm">
+Bundler</a> tool. The .rdf file that you use to generate CDX.xpr must contain two 
+textures:</p><ol>
+  <li>TEX_MAIN_BACKGROUND, which is the skin for the CDX user interface, and</li>
+  <li>TEX_LOADING_SCREEN, which is the image used for the loading screen.</li>
+</ol>
+<p>The .rdf file you pass to Bundler should look similar to the following
+example:</p>
+<pre class="clsCode">
+out_header         cdxres.h
+out_error          cdxres.err
+out_prefix         RES
+
+
+Texture TEX_MAIN_BACKGROUND
+{
+    Source art1\background.bmp
+    Format D3DFMT_DXT3
+    Levels 1
+}
+
+
+Texture TEX_LOADING_SCREEN
+{
+    Source artcom\xboxlogo.bmp
+    Format D3DFMT_DXT3
+    Levels 1
+}
+
+
+Texture TEX_UP_ARROW
+{
+    Source      art1\up.bmp
+    Alphasource art1\upalpha.bmp
+    Format      D3DFMT_A8R8G8B8
+    Levels      1
+}
+
+
+Texture TEX_DOWN_ARROW
+{
+    Source      art1\down.bmp
+    Alphasource art1\downalpha.bmp
+    Format      D3DFMT_A8R8G8B8
+    Levels      1
+}
+
+
+Texture TEX_ITEM
+{
+    Source      art1\item.bmp
+    Format      D3DFMT_A8R8G8B8
+    Levels      1
+}
+
+
+Texture TEX_SELECTION
+{
+    Source      art1\selection.bmp
+    Alphasource art1\selectionalpha.bmp
+    Format      D3DFMT_A8R8G8B8
+    Levels      1
+}
+
+
+Texture TEX_STATIC1
+{
+    Source      art1\static1.bmp
+    Format      D3DFMT_A8R8G8B8
+    Levels      1
+}
+
+
+Texture TEX_STATIC2
+{
+    Source      art1\static2.bmp
+    Format      D3DFMT_A8R8G8B8
+    Levels      1
+}
+</pre>
+    <h3><a name="IDACNFV"></a>Layout and Color Parameters</h3>
+<p>The layout and colors of the elements that make up the CDX user interface
+are completely customizable. Layout and color settings are located in a
+[Layout] section. Values for layout and color parameters may be either decimal
+or hexadecimal. If you omit any of the layout or color parameters, CDX uses
+their default values, which are designed to work with the art supplied in the
+XDK. The following table lists the parameters that make up the [Layout]
+section, along with their default values:</p><table>
+  <tr>
+  	<th>Parameter</th>
+	<th>Default Value</th>
+	<th>Description</th>
+  </tr>
+  <tr>
+  	<td>AButtonTextColor</td>      
+	<td>0xfffd9a26</td>
+	<td>Determines the color of the A button text.</td>
+  </tr>
+  <tr>
+  	<td>AButtonX</td>              
+	<td>495</td>
+	<td>Sets the horizontal position of the A button image.</td>
+  </tr>
+  <tr>
+  	<td>AButtonY</td>              
+  	<td>362</td>
+	<td>Sets the vertical position of the A button image.</td>
+  </tr>
+  <tr>
+  	<td>ArrowHeight</td>           
+	<td>12</td>
+	<td>Specifies the height of the arrows used in scroll bars.</td>
+  </tr>
+  <tr>
+  	<td>ArrowWidth</td>            
+	<td>32</td>
+	<td>Specifies the width of the arrows used in scroll bars.</td>
+  </tr>
+  <tr>
+  	<td>BButtonTextColor</td>      
+	<td>0xff63cd2f</td>
+	<td>Determines the color of the B button text.</td>
+  </tr>
+  <tr>
+  	<td>BButtonX</td>              
+	<td>510</td>
+	<td>Sets the horizontal position of the B button's image.</td>
+  </tr>
+  <tr>
+  	<td>BButtonY</td>              
+	<td>404</td>
+	<td>Sets the vertical position of the B button's image.</td>
+  </tr>
+  <tr>
+  	<td>ButtonFontHeight</td>      
+	<td>19</td>
+	<td>Sets the height of the button text.</td>
+  </tr>
+  <tr>
+  	<td>DescriptionFontHeight</td> 
+	<td>18</td>
+	<td>Determines the height of the text displayed in the description pane.</td>
+  </tr>
+  <tr>
+  	<td>DescriptionHeight</td>     
+	<td>98</td>
+	<td>Sets the height of the description pane.</td>
+  </tr>
+  <tr>
+  	<td>DescriptionTextColor</td>
+	<td>0xffffffff</td>
+	<td>Specifies color of the description box text.</td>
+  </tr>
+  <tr>
+  	<td>DescriptionWidth</td>      
+	<td>221</td>
+	<td>Sets the width of the description pane.</td>
+  </tr>
+  <tr>
+  	<td>DescriptionX</td>          
+	<td>362</td>
+	<td>Controls the horizontal position of the description pane.</td>
+  </tr>
+  <tr>
+  	<td>DescriptionY</td>          
+	<td>230</td>
+	<td>Controls the vertical position of the description pane.</td>
+  </tr>
+  <tr>
+  	<td>DisabledTextColor</td>     
+	<td>0xff808080</td>
+	<td>Sets the color of the text for disabled items in menus. Examples of disabled
+	items include menu selections that are unavailable because the content that has 
+	already been downloaded.</td>
+  </tr>
+  <tr>
+  	<td>DownArrowX</td>            
+	<td>54</td>
+	<td>Sets the horizontal position of the down arrow in a scroll bar.</td>
+  </tr>
+  <tr>
+  	<td>DownArrowY</td>            
+	<td>406</td>
+	<td>Sets the vertical position of the down arrow in a scroll bar.</td>
+  </tr>
+  <tr>
+  	<td>HeaderFontHeight</td>      
+	<td>16</td>
+	<td>Selects the height of the text used as headers, such as the displayed 
+	name of a submenu. </td>
+  </tr>
+  <tr>
+  	<td>HeaderHeight</td>          
+	<td>20</td>
+	<td>Specifies the height in pixels of the header.</td>
+  </tr>
+  <tr>
+  	<td>HeaderTextColor</td>
+	<td>0xff63cd2f</td>
+	<td>Sets the color of the header text. </td>
+  </tr>
+  <tr>
+  	<td>HeaderWidth</td>           
+	<td>160</td>
+	<td>Specifies the width in pixels of the header.</td>
+  </tr>
+  <tr>
+  	<td>HeaderX</td>               
+	<td>162</td>
+	<td>Controls the horizontal position of the header. </td>
+  </tr>
+  <tr>
+  	<td>HeaderY</td>               
+	<td>98</td>
+	<td>Controls the vertical position of the header. </td>
+  </tr>
+  <tr>
+  	<td>MainTextColor</td>         
+	<td>0xffffffff</td>
+	<td>Determines the color of all text that is not customizable elsewhere in 
+	the layout section, such as button text.</td>
+  </tr>
+  <tr>
+  	<td>MenuFontHeight</td>        
+	<td>22</td>
+	<td>Specifies the height of menu text.</td>
+  </tr>
+  <tr>
+  	<td>MenuItemHeight</td>        
+	<td>52</td>
+	<td>Sets the height of the menu items. </td>
+  </tr>
+  <tr>
+  	<td>MenuItemVSpace</td>        
+	<td>0</td>
+	<td>Creates vertical spacing between the menu items.</td>
+  </tr>
+  <tr>
+  	<td>MenuItemWidth</td>         
+	<td>225</td>
+	<td>Determines the width of the menu items.</td>
+  </tr>
+  <tr>
+  	<td>MenuMaxItems</td>          
+	<td>5</td>
+	<td>Sets the maximum number of menu items that CDX displays on the screen at
+	once.</td>
+  </tr>
+  <tr>
+  	<td>MenuSelHeight</td>         
+	<td>44</td>
+	<td>Specifies the height of the highlight that appears over the menu items. </td>
+  </tr>
+  <tr>
+  	<td>MenuSelMargin</td>         
+	<td>12</td>
+	<td>Specifies the space between the currently highlighted selection and the 
+	menu item. The higher the number the farther to the right the selection goes. </td>
+  </tr>
+  <tr>
+  	<td>MenuSelWidth</td>          
+	<td>250</td>
+	<td>Specifies the width of the highlight that appears over the menu items. </td>
+  </tr>
+  <tr>
+  	<td>MenuTextHMargin</td>       
+	<td>18</td>
+	<td>Controls the horizontal margin of the menu text.</td>
+  </tr>
+  <tr>
+  	<td>MenuTextVMargin</td>       
+	<td>14</td>
+	<td>Sets the vertical margin of the menu text.</td>
+  </tr>
+  <tr>
+  	<td>MenuX</td>                 
+	<td>64</td>
+	<td>Determines the horizontal positioning of the menu.</td>
+  </tr>
+  <tr>
+  	<td>MenuY</td>                 
+	<td>132</td>
+	<td>Selects the vertical positioning of the menu.</td>
+  </tr>
+  <tr>
+  	<td>PopupBackColor</td>        
+	<td>0x8000ff00</td>
+	<td>Selects the background color of pop-up message boxes.</td>
+  </tr>
+  <tr>
+  	<td>PopupFontHeight</td>       
+	<td>18</td>
+	<td>Specifies the height of the text used in pop-up messages, such as 
+	error messages.</td>
+  </tr>
+  <tr>
+  	<td>PopupTextColor</td>        
+	<td>0xffffffff</td>
+	<td>Sets the color of the text used in pop-up message boxes.</td>
+  </tr>
+  <tr>
+  	<td>PreviewHeight</td>         
+	<td>160</td>
+	<td>Specifies the height of the preview pane.</td>
+  </tr>
+  <tr>
+  	<td>PreviewWidth</td>          
+	<td>210</td>
+	<td>Specifies the height of the preview pane.</td>
+  </tr>
+  <tr>
+  	<td>PreviewX</td>              
+	<td>364</td>
+	<td>Controls the horizontal position of the preview pane.</td>
+  </tr>
+  <tr>
+  	<td>PreviewY</td>              
+	<td>43</td>
+	<td>Controls the vertical position of the preview pane.</td>
+  </tr>
+  <tr>
+  	<td>ProgressBarColor</td>      
+	<td>0x8000ff00</td>
+	<td>Specifies the color of the progress bar that is displayed 
+	while content is being downloaded.</td>
+  </tr>
+  <tr>
+  	<td>ProgressBarX</td>          
+  	<td>340</td>
+	<td>Sets the horizontal position of the progress bar.</td>
+  </tr>
+  <tr>
+  	<td>ProgressBarY</td>          
+	<td>370</td>
+	<td>Sets the vertical position of the progress bar.</td>
+  </tr>
+  <tr>
+  	<td>ProgressBarHeight</td>     
+	<td>15</td>
+	<td>Controls the height of the progress bar.</td>
+  </tr>
+  <tr>
+  	<td>ProgressBarWidth</td>      
+	<td>170</td>
+    <td>Specifies the width of the progress bar.</td>
+  </tr>
+  <tr>
+  	<td>ShadowTextColor</td>
+	<td>0x803a3a3a</td>
+	<td>Sets the color of the shadow beneath text.  This effect is used to give 
+	text a 3D appearance.  If a text shadow is used in conjunction with 
+	a video background, the text should not be transparent.</td>
+  </tr>
+  <tr>
+  	<td>UpArrowX</td>              
+	<td>54</td>
+	<td>Sets the horizontal position of the up arrow in a scroll bar.</td>
+  </tr>
+  <tr>
+  	<td>UpArrowY</td>              
+	<td>100</td>
+	<td>Sets the vertical position of the up arrow in a scroll bar.</td>
+  </tr>
+  <tr>
+  	<td>WebsiteHeight</td>         
+	<td>20</td>
+	<td>Specifies the height, in pixels, of the Web site URL.</td>
+  </tr>
+  <tr>
+  	<td>WebsiteWidth</td>          
+	<td>110</td>
+	<td>Specifies the width, in pixels, of the Web site URL.</td>
+  </tr>
+  <tr>
+  	<td>WebsiteX</td>              
+	<td>124</td>
+	<td>Sets the horizontal position of the Web site URL display on the screen.</td>
+  </tr>
+  <tr>
+  	<td>WebsiteY</td>              
+	<td>417</td>
+	<td>Sets the vertical position of the Web site URL display on the screen.</td>
+  </tr>
+</table>
+<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;
+Layout and color parameter values must still be enclosed in double
+quotation marks, and hexadecimal values must be specified with a "0x" prefix,
+as shown in the following example:
+
+
+<pre class="clsCode">
+MainTextColor="0xff12d012"
+</pre>
+    
+</p><h2><a name="IDA31FV"></a>Sound Skinning</h2>
+<p>You may also customize the sounds that CDX uses in response to user actions
+and events. Skinning the sound in CDX is accomplished by using XACT to replace
+the existing CDX sound bank or wave bank with your own. (See the <b>XACT</b> documentation for a full explanation of
+how to use XACT.) To customize the CDX sounds, do the following:</p><ol>
+  <li>Create a new XACT project called CDXSounds.</li>
+  <li>Create an in-memory wave bank with the source waves
+      you wish to use in CDX.</li>
+  <li>Create a sound bank with the following cue names:
+
+      <table>
+	<tr>
+<th>XACT Cue NAme</th>    <th>Triggering Action</th>
+</tr>
+	<tr>
+<td>PressA</td>           <td>User presses the A button.</td>
+</tr>
+	<tr>
+<td>PressB</td>           <td>User presses the B button.</td>
+</tr>
+	<tr>
+<td>MenuItemSelect</td>   <td>User presses up or down on the D-pad
+	    to change the highlighted menu item.</td>
+</tr>
+	<tr>
+<td>NoScroll</td>         <td>User attempts to scroll beyond the
+	    top or bottom of the menu.</td>
+</tr>
+      </table>
+
+  </li>
+  <li>Build the wave bank and sound bank, creating the files CDXSounds.xwb and
+      CDXSounds.xsb.</li>
+  <li>Place the files in the cdxmedia directory on the demo disc.</li>
+</ol>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

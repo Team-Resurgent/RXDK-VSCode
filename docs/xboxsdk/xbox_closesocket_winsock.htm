@@ -1,0 +1,166 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>closesocket</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="closesocket">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="closesocket"/>
+<MSHelp:Keyword Index="F" Term="closesocket"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="xbox_closesocket_winsock"></A>closesocket</H1>
+
+<P>Closes an existing socket.</P>
+
+<PRE class="syntax"><B>int closesocket(</B>
+    <B>SOCKET</B> <I>s</I>
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>s</I></DT>
+
+<DD>[in] Descriptor identifying the socket to close.
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If no error occurs, <B>closesocket</B> returns zero. Otherwise, a value of SOCKET_ERROR is returned, and a specific error code can be retrieved by calling <A HREF="xbox_wsagetlasterror_winsock.htm">WSAGetLastError</A>.</P>
+
+<H4>Remarks</H4>
+
+<P>The <B>closesocket</B> function closes a socket. Use it to release the socket descriptor <I>s</I>. The associated naming information and queued data are discarded.</P>
+
+<P>Any pending overlapped send and receive operations (<A HREF="xbox_wsasend_winsock.htm">WSASend</A>/<A HREF="xbox_wsasendto_winsock.htm">WSASendTo</A>/<A HREF="xbox_wsarecv_winsock.htm">WSARecv</A>/<A HREF="xbox_wsarecvfrom_winsock.htm">WSARecvFrom</A> with an overlapped socket) are canceled. Any event specified for these overlapped operations is signaled. The pending overlapped operations fail with the error status WSAECANCELLED.</P>
+
+<P>A title should always have a matching call to <B>closesocket</B> for each successful call to <A HREF="xbox_socket_winsock.htm">socket</A> to return any socket resources to the system.</P>
+
+<P>Further references to <I>s</I> should be avoided after a successful call to <B>closesocket</B>.  The underlying memory associated with the socket is returned to the system pool.  A Winsock call that references this now invalid memory may cause an exception.</P>
+
+<P>The <B>closesocket</B> function always behaves as if SO_DONTLINGER is enabled.</P>
+
+<!-- OMIT: 
+<P>The semantics of <B>closesocket</B> are affected by the socket options <B>SO_LINGER</B> and <B>SO_DONTLINGER</B> as follows (<B>SO_DONTLINGER</B> is enabled by default; <B>SO_LINGER</B> is disabled).</P>
+
+-->
+
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=31%>Option</TH>
+<TH align=left width=18%>Interval</TH>
+<TH align=left width=24%>Type of close</TH>
+<TH align=left width=27%>Wait for close?</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>SO_DONTLINGER</TD>
+<TD width=18%>Do not care</TD>
+<TD width=24%>Graceful</TD>
+<TD width=27%>No</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>SO_LINGER</TD>
+<TD width=18%>Zero</TD>
+<TD width=24%>Hard</TD>
+<TD width=27%>No</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>SO_LINGER</TD>
+<TD width=18%>Nonzero</TD>
+<TD width=24%>Graceful</TD>
+<TD width=27%>Yes</TD>
+</TR>
+</TABLE>
+
+<P>If SO_LINGER is set with a zero time-out interval (that is, the <A HREF="xbox_linger_winsock.htm">LINGER</A> structure members <B>l_onoff</B> is not zero and <B>l_linger </B>is zero), <B>closesocket</B> is not blocked even if queued data has not yet been sent or acknowledged. This is called a hard or abortive close, because the socket's virtual circuit is reset immediately, and any unsent data is lost. Any <B>recv</B> call on the remote side of the circuit will fail with WSAECONNRESET.</P>
+
+<P>If SO_LINGER is set with a nonzero time-out interval on a blocking socket, the <B>closesocket</B> call blocks on a blocking socket until the remaining data has been sent or until the time-out expires. This is called a graceful disconnect. If the time-out expires before all data has been sent, the service provider terminates the connection before <B>closesocket</B> returns.</P>
+
+<P>Enabling SO_LINGER with a nonzero time-out interval on a nonblocking socket is not recommended. In this case, the call to <B>closesocket</B> will fail with an error of <A HREF="xbox_winsock_error_codes_winsock.htm#_win32_wsaewouldblock_2">WSAEWOULDBLOCK</A> if the close operation cannot be completed immediately. If <B>closesocket</B> fails with <B>WSAEWOULDBLOCK</B> the socket handle is still valid, and a disconnect is not initiated. The title must call <B>closesocket</B> again to close the socket.</P>
+
+<P>If SO_DONTLINGER is set on a stream socket by setting the <B>l_onoff </B>member of the <A HREF="xbox_linger_winsock.htm">LINGER</A> structure to zero, the <B>closesocket</B> call will return immediately and does not receive WSAWOULDBLOCK whether the socket is blocking or nonblocking. However, any data queued for transmission will be sent, if possible, before the underlying socket is closed. This is also called a graceful disconnect. In this case, the service provider cannot release the socket and other resources for an arbitrary period. This is the default behavior (SO_DONTLINGER is set by default).</P>
+
+<P class=note><B><I>Note</I></B>&nbsp;&nbsp; To assure that all data is sent and received on a connection, a title should call <A HREF="xbox_shutdown_winsock.htm">shutdown</A> before calling <B>closesocket</B><!-- COMMENT:  (see <B>Graceful shutdown, linger options, and socket closure</B> for more information) -->. Also note, an FD_CLOSE network event is <I>not</I> posted after <B>closesocket</B> is called.</P>
+
+<P>Here is a summary of <B>closesocket</B> behavior:
+
+<UL>
+	<LI>If SO_DONTLINGER is enabled (the default setting), it always returns immediately and the connection is gracefully closed in the background.</LI>
+
+	<LI>If SO_LINGER is enabled with a zero time-out: it always returns immediately, and the connection is reset/terminated.</LI>
+
+	<LI>If SO_LINGER is enabled with a nonzero time-out, it returns immediately indicating failure.</LI>
+</UL>
+
+<!-- OMIT: 
+<P>For additional information please see <B>Graceful shutdown, linger options, and socket closure</B> for more information.</P>
+
+-->
+
+<H4>Error Codes</H4>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=35%>Error code</TH>
+<TH align=left width=65%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>WSANOTINITIALISED</TD>
+<TD width=65%>A successful <A HREF="xbox_wsastartup_winsock.htm">WSAStartup</A> call must occur before using this function.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>WSAENOTSOCK</TD>
+<TD width=65%>The descriptor is not a socket.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>WSAEINPROGRESS</TD>
+<TD width=65%>A blocking call is in progress.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>WSAEWOULDBLOCK</TD>
+<TD width=65%>The socket is marked as nonblocking and SO_LINGER is set to a nonzero time-out value.</TD>
+</TR>
+</TABLE>
+
+<H4>Requirements</H4>
+<P><b>Header: </b>Declared in winsockx.h, for include use Xtl.h.</P>
+<P><b>Import Library: </b>Use Xnet.lib for titles that only support system link play, XOnline.lib for titles that support online play. Use the secure versions of the library file (Xnets.lib or XOnlines.lib) for final testing.</P>
+
+
+
+<H4>See Also</H4>
+
+<P>
+<a href="xbox_winsock_overview_winsock.htm">Winsock Overview</A>,
+<a href="xbox_winsock_functions_winsock.htm">Winsock Functions</A> |
+  <A HREF="xbox_accept_winsock.htm">accept</A>, <A HREF="xbox_ioctlsocket_winsock.htm">ioctlsocket</A>, <A HREF="xbox_setsockopt_winsock.htm">setsockopt</A>, <A HREF="xbox_socket_winsock.htm">socket</A> </P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

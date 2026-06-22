@@ -1,0 +1,143 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirect3DDevice8::CreateVertexShader</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="IDirect3DDevice8::CreateVertexShader [C++]">
+<META NAME="MS-HKWD" CONTENT="CreateVertexShader (IDirect3DDevice8) [C++]">
+<META NAME="MS-HKWD" CONTENT="CreateVertexShader [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="CreateVertexShader (IDirect3DDevice8)"/>
+<MSHelp:Keyword Index="K" Term="IDirect3DDevice8::CreateVertexShader"/>
+<MSHelp:Keyword Index="F" Term="CreateVertexShader"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_idirect3ddevice8_createvertexshader_graphics"></A>IDirect3DDevice8::CreateVertexShader</H1>
+
+<P>Creates a vertex shader.</P>
+
+<PRE class=syntax><B>HRESULT CreateVertexShader(
+  CONST</B> <B>DWORD*</B> <I>pDeclaration</I><B>,</B>
+<B>  CONST</B> <B>DWORD*</B> <I>pFunction</I><B>,</B>
+<B>  DWORD*</B> <I>pHandle</I>,
+<B>  DWORD</B> <I>Usage</I>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>pDeclaration</I></DT>
+
+<DD>[in] Pointer to the vertex shader declaration token array. This parameter defines the inputs to the shader, including how the vertex elements within the input data streams are used by the shader. </DD>
+
+<DT><I>pFunction</I></DT>
+
+<DD>[in] Pointer to the vertex shader function token array. This parameter defines the operations to apply to each vertex. If this parameter is set to NULL, a shader is created for the fixed-function pipeline and the parameter declaration indicated by <I>pDeclaration </I>is made current and available to be set in a subsequent call to <A HREF="_dx_idirect3ddevice8_setvertexshader_graphics.htm"> <B>IDirect3DDevice8::SetVertexShader</B></A>, as long as a handle pointer is provided. 
+
+<P>If this parameter is not set to NULL, the shader is programmable. 
+</DD>
+
+<DT><I>pHandle</I></DT>
+
+<DD>[in, out] Pointer to the returned vertex shader handle. This value cannot be set as NULL.</DD>
+
+<DT><I>Usage</I></DT>
+
+<DD>[in] Usage controls for the vertex shader. The default behavior when diffuse or specular data is not specified in a <A HREF="_dx_flexible_vertex_format_flags_graphics.htm"> <B>flexible vertex format</B></A> or vertex shader stream declaration with the fixed function pipe is to initialize these values to their defaults, overwriting the corresponding persistent attributes. The following flags can be set.  
+
+<DL>
+
+<DT>D3DUSAGE_PERSISTENTDIFFUSE</DT>
+
+<DD>Set to indicate that the persistent diffuse color should not be overwritten with the default color white.</DD>
+
+<DT>D3DUSAGE_PERSISTENTSPECULAR</DT>
+
+<DD>Set to indicate that the persistent specular color should not be overwritten with the default color black.</DD>
+
+<DT>D3DUSAGE_PERSISTENTBACKDIFFUSE</DT>
+
+<DD>Set to indicate that the persistent back diffuse color should not be overwritten with the default color white.</DD>
+
+<DT>D3DUSAGE_PERSISTENTBACKSPECULAR</DT>
+
+<DD>Set to indicate that the persistent back specular color should not be overwritten with the default color black.</DD>
+</DL>
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the method succeeds, the return value is <A HREF="_dx_return_values_graphics.htm#_dx_d3d_ok_graphics"><B>D3D_OK</B></A>.</P>
+
+<P>If the method fails, the return value can be one of the following values.</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TD width=100%><A HREF="_dx_return_values_graphics.htm#_dx_d3derr_invalidcall_graphics"><B>D3DERR_INVALIDCALL</B></A> </TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=100%> <A HREF="_dx_return_values_graphics.htm#_dx_d3derr_outofvideomemory_graphics"><B>D3DERR_OUTOFVIDEOMEMORY</B></A></TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=100%><A HREF="_dx_return_values_graphics.htm#_dx_e_outofmemory_graphics"><B>E_OUTOFMEMORY</B></A></TD>
+</TR>
+</TABLE><BR>
+
+<H4>Remarks</H4>
+
+<p>Without having to open or load a file, <b>IDirect3DDevice8::CreateVertexShader</b> may also be used to get the handle of a precompiled vertex shader using the following steps:</p>
+<ol>
+<li>Write a shader program, MyShader.vsh</li>
+<li><p>Using the xsasm tool, generate MyShader.h at the command line by doing </p>
+<pre>xsasm -h MyShader.vsh</pre></li>
+<li><p>MyShader.h is a header file that defines the vertex shader token array </p>
+<pre>DWORD dwMyShaderVertexShader[] = { // tokens };</pre></li>
+<li><p>Include the .h file in the relevant source file.</p>
+<pre>#include "MyShader.h"</pre></li>
+<li><p>The following code snippet demonstrates how to use <b>IDirect3DDevice8::CreateVertexShader</b> to get the handle to the vertex shader.</p>
+<pre>// This assumes that 
+// 1. pDevice is a valid pointer to an IDirect3DDevice8 interface.
+// 2. dwVertexDecl[] is a valid vertex shader declaration token array for MyShader.
+// 3. MyShader.h has already been included.
+DWORD dwHandle;
+pDevice->CreateVertexShader( dwVertexDecl, dwMyShaderVertexShader, &amp;dwHandle, 0 );</pre>
+</ol>
+
+<P>A vertex shader is defined by two token arrays that specify the declaration and function of the shader. The token arrays are composed of single or multiple <B>DWORD</B> tokens terminated by a special 0xFFFFFFFF token value. </P>
+
+<P>The shader declaration defines the static external interface of the shader, including binding of stream data to vertex register inputs and values loaded into the shader constant memory. The shader function defines the operation of the shader as an array of instructions that are executed in order for each vertex processed during the time the shader is bound to a device. Shaders created without a function array apply the fixed function vertex processing when that shader is current.</P>
+
+<P>See <a href="_dx_vertex_shader_declarator_macros_graphics.htm"><b>Vertex Shader Declarator Macros</b></a> for a definition of the macros used to generate the declaration token array.</P>
+
+<H4>Xbox Optimizations</h4>
+
+<P>Xbox does not support D3DUSAGE_SOFTWAREPROCESSING as a usage flag.<P>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in D3d8.h.<BR>
+<B>&nbsp;&nbsp;Import Library:</B> Use D3d8.lib.</P>
+
+<H4>See Also</H4>
+
+<P><A HREF="_dx_idirect3ddevice8_deletevertexshader_graphics.htm"><B>IDirect3DDevice8::DeleteVertexShader</B></A>, <a href="xbox_jbh_dxref_assembleshader.htm"><b>XGAssembleShader</b></a>, <A HREF="_dx_d3dxdeclaratorfromfvf_graphicsd3dx.htm"><B>D3DXDeclaratorFromFVF</B></A></P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

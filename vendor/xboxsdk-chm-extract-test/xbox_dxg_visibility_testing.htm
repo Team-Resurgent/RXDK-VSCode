@@ -1,0 +1,59 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Visibility Testing</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Visibility Testing"/>
+<MSHelp:Keyword Index="F" Term="Visibility Testing"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Visibility Testing</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<!--****Intro paragraph. Should be a three or four sentence summary of the topic.****-->
+<P class="intro">Xbox provides a way to test how many pixels will be drawn on the screen for a particular set of geometry.  This feature can be used to determine whether geometry should be drawn and what level of detail should be used.</p>
+
+<p>A visibility test is started by calling <a href="xbox_dxg_IDirect3DDevice8_BeginVisibilityTest.htm">IDirect3DDevice8::BeginVisibilityTest</a>. This clears the pixel counter in the chip. An application then sends test geometry to the chip. This test geometry is typically a bounding box or other bounding volume that completely encloses the model being tested for visibility. The test geometry is typically much simpler than the geometry being tested for visibility. The application calls <a href="xbox_dxg_IDirect3DDevice8_EndVisibilityTest.htm">IDirect3DDevice8::EndVisibilityTest</a> to indicate to the hardware that the test geometry has been sent.</p>
+
+</p>To reduce the memory automatically allocated, keep index values as low as possible and reuse them where feasible.</p>
+
+<p>The use of any indices within a 256 range, aligned to multiples of 256, will cause the allocation of a 4K buffer. Subsequent usage of any indices in the same 256 range will not cause any additional allocations. The memory will be reused.</p>
+
+<p>For example, using indices 0, 1, and 2 allocates a single 4K buffer. These indices all fall within 0&ndash;255. If you use only index 300, this also allocates a single 4K buffer because it falls within 256&ndash;511 (a 256 range, aligned to a multiple of 256.) However, if <a href="xbox_dxg_IDirect3DDevice8_EndVisibilityTest.htm">IDirect3DDevice8::EndVisibilityTest</a> is called using indices 0, 1, 2, and 300, the visibility testing allocates a total of 8K (4K for 0&ndash;255 and 4K for 256&ndash;511.)</p>
+
+<p>A visibility test is pipelined along with the other geometry and render states being submitted to the chip. This makes it possible to queue up several visibility tests at one time. Each visibility test is assigned an integer identifier by the application. Direct3D allocates a number of results slots equal to or greater than the largest integer identifier specified. When the visibility test is completed by the hardware, it writes the number of pixels rendered for the test geometry into the slot corresponding to the integer ID for that test. The application can then retrieve the results by calling <a href="xbox_dxg_IDirect3DDevice8_GetVisibilityTestResult.htm">IDirect3DDevice8::GetVisibilityTestResult</a> and passing the ID for the desired test.</p>
+
+<p>It is up to the application to set the appropriate rendering state before beginning the visibility test. For example, if it is not desired to actually render the test geometry, color and Z writes should be disabled so that the contents of the frame buffer and Z-buffer are not changed.</p>
+
+
+
+
+
+<!--*******************************************************************************-->
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

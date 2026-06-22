@@ -1,0 +1,79 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Loading an Object from a File</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Loading an Object from a File"/>
+<MSHelp:Keyword Index="F" Term="Loading an Object from a File"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H3><A NAME="_dx_loading_an_object_from_a_file_dxaudio"></A>Loading an Object from a File</H3>
+
+<P>To load an object, first obtain the <A HREF="_dx_idirectmusicloader8_dxaudio.htm"><B>IDirectMusicLoader8</B></A> interface by calling <A HREF="xbox_jc_directmusiccreateinstance_dxaudio.htm"><B>DirectMusicCreateInstance</B></A>.</P>
+
+<P>You can then load an object from file by using either <A HREF="_dx_idirectmusicloader8_loadobjectfromfile_dxaudio.htm"><B>IDirectMusicLoader8::LoadObjectFromFile</B></A> or <A HREF="_dx_idirectmusicloader8_getobject_dxaudio.htm"><B>IDirectMusicLoader8::GetObject</B></A>. The first of these methods is more convenient because it does not require you to describe the object by filling out a <A HREF="_dx_dmus_objectdesc_dxaudio.htm"><B>DMUS_OBJECTDESC</B></A> structure. </P>
+
+<P>The following sample code loads four segments from a directory previously set by <A HREF="_dx_idirectmusicloader8_setsearchdirectory_dxaudio.htm"><B>IDirectMusicLoader8::SetSearchDirectory</B></A>: </P>
+
+<PRE>IDirectMusicSegment8 * m_pSegments[4];
+ 
+static CHAR  szNames[4][MAX_PATH] = {
+    "Classical.sgt",
+    "Waltz.sgt",
+    "Yelling.wav",
+    "HolidayCheer.sgt"
+};
+ 
+for (DWORD dwIndex = 0; dwIndex &lt; 4; dwIndex++)
+{
+    hr = m_pLoader-&gt;LoadObjectFromFile(
+            CLSID_DirectMusicSegment,
+            IID_IDirectMusicSegment8,
+            szNames[dwIndex],
+            (void**) &amp;m_pSegments[dwIndex]);
+}
+</PRE>
+
+<!-- OMIT: 
+<P>The following example function uses <A HREF="_dx_idirectmusicloader8_getobject_dxaudio.htm"><B>IDirectMusicLoader8::GetObject</B></A> to load a style object from a file. The first parameter receives a pointer to the style.</P>
+
+<PRE>void myLoadStyle(
+    IDirectMusicStyle8 **ppStyle, IDirectMusicLoader8 *pLoader)
+{
+    if (pLoader)
+    {
+        DMUS_OBJECTDESC Desc;
+ 
+        // Start by initializing Desc with the file name and 
+        // class GUID for the style object.
+ 
+        wcscpy(Desc.wszFileName,L"d:\\mymusic\\funky\\polka.sty");
+        Desc.guidClass = CLSID_DirectMusicStyle; 
+        Desc.dwSize = sizeof (DMUS_OBJECTDESC);
+        Desc.dwValidData = DMUS_OBJ_CLASS | 
+                           DMUS_OBJ_FILENAME | 
+                           DMUS_OBJ_FULLPATH;
+ 
+        pLoader-&gt;GetObject(&amp;Desc, IID_IDirectMusicStyle8,
+                (void **) ppStyle);
+    }
+}
+</PRE>
+
+<P>The example identifies the file by a full path name and indicates this by setting the DMUS_OBJ_FULLPATH flag.</P>
+
+-->
+
+<P>To identify the particular file object being sought, fill in at least one of the <B>wszName</B>, <B>guidObject</B>, and <B>wszFileName</B> members of the <A HREF="_dx_dmus_objectdesc_dxaudio.htm"><B>DMUS_OBJECTDESC</B></A> structure, and set the corresponding flag or flags in the <B>dwValidData</B> member.</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

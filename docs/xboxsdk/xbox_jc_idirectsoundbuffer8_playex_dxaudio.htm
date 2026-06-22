@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirectSoundBuffer8::PlayEx</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="IDirectSoundBuffer8::PlayEx [C++]">
+<META NAME="MS-HKWD" CONTENT="PlayEx (IDirectSoundBuffer8) [C++]">
+<META NAME="MS-HKWD" CONTENT="PlayEx [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="PlayEx (IDirectSoundBuffer8)"/>
+<MSHelp:Keyword Index="K" Term="IDirectSoundBuffer8::PlayEx"/>
+<MSHelp:Keyword Index="F" Term="PlayEx"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="xbox_jc_idirectsoundbuffer8_playex_dxaudio"></A>IDirectSoundBuffer8::PlayEx</H1>
+
+<P>Plays the contents of the sound buffer.</P>
+
+<PRE class="syntax"><B>HRESULT PlayEx(</B>
+    <B>REFERENCE_TIME</B> <I>rtTimeStamp</I>,
+    <B>DWORD</B> <I>dwFlags</I>
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>rtTimeStamp</I></DT>
+
+<DD>Time for start to occur. Reference time units are hundreds of nanoseconds from an arbitrary point when the Xbox is powered on. If this value is zero, playback will start immediately.</DD>
+
+<P CLASS="note"><B><I>Note</I></B>&nbsp;&nbsp;&nbsp;&nbsp;Time stamps cannot be used to guarantee sample-accurate synchronization.</P>
+
+<DT><I>dwFlags</I></DT>
+
+<DD>Flags specifying how to play the buffer. The following flags are defined:</DD>
+
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td>DSBPLAY_FROMSTART</td>
+<td>Play the buffer from the beginning, regardless of current position.</td>
+</tr>
+
+<tr>
+<td>DSBPLAY_LOOPING</td>
+<td>After the end of the audio buffer is reached, play restarts at the beginning of the buffer. Play continues until explicitly stopped.</td>
+</tr>
+
+<tr>
+<td>DSBPLAY_SYNCHPLAYBACK</td>
+<td>Synchronize playback of multiple buffers and streams. This causes the buffer to reset the play cursor to zero, the equivalent of specifying the DSBPLAY_FROMSTART. See the <a href="xbox_idirectsound8_synchplayback_dxaudio.htm">IDirectSound8::SynchPlayback</a> function for more information on using this flag.</td>
+</tr>
+</table>
+
+<P CLASS="note"><B><I>Note</I></B>&nbsp;&nbsp;&nbsp;&nbsp;These flags are not supported with buffers created using the DSBCAPS_FXIN2 flag.</P>
+
+</DL>
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the method succeeds, the return value is DS_OK.</P>
+
+
+<H4>Remarks</H4>
+
+<P>Because of restrictions in the hardware, this call can cause a busy-wait state.  Before performing additional operations on the buffer, you must make sure that the buffer is stopped by polling <a href="_dx_idirectsoundbuffer8_getstatus_dxaudio.htm">IDirectSoundBuffer8::GetStatus</a>. Check the <b>DSBSTATUS_PLAYING</b> flag after calling <a href="_dx_idirectsoundbuffer8_stop_dxaudio.htm">IDirectSoundBuffer8::Stop</a> or <a href="xbox_jc_idirectsoundbuffer8_stopex_dxaudio.htm">IDirectSoundBuffer8::StopEx</a> as in the following example:</P>
+
+<pre class="clsCode">DWORD dwStatus;
+pDSBuffer-&gt;StopEx( 0, DSBSTOPEX_IMMEDIATE );
+do
+{
+    pDSBuffer-&gt;GetStatus( &amp;dwStatus );
+} while( dwStatus &amp; DSBSTATUS_PLAYING );</pre>
+
+<P>Additionally, calling some methods on the buffer immediately after stopping the buffer can generate debug warning messages.  See <a href="xbox_directsound_warning_messages_dxaudio.htm">DirectSound Warning Messages</a> for more information.</P>
+
+<p>This command is valid for buffers created using the DSBCAPS_FXIN2, but is not valid for buffers created using the DSBCAPS_FXIN or DSBCAPS_MIXIN flags.</p>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in Dsound.h.</P>
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

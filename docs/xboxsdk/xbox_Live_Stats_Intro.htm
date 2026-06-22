@@ -1,0 +1,193 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Stats and Xbox Live</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Stats and Xbox Live"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+        <MSHelp:Keyword Index="K" Term="stats API, overview"/>
+        <MSHelp:Keyword Index="K" Term="game stats, storing and retrieving"/>
+        <MSHelp:Keyword Index="K" Term="leaderboards"/>
+        <MSHelp:Keyword Index="K" Term="player rankings, leaderboards"/>
+        <MSHelp:Keyword Index="K" Term="rank players, leaderboards"/>
+        <MSHelp:Keyword Index="K" Term="ratings, leaderboards"/>
+        <MSHelp:Keyword Index="K" Term="best practices, storing stats"/>
+        <MSHelp:Keyword Index="K" Term="leaderboards"/>
+    </xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Stats and Xbox Live</h1>
+<p>The stats API exposes the functionality of the Xbox <i>Live</i> stats service to your game. Game titles use the stats service to store and retrieve statistical information about players of that game title. The type of statistical information stored depends on the nature of the title and is defined by the title developer. Stats collected by the title over a series of game sessions can be used to track the player's performance on the title over time. For example, the title might track the player's top five scores and the dates they were obtained, or the player's 10-day, 30-day, and 90-day moving averages. Titles can use this information to help in matching players of similar experience and abilities. Alternatively, they can display players' states to help give players "bragging rights" within the community that you build around your title.</p><p>The Xbox <i>Live</i> service stores all of the statistical information on network servers. All stats are accessible to instances of the game title running on any Xbox console on the network. Therefore, the player's stats remain with the player regardless of which Xbox console he or she is using. Unlike traditional rankings in which a game title can only compare players that have played on the same console, the stats service is able to rank players who have played the title on any network-enabled Xbox console. This enables the service to compare a given player's performance to that of all other players of your title.</p><p>Different titles require different types of statistical information. Game titles are allowed to collect and store whatever stats are appropriate for their game design. The stats service supports storing any number of different statistical values per player. The title developer decides which stats to collect. Collected stats are displayed in leaderboards. Although the stats service can collect any number of statistical values per player, a maximum of 64 of values can be displayed in a leaderboard at one time.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;
+            Xbox <i>Live</i> titles should consider how they will protect 
+            against guests being used to artificially improve a player's measured 
+            performance. For example, in a deathmatch-style game, guests could be used to 
+            improve a player's stats by pre-arranging kills with the guest. Titles can 
+            protect against this type of cheating by adjusting their rules when guests are 
+            present.
+        </p><ul>
+<li><a href="#IDAPREV">Types of Stats</a></li><li><a href="#IDATSEV">Stats Defined by the Stats Service</a></li><li><a href="#IDABWEV">The Stats API</a></li></ul>
+<h2><a name="IDAPREV"></a>Types of Stats</h2>
+<p>
+                Statistical values must be numeric and belong to one of three possible data 
+                types. These types correspond to the values of the <a href="XONLINE_STAT_TYPE.htm">XONLINE_STAT_TYPE</a> 
+                enumeration type:
+            </p><table>
+
+                <tr>
+                    <td>Integer; 32-bits</td>
+                    <td>XONLINE_STAT_LONG</td>
+                </tr>
+
+                <tr>
+                    <td>Big integer; 64-bits</td>
+                    <td>XONLINE_STAT_LONGLONG</td>
+                </tr>
+
+                <tr>
+                    <td>Real number; 64-bits</td>
+                    <td>XONLINE_STAT_DOUBLE</td>
+                </tr>
+				
+				<tr>
+					<td>Variable-length string</td>
+					<td>XONLINE_STAT_LPCWSTR</td>
+				</tr>
+
+            </table>
+<h2><a name="IDATSEV"></a>Stats Defined by the Stats Service</h2>
+<p>
+                In addition to the stats that the title defines, there are eight stats defined by 
+                the stats service itself.
+            </p><table>
+                <tr>
+                    <th>Identifier</th>
+<th>Description</th>
+<th>Type</th>
+                </tr>
+                <tr>
+                    <td>XONLINE_STAT_RANK</td>
+                    <td>Rank stat.</td>
+                    <td>Ranks have a type of <a href="XONLINE_STAT_TYPE.htm">XONLINE_STAT_LONG</a> (32 bits).</td>
+                </tr>
+                <tr>
+                    <td>XONLINE_STAT_RATING</td>
+                    <td>Rating stat.</td>
+                    <td>Ratings have a type of <a href="XONLINE_STAT_TYPE.htm">XONLINE_STAT_LONGLONG</a> (64 bits).</td>
+                </tr>
+                <tr>
+                    <td>XONLINE_STAT_NICKNAME</td>
+                    <td>Player nickname. <i>Titles should not use this stat.</i> Additionally, the <a href="XOnlineStatWriteEx.htm">XOnlineStatWriteEx</a> function prevents this stat from being specified.</td>
+                    <td>Nicknames have a type of <a href="XONLINE_STAT_TYPE.htm">XONLINE_STAT_LPCWSTR</a> (variable-length string).</td>
+                </tr>
+                <tr>
+                    <td>XONLINE_STAT_LEADERBOARD_SIZE</td>
+                    <td>Number of entries on the leaderboard.</td>
+                    <td>The leaderboard size has a type of <a href="XONLINE_STAT_TYPE.htm">XONLINE_STAT_LONG</a> (32 bits).</td>
+                </tr>
+				<tr>
+					<td>XONLINE_STAT_ATTACHMENT_PATH</td>
+					<td>Game clip path.</td>
+                    <td>Attachment paths have a type of <a href="XONLINE_STAT_TYPE.htm">XONLINE_STAT_LPCWSTR</a> (variable-length string).</td>
+				</tr>
+				<tr>
+					<td>XONLINE_STAT_ATTACHMENT_SIZE</td>
+					<td>Size of game clip.</td>
+                    <td>The attachment size has a type of <a href="XONLINE_STAT_TYPE.htm">XONLINE_STAT_LONG</a> (32 bits).</td>
+				</tr>
+				<tr>
+					<td>XONLINE_STAT_UNIT_ACTIVITY_COUNTER</td>
+					<td>Not supported.</td>
+				</tr>
+				<tr>
+					<td>XONLINE_STAT_UNIT_LAST_ACTIVITY_DATE</td>
+					<td>Not supported.</td>
+				</tr>
+            </table>
+<p>
+                In the same way that a set of stats for a player is always associated with a 
+                particular leaderboard, the title-specific nickname for a player is also 
+                associated with a particular leaderboard. Because the nickname is handled as a 
+                stat, the nickname for a player on a leaderboard could change each time the player's 
+                stats are updated. Additionally, it is possible for a given player to be known by 
+				different nicknames on other leaderboards. 
+            </p><h2><a name="IDABWEV"></a>The Stats API</h2>
+<p>
+                The following table summarizes the functions in the stats API:
+            </p><table>
+                <tr>
+                    <th>Function</th>
+<th>Description</th>
+                </tr>
+                <tr>
+                    <td><a href="XOnlineStatWrite.htm">XOnlineStatWrite</a></td>
+                    <td>Stores stats for one or more players on specified leaderboards.</td>
+                </tr>
+				<tr>
+					<td><a href="XOnlineStatWriteEx.htm">XOnlineStatWriteEx</a></td>
+					<td>Sets statistical information for one or more specified players or Xbox 
+					<i>Live</i> teams.</td>
+				</tr>
+				<tr>
+					<td><a href="XOnlineStatWriteGetResult.htm">XOnlineStatWriteGetResult</a></td>
+					<td>Retrieves a handle to a remote file reference. Use this handle to upload file 
+					attachments to accompany player statistics written with the <b>XOnlineStatWrite</b> 
+					function.</td>
+				</tr>
+                <tr>
+                    <td> <a href="XOnlineStatReset.htm">XOnlineStatReset</a></td>
+                    <td>Resets (deletes) stats for a player on the specified leaderboard.</td>
+                </tr>
+                <tr>
+                    <td> <a href="XOnlineStatRead.htm">XOnlineStatRead</a></td>
+                    <td>Creates an asynchronous task to retrieve stats for one or more players from 
+                    specified leaderboards.</td>
+                </tr>
+                <tr>
+                    <td> <a href="XOnlineStatReadGetResult.htm">XOnlineStatReadGetResult</a></td>
+                    <td>Obtains the results of the asynchronous task created by 
+					<b>XOnlineStatRead</b>.</td>
+                </tr>
+                <tr>
+                    <td> <a href="XOnlineStatLeaderEnumerate.htm">XOnlineStatLeaderEnumerate</a></td>
+                    <td>Creates an asynchronous task to retrieve an ordered listing of players from a 
+                    specified leaderboard.</td>
+                </tr>
+                <tr>
+                    <td> <a href="XOnlineStatLeaderEnumerateGetResults.htm">XOnlineStatLeaderEnumerateGetResults</a></td>
+                    <td>Obtains the results of the asynchronous task created by 
+					<b>XOnlineStatLeaderEnumerate</b>.</td>
+                </tr>
+				<tr>
+					<td><a href="XOnlineStatUnitEnumerate.htm">XOnlineStatUnitEnumerate</a></td>
+					<td>Not supported.</td>
+				</tr>
+				<tr>
+					<td><a href="XOnlineStatUnitEnumerateGetResults.htm">XOnlineStatUnitEnumerateGetResults</a></td>
+					<td>Not supported.</td>
+				</tr>
+				<tr>
+					<td><a href="XOnlineStatUnitRead.htm">XOnlineStatUnitRead</a></td>
+					<td>Not supported.</td>
+				</tr>
+				<tr>
+					<td><a href="XOnlineStatUnitReadGetResult.htm">XOnlineStatUnitReadGetResult</a></td>
+					<td>Not supported.</td>
+				</tr>
+            </table>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

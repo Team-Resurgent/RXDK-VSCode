@@ -1,0 +1,172 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Creating New Visual Studio .NET Projects</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Creating New Visual Studio .NET Projects"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+<MSHelp:Keyword Index="K" Term="Visual Studio .NET, creating projects"/>
+<MSHelp:Keyword Index="K" Term="Xbox Application Wizard, improvements"/>
+<MSHelp:Keyword Index="K" Term="Xbox Makefile Application Wizard"/>
+<MSHelp:Keyword Index="K" Term="Xbox Image Builder Tool, improvements"/>
+<MSHelp:Keyword Index="K" Term="ImageBld tool, improvements"/>
+<MSHelp:Keyword Index="K" Term="cross-platform development"/>
+<MSHelp:Keyword Index="K" Term="project-creation improvements in Visual Studio .NET"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Creating New Visual Studio .NET Projects</h1>
+<p>The Xbox Development Kit for Microsoft&reg; Visual Studio&reg; .NET
+contains improved wizards for getting you up and running as quickly as possible
+on your Xbox game project. In addition, the XDK is much better integrated with
+the Visual Studio .NET environment. Aside from Xbox-specific changes, Visual
+Studio .NET itself offers a number of improvements over Visual C++ 6.0.</p><h2><a name="IDAERM2"></a>Xbox-Specific Project Creation Changes and Improvements</h2>
+<ul>
+
+  <li>For beginning developers (or experienced developers writing
+      quick proof-of-concept Xbox applications), the Xbox Application Wizard has been
+      enhanced. By default, a new Xbox project contains a working 3D
+      application, a 3D camera, and an animated 3D triangle. Just press F5 to
+      build and debug, and you are running your first Xbox game!
+
+      <p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;If you are building the wizard-created project for the first time
+      in Visual Studio .NET, you may encounter an error during the deployment
+      phase of the build process (because no default remote Xbox console has yet
+      been defined). To prevent this error, you may do the following: 1) specify the default remote
+      Xbox console by adding it to the debugging settings in your project's
+      property pages, 2) running any Xbox remote command line tool, or 3) installing the Windows Explorer Shell Extension for Xbox.
+      <ul>
+	<li>To add the remote Xbox console name to the project's debugging settings,
+	    click the <b>Properties</b> item on the <b>Project</b> menu, then click
+	    <b>Debugging</b> in the left pane of the property pages dialog box. Enter
+	    the name or IP address of the remote Xbox console in the <b>Remote
+	    Machine</b> property, and then click <b>OK</b>.</li>
+	<li>To specify the remote console name from the command line, run the
+	    following (substituting your Xbox console's name or IP address for
+	    <i>xboxname</i>):
+
+	    
+<pre class="clsCode">
+xbdir -x <i>xboxname</i>
+</pre>
+    
+	</li>
+	<li>To install the Shell Extension, on the <b>Start</b> menu, click <b>Programs</b>, <b>Microsoft Xbox SDK</b>, <b>Setup Microsoft Windows Explorer Shell Extension for Xbox</b>.</li>
+      </ul>
+
+      </p>
+
+  </li>
+
+  <li>A new Xbox Makefile Application Wizard has been added for advanced developers
+      who wish to bypass the Visual Studio .NET build system, but who still want to
+      use the IDE to fix their syntax errors. This project type allows
+      command-line build scripts to be conveniently called from within the
+      IDE.</li>
+
+  <li>The <a href="xbox_jbh_tool_imagebld.htm">Xbox Image Builder Tool (ImageBld)</a>
+      property pages have been greatly expanded. Every command-line option is now documented and can be set using its own property grid
+      row, as shown in the following image:
+
+      <p><img alt="" height="440" width="644" src="images/x_vsnet_creating_imagebld.jpg"></p>
+  </li>
+
+  <li>If you compile Discreet&reg; 3ds max<sup style="font-size:smaller">TM</sup> plug-ins using Visual Studio .NET,
+      you must manually disable the automatically-defined preprocessor symbol
+      _WINDLL. Otherwise, your plug-in may not function correctly (it will
+      probably crash). To disable the _WINDLL define, click <b>Properties</b> on
+      the <b>Project</b> menu (to open the property pages), select the <b>C/C++</b> folder,
+      click the <b>Advanced</b> property page, and then enter _WINDLL in the <b>Undefine Preprocessor Definitions</b> property. <p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Once you do this, you will
+      receive a compiler warning each time you compile.</p></li>
+</ul>
+<h2><a name="IDANTM2"></a>General Project Creation Changes and Improvements</h2>
+<ul>
+
+  <li>The concept of a Workspace in Visual C++ 6.0 has been replaced with a
+      Solution in Visual Studio .NET. The purpose of a Solution does not
+      differ significantly from the purpose of a Workspace. Both are
+      top-level containers that hold multiple projects.</li>
+  
+  <li>Visual Studio .NET supports multiple platforms (Xbox and Win32) in the
+      same solution and project. Cross-platform (Win32/Xbox) game developers
+      can now build both Xbox and Win32 versions of their game from the same
+      project files. Each platform can have its own set of build settings.</li>
+
+  <li>When you create a project in Visual Studio .NET, it always creates a
+      directory to hold the project, and this directory is given the same name
+      as the project. Naming the associated directory after the project
+      prevents the wizards from creating two projects in the same directory.
+      Suppose you want to create a second project in same directory, or want
+      your project to have a different name than its associated directory. The
+      best solution is to create the project (giving it the name you want) in a
+      temporary location. Close the temporary solution you have created for
+      this project. Next, use Windows Explorer to copy all of the files into
+      the directory that you want them in. Now, open your real solution, and then use
+      the <b>File</b> | <b>Add Project</b> | <b>Existing Project</b> menu item to add the project from its desired
+      location into your solution.</li>
+
+  <li>The new project wizards provided by the XDK let you create a simple library
+      or XBE. You can also use these new wizards to create a project that will
+      allow you to shell out a build command to your own build engine. If you
+      need more complex wizard functionality, use the <b>Custom</b> wizard to
+      create your own. This wizard is different than the custom application
+      wizards in Visual C++ 6.0 because it is implemented in HTML and
+      JavaScript. Conversely, in order to make custom wizards easier to write,
+      the custom wizards used in Visual C++ 6.0 had to be written in MFC.</li>
+
+  <li>The Automation model in Visual Studio .NET has been dramatically enhanced
+      for both the project system and the CodeModel. Every aspect of a Visual
+      Studio .NET project can be controlled programmatically by writing your own
+      scripts or add-ins.</li>
+ 
+  <li>The settings dialog box in Visual Studio .NET has changed in many ways from
+      Visual C++ 6.0. The name of the menu item to open it is now <b>Properties</b>
+      instead of <b>Settings</b>. The shortcut key for the settings dialog box has
+      become Shift+F4. The settings dialog box is now modeless. It no
+      longer contains a tree view that duplicates the contents of the Solution
+      Explorer. Instead, it uses the selection in Solution Explorer to tell it
+      which property pages to display. This has some unexpected side effects
+      that take some getting used to. If the item you have selected in the IDE is
+      not the Solution Explorer, the pages displayed in the settings dialog box may
+      go away. For example, if you are viewing the settings pages for a file,
+      and you double-click on that file in the Solution Explorer to open it in
+      the editor, the property pages in the settings dialog box will go away
+      (because the selection of the IDE will be the text editor). Use the Ctrl+Alt+L shortcut to return to the Solution Explorer.</li>
+
+  <li>The project system now supports environment variables and built-in macros
+      anywhere you can type text into the project settings dialog. A pop-out
+      macro editor displays all the available built-in macros and associated
+      values for the current selection. To insert a macro into your settings
+      from the macro editor, double-click the macro you want to insert.
+      Environment variables can also be used, following the same $(EnvVarName)
+      syntax used in Visual C++ 6.0. In Visual C++ 6.0, environment variables could only be used in
+      custom build steps and in other specific places.</li>
+
+  <li>Visual Studio.NET allows you to apply any system tool to any file you
+      want (for example, you can apply the C++ compiler to myfile.qlj). From
+      the <b>Tools.Options.Project.VC++ Build</b> dialog box in the <b>C/C++ File Extensions</b>
+      property, you can also declare any file extensions you want the C++
+      compiler to handle.</li>
+
+  <li>The project files used by Visual Studio .NET (.vcproj file extension) are
+      XML-formatted, allowing for much easier manipulation if you need to
+      customize your title's build process with command line or other external
+      tools.</li>
+</ul>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

@@ -1,0 +1,169 @@
+{
+  "name": "rxdk-vscode",
+  "displayName": "RXDK",
+  "description": "Original Xbox development: bundled SDK, project templates, build, deploy, and debug",
+  "version": "0.1.3",
+  "icon": "media/extension-icon.png",
+  "publisher": "rxdk-libs",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Team-Resurgent/RXDK-VSCode.git"
+  },
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": ["Debuggers", "Other"],
+  "activationEvents": [
+    "onStartupFinished",
+    "workspaceContains:**/rxdk.project.json",
+    "onDebugResolve:xbox",
+    "onDebugInitialConfigurations",
+    "onDebug:xbox"
+  ],
+  "main": "./out/extension/extension.js",
+  "contributes": {
+    "commands": [
+      { "command": "rxdk.newProject", "title": "New Project", "category": "RXDK", "icon": "$(add)" },
+      { "command": "rxdk.newProject.d3d8", "title": "New D3D8 Triangle", "category": "RXDK" },
+      { "command": "rxdk.newProject.dsound", "title": "New DSound Tone", "category": "RXDK" },
+      { "command": "rxdk.newProject.xinput", "title": "New XInput Gamepad", "category": "RXDK" },
+      { "command": "rxdk.newProject.xmv", "title": "New XMV Play", "category": "RXDK" },
+      { "command": "rxdk.build", "title": "Build", "category": "RXDK", "icon": "$(tools)" },
+      { "command": "rxdk.deploy", "title": "Deploy", "category": "RXDK", "icon": "$(cloud-upload)" },
+      { "command": "rxdk.run", "title": "Run", "category": "RXDK", "icon": "$(run)" },
+      { "command": "rxdk.debug", "title": "Debug", "category": "RXDK", "icon": "$(debug-alt)" },
+      { "command": "rxdk.debugPrebuiltXbe", "title": "New Prebuilt XBE Project", "category": "RXDK", "icon": "$(file-binary)" },
+      { "command": "rxdk.refreshPrebuiltSource", "title": "Refresh Source Folder", "category": "RXDK", "icon": "$(folder-opened)" },
+      { "command": "rxdk.setXboxIp", "title": "Set Xbox IP / Hostname", "category": "RXDK" },
+      { "command": "rxdk.showSidebar", "title": "Show RXDK Sidebar", "category": "RXDK", "icon": "$(list-tree)" },
+      { "command": "rxdk.refreshSidebar", "title": "Refresh", "category": "RXDK", "icon": "$(refresh)" },
+      { "command": "rxdk.openSdkDocs", "title": "Xbox SDK Documentation", "category": "RXDK", "icon": "$(book)" },
+      { "command": "xbox.pickConsole", "title": "Set Xbox IP / Hostname", "category": "RXDK" }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "rxdk-sidebar",
+          "title": "RXDK",
+          "icon": "media/rxdk-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "rxdk-sidebar": [
+        {
+          "id": "rxdk.explorer",
+          "name": "RXDK"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        { "command": "rxdk.newProject", "when": "view == rxdk.explorer", "group": "navigation" },
+        { "command": "rxdk.refreshSidebar", "when": "view == rxdk.explorer", "group": "navigation" }
+      ],
+      "commandPalette": [
+        { "command": "rxdk.build", "when": "rxdk.hasProject" },
+        { "command": "rxdk.deploy", "when": "rxdk.hasProject" },
+        { "command": "rxdk.run", "when": "rxdk.hasProject" },
+        { "command": "rxdk.debug", "when": "rxdk.hasProject" },
+        { "command": "rxdk.debugPrebuiltXbe" }
+      ]
+    },
+    "debuggers": [
+      {
+        "type": "xbox",
+        "label": "Xbox",
+        "languages": ["cpp", "c"],
+        "program": "./out/debug/adapter.js",
+        "runtime": "node",
+        "configurationAttributes": {
+          "launch": {
+            "required": ["xbePath"],
+            "properties": {
+              "program": { "type": "string", "description": "Local Win32 .exe path (for PDB symbols). Optional; falls back to the XBE header when omitted." },
+              "xbePath": { "type": "string", "description": "Remote Xbox path to .xbe" },
+              "xbeDir": { "type": "string", "description": "Remote directory for DmSetTitle" },
+              "xbeTitle": { "type": "string", "description": "Remote .xbe file name" },
+              "xbe": { "type": "string", "description": "Local .xbe path used for symbol image size when no program (.exe) is provided" },
+              "pdb": { "type": "string", "description": "Local .pdb path" },
+              "map": { "type": "string", "description": "Local .map path (for globals)" },
+              "srcRoot": { "type": "string", "description": "Source root for mapping PDB paths (defaults to the workspace folder)" },
+              "consoleName": { "type": "string", "description": "Target Xbox console name" },
+              "bridgePath": { "type": "string", "description": "Path to xboxdbg-bridge (managed Rxdk.XboxDbgBridge host)" },
+              "reboot": { "type": "boolean", "default": false }
+            }
+          },
+          "attach": {
+            "properties": {
+              "program": { "type": "string" },
+              "pdb": { "type": "string" },
+              "consoleName": { "type": "string" },
+              "bridgePath": { "type": "string" }
+            }
+          }
+        },
+        "initialConfigurations": [
+          {
+            "type": "xbox",
+            "request": "launch",
+            "name": "Debug Xbox title",
+            "preLaunchTask": "rxdk: build+deploy",
+            "program": "${workspaceFolder}/out/my-game.exe",
+            "xbePath": "xe:\\my-game\\my-game.xbe"
+          }
+        ]
+      }
+    ],
+    "configuration": {
+      "title": "RXDK",
+      "properties": {
+        "rxdk.sdkPath": {
+          "type": "string",
+          "default": "",
+          "description": "Override bundled SDK path (default: extension out/sdk/)"
+        },
+        "rxdk.defaultConsole": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Default Xbox IP or hostname.\n\n- **Windows:** leave empty to use the Xbox SDK registry (`HKCU\\Software\\Microsoft\\XboxSDK\\XboxName`, XBSetIP, or Neighborhood). Set this only to override the registry.\n- **macOS / Linux:** set here in workspace or user `settings.json` (no Windows registry)."
+        },
+        "rxdk.msvcVersion": {
+          "type": "string",
+          "default": "",
+          "description": "MSVC toolset version for your installed Visual Studio cl.exe/link.exe (default: latest VS2022 toolset)"
+        },
+        "xbox.defaultConsole": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Alias for `#rxdk.defaultConsole#`. Windows: registry when empty; macOS/Linux: settings JSON."
+        },
+        "xbox.bridgePath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to xboxdbg-bridge (default: extension out/sdk/tools/xboxdbg-bridge.exe on Windows)"
+        },
+        "xbox.showTitleOutput": {
+          "type": "boolean",
+          "default": true,
+          "description": "Reveal Output panel when title prints via OutputDebugStringA"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p . && tsc -p debug",
+    "watch": "tsc -watch -p .",
+    "package": "npx --yes @vscode/vsce package"
+  },
+  "dependencies": {
+    "@vscode/debugadapter": "^1.65.0",
+    "@vscode/debugprotocol": "^1.65.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.80.0",
+    "@vscode/vsce": "^3.2.0",
+    "typescript": "^5.4.0"
+  }
+}

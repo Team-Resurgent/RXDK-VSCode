@@ -1,0 +1,37 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Light Attenuation Over Distance</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Light Attenuation Over Distance"/>
+<MSHelp:Keyword Index="F" Term="Light Attenuation Over Distance"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_light_attenuation_over_distance_graphics"></A>Light Attenuation Over Distance</H1>
+
+<P>Microsoft&#174; Direct3D&#174; determines the distance between a light source and a vertex being lit by taking the magnitude of the vector that exists between the light's position and the vertex. This is represented by the following formula.</P>
+
+<P><IMG SRC="images/attenuation_distance.gif" ALT="" BORDER=0></P>
+
+<P>In the preceding formula, <I>D </I>is the distance being calculated, <I>V </I>is the position of the vertex being lit, and <I>L</I> is the light source's position. If <I>D</I> is greater than the light's range, that is, the <B>Range</B> member of a <A HREF="_dx_d3dlight8_graphics.htm">D3DLIGHT8</A> structure, Direct3D makes no further attenuation calculations and applies no effects from the light to the vertex. If the distance is within the light's range, Direct3D then applies the following formula to calculate light attenuation over distance for point lights and spotlights; directional lights don't attenuate.</P>
+
+<P><IMG SRC="images/attenu8.gif" ALT="" BORDER=0></P>
+
+<P>In this attenuation formula, <I>A</I> is the calculated total attenuation and <I>D</I> is the distance from the light source to the vertex. The <I>dvAttenuation0</I>, <I>dvAttenuation1</I>, and <I>dvAttenuation2</I> values are the light's attenuation constants as specified by the members of a light object's <B>D3DLIGHT8</B> structure. The corresponding structure members are <B>Attenuation0</B>, <B>Attenuation1</B>, and <B>Attenuation2</B>. </P>
+
+<P>The attenuation constants act as coefficients in the formula; you can produce a variety of attenuation curves by making simple adjustments to them. You can set <B>Attenuation0</B> to 1.0 to create a light that doesn't attenuate but is still limited by range, or you can experiment with different values to achieve various attenuation effects.</P>
+
+<P>The attenuation at the maximum range of the light is not 0.0. To prevent lights from suddenly appearing when they are at the light range, an application can increase the light range. Or, the application can set up attenuation constants so that the attenuation factor is close to 0.0 at the light range. The attenuation value is multiplied by the red, green, and blue components of the light's color to scale the light's intensity as a factor of the distance light travels to a vertex. </P>
+
+<P>After computing the light attenuation, Direct3D also considers spotlight effects if applicable, the angle that the light reflects from a surface, and the reflectance of the current material to calculate the diffuse and specular components for that vertex. For more information, see <A HREF="_dx_spotlight_falloff_model_graphics.htm">Spotlight Falloff Model</A> and <A HREF="_dx_reflectance_model_graphics.htm">Reflectance Model</A>.</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Running and Debugging an XBE</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Running and Debugging an XBE"/>
+<MSHelp:Keyword Index="K" Term="debugging and running and XBE"/>
+<MSHelp:Keyword Index="F" Term="Running and Debugging an XBE"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Running and Debugging an XBE</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<!--****Intro paragraph. Should be a three or four sentence summary of the topic.****-->
+<P class="intro">Developing for the Xbox requires two machines&#8212;the development machine and the target machine. Programs are compiled on the development machine and then executed on the target machine. These two machines have to be able to communicate with one another to move newly built code to the target machine and debug it.</P>
+
+<H3 Class="subheading1">Setting up the Development Environment</H3>
+
+<P class="content">As long as you have properly installed the Xbox SDK on your development machine and used the recovery CD to image your target machine, there is nothing further to install. On the target machine, the client code is a part of the Xbox system software, and on the development machine, the Microsft&#174; Visual C++&#174; debugger includes everything necessary. But you will have to configure your development machine and target machine so that they can find each other on the network.</P>
+
+<H3 Class="subheading1">The Physical Connection</H3>
+
+<P class="content">To debug a title for Xbox, you will have to connect the development machine and target machine via the network cable provided with your development kit. You can connect the target machine to your development machine directly (a peer-to-peer connection) or via a local area network (LAN).</P>
+
+<P class="note"><B>Note</B>&nbsp;&nbsp;&nbsp;Although a serial cable is provided with the Xbox Development Kit (XDK), the Visual C++ debugger cannot communicate with the target machine via a serial connection. Use the included network cable to connect your development machine to the target machine.</P>
+
+<H3 Class="subheading1">Running an XBE</H3>
+
+<P class="content">After you compile your source, use the 
+<A HREF="xbox_jbh_tool_remote_xbcp.htm">File Transfer Tool (XbCP)</A> to copy 
+the newly created executable (and any related media) onto the target Xbox. Be sure to 
+copy your code to a subdirectory under "xE:\" on the target system. If you use Visual Studio
+.NET to build your project, it automatically copies your .xbe and data files to the target
+Xbox.</P>
+
+<P class="content">There are two ways to launch an XBE on the target system:</P>
+
+<OL>
+
+<LI>The target system now boots into the XDK Launcher. The XDK Launcher searches for all XBE files in the first level of subdirectories under "xE:\" and displays their file names. Select your title and press the <B>A</B> button. After the target system reboots, your title will launch.</LI>
+
+<LI>Specify the remote executable in the Visual C++ IDE. Debug the XBE. See the <B>Using the Remote Debugger</B> section below.</LI>
+
+</OL>
+
+<H3 Class="subheading1"><A NAME="using_the_remote_debugger"></A>Using the Remote Debugger</H3>
+
+<P class="content">The remote debugger for the Xbox works much like the remote debugger for Microsoft&#174; Windows&#174;. Much of the information on MSDN regarding <B>Debugging Remote Applications</B> is useful for debugging Xbox titles.</P>
+
+<P class="content">Before you can use the debugger, you need to tell the debugger how to connect to your Xbox Development Kit. Click <B>Debugger Remote Connect</B> on the <B>Build</B> menu. Then select Xbox as the platform and enter the name or IP address of your target machine in the TCP/IP settings of the resulting dialog.</P>
+
+<P class="note"><B>Note</B>&nbsp;&nbsp;&nbsp;If you specify a target machine using the name that you chose when you first configured the game system, the development machine and the target machine must be on the same subnet. If you specify a numeric IP, this restriction does not apply.</P>
+
+<P class="content">Once your development machine has been configured to communicate with your target machine, you can debug your titles for Xbox the same way you would debug a Windows application. See the Visual C++ documentation for more information about debugging applications from the Visual C++ IDE.</P>
+
+<H3 Class="subheading1">Xbox Debugger Differences</H3>
+
+<P class="content">When you click <B>Stop Debug</B> or <B>Restart</B> on the <B>Build</B> menu, the target machine will reboot. In the case of <B>Stop Debug</B>, the Xbox system software will start up in a wait state&#8212;it will delay the execution of the Title Launcher for a time.</P>
+
+<H3 Class="subheading1">Connecting to the Xbox Debugger</H3>
+
+<P class="content">There are three ways to connect to the target machine for debugging:</P>
+
+<OL>
+
+<LI>Launch your application on the target machine. Then run the same XBE from the Visual C++ IDE (using the <B>Debug</B> / <B>Go</B> menu item). The debugger will attach to the running process on the target machine, and from there you can use <B>Debug/Break</B>, set breakpoints, or perform any other debugging task.
+
+<P class="note"><B>Note</B>&nbsp;&nbsp;&nbsp;If the currently executing process on the target system does not match the XBE on the development system (a different title, or a different version of the same title, is running), the debugger will display the following error message:</P>
+
+<BLOCKQUOTE><PRE>The local executable does not match the remote one. Do you want to continue?</PRE></BLOCKQUOTE>
+
+<P class="note">If this happens, select <B>No</B>. Then use the <B>Xbox Reboot Tool</B> to reboot the target system and have it wait ("xbreboot -w"). After the reboot, you can use the debugger to launch your title and debug it.</P>
+</LI>
+
+<LI>Wait until the target machine enters an exception state, and then run from the debugger. It will attach to the running process and tell you what exception was raised and will break there. You can continue to debug from that point.</LI>
+
+<LI>With the XDK Launcher running on the target system, run your XBE from the Visual C++ IDE (using the <B>Debug</B> / <B>Go</B> menu item). The target system will reboot, and then your title will launch.</LI>
+
+</OL>
+
+<P class="content">To debug your XBE in the Visual C++ IDE, you can open the project 
+(if one exists) or open the XBE itself. If you open the XBE, you'll need to have the 
+corresponding PDB file in the same directory. Without the project, or the PDB file, 
+the debugger will not be able to resolve the execution state with the source code, and 
+you will have to view the assembly code instructions without the benefit of the source 
+symbols.</P>
+
+<P>Breakpoints will not be hit (the debugger will not break on them) if they are in 
+code that is running at DPC (deferred procedure call) level, except for data breakpoints 
+at DPC level; data breakpoints at DPC level generate 
+a <a href="x_lrf_vsnet_debugging.htm" name="crash_dumps">crash dump</a>. DirectX 
+callback functions (see <A HREF="_dx_idirect3ddevice8_insertcallback_graphics.htm">
+IDirect3DDevice8::InsertCallback</A>) and Debugger API command and notification 
+callback functions (see <A HREF="xbox_jbh_debugapi_intro.htm">Debugger API</A>) 
+run at DPC. To debug functions that run at DPC level, use a kernel-level debugger such
+as the Kernel Debugger (KD) or the Windows Debugger (WinDB).</P>
+
+<H3 Class="subheading1">The D: Drive</H3>
+
+<P class="content">When you debug a title from the Visual C++ IDE, the root of the D: drive on the target machine is mapped to the directory from which the XBE was launched.</P>
+
+<H3 Class="subheading1">Debugging Multiple Consoles</H3>
+<p>You can debug two or more consoles at the same time using the following procedure.</p>
+<ol>
+	<li>Use <b>xbdir -x</b> <i>name-of-xbox-1</i> to set Xbox 1 as the default Xbox.</li>
+	<li>Launch Visual C++.</li>
+	<li>From the <b>Tools</b> menu, select<b>Debugger Remote Connection</b>. Next, choose 
+	<b>Xbox Platform</b>, and then click the <b>Settings</b> button. The machine name in 
+	the <b>Machine name</b> dialog box should be empty.</li>
+	<li>Open a project and launch the debugger.</li>
+	<li>Use <b>xbdir -x</b> <i>name-of-xbox-2</i> to set Xbox 2 as the default Xbox.</li>
+	<li>Start a second instance of Visual C++. </li>
+	<li>In the second instance of Visual C++, open the same project and launch the debugger. 
+	(Ignore any error warnings about the ClassView information file.)</li>
+	<li>Repeat steps 5&#8211;7 for additional consoles.</li>
+</ol>
+
+<H3 Class="subheading1">Known Debugger Issues</H3>
+
+<P class="content">A few known issues exist with the debugger in this release. These issues will be resolved in a future release of the XDK.</P>
+
+<UL>
+  <LI>The <B>Attach to Process</B> menu item is available, but only local processes are listed.</LI>
+  <LI>The debugger ignores DBG files; use PDB files instead.</LI>
+  <LI>The recommended way to debug is to use the Visual C++ debugger. KD should work, but it is not supported.</LI>
+</UL>
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

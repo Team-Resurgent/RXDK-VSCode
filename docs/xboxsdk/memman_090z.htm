@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>GlobalMemoryStatus</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="GlobalMemoryStatus">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="GlobalMemoryStatus"/>
+<MSHelp:Keyword Index="F" Term="GlobalMemoryStatus"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_globalmemorystatus"></A>GlobalMemoryStatus</H1>
+
+<P>The <B>GlobalMemoryStatus</B> function obtains information about the system's current usage of both physical and virtual memory. </P>
+
+<PRE class=syntax><B>VOID GlobalMemoryStatus(
+  LPMEMORYSTATUS</B><I> lpBuffer</I>   // memory status structure
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>lpBuffer</I></DT>
+
+<DD>[out] Pointer to a <A HREF="memman_2fhu.htm">MEMORYSTATUS</a> structure. The <B>GlobalMemoryStatus</B> function stores information about current memory availability into this structure. 
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>This function does not return a value. </P>
+
+<H4>Remarks</H4>
+
+<P>You can use the <B>GlobalMemoryStatus</B> function to determine how much memory your application can allocate. </P>
+
+<P>The information returned by the <B>GlobalMemoryStatus</B> function is volatile. There is no guarantee that two sequential calls to this function will return the same information.</P>
+
+<H4>Example</H4>
+
+<P>The program following shows a simple use of the <B>GlobalMemoryStatus</B> function.</P>
+
+<PRE>
+//------------------------------------------------------------------------------ 
+// globstat.cpp
+//
+// Example use of GlobalMemoryStatus()
+//
+// Sample output:
+//
+// 2047 total MB of virtual memory.
+// 2046  free MB of virtual memory.
+//   64 total MB of physical memory.
+//   63  free MB of physical memory.
+//    0 total MB of paging file.
+//    0  free MB of paging file.
+//    0  percent of memory is in use.
+//------------------------------------------------------------------------------ 
+#include &lt;xtl.h&gt;
+
+// 1 megabyte
+#define MB	(1024*1024)
+
+// Add one line of text to the output buffer.
+#define AddStr(a,b) (pstrOut += wsprintf( pstrOut, a, b ))
+
+void main( int argc, char *argv[] )
+{
+    MEMORYSTATUS stat;
+    CHAR strOut[1024], *pstrOut;
+
+    // Get the memory status.
+    GlobalMemoryStatus( &amp;stat );
+
+    // Setup the output string.
+    pstrOut = strOut;
+    AddStr( "%4d total MB of virtual memory.\n", stat.dwTotalVirtual / MB );
+    AddStr( "%4d  free MB of virtual memory.\n", stat.dwAvailVirtual / MB );
+    AddStr( "%4d total MB of physical memory.\n", stat.dwTotalPhys / MB );
+    AddStr( "%4d  free MB of physical memory.\n", stat.dwAvailPhys / MB );
+    AddStr( "%4d total MB of paging file.\n", stat.dwTotalPageFile / MB );
+    AddStr( "%4d  free MB of paging file.\n", stat.dwAvailPageFile / MB );
+    AddStr( "%4d  percent of memory is in use.\n", stat.dwMemoryLoad );
+
+    // Output the string.
+    OutputDebugString( strOut );
+
+    // Don't return from main!
+    Sleep( INFINITE );
+}
+</PRE>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+
+<H4>See Also</H4>
+<P> 
+
+<a href="xbox_mt_xtl_sll_memory_management_functions.htm">Memory Management Functions</a> | 
+<A HREF="memman_2fhu.htm">MEMORYSTATUS</a> </P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

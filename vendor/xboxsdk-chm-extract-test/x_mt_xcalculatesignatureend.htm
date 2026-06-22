@@ -1,0 +1,87 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>XCalculateSignatureEnd</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="XCalculateSignatureEnd">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XCalculateSignatureEnd"/>
+<MSHelp:Keyword Index="F" Term="XCalculateSignatureEnd"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_xbox_xcalculatesignatureend"></A>XCalculateSignatureEnd</H1>
+
+<P>The <B>XCalculateSignatureEnd</B> function completes the calculation of a signature over a save game or other data set, returns the calculated signature, and frees the resources associated with the signature context.</P>
+
+<PRE class=syntax><B>DWORD XCalculateSignatureEnd(</B>
+  <B>HANDLE</B> <I>hCalcSig</I><B>,</B>
+  <B>PVOID</B> <I>pSignature</I>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>hCalcSig</I></DT>
+<DD>[in] Handle to the signature being calculated.  The handle must have been returned by a previous call to <A HREF="x_mt_xcalculatesignaturebegin.htm">XCalculateSignatureBegin</A>.</DD>
+
+<DT><I>pSignature</I></DT>
+<DD>[out] Pointer to a buffer that receives the signature of the data.  Use <a href="XCalculateSignatureGetSize.htm">XCalculateSignatureGetSize</a> to determine the necessary buffer size to allocate and pass in <I>pSignature</I>.  For save game signatures only, <I>pSignature</I> can be a pointer to an <A HREF="x_mt_xcalcsig_signature.htm">XCALCSIG_SIGNATURE</A> structure.
+ 
+<p>This parameter can be NULL if the signature is not needed; in this case, the signature handle is closed and the associated resources are freed, but no signature is calculated.</p></DD>
+
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is ERROR_SUCCESS.</P>
+
+<P>If the function fails, the return value is an error code defined in winerror.h. The function does not use <B>SetLastError</B> to set the calling thread's last-error code.</P>
+
+<H4>Remarks</H4>
+
+<P><B>XCalculateSignatureEnd</B> will calculate a signature over all of the data that has been added to the signature context with <A HREF="x_mt_xcalculatesignatureupdate.htm">XCalculateSignatureUpdate</a> since the context was initially opened using <B>XCalculateSignatureBegin</B>.
+
+<P>Prior to calling <B>XCalculateSignatureEnd</B>, call <a href="XCalculateSignatureGetSize.htm">XCalculateSignatureGetSize</a> to determine the buffer size necessary to contain the returned signature.  Allocate a buffer of the required size, and pass a pointer to that buffer in the <I>pSignature</I> parameter.</P>
+
+<P>The signature returned in <i>pSignature</i> can be written out to storage along with the data that it is the signature of, or it can be compared (with a simple memory comparison) against a signature read in from a save game or other data set that needs to be verified.</P>
+
+<P>For each call to <B>XCalculateSignatureBegin</B>, call <B>XCalculateSignatureEnd</B> in order to free the allocated resources.  The handle passed in the <I>hCalcSig</I> parameter is automatically closed by <B>XCalculateSignatureEnd</B>, and the resources associated with the signature context are freed.  If the calculated signature is not needed (for example, when backing out of an operation for which there was a failure), call <B>XCalculateSignatureEnd</B> with NULL for the <I>pSignature</I> parameter in order to free up the associated resources without actually calculating the signature.</P>
+
+<P>If XCALCSIG_FLAG_SAVE_GAME was specified when the signature context was created, the hash is computed over the specified data set and is signed with a key that is specific to, and only accessible by, the calling title.  If XCALCSIG_FLAG_NON_ROAMABLE was specified when the signature context was created, the hash is additionally signed with a key unique to the current Xbox console, so the signature will only match a signature calculated over the same data, by the same title, on the same console.</P>
+
+<P>For save game signatures (XCALCSIG_FLAG_SAVE_GAME or XCALCSIG_FLAG_NON_ROAMABLE was specified when the signature context was created), the signature returned in the <I>pSignature</I> buffer is an <A HREF="x_mt_xcalcsig_signature.htm">XCALCSIG_SIGNATURE</A> structure.</p>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Xbox.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib</p>
+
+<H4>See Also</H4>
+<P>
+<A HREF="x_mt_storage_oview.htm">Storage Overview</A>,
+<A HREF="x_jsk_storage_functions.htm">Storage Functions</A> |
+<A HREF="x_mt_xcalculatesignaturebegin.htm">XCalculateSignatureBegin</A>,
+<A HREF="x_mt_xcalculatesignatureupdate.htm">XCalculateSignatureUpdate</A>,
+<A HREF="x_mt_xcalcsig_signature.htm">XCALCSIG_SIGNATURE</A>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

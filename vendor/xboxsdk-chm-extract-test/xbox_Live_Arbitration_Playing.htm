@@ -1,0 +1,39 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Playing an Arbitrated Event</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Playing an Arbitrated Event"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Playing an Arbitrated Event</h1>
+<p>When playing an event, such as a round of a competition, the game host officially starts the game. Time extensions to the arbitrated session are requested using the <a href="XOnlineArbitrationExtendRound.htm">XOnlineArbitrationExtendRound</a> function. Each client should make its own time extension call. For more details, see <a href="prog_wp_arbitration.htm#managing_session_time">Managing Session Time</a> below. For handling midgame problems and errors, see the <a href="prog_wp_arbitration.htm#anomalies">Anomalies</a> section.</p><ul>
+<li><a href="#anomalies">Anomalies</a></li><li><a href="#managing_session_time">Managing Session Time</a></li><li><a href="#IDA2REV">Disconnect and CompNoShow ratings</a></li></ul>
+<h2><a name="anomalies"></a>Anomalies</h2>
+<dl>
+				<dt><b>Pure peer-to-peer games</b></dt>
+				<dd>If the game is a peer-to-peer session and no game host is used, then as connectivity is lost to some peers, the game can proceed without those peers and appropriately penalize the stats of players on the disconnecting peers. Alternatively, the game can decide that not enough people are left to play a meaningful game and terminate the game by synchronizing stats for all remaining peers. This requires each peer to send a report with the accurate stats submission and lost connectivity information.</dd>
+
+				<dt><b>Game host&#8211;based games</b></dt>
+				<dd>If during the game a client loses connectivity to the game host, the client should attempt to establish communication with the other participants in the session. The goal is to either synchronize stats and send a score report, or to elect a new game host and finish the game. In either case, the stats submission must still include stats changes for all the players who are no longer connected to the session. The game can optionally penalize those disconnected players by modifying stats in whatever way that is appropriate for the game.</dd>
+			</dl>
+<p>The arbitration system cannot prevent game-specific abuses and exploits, but each title can verify that its internal limits are not broken. It is recommended that titles inject game-specific anti-cheating checks. For example, there should be a theoretical limit on how fast a player can run or how fast a car can complete a certain course. If scores collected from other players in the session exceed such limits, game code should register that fact using suspicious info flags. Each title has three custom suspicious info types reserved for exclusive use.</p><h2><a name="managing_session_time"></a>Managing Session Time</h2>
+<p>The rule of thumb for managing session time is to register arbitrated sessions with the amount of time expected for the session and extend the session's length as needed. If your game uses a fixed-length session, request 1 minute of extra time. If it uses a variable-length session, request 6 minutes during registration and time extension, but time extend the session every 5 minutes. Avoid calling time extension more frequently than once every 5 minutes. It is also unwise to register the session with an excessive amount of time (say 1 hour) so that your game can  avoid extending the session. Both stats and competition results for arbitrated sessions do not get posted until the registered amount of time has passed. Therefore, using excessively long session times can significantly delay the posting of results.</p><p>Your title should also enforce a limit on the total amount of stoppage time (for example, Pause menu) on players in an arbitrated session.</p><h2><a name="IDA2REV"></a>Disconnect and CompNoShow ratings</h2>
+<p>The arbitration service collects specific information related to a player's reliability in submitting accurate score reports. Although it's frequently impossible to determine which player or players were at fault when large multiplayer sessions go awry, the Xbox <i>Live</i> service can detect with high confidence player disconnects. Additionally, it can detect no-shows for tournament matches.</p><p>The Xbox <i>Live</i> service exposes a player's relative rating for disconnects and no-shows. Titles can use this information for matchmaking, sportsmanship profiles, unlocking bonus content, or awarding trophies. This information is returned with the user logon ticket, in the <b>dwUserFlags</b> member of the <a href="xuid.htm">XUID</a> structure. Disconnects and no-show ratings are on the scale from 0 (abysmal) to 7 (exceptional).</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Disconnect and CompNoShow ratings are title specific. Therefore, it is possible for a given player to have a very poor rating on one title and a very good one on another.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

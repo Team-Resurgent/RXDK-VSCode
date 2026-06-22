@@ -1,0 +1,294 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XInputSetLightgunCalibration</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XInputSetLightgunCalibration"/>
+<MSHelp:Keyword Index="F" Term="XInputSetLightgunCalibration"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XInputSetLightgunCalibration</h1>
+<p>Allows a game to
+set lightgun calibration offset values for two well-known calibration points:
+the upper-left corner and the middle of the TV screen.</p><pre class="syntax" xml:space="preserve"><b>DWORD</b> <b>XInputSetLightgunCalibration(</b>
+    <b>HANDLE</b> <i>hDevice</i><b>,</b>
+    <b>PXINPUT_LIGHTGUN_CALIBRATION_OFFSETS</b> <i>pCalibrationOffsets</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+
+<dt><i>hDevice</i></dt>
+<dd>[in]  Handle to the lightgun device.</dd>
+
+
+<dt><i>pCalibrationOffsets</i></dt>
+<dd>[in]  Pointer to an <a href="x_lrf_XINPUT_LIGHTGUN_CALIBRATION_OFFSETS.htm">XINPUT_LIGHTGUN_CALIBRATION_OFFSETS</a> structure that
+contains calibration offset values for the lightgun.</dd>
+
+
+</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>This function returns ERROR_SUCCESS if the calibration values are
+successfully set for the lightgun. The function returns ERROR_INVALID_HANDLE if
+the lightgun handle is invalid.</p>
+<h4><a name="remarks"></a>Remarks</h4>
+
+<p>The offsets are the difference between the defined location of the
+calibration points and the values reported by the lightgun when the game player
+pointed and shot at the calibration point. For example, if the player shot at
+the center calibration point (0,0), but the values measured by the lightgun were
+(40,30), the offset values sent back to the gun for calibration would be
+(&#8722;40,&#8722;30).</p>
+
+<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Calibration data will vary depending on the state of the
+XINPUT_LIGHTGUN_LINE_DOUBLER and XINPUT_LIGHTGUN_FRAME_DOUBLER flags returned
+by the lightgun. Because there are four possible combinations of these flags, the
+game may keep up to four sets of calibration data. The lightgun, however, will
+only store one set of calibration data at a time.</p>
+
+<p>The fixed location values for the calibration points are provided in the
+following constants:</p>
+
+
+<pre class="clsCode">
+// Upper-left corner:
+#define XINPUT_LIGHTGUN_CALIBRATION_UPPERLEFT_X -25000
+#define XINPUT_LIGHTGUN_CALIBRATION_UPPERLEFT_Y  25000
+
+// Center:
+#define XINPUT_LIGHTGUN_CALIBRATION_CENTER_X    0
+#define XINPUT_LIGHTGUN_CALIBRATION_CENTER_Y    0
+</pre>
+    
+
+<p>The following table lists the screen coordinate equivalents of the
+calibration point locations. The target reticle should be centered on these
+points.</p>
+
+<table>
+  <tr>
+    <th>Screen resolution</th>
+    <th>Center calibration point</th>
+    <th>Upper-left calibration point</th>
+  </tr>
+  <tr>
+    <td>640 &#0215; 480</td>
+    <td>320, 240</td>
+    <td>76, 57</td>
+  </tr>
+  <tr>
+    <td>720 &#0215; 480</td>
+    <td>360, 240</td>
+    <td>85, 57</td>
+  </tr>
+  <tr>
+    <td>1280 &#0215; 720</td>
+    <td>640, 480</td>
+    <td>152, 85</td>
+  </tr>
+  <tr>
+    <td>1920 &#0215; 1080</td>
+    <td>960, 540</td>
+    <td>227, 128</td>
+  </tr>
+  <tr>
+    <td>640 &#0215; 576</td>
+    <td>320, 288</td>
+    <td>76, 68</td>
+  </tr>
+  <tr>
+    <td>720 &#0215; 576</td>
+    <td>360, 288</td>
+    <td>85, 68</td>
+  </tr>
+</table>
+
+<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Calling <b>XInputSetLightgunCalibration</b> blocks for about two or three
+milliseconds.</p>
+
+<h2><a name="IDADEN2"></a>Calibration Process</h2>
+<p>Either the calibration process or restoration of previously measured
+calibration settings must be performed whenever the lightgun is reset (for
+example, at initial console power-on, a physical disconnect of the lightgun
+from the console, or static discharge into the lightgun, all of which appear to
+the system as a hot-plug of the controller).</p><p>Assuming basics such as detecting and opening a lightgun device have already
+been done, the following steps describe how a game should properly calibrate a
+lightgun:</p><ol>
+  <li>Provide a way for the user to enter calibration mode. For example, an
+      option can be provided from the game's main menu.</li>
+
+  <li>Draw the background of the calibration screen. The background should not
+      be all black as the gun needs non-black pixels on screen to detect that
+      it is pointing at the screen. The recommended colors for all calibration
+      screen backgrounds are:
+      
+      <ul>
+	<li>Either grey screen settings of R: 243 G: 243 B: 243 with H: 160, S: 0, L: 229</li>
+      </ul>
+
+      <ul>
+	<li>Or yellow screen settings of R: 253, G: 253, B: 0 with H: 40, S: 240, L: 119.</li>
+      </ul>
+  </li>
+
+  <li>Provide a message on-screen that tells the user to point the gun at the
+      screen.</li>
+      
+  <li>Wait for the XINPUT_LIGHTGUN_ONSCREEN bit to be set on.
+      
+      <p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;When the gun is first pointed at the TV screen, it will take
+      approximately 20 frames for it to determine whether the TV is using line
+      or frame doubling.  The gun will not set the XINPUT_LIGHTGUN_ONSCREEN bit
+      until this information has been determined.  Once detected, the values of
+      line and frame doublers will be latched and the XINPUT_LIGHTGUN_ONSCREEN
+      bit will be updated virtually instantaneously from that point on when the
+      gun detects on/off screen conditions.</p>
+  </li>
+      
+  <li>Once the XINPUT_LIGHTGUN_ONSCREEN bit is set, the game may paint the
+      first target at the center calibration position and prompt the user to
+      shoot at the target.  The game should ignore any trigger pulls from the
+      gun until the XINPUT_LIGHTGUN_ONSCREEN bit is set.  The game will need to
+      compute the correct center calibration location in actual screen
+      coordinates based on the resolution of the screen.</li>
+      
+  <li>The game should wait for a trigger pull from the gun and then read the
+      X,Y values returned by the gun when it is detected.</li>
+      
+  <li>The game should take these values and compute the offset values to
+      calibrate the gun such that a trigger pull pointed at the same target
+      would produce the X,Y values of the actual calibration point.  For
+      example, for the center calibration point (0, 0), if the gun reports (40,
+      &#8722;30) for the trigger pull, the offset values should be (0 &#8722; 40, 0 &#8722; (&#8722;30)) or
+      (&#8722;40, 30).</li>
+      
+  <li>The game may choose to decide that the calibration values are too far off
+      to be acceptable (for example, the user is pointing at the bottom right rather than
+      the center) and prompt the user to try again before proceeding.</li>
+      
+  <li>The game should send the computed calibration offsets for the center
+      point to the gun using the <b>XInputSetLightgunCalibration</b> call.  For
+      example, using the above example values:
+
+      
+<pre class="clsCode">
+XInputSetLightgunCalibration(myLGHandle, -40, 30, 0, 0);
+</pre>
+    
+  </li>
+      
+  <li>The game may paint the first target at the upper-left calibration
+      position and prompt the user to shoot at the target.  The game should
+      ignore any trigger pulls from the gun until the XINPUT_LIGHTGUN_ONSCREEN
+      bit is set. The game will need to compute the correct upper-left
+      calibration location in actual screen coordinates based on the resolution
+      of the screen.</li>
+      
+  <li>The game should wait for a trigger pull from the gun and then read the
+      X,Y values returned by the gun when it is detected.</li>
+      
+  <li>The game should take these values and compute the offset values to
+      calibrate the gun such that a trigger pull pointed at the same target
+      would produce the X,Y values of the actual calibration point.  For
+      example, for the upper-left calibration point (&#8722;25000, 25000), if the gun
+      reports (&#8722;25010, 24500) for the trigger pull, the offset values should be
+      (&#8722;25000 &#8722; (&#8722;25010), 25000 &#8722; 24500) or (10, 500).</li>
+      
+  <li>The game may choose to decide that the calibration values are too far off
+      to be acceptable (for example, the user is pointing at the bottom right rather than
+      the upper-left corner) and prompt the user to try again before proceeding.  For the
+      upper-left corner calibration point, in some video modes it is possible
+      that the point reported could be a value on the upper-right side of the
+      screen.  The game should be able to handle this wraparound case.</li>
+      
+  <li>The game should send the computed calibration offsets for both the center
+      point and the upper-left point to the gun using the
+      <b>XInputSetLightgunCalibration</b> call.  For example, using the above example
+      values:
+
+      
+<pre class="clsCode">
+XInputSetLightgunCalibration(myLGHandle, -40, 30, 10, 5000);
+</pre>
+    
+  </li>
+
+	
+  <li>The game can place a crosshair on the screen that follows where the gun
+      is pointed on screen to show users where they are pointing.</li>
+      
+  <li>The game should allow the user to recalibrate either calibration point
+      until the user is satisfied with the results.  As each new calibration
+      setting is measured, the total cumulative offset for that point should be
+      sent to the gun.</li>
+      
+  <li>Once satisfied, the user can choose to exit calibration mode and play the
+      game with the current calibration settings.</li>
+      
+  <li>Outside of the calibration screen, the game must monitor the
+      XINPUT_LIGHTGUN_FRAME_DOUBLER flag to ensure that its state does not
+      change.  There are TV sets that allow this mode to be changed
+      dynamically.  If the flag changes state, the game should lead the user to
+      calibrate the gun or apply appropriate calibration settings measured and
+      stored previously.</li>
+      
+  <li>(OPTIONAL) The game may choose to save the calibration settings either
+      temporarily during the current game session or permanently in the title
+      area.  These settings may be silently reapplied when a lightgun is reset
+      (for example, when the console is first turned on, the lightgun gets disconnected, or
+      the lightgun is zapped by ESD such that it reset).  To ensure that valid
+      calibration values get applied to a gun, calibration settings should be
+      stored and reapplied based on the following criteria:
+
+      <ul>
+	<li>Game title (implicit since the data is to be stored in the title area)</li>
+	<li>Line doubler state</li>
+	<li>Frame doubler state</li>
+	<li>Screen resolution</li>
+	<li>Lightgun vendor</li>
+	<li>Lightgun product</li>
+	<li>Lightgun version</li>
+	<li>(Optional) Port the lightgun was installed in when the calibration settings were measured</li>
+      </ul>
+
+      If there are no settings stored (temporarily or permanently) for a
+      lightgun that meet all the criteria, a normal lightgun calibration
+      sequence should be used to measure them.
+  </li>
+
+  <li>If there is more than one lightgun, the calibration process should be
+      followed for each in turn.</li>
+
+</ol>
+
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xbox.h, for include use Xtl.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xapilib.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="x_lrf_XINPUT_LIGHTGUN_CALIBRATION_OFFSETS.htm">XINPUT_LIGHTGUN_CALIBRATION_OFFSETS</a>
+</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

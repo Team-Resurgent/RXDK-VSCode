@@ -1,0 +1,118 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>GetFileSize</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="GetFileSize">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="GetFileSize"/>
+<MSHelp:Keyword Index="F" Term="GetFileSize"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_getfilesize"></A>GetFileSize</H1>
+
+<P>The <B>GetFileSize</B> function retrieves the size of a specified file. </P>
+
+<P>This function returns the file size in two separate <B>DWORD</B> values. To retrieve the file size in a single <B>LARGE_INTEGER</B> value, use the <A HREF="filesio_7260.htm">GetFileSizeEx</A> function. </P>
+
+<PRE class=syntax><B>DWORD GetFileSize(
+  HANDLE</B><I> hFile</I><B>,           </B>// handle to file
+<B>  LPDWORD</B><I> lpFileSizeHigh</I>  // high-order doubleword of file size
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>hFile</I></DT>
+
+<DD>[in] Handle to the file whose size is to be returned. This handle must have been created with either GENERIC_READ or GENERIC_WRITE access to the file. </DD>
+
+<DT><I>lpFileSizeHigh</I></DT>
+
+<DD>[out] Pointer to the variable where the high-order doubleword of the file size is returned. This parameter can be NULL if the application does not require the high-order doubleword. 
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is the low-order doubleword of the file size, and if <I>lpFileSizeHigh</I> is non-NULL, the function puts the high-order doubleword of the file size into the variable pointed to by that parameter. </P>
+
+<P>If the function fails and <I>lpFileSizeHigh</I> is NULL, the return value is -1. To get extended error information, call <A HREF="errors_3uwi.htm">GetLastError</A>. </P>
+
+<P>If the function fails and <I>lpFileSizeHigh</I> is non-NULL, the return value is -1 and <B>GetLastError</B> will return a value other than NO_ERROR. </P>
+
+<H4>Remarks</H4>
+
+<P>Note that if the return value is -1 and <I>lpFileSizeHigh</I> is non-NULL, an application must call <A HREF="errors_3uwi.htm">GetLastError</A> to determine whether the function has succeeded or failed. The following sample code illustrates this point: </P>
+
+<PRE>// Case One: calling the function with 
+//           lpFileSizeHigh == NULL. 
+ 
+// Try to obtain hFile's size. 
+dwSize = GetFileSize (hFile, NULL) ; 
+ 
+// If we failed ... 
+if (dwSize == -1) { 
+ 
+    // Obtain the error code. 
+    dwError = GetLastError() ; 
+ 
+    // Deal with that failure. 
+    . 
+    . 
+    . 
+ 
+    } // End of error handler. 
+ 
+ 
+// 
+// Case Two: calling the function with 
+//           lpFileSizeHigh != NULL. 
+ 
+// Try to obtain hFile's huge size. 
+dwSizeLow = GetFileSize (hFile, &amp; dwSizeHigh) ; 
+ 
+// If we failed ... 
+if (dwSizeLow == -1 
+    &amp;&amp; 
+    (dwError = GetLastError()) != NO_ERROR ){ 
+ 
+    // Deal with that failure. 
+    . 
+    . 
+    . 
+ 
+    } // End of error handler. </PRE>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p>
+
+<H4>See Also</H4>
+<P>
+
+<A HREF="xbox_mt_xtl_sll_file_io_functions.htm">File I/O Functions</A> | 
+<A HREF="filesio_2jtx.htm">GetFileInformationByHandle</A>,
+<A HREF="filesio_2854.htm">GetFileAttributesEx</A>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

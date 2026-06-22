@@ -1,0 +1,84 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Texcoord Range Issues</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Texcoord Range Issues"/>
+<MSHelp:Keyword Index="F" Term="Texcoord Range Issues"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Texcoord Range Issues</H1>
+<p><i>By Mike Abrash</i></p>
+<!--***********************************************************-->
+
+<!--****Intro paragraph. Should be a three or four sentence summary of the topic.****-->
+<P>Interpolated floating-point texcoords s and t (and for 3D textures, r) ultimately map to coordinates within texture maps. (A number of texture address ops use texcoords for other purposes, such as calculating dot products, but here we're talking specifically about looking up texels.) The mapping from texcoords to texels can occur in any of several ways, depending primarily on the texture address mode. (The mapping also depends on whether projective textures are enabled; projective textures have an additional step in which s, t, and r are divided by q, after which the texture-addressing process is the same as the non-projective case. From now on we'll discuss only the non-projective case, bearing in mind that the projective case behaves the same way after the initial division by q.) The exact mechanics of the texture address modes will be discussed in a future white paper; this paper will focus on the fact that some of the mappings work properly for all texcoord values, but others work well only within a certain range.</P>
+
+<P>The following texture address modes work correctly for all texcoord values: D3DTADDRESS_CLAMP, D3DTADDRESS_BORDER, and D3DTADDRESS_CLAMPTOEDGE.</P>
+
+<P>Due to inherent limitations of single-precision IEEE floats, the D3DTADDRESS_WRAP texture address mode produces correct output for only a subrange of texcoord values, so wrap mode requires some alertness on the part of the programmer, particularly when rendering large tiled surfaces, such as terrain. Wrap mode effectively uses x-floor(x) as the working texcoord, which is handy for tiling textures, but unlike clamp doesn't work for arbitrarily large texcoords. The problem is that floating-point values have only 24 bits of precision, and as texcoords get larger, those 24 bits shift up to larger magnitudes, leaving fewer and fewer significant bits down below the 1.0 magnitude where they're needed for generating the working, post-wrap texcoord in the range (0,1), with sufficient precision not only to address each texel, but also enough additional precision to support the sub-texel precision (roughly 8 bits) needed for high visual quality. The result is that as wrapped texcoords get larger, texel addressing gets less and less precise. Up to a point, this isn't noticeable, but eventually it causes textures to wiggle and shift, and in the limit (when all bits of the floating-point mantissa are of too great a magnitude to affect the post-wrap texcoord) all texcoords turn into 0 and the texture effectively becomes a constant color-whatever color the texel at the texture origin happens to be.</P>
+
+<P>So what's the largest acceptable size for a wrapping texcoord? The range that provides high image quality under all circumstances is as follows:</P>
+
+<UL>
+<P>r = 2^16 / texture_dimension</P>
+
+<P>high-quality range = (-r,r)</P>
+</UL>
+
+<P>where texture_dimension is the texture size along the dimension of interest (height, width, or depth). Here's the range table for wrapped texcoords for a variety of texture sizes, with high-quality under all circumstances:</P>
+
+<P><U>texture_dimension</U>&nbsp;&nbsp;&nbsp;&nbsp;<U>range (not inclusive)</U></P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4096&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[+/-]16<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2048&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[+/-]32<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1024&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[+/-]64<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;512&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[+/-]128<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;256&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[+/-]256<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;128&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[+/-]512<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;64&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[+/-]1024<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;32&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[+/-]2048<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[+/-]4096<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[+/-]8192<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[+/-]16384<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[+/-]32768</P>
+
+<P>Note that texture mapping doesn't fall apart completely the instant any of these limits are exceeded. To the contrary, image degradation occurs gradually and may initially only be visible on close inspection or with highly magnified textures. The greater the margin by which the limits are exceeded, however, the more apparent the degradation will be. Acceptable image quality under most circumstances (particularly if textures aren't magnified much) can be achieved with:</P>
+<UL>
+<P>ra = 2^20 / texture_dimension</P>
+
+<P>acceptable-quality range = (-ra,ra)</P>
+</UL>
+<P>One exception to the above equations: coordinates with magnitude greater than or equal to 2^23 will always produce a constant texture address. So, for example, if both coordinates (or all three, for 3D textures) are 2^23 or greater, the texture output will be a constant color.</P>
+
+<P>The final texture addressing mode, D3DTADDRESS_MIRROR, has the same behavior with respect to size as D3DTADDRESS_WRAP, and hence the recommended range equation above applies to mirroring as well as wrapping.</P>
+
+<!--*******************************************************************************-->
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>
+
+
+
+
+
+	

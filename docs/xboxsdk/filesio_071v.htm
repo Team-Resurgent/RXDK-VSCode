@@ -1,0 +1,118 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>GetQueuedCompletionStatus</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="GetQueuedCompletionStatus">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="GetQueuedCompletionStatus"/>
+<MSHelp:Keyword Index="F" Term="GetQueuedCompletionStatus"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_getqueuedcompletionstatus"></A>GetQueuedCompletionStatus</H1>
+
+<P>The <B>GetQueuedCompletionStatus </B>function attempts to dequeue an I/O completion packet from a specified I/O completion port. If there is no completion packet queued, the function waits for a pending I/O operation associated with the completion port to complete. </P>
+
+<PRE class=syntax><B>BOOL GetQueuedCompletionStatus(
+  HANDLE</B><I> CompletionPort</I><B>,       </B>// handle to completion port
+<B>  LPDWORD</B><I> lpNumberOfBytes</I><B>,     </B>// bytes transferred
+<B>  PULONG_PTR</B><I> lpCompletionKey</I><B>,  </B>// file completion key
+<B>  LPOVERLAPPED</B><I> </I><B>*</B><I>lpOverlapped</I><B>,  </B>// buffer
+<B>  DWORD</B><I> dwMilliseconds         </I>// optional timeout value
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>CompletionPort</I></DT>
+
+<DD>[in] Handle to the completion port of interest. To create a completion port, use the <A HREF="filesio_4k1g.htm">CreateIoCompletionPort</A> function. </DD>
+
+<DT><I>lpNumberOfBytes</I></DT>
+
+<DD>[out] Pointer to a variable that receives the number of bytes transferred during an I/O operation that has completed. </DD>
+
+<DT><I>lpCompletionKey</I></DT>
+
+<DD>[out] Pointer to a variable that receives the completion key value associated with the file handle whose I/O operation has completed. A completion key is a per-file key that is specified in a call to <B>CreateIoCompletionPort</B>.</DD>
+
+<DT><I>lpOverlapped</I></DT>
+
+<DD>[out] Pointer to a variable that receives the address of the <A HREF="synchro_8tf6.htm">OVERLAPPED</A> structure that was specified when the completed I/O operation was started. 
+
+<P>The following functions can be used to start I/O operations that complete using completion ports. You must pass the function an <B>OVERLAPPED</B> structure and a file handle associated with an completion port (by a call to <B>CreateIoCompletionPort</B>) to invoke the I/O completion port mechanism:
+
+
+<UL>
+	<LI><A HREF="filesio_39id.htm">ReadFile</A></LI>
+	<LI><A HREF="filesio_3kkl.htm">WriteFile</A></LI>
+	<LI><A HREF="devio_9quk.htm">DeviceIoControl</A></LI>
+</UL>
+
+
+<P>Even if you have passed the function a file handle associated with a completion port and a valid <B>OVERLAPPED</B> structure, an application can prevent completion port notification. This is done by specifying a valid event handle for the <B>hEvent</B> member of the <B>OVERLAPPED</B> structure, and setting its low-order bit. A valid event handle whose low-order bit is set keeps I/O completion from being queued to the completion port.
+</DD>
+
+<DT><I>dwMilliseconds</I></DT>
+
+<DD>[in] Specifies the number of milliseconds that the caller is willing to wait for an completion packet to appear at the completion port. If a completion packet doesn't appear within the specified time, the function times out, returns FALSE, and sets *<I>lpOverlapped</I> to NULL.
+
+<P>If <I>dwMilliseconds</I> is INFINITE, the function will never time out. If <I>dwMilliseconds</I> is zero and there is no I/O operation to dequeue, the function will time out immediately.
+
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function dequeues a completion packet for a successful I/O operation from the completion port, the return value is nonzero. The function stores information in the variables pointed to by the <I>lpNumberOfBytesTransferred</I>, <I>lpCompletionKey</I>, and <I>lpOverlapped</I> parameters.</P>
+
+<P>If *<I>lpOverlapped</I> is NULL and the function does not dequeue a completion packet from the completion port, the return value is zero. The function does not store information in the variables pointed to by the <I>lpNumberOfBytesTransferred</I> and <I>lpCompletionKey</I> parameters. To get extended error information, call <A HREF="errors_3uwi.htm">GetLastError</A>. If the function did not dequeue a completion packet because the wait timed out, <B>GetLastError</B> returns WAIT_TIMEOUT. </P>
+
+<P>If *<I>lpOverlapped</I> is not NULL and the function dequeues a completion packet for a failed I/O operation from the completion port, the return value is zero. The function stores information in the variables pointed to by <I>lpNumberOfBytesTransferred</I>, <I>lpCompletionKey</I>, and <I>lpOverlapped</I>. To get extended error information, call <B>GetLastError</B>. </P>
+
+<H4>Remarks</H4>
+
+<P>This function associates a thread with the specified completion port. A thread can be associated with at most one completion port. </P>
+
+<P>The I/O system can be instructed to send completion notification packets to completion ports, where they are queued. The <A HREF="filesio_4k1g.htm">CreateIoCompletionPort</A> function provides a mechanism for this.</P>
+
+<P>When you perform an input/output operation with a file handle that has an associated input/output completion port, the I/O system sends a completion notification packet to the completion port when the I/O operation completes. The completion port places the completion packet in a first-in-first-out queue. The <B>GetQueuedCompletionStatus</B> function retrieves these queued completion packets. </P>
+
+<P>An application may have several threads calling <B>GetQueuedCompletionStatus</B> for the same completion port. As input operations complete, the system software queues completion packets to the completion port. If threads are actively waiting in a call to this function, queued requests complete their call. For more information, see <a href="unresolved.htm">I/O Completion Ports</A>. </P>
+
+<P>You can call the <A HREF="filesio_33g3.htm">PostQueuedCompletionStatus</A> function to post an completion packet to an completion port. The completion packet will satisfy an outstanding call to the <B>GetQueuedCompletionStatus</B> function. </P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p>
+
+<H4>See Also</H4>
+<P>
+
+<A HREF="xbox_mt_xtl_sll_file_io_functions.htm">File I/O Functions</A> | 
+<A HREF="filesio_4k1g.htm">CreateIoCompletionPort</A>,
+<A HREF="synchro_8tf6.htm">OVERLAPPED</A>,
+<A HREF="filesio_39id.htm">ReadFile</A>,
+<A HREF="filesio_33g3.htm">PostQueuedCompletionStatus</A>,
+<A HREF="filesio_3kkl.htm">WriteFile</A>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

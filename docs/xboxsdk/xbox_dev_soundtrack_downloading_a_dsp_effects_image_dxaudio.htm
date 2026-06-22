@@ -1,0 +1,49 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Downloading a DSP Effects Image</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Downloading a DSP Effects Image"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+  <MSHelp:Keyword Index="K" Term="DSP effects image, downloading"/>
+  <MSHelp:Keyword Index="K" Term="audio playback using XACT"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Downloading a DSP Effects Image</h1>Before using XACT for audio playback, we download a digital signal processor (DSP) effects image to the global processor in the Xbox Media Communications Processor (MCP). For this example, we'll use the default DSP image (Dsstdfx.bin) which is located in the \source\dsound\dsp\ directory of the XDK. Simply copy the file into your resource folder on the Xbox console. The example below uses a folder named "media", which is a subfolder of the application directory.<p>Load the sound bank data file using our utility function, XACTLoadFile (listed later in the <a href="xbox_dev_soundtrack_input_and_support_routines_dxaudio.htm">Input and Support Routines</a> section). Once the DSP image is loaded, we can download it to the processor using the <a href="xbox_ixactengine_loaddspimage_dxaudio.htm">IXACTEngine::DownloadEffectsImage</a> routine. Finally, we want to free the pointer returned from XACTLoadFile.</p><p>For more information on DSP effects images, see the <a href="xbox_dsp_effects_dxaudio.htm">DSP Effects</a> section.</p>
+<pre class="clsCode">
+void DownloadDSPEffectsImage()
+{
+    // Load our DSP effects image
+    VOID* pDSPImage = NULL;
+    DWORD dwFileSize;
+    XACTLoadFile( "d:\\media\\dsstdfx.bin", &amp;pDSPImage, &amp;dwFileSize );
+
+    // Specify I3DL2 reverb and crosstalk support
+    DSEFFECTIMAGELOC dseil;
+    dseil.dwI3DL2ReverbIndex = GraphI3DL2_I3DL2Reverb;
+    dseil.dwCrosstalkIndex   = GraphXTalk_XTalk;	
+    HRESULT hr = g_pXACT-&gt;DownloadEffectsImage( pDSPImage, dwFileSize, &amp;dseil, NULL );
+    assert( SUCCEEDED(hr) );
+
+    // Free our copy of the DSP image
+    free( pDSPImage );
+}
+</pre>
+    <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

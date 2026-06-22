@@ -1,0 +1,199 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+	<title>Xbox Deployment Tool</title>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Xbox Deployment Tool"/>
+<MSHelp:Keyword Index="K" Term="Deployment Tool, Xbox"/>
+<MSHelp:Keyword Index="F" Term="VC.Project.XboxDeploymentTool.ExcludedFromBuild"/>
+<MSHelp:Keyword Index="F" Term="VC.Project.XboxDeploymentTool.RemotePath"/>
+<MSHelp:Keyword Index="F" Term="VC.Project.XboxDeploymentTool.AdditionalFiles"/>
+<MSHelp:Keyword Index="F" Term="VC.Project.XboxDeploymentTool.SuppressStartupBanner"/>
+<MSHelp:Keyword Index="F" Term="VC.Project.XboxDeploymentTool.Progress"/>
+<MSHelp:Keyword Index="F" Term="VC.Project.XboxDeploymentTool.ForceCopy"/>
+<MSHelp:Keyword Index="K" Term="$(RemoteDir)"/>
+<MSHelp:Keyword Index="K" Term="$(RemoteName)"/>
+<MSHelp:Keyword Index="K" Term="$(RemotePath)"/>
+<MSHelp:Keyword Index="K" Term="$(RemoteFileName)"/>
+<MSHelp:Keyword Index="K" Term="$(RemoteExt)"/>
+<MSHelp:Keyword Index="K" Term="Xbox build macros"/>
+<MSHelp:Keyword Index="K" Term="build macros, Xbox"/>
+<MSHelp:Keyword Index="K" Term="RemotePath build macros"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DocSet" Value="Visual C++"/>
+<MSHelp:Attr Name="DocSet" Value="Visual Studio"/>
+<MSHelp:Attr Name="Product" Value="VC"/>
+<MSHelp:Attr Name="ProductVers" Value="kbVC700"/>
+<MSHelp:Attr Name="TopicType" Value="kbRef"/>
+</xml>
+
+</head>
+
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<h1>Xbox Deployment Tool</h1>
+
+<p>The Xbox Deployment Tool copies files to the Xbox. It is intended to be used from 
+within the Visual Studio .NET IDE. The its configuration options are set through property 
+pages from within the Visual Studio IDE. </p>
+
+<h2>The <b>General</b> Property Page</h2>
+<p>The <b>General</b> property page can be found by first loading an Xbox project file in 
+the Visual Studio IDE. Next, right-click the name of the project in the Solution Explorer 
+window and choose <b>Properties</b> in the menu that appears. In the dialog box that appears, 
+click the <b>Xbox Deployment</b> folder, and then click <b>General</b>.</p> 
+
+<p>The <b>General</b> property page contains the following properties:</p>
+
+<dl>
+<dt><b>Excluded From Build</b></dt>
+<dd>Specifies whether the Xbox Deployment Tool is excluded from the build for the current configuration.</dd>
+
+<dt><b>Remote Path</b></dt>
+<dd>Specifies the full path (on the Xbox) where the XBE will be copied to. This also determines the values of the RemotePath macros:
+<table>
+<tr><th>Macro</th><th>Description</th></tr>
+
+<tr>
+<td><b>$(RemoteDir)</b></td>
+<td>Directory (on the Xbox) where the primary output file from the build is copied to. This is defined as the drive and path and includes the trailing backslash '\'.</td>
+</tr>
+<tr>
+<td><b>$(RemoteName)</b></td>
+<td>Base name (on the Xbox) of the primary output file from the build. This does not include the file extension.</td>
+</tr>
+<tr>
+<td><b>$(RemotePath)</b></td>
+<td>Absolute path name (on the Xbox) where the primary output file from the build is copied to. This is defined as drive, path, base name, and file extension.</td>
+</tr>
+<tr>
+<td><b>$(RemoteFileName)</b></td>
+<td>The file name (on the Xbox) of the primary output file for the build. This is defined as base name and file extension.</td>
+</tr>
+<tr>
+<td><b>$(RemoteExt)</b></td>
+<td>The file extension (on the Xbox) of the primary output file for the build.</td>
+</tr>
+</table>
+<p>These macros can be used anywhere in an Xbox project's property pages dialog box where strings are accepted. These macros are not case sensitive.</p>
+</dd>
+
+<dt><b>Additional Files</b></dt>
+<dd>Semicolon-separated list of additional files and directories to be
+    deployed. Each item in the list may be in one of the following two formats:
+
+    <ul>
+      <li>A path, either relative or absolute, to a file or directory. In this
+	  situation, the path's status as relative or absolute, and the path's
+	  location in relation to the project directory, determine exactly
+	  what is copied and where it is copied to, according to the following
+	  rules:
+	  <ul>
+	    <li>If the path is a relative path, the source is relative to the
+		project directory on the personal computer, and the destination is relative to
+		the remote directory on the Xbox console. For example, if the project
+		directory is C:\MySources\Game and the remote directory is
+		XE:\Samples\Game, specifying a path of Media\File copies the
+		file C:\MySources\Game\Media\File to
+		XE:\Samples\Game\Media\File.</li>
+	    <li>If the path is an absolute path and is a child of the
+		project directory, then the source is the path specified, and
+		the destination is calculated by extracting the child part of
+		the path and appending it to the remote directory. For example, if the project
+		directory is C:\MySources\Game and the remote directory is
+		XE:\Samples\Game, specifying a path of
+		C:\MySources\Game\Media\File2 copies the file
+		C:\MySources\Game\Media\File2 to XE:\Samples\Game\Media\File2.</li>
+	    <li>If the path is an absolute path but is <i>not</i> a child of
+		the project directory, then the source is the path, and the
+		destination is calculated by appending the last element of the
+		path to the remote directory. For example, if the project
+		directory is C:\MySources\Game and the remote directory is
+		XE:\Samples\Game, specifying a path of
+		C:\MySources\SharedMedia\File3 copies the file
+		C:\Mysources\SharedMedia\File3 to XE:\Samples\Game\File3.</li>
+	  </ul>
+
+	  In all of these cases, if the path specifies a directory name, the
+	  deployment tool recursively copies the directory and all its
+	  contents. Also, if the destination is a subdirectory whose parent
+	  directories don't exist, the deployment tool creates the parent
+	  directories. For example, if a file were to be copied to
+	  XE:\Samples\Game, and the XE:\Samples directory did not already
+	  exist, XE:\Samples would be created.
+      </li>
+      <li>A dest=source pair, where the text to the left of the equal sign is
+	  the path to the destination file or directory, and the text to the
+	  right of the equal sign is the path to the source file or directory.
+	  If "dest" is a relative path, it is relative to the remote
+	  directory. If "source" is a relative path, it is relative to the
+	  project directory. For example, if the project directory is
+	  C:\MySources\Game and the remote directory is XE:\Samples\Game, the
+	  following are true:
+	  <ul>
+	    <li>A path of Media=testMedia copies all the files in
+		C:\MySources\Game\TestMedia to XE:\Samples\Game\Media.</li>
+	    <li>A path of Media=C:\Backup\OldMedia copies all the files in
+		C:\Backup\OldMedia to XE:\Samples\Game\Media.</li>
+	    <li>A path of XE:\Media=TestMedia copies all the files in
+		C:\MySources\Game\TestMedia to XE:\Media.</li>
+	    <li>A path of XE:\Media=C:\Backup\OldMedia copies all the files in
+		C:\Backup\OldMedia to XE:\Media.</li>
+	  </ul>
+      </li>
+    </ul>    
+
+</dd>
+
+<dt><b>Suppress Startup Banner</b></dt>
+<dd>Setting this to <B>Yes</B> will suppress the display of the startup banner and information messages.</dd>
+
+<dt><b>Progress</b></dt>
+<dd>Setting this to <b>Yes</b> displays status information about the progress of the deployment.</dd>
+
+<dt><b>Force Copy</b></dt>
+<dd>Setting this to <b>Yes</b> forces the deployment tool to always copy files,
+    even if the destination file size and date match the source file.</dd>
+    
+</dl>
+
+
+<h2>Setting the Destination Xbox</h2>
+<p>Use the <a href="ms-help://MS.VSCC/MS.MSDNVS/vsdebug/html/_core_Changing_Project_Settings_for_a_Debug_Build.htm">Remote Machine</a> 
+property to set the destination Xbox to which the Xbox Deployment tool copies the project 
+after it is built. You can specify more than one destination Xbox by adding the names of 
+additional Xbox consoles to the <b>Remote Machine</b> property. The names must be separated by semicolons. The Xbox Deployment tool copies the project to each destination Xbox in the 
+order specified by the <b>Remote Machine</b> property. Note that the debugger uses the 
+first destination Xbox in the list.</p>
+
+<p>Alternatively, you can specify the destination Xbox by using the 
+<a href = "whitepaper_TCR1.htm">Xbox Neighborhood</a> tool. This requires that you install 
+the <a href="x_lrf_vsnet_creating.htm">Microsoft Windows Explorer Shell Extensions for 
+Xbox</a>.</p>
+
+<h2>Using the XBECOPY_SUPPRESS_COPY Environment Variable</h2>
+<p>The XBECOPY_SUPPRESS_COPY environment variable is a feature added specifically for 
+supporting nightly builds. If, for instance, you configure a computer to perform automated 
+unattended nightly builds, the target Xbox systems may be turned off. Without setting this 
+environment variable, the Xbox Deployment tool would return an error, causing the rest of 
+the build process to stop. If the command interpreter environment variable 
+XBECOPY_SUPPRESS_COPY exists and is set to a nonzero value, the Xbox Deployment tool 
+simply prints out a warning message and exits immediately, allowing the build to continue.</p>
+
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+</body>
+</html>

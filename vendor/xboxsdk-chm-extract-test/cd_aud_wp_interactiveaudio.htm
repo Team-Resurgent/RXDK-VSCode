@@ -1,0 +1,271 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Introduction to XACT Interactive Audio Features</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Introduction to XACT Interactive Audio Features"/>
+<MSHelp:Keyword Index="F" Term="Introduction to XACT Interactive Audio Features"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<h1 class="heading"><A NAME=""></A>Introduction to XACT Interactive Audio Features</h1>
+
+<p><i>By Scott Selfon, Audio Content Consultant, Xbox Advanced Technology Group</i></p>
+
+<p><i><b>Note</b></i>&nbsp;&nbsp; This paper refers to interactive audio cues, which were first released in the June 2003 Xbox&#174; Development Kit. To use them, make sure your content is authored with a release of the authoring tool supporting XACT interactive audio, and that your title is compiled with the corresponding version of the XACT library.</p>
+
+<h2>Introduction</h2>
+
+<p>This white paper provides an introduction to the interactive audio features present in the Xbox Audio Creation Tool (XACT). We'll define <b>interactive audio</b> for the purpose of this paper to refer to any kind of music or sound design that might need to dynamically change based on game events, beyond the ability to simply start or stop. The line between this kind of nonlinear audio and more dramatically dynamic sounds (such as car engines) can become somewhat blurred depending on how interactive the music is, and the features we'll discuss will reflect that there are often two ways to approach interactive audio: run-time parameter controls for scenarios involving layering and volume changes, or interactive audio cues for branching music. Do note that the two cannot be mixed and matched (that is, an interactive audio cue cannot use run-time parameter controls).</p>
+
+<p>Many of the features discussed here build on concepts XACT users are already familiar with. If you are new to XACT, it might be helpful to first review the appropriate chapters of the Best Practices Guide for Xbox Audio Design &mdash; <a href="cd_aud_wp_bp_chap9.htm">Chapter 9: Authoring with the Xbox Audio Creation Tool (XACT)</a> for content creators, or <a href="cd_aud_wp_bp_chap10.htm">Chapter 10: Programming with the Xbox Audio Creation Tool (XACT)</a> for audio programmers.</p>
+
+<h2>Run-time Parameter Controls and Interactive Audio</h2>
+
+<p>Though intended primarily for strongly dynamic sounds such as engines, XACT run-time parameter controls (RPCs) can also be used in some interactive audio scenarios. Specifically, RPCs can be used to dynamically add or remove layers of orchestration, or to transition between several pieces of music. Remember that RPCs operate at the sound instance level; beyond the special case of sound <b>categories</b>, there is no concept of a global RPC (though a programmer could of course adjust RPCs on several playing cues simultaneously). This means that most of our interactivity when using RPCs is going to reside in the sound; contrast this to interactive audio cues, where the interactivity resides in the cue, including how it chooses which sound to play, and when.</p>
+
+<h3>Layering</h3>
+
+<p>The term "layering" is somewhat overloaded here, as XACT already uses <b>layers</b> to determine what sound to play (on any given layer, only one cue can be playing at a time; layer is specified in a sound's properties). In the case of interactive audio, when we talk about <b>layering</b>, we have several different parts of a piece of music that we want to be able to independently control the volumes of. As we'll discuss more below, each of our score's elements are actually playing simultaneously, but we'll be able to adjust their relative volumes based on game state using a run-time parameter control.</p>
+
+<p>For example, we might have three different crowd elements to mix based on game state. When nothing is happening, we should only hear the basic crowd ambience; when an exciting play happens, louder crowd cheers should be brought in; and when our team scores, add even denser crowd noise.</p>
+
+<p>We first author a sound that consists of multiple tracks, one with each crowd element. For this particular example, we'll make every track loop, and also have several different versions of some of the elements. (If we want new variations to be chosen on each loop, don't forget to make the wave bank streaming, and all of the waves to be chosen from to be the same format.)</p>
+
+<img src="images/interactiveaudio_fig1.jpg"> 
+
+<p><i><b>Illustration</b>&nbsp;&nbsp; A multi-track sound ("CrowdAmbience"), with two variations for the low-level crowd murmur and two more for their reaction to the team scoring.</i></p>
+
+<p>Of course, if we try playing this sound, we're going to hear all three tracks play at full volume at once&mdash;not what we are intending. So the next step is to create a run-time parameter control on this track that will scale the volumes based on the game state. Open the sound's property window, go to the <b>Parameter Controls</b> tab, and click <b>Add</b> to add a new RPC. We'll name it 'Crowd Energy' and start drawing volume curves for our three tracks. In the game, the programmer will adjust the crowd's energy level based on whatever is appropriate, and that energy level will now correspond to the volumes of our multiple elements.</p>
+
+<img src="images/interactiveaudio_fig2.jpg"> 
+ 
+<p><i><b>Illustration</b>&nbsp;&nbsp; Volume curves for our three tracks. Track 1 (blue) slowly ramps down as the energy level grows (so other elements come to the front). Track 2 (green) comes up fairly sharply as the energy level rises to around 50%, then continues to increase up to full energy. And Track 3 (red) comes up at around 75%, similarly rising in volume up to full energy. Note that the range for volume curves is -64 dB to +64 dB. Sounds cannot get "louder" than 0 dB, so all of the curves in the above example peak halfway up the range, at 0 dB. Positive range is generally used when multiple RPCs are affecting a single sound.</i></p>
+
+<p>You can try out your RPC from this same dialog box by hitting the play button and moving the slider control around. Nothing says that layering has to be an additive process; because the content creator can draw arbitrary curves, several pieces of music or ambience could crossfade rather than mixing.</p>
+
+<p>Adjustments to an RPC don't have to occur at any arbitrary time. Content authors can place <b>marker</b> events in their content. For instance, if the above example was changed from crowd ambience to music, we might want parts to adjust their volumes only on measure boundaries. Assuming every piece was authored at the same tempo, we add a recurring marker that the programmer can be notified by&mdash;letting them know when it is okay to adjust an RPC value. It is up to the programmer to register for and respond to these markers (unlike in interactive audio cues).</p>
+ 
+<img src="images/interactiveaudio_fig3.jpg"> <br><br>
+<img src="images/interactiveaudio_fig4.jpg"> 
+
+<p><i><b>Illustrations</b>&nbsp;&nbsp; For a 40-second piece of music (<b>repeat duration</b>) in 4/4 with 120 beats per minute, we've got 20 bars of music (<b>total occurrences</b>). Starting from the beginning of the sound (<b>timestamp</b> at zero seconds), this marker will fire on every measure, or every 2 seconds (40/20).</i></p>
+
+<p>Do note that every track (though not every wave variation in each track) is playing simultaneously; some of them may be silent, depending on your RPC curves and the current run-time value the programmer has set, but as far as the Xbox is concerned, they're still playing. This is the tradeoff with immediately accessible dynamic content: It can respond to changes immediately, but takes more memory (especially for in-memory sounds) and more bandwidth (for streaming sounds), as the individual tracks never stop playing as long as the sound is playing.</p>
+
+<h3>Branching</h3>
+
+<p>We define <b>branching</b> to mean various separate pieces of content being able to smoothly dovetail into each other based on game events. Run-time parameter control's branching functionality is much more limited than interactive audio cues, but can still be quite effective in many circumstances. Here, we make use of a different kind of run-time parameter control, one that instead of adjusting volume, pitch, and filter cutoff, determines which variation is chosen.</p>
+
+<p>For example, we'll have several pieces of music (all must be the same format, and all in a streaming wave bank) corresponding to low, medium, and high intensity. We add all three as variations in a one-track sound.</p>
+ 
+<img src="images/interactiveaudio_fig5.jpg"> 
+
+<p>We make the play event loop as with our ambience example.</p>
+ 
+<img src="images/interactiveaudio_fig6.jpg"> 
+
+<p><i><b>Illustration</b>&nbsp;&nbsp; The play event's property window (opened by double clicking). Note the <b>Select new wave variation on each loop</b> option&mdash;this is how our music is going to branch.</i></p>
+ 
+<img src="images/interactiveaudio_fig7.jpg"> 
+
+<p><i><b>Illustration</b>&nbsp;&nbsp; An alternate way to edit an object's properties - click an object to view its properties in the property pane (without having to open its property window).</i></p>
+
+<p>Rather than creating an RPC, we're now going to use one of the "built-in" run-time parameter controls, which can be used to drive variation selection. (For the programmers in the house, this run-time parameter control is the one defined in xact.h as XACT_PARAMETER_CONTROL_WAVE_VARIATION.) We open the sound's property window (this particular aspect is not viewable in XACT's property pane) and change the playlist type to <b>Parameter-controlled</b>.</p>
+
+<img src="images/interactiveaudio_fig8.jpg"> 
+ 
+<p>The column that was previously <b>Weight</b> (how frequently this variation should be chosen relative to other variations) becomes two columns - <b>Minimum</b> and <b>Maximum</b>. These allow us to define the range for the RPC where a variation will be chosen. If two or more variations' ranges overlap, an RPC value within the overlapping area will cause any of the 'legal' options to be chosen. The ranges can be edited by clicking the <b>Weight</b> button.</p>
+ 
+<img src="images/interactiveaudio_fig9.jpg"> 
+
+<p><i><b>Illustration</b>&nbsp;&nbsp; Setting up the ranges for our three variations.</i></p>
+
+<p>As the programmer adjusts the game-dependent run-time parameter control for this sound's wave variations, the wave that is played will be:</p>
+
+<table>
+	<tr><th>RPC value</th>	<th>Which wave variation is played</th></tr>
+	<tr><td>0&ndash;4.99</td>	<td>Nothing (silence)</td></tr>
+	<tr><td>5&ndash;44.99</td>	<td>Low</td></tr>
+	<tr><td>45.00&ndash;50.00</td>	<td>Low or medium (randomly choose between)</td></tr>
+	<tr><td>50.00&ndash;74.99</td>	<td>Medium</td></tr>
+	<tr><td>75.00&ndash;100.00</td>	<td>High</td></tr>
+</table>
+
+<p>The limitations with this kind of branching are fairly obvious: the music "responds" only when a variation reaches the end of playback and a new variation needs to be chosen, so this technique probably won't be useful for more rapid changes. In addition, each variation will have to be able to seamlessly play right into the next, with no transitions or crossfades possible. Each piece of music that is played will be played beginning to end; there's no way to jump ten seconds into our low-intensity music, nor can you easily interrupt the high-intensity music to switch to medium-intensity in the middle of a loop. And you cannot audition these RPCs in the authoring tool, so a programmer will have to integrate the cue into the title (or write a custom Xbox sample to allow you to experiment). Nonetheless, for many scenarios such as background ambience and more simple underscores, run-time parameter controls can be a compelling branching solution. For musical changes that need to be more flexible, consider interactive audio cues instead.</p>
+
+<h2>Interactive Audio Cues</h2>
+
+<p>Interactive audio cues provide significant enhancements to the functionality available with run-time parameter controls. First and foremost, they allow the composer to define a set of parameters for how one piece of music transitions into other pieces of music. These transitions are then handled automatically by XACT; the programmer does not have to register for any special marker notifications, worry about playing and stopping sounds corresponding to aspects of the music, and so on. They start the interactive audio cue and generally just leave it playing. As game events dictate, the programmer can adjust global variables (via <b>IXACTEngine::SetVariable</b>), similar to run-time parameter controls, but potentially affecting several playing cues simultaneously. The music then responds as the composer has authored. If the composer later adds more music states, the programmer does not need to adjust their code in any way for these states to be reached and played.</p>
+
+<p>Interactive audio cues use <b>sounds</b> rather than <b>waves</b> as their building blocks, opening up quite a bit more flexibility than run-time parameter controls, since each individual sound can still have its own built-in variability. Think of each sound as a state that the music can be in. The composer then dictates how the music moves from state to state.</p>
+ 
+<img src="images/interactiveaudio_fig10.jpg"> 
+
+<p><i><b>Illustration</b>&nbsp;&nbsp; A visual representation of four different states in a sample interactive cue. S1, S2, and S3 are three separate sounds, and there is a 'Stop' state as well. Note that the drawing is not showing every single transition link; S1 can go to and from S2, for instance.</i></p>
+
+<p>Note the presence of a 'Stop' state. Every interactive cue has this extra state so that all of the sounds can define how they should stop and start, not just transition to each other. In addition, an interactive cue might be in the 'Stop' state but still technically be "playing", allowing it to move back into one of the other states as variables dictate (without the programmer having to "play" the cue again).</p>
+
+<p>Let's focus first on the simplest interactive cue, which has a single sound, and therefore two states. Turning a regular cue into an interactive audio cue is as simple as opening that cue's property window, going to the <b>Interactive Audio</b> tab, and checking the <b>Enable interactive audio transitions</b> option.</p>
+
+<img src="images/interactiveaudio_fig11.jpg"> 
+
+<p>The transition list now displays all of our states. First we decide which global variable is going to affect this interactive cue's playback and be its <b>trigger variable</b>. Trigger variables are not the same as run-time parameter controls in that they are independent of any particular playing sound. They are also modified using a different programmatic function than run-time parameter controls. For the most common scenario of a single interactive cue playing at a time, the default variable 0 is probably fine. In a more complex implementation, you might use different variables (there are 32) for each interactive audio cue to independently control each.</p>
+
+<img src="images/interactiveaudio_fig12.jpg"> 
+
+<p><i><b>Illustration</b>&nbsp;&nbsp; Enabling an interactive audio cue.</i></p>
+
+<h3>Transitions</h3>
+
+<p>When we expand the 'Stop' and 'Loop' nodes above, we get a list of all of the states they can go to. (Incidentally, if we choose <b>By target</b> in the Arrange drop-down menu, we get the opposite view&mdash;all of the states that can go to this state.) By double clicking on any of these transitions, we can set their properties.</p>
+ 
+<img src="images/interactiveaudio_fig13.jpg"> 
+
+<p><i><b>Illustration</b>&nbsp;&nbsp; The transition properties for moving from the 'Stop' state to our 'Loop' sound state.</i></p>
+
+<p>Let's break out the several aspects of transitions to explain all of these options. The easiest way to think of the three aspects are the questions that we want answered for our transition: <b>when</b> to leave the source sound, <b>how</b> to get to the destination sound, and <b>where</b> in the destination sound to start playing.</p>
+
+<p>First, we determine <b>when</b> in the playing state it's going to be okay to 'leave' and move to another state. This is the <b>transition source</b> drop-down menu. Options here include:</p>
+
+<ul>
+	<li><b>Immediate (default)</b>: You can leave this sound at any point. From the stop state, this is the only choice for transition source.</li>
+	<li><b>Marker within range</b>: Wait to leave this sound until we encounter a marker event that falls within the appropriate range (which we've set in the <b>Source Marker Value low/high</b> fields). If none is ever reached, transition at the end of the sound.</li>
+	<li><b>Random marker from range</b>: First, choose a random value between <b>Source Marker Value (low)</b> and <b>Source Marker Value (high)</b>. Then wait to leave this sound until we encounter a marker event that matches this value. If none is ever reached, transition at the end of the sound.</li>
+	<li><b>End of loop</b>: Wait until this sound reaches the end of a loop, either via a looping play event or a loop start event.</li>
+	<li><b>End of sound</b>: Wait until this sound finishes. In essence, any change to a new state will simply be queued.</li>
+</ul>
+
+<p>Next, we tell the transition <b>how</b> to get to the destination sound, via the <b>transition effect</b> drop-down menu.</p>
+
+<ul>
+	<li><b>None (default)</b>: Cut right to the destination sound, without any transition or crossfade.</li>
+	<li><b>Crossfade</b>: Crossfade to the destination sound, using the <b>source fade-out duration</b> and <b>destination fade-in duration</b> fields.</li>
+	<li><b>Transitional sound</b>: Play a transition sound (which you specify in the bottom frame of the dialog box) in between the source sound and the destination sound (the destination sound is queued to play after the transitional sound finishes). Note that if the transition sound is on a different layer than the destination sound, they will both start to play at the same time rather than queuing after each other.</li>
+	<li><b>Crossfade to transitional sound</b>: Crossfade from the source sound to a transition sound (using the source fade-out duration field), then play the destination sound when the transition completes. Again, if the transition sound is on a different layer than the destination sound, they will both start to play at the same point in time.</li>
+	<li><b>Crossfade from transitional sound</b>: Play a transition sound in between the source sound and the destination sound. Then crossfade from this transitional sound to the destination sound (using the <b>destination fade-in duration</b> field).</li>
+	<li><b>Crossfade to and from transitional sound</b>: Crossfade from the source sound to a transition sound (using the <b>source fade-out duration</b> field), then crossfade from the transition sound to the destination sound (using the <b>destination fade-in duration</b> field).</li>
+</ul>	
+
+<p>Note that while we're in the middle of a transition, no changes to other states can occur (we're "locked into" this transition until it completes). This typically means the composer will want to author transition sounds to be fairly short.</p>
+
+<p>Lastly, we dictate where in the destination sound we should jump to, via the <b>transition destination</b> drop-down menu. Note that the ability to 'seek' into a cue is currently unique in XACT to interactive audio cues (other cues can only be played from the beginning).</p>
+
+<ul>
+	<li><b>Beginning (default)</b>: Start the destination sound from its beginning (timestamp 0). This is the only choice when the transition destination is the 'Stop' state.</li>
+	<li><b>Aligned time</b>: Start the destination sound at the same time offset as the previously playing source sound had been. For instance, if we transition away from a source sound ten seconds into its playback, jump to ten seconds into the destination sound. This is not an option when the source state was the 'Stop' state. </li>
+	<li><b>Aligned marker</b>: Find the first marker in the destination sound that matches the value of the last marker event that we passed in the source sound, and begin playback from that time. If no marker had been reached, playback starts from the beginning of the destination sound. This is not an option when the source state was the 'Stop' state.</li>
+	<li><b>Marker within range</b>: Find the first marker in the destination sound that falls within the range defined by <b>Destination marker value (low)</b> and <b>Destination marker value (high)</b>, and begin playback there. If none is found, playback starts from the beginning of the destination sound.</li>
+	<li><b>Random marker from range</b>: Randomly choose a marker value between <b>Destination marker value (low)</b> and <b>Destination marker value (high)</b>, and begin playback at the first marker in the destination sound that matches this marker value. If none is found, playback starts from the beginning of the destination sound.</li>
+</ul>
+
+<h3>Sound Properties</h3>
+
+<p>Now that we've defined how transitions work, the question becomes when to move from state to state. Rather than forcing the programming to trigger a new cue in order to change the music's state, XACT interactive audio cues use the <b>trigger variables</b> we briefly discussed in the above section. The composer can assign each sound in an interactive cue a <b>weight range</b>, a concept which is identical to the weight range that was used by run-time parameter controls in the previous section. This range tells XACT what state it should be in (or going to next) when the programmer changes the value of the trigger variable.</p>
+
+<p>For the most simple case of a single sound, making the weight range 5.00&ndash;100.00 means that the interactive cue will transition to the 'Stop' state (and thus be silent) when the trigger variable drops below 5.00. When its value moves to five or greater, the cue will move into Sound 1. Setting the weight for a sound is done in the same place as before, by clicking the <b>Weight</b> button in the <b>General</b> tab of the property window.</p>
+
+<p><i><b>Note</b></i>&nbsp;&nbsp; As a slight gotcha, to avoid issues associated with floating-point representation, the authored range of 0.00&ndash;100.00 is represented as 0&ndash;10000 for the programmer; just remove the decimal point when programmatically setting the state.</p>
+
+<p>Let's create a simple example using weight ranges, using two musical states&mdash;low intensity and high intensity.</p>
+ 
+<img src="images/interactiveaudio_fig14.jpg"> 
+
+<p><i><b>Illustration</b>&nbsp;&nbsp; A representation of a simple interactive cue using multiple sounds. The numbers in parenthesis indicate the weight ranges for our two sounds. We set them via&#133;</i></p>
+
+<img src="images/interactiveaudio_fig15.jpg"> <br><br>
+<img src="images/interactiveaudio_fig16.jpg"> 
+  
+<p><i><b>Illustration</b>&nbsp;&nbsp; &#133;the <b>Variation Weighting</b> dialog box in the <b>General</b> tab of the cue's property window.</i></p>
+
+<img src="images/interactiveaudio_fig17.jpg"> 
+
+<p>We can confirm these ranges by auditioning our cue from the <b>Interactive Audio</b> tab of the cue's property window. Hit the play button at the top of the window, then drag the audition slider up and down (remembering that this range reflects the programmer's values of 0&ndash;10000; so 2500 is going to be the transition point).</p>
+ 
+<p>By default, all transitions are immediate, so we're hearing the interactive audio cue jump from low to high intensity without any kind of smooth transition. We could now edit the transition properties (again, by double clicking on the specific transition that we want to change) such that the low intensity music will crossfade to the higher intensity one upon a transition, for instance. Or we could adjust the low-intensity sound's range such that the sound could move into the 'Stop' state when the trigger variable was less than some value.</p>
+
+<p>Note that it is legal for weight ranges to be overlapping. When the programmer-requested weight can be found in two separate sounds, one of them will be chosen randomly, which allows for an even greater degree of variability. </p>
+ 
+<img src="images/interactiveaudio_fig18.jpg"> 
+
+<p><i><b>Illustration</b>&nbsp;&nbsp; Sounds with overlapping ranges. When the trigger variable is between 25 and 49.99, "High Intensity Sound 2" will always be chosen. But when the trigger variable is between 50 and 100, one of the two "High Intensity" sounds will be chosen at random. Note that by default, each change to the trigger variable, even while remaining between 50 and 100, will randomly choose one of the two sounds again. To keep playing the same sound, we use the <b>linger</b> flag as described below.</i></p>
+
+<p>Overlapping weight ranges also allow for a much more typically used function: the ability to keep an interactive cue from rapidly changing back and forth between two or more states. For instance, looking at the above example, as the trigger variable's value changes from 24.99 to 25.00, we jump from "low intensity" to "high intensity sound 2". When the value drops back to 24.99, we jump back. If the math involved in deriving the trigger variable's value causes it to fluctuate even slightly, our music is going to continually bounce back and forth.</p>
+ 
+<img src="images/interactiveaudio_fig19.jpg"> 
+
+<p><i><b>Illustration</b>&nbsp;&nbsp;Possibly undesired behavior. As our variable fluctuates slightly around the value of 25, the music repeatedly jumps back and forth from low intensity to high intensity.</i></p>
+
+<p>What we'd prefer is the ability to add some degree of hysteresis; as long as the value doesn't move out of the state's range, the music should tend to remain on one sound or the other, rather than going back and forth. Then, if two states having an overlapping range, the music will remain more settled for slight fluctuations in value. For this reason, sounds have a <b>linger</b> property. When the linger property is set, changes to the trigger variable that still fall within the sound's weight range will keep us from transitioning to another sound. Note that since the sound might be used by several different interactive audio cues, this property is set from the sound's property window, not the interactive audio cue.</p>
+  
+<img src="images/interactiveaudio_fig20.jpg"> 
+
+<p><i><b>Illustration</b>&nbsp;&nbsp; The <b>linger</b> property is set in a sound's property window.</i></p>
+
+<p>A quick analogy to help describe the concept of the <b>linger</b> property is a thermostat. Without overlapping operating ranges, a thermostat would repeatedly turn on the furnace when the temperature dipped below the set value (say, 70 degrees Fahrenheit), and turn back off when the temperature warmed up to the set value. This would cause the heat to frequently turn on and off (perhaps many times per minute), shortening the furnace's operating life. Instead, most thermostats have built-in hysteresis; they might turn on when the temperature dips below 68 degrees, and then not shut off until the temperature reaches 72 degrees.</p>
+
+<p>Similarly, if we overlap the ranges of our music states and use the <b>linger</b> property on each sound, small variable swings near the boundaries between states won't cause the music to rapidly transition back and forth.</p>
+ 
+<img src="images/interactiveaudio_fig21.jpg"> 
+
+<p><i><b>Illustration</b>&nbsp;&nbsp; Now our low- and high-intensity sounds have overlapping ranges, which means that if their <b>linger</b> property is enabled&#133;</i></p>
+  
+<img src="images/interactiveaudio_fig22.jpg"> 
+
+<p><i><b>Illustration</b>&nbsp;&nbsp; &#133;the music is more stable, remaining in the low-intensity state until the trigger variable moves above 26, and then similarly remaining in the high-intensity state until the trigger variable moves below 24.</i></p>
+
+<h2>Interactive Audio Cue Rules and Restrictions</h2>
+
+<ul>
+	<li>For multitrack sounds, only the first track is used for determining transition points. That is, markers placed in other tracks as well as loop points on other tracks are ignored when determining how to transition.</li>
+	<li>When a sound is in mid-transition, no new transitions can occur. The interactive cue can still be 'panic' stopped in this state by the programmer by calling <b>IXACTSoundBank::Stop</b> on the interactive audio cue with the XACT_FLAG_SOUNDCUE_IMMEDIATE flag.</li>
+	<li>Sounds that use WMA audio files can be used only with immediate transitions, and must start playback from the beginning.</li>
+	<li>Pitch events are ignored for all length/time calculations. If you have pitch events on a track, the transition points may not be where you expected them. Similarly, Doppler shifting (playing an interactive cue on a 3D sound source) will also cause the transition points to be incorrect.</li>
+	<li>When starting playback of a destination sound from any position other than the beginning, any marker events that occurred prior to the start position will be ignored (unless they were recurring). All other event types will be processed.</li>
+	<li>When a destination sound is played from any position other than the beginning, it will begin playback at the nearest sector boundary. This becomes more significant as either the sector size is increased (streaming from game disc versus the hard drive) or the amount of audio data within a sector increases (use of ADPCM and/or lower sampling rates); the accuracy of the start time will diminish as this occurs. For the highest accuracy, use 44.1 kHz or 48 kHz PCM waves, and stream them from the hard drive.</li>
+	<li>When a transition is requested, it will always occur; if no legal point is found in the source sound, the transition will occur immediately. If no legal point is found in the destination sound (for instance, no markers within the requested range), it will begin playback from the beginning.</li>
+	<li>Triggering multiple simultaneous instances of an interactive audio cue isn't advised. If the two cues were on the same non-default layer, they would stop each other, just like any other XACT cue instances. And remember that they would both be controlled by the same global trigger variable, so they would typically end up getting into the same state over time.</li>
+</ul>
+
+<p>The following are some comments relating solely to auditioning of interactive audio cues via the XACT authoring tool (issues not present when triggering or using interactive cues from a title).</p>
+
+<ul>
+	<li>Auditioning may not function properly if any exceptionally small (less than 32 KB) waves are used by any sounds in an interactive audio cue. However, they should function properly when triggered by a title.</li>
+	<li>When auditioning, every movement of the slider will update the trigger variable's value. This means that for some transition types, you might get a 'build-up' of multiple transitions by dragging the slider. For other transition types, you might repeatedly trigger new sounds (for instance, if two sounds' weight ranges overlap and they do not use the <b>linger</b> flag).</li>
+	<li>Auditioning displays all sounds used by an interactive audio cue as "playing"; it does not currently display which particular sound state is active.</li>
+	<li>Again remember that authored weight ranges for sounds range from 0.00 to 100.00, but the range that a programmer uses to set the trigger variable (<b>IXACTEngine::SetVariable</b>) is 0 to 10000; remove the decimal point from your weight range to determine the variable value the programmer will use. Note that the interactive audio cue audition slider shares this latter range.</li>
+</ul>
+
+<h2>XACT Interactive Audio Cue Sample</h2>
+
+<p>A sample interactive audio cue is included with the XACTInteractiveAudio XDK sample. This sample presents a very simple Xbox-side user interface that allows the user to adjust the value of the trigger variable (via <b>IXACTEngine::SetVariable</b>) in real-time. The cue itself is somewhat more in-depth than the above examples, consisting of four different sounds (plus of course the 'Stop' state). A basic diagram of the underlying states is provided here:</p>
+ 
+<img src="images/interactiveaudio_fig23.jpg"> 
+
+<p><i><b>Illustration</b>&nbsp;&nbsp; A diagram of the interactive audio cue's sounds (and sound states) for the XACTInteractiveAudio sample. The smaller circles indicate transition sounds. Note that for readability, not all transitions are displayed in this diagram. When not indicated otherwise, a transition is immediate. All transitions are to the beginning of the destination sound.</i></p>
+
+<p>If you have the full Xbox Development Kit installation, you can take a look at the source XACT .xap file (XACTSounds.xap) from the sample's source directory: Samples\Xbox\Sound\XActInteractiveAudio. From there, you can audition the interactive audio cue using the Audio Console Application on the Xbox, or even within the XACTInteractiveAudio sample itself if you compile it with the instrumented version of the XACT library.</p>
+
+<p>The music for this sample was graciously provided by Marty O'Donnell and Jay Weinland (Bungie&#8482; Studios) from the title <u>Halo</u>, and is used in a manner similar to how it was implemented in that game. The sounds typically each consist of several loops of varying lengths, which are randomly chosen at the end of each loop. Meanwhile, game triggers can cause the music to transition to the 'alt' version at the end of the next loop. There are also non-looping transition sounds that provide intros and endings for the pieces of music. We added transitions between two entirely separate pieces of music (the 'string' piece and the 'battle' music) to demonstrate other uses. Each sound also has the <b>linger</b> flag set to keep the music from bouncing back and forth for any overlapping variable values.</p>
+
+<h2>Wrap-Up</h2>
+
+<p>The interactive audio features of XACT provide significant power and flexibility for creating more dynamic and compelling underscores than basic linear tracks can always provide. If you have questions about your specific implementation, or feedback on interactive audio techniques that have worked well for you, please let us hear about it! As always, questions, concerns, or comments about XACT or other Xbox tools can be directed to <a href="mailto:content@xbox.com">content@xbox.com</a>.</p> 
+
+<p>For more information about topics presented here, please consult the XACT chapters of the <a href="cd_aud_wp_bp.htm">Xbox Audio Best Practices Guide</a>, the Xbox Development Kit Help documentation, or the white papers in the Audio Designer's Corner, or send an e-mail message to <a href="mailto:content@xbox.com">content@xbox.com</a>.</p>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

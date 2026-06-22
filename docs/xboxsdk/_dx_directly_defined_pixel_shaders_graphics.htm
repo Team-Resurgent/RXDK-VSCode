@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Directly Defined Pixel Shaders</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Directly Defined Pixel Shaders"/>
+<MSHelp:Keyword Index="K" Term="pixel shaders, directly defined"/>
+<MSHelp:Keyword Index="F" Term="Directly Defined Pixel Shaders"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1><A NAME=""></A>Directly Defined Pixel Shaders</H1>
+<!--***********************************************************-->
+
+<p>Xbox offers an alternative to the pixel shader assembler language. Applications written on Xbox need to deal with only one hardware configuration, so it is possible for them to define pixel shaders in the native hardware format supported by the Xbox GPU. The <a href="xbox_jbh_dxref_psh_binformat.htm">D3DPIXELSHADERDEF</a> structure encapsulates all of the hardware states required to define a pixel shader on Xbox:</p>
+
+<pre>typedef struct _D3DPixelShaderDef
+{
+   DWORD    PSAlphaInputs[8]; 
+            
+   // Other member fields
+   // ...   
+   
+   DWORD    PSC0Mapping;               
+   DWORD    PSC1Mapping;               
+   DWORD    PSFinalCombinerConstants;  
+} D3DPIXELSHADERDEF;</pre>
+
+<p>All but the last three <b>DWORD</b>s of the structure are loaded into the GPU hardware to define the pixel shader. The order of these fields is defined to make loading them into the hardware as efficient as possible. The last three <b>DWORD</b>s are used to define how Direct3D8 pixel shader constants map to the constant registers in each combiner stage. They are used by the Direct3D run-time software but not by the hardware.</p>
+
+<p>Each member of <a href="xbox_jbh_dxref_psh_binformat.htm">D3DPIXELSHADERDEF</a>, used by the hardware, has a corresponding Direct3D render state. For example, <b>PSAlphaInputs[0]</b> corresponds to the D3DRS_PSALPHAINPUTS0 render state.  When a pixel shader has been set using the <a href="_dx_idirect3ddevice8_setpixelshader_graphics.htm">IDirect3DDevice8::SetPixelShader</a> method, these render states can be used to modify the pixel shader on the fly. See <a href="_dx_d3drenderstatetype_graphics.htm">D3DRENDERSTATETYPE</a> for a complete listing of the render states.</p>
+
+<p>The following topics provide a detailed description of each field in the structure and how those fields may be filled using various macros.</p>
+
+<ul>
+	<li><a href="_dx_texture_related_fields_graphics.htm">Texture-Related Fields</a></li>
+	<li><a href="_dx_combiner_related_fields_graphics.htm">Combiner-Related Fields</a></li>
+	<li><a href="_dx_final_combiner_related_fields_graphics.htm">Final Combiner-Related Fields</a></li>
+	<li><a href="_dx_constant_mapping_fields_graphics.htm">Constant Mapping Fields</a></li>
+</ul>
+
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

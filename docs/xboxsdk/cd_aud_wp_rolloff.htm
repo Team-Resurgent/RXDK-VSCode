@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Manipulating How Xbox Attenuates Sounds with Distance</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Manipulating How Xbox Attenuates Sounds with Distance"/>
+<MSHelp:Keyword Index="F" Term="Manipulating How Xbox Attenuates Sounds with Distance"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1 class="heading"><A NAME=""></A>Keep On Rolling&#8211;Off, That Is:<br>
+Manipulating How Xbox Attenuates Sounds with Distance</H1>
+
+<p><i>By Scott Selfon, Audio Content Consultant, Content and Design Team, Xbox Advanced Technology Group</i></P>
+
+<h2>Introduction</h2>
+<p>One of the great challenges of assembling a realistic soundscape is how the listener interacts with, and perceives, sound volume. For instance, at a significant distance, the developer will want a mosquito to be nearly inaudible, while a snarling dragon at that same distance will be quite loud. The Xbox&#174; gives a significant amount of control for this kind of behavior, but the terminology and expected behavior can often be somewhat confusing. This paper attempts to address how exactly the Xbox, or more precisely, the Microsoft&#174; DirectSound&#174; library, manages attenuation with distance for 3D-positioned<sup>1</sup> sound sources, based on factors set up by the developer. Rolloff is defined here as how a sound source attenuates with distance.</P>
+
+<h2>3D Attenuation-Related Properties</h2>
+<p>DirectSound exposes several properties for a 3D-positioned sound source that can be used to manage its attenuation behavior.</P>
+
+<ol>
+<li><b>Minimum Distance:</b> If the listener is within <i>minimum distance</i> of the sound source, it will not be attenuated and play at full volume (DSBVOLUME_MAX).<sup>2</sup> Somewhat confusingly, minimum distance also influences rolloff, as we'll discuss in a moment.</li>
+<li><b>Maximum Distance:</b> If the listener is <i>maximum distance</i> or further from the sound source, it will not be attenuated any further. A common misconception is that at maximum distance, the sound becomes silent. This is not the case; the sound source simply does not ever get quieter than its volume at maximum distance. Maximum distance does not influence the rolloff curve; it simply dictates where the attenuation curve ends.</li>
+<li><b>Per Voice Rolloff Factor (<b>IDirectSoundBuffer8::SetRolloffFactor</b>, <b>IDirectSoundStream::SetRolloffFactor</b>):</b> This value allows you to alter the sound source's rolloff curve compared to "real world"<sup>3</sup> rolloff (a value of 1). Again, the actual rolloff is also influenced by the minimum distance, though we'll discuss in a moment how to work around that.</li>
+<li><b>Global Rolloff Factor (<b>IDirectSound8::SetRolloffFactor</b>):</b> This factor traditionally remains set at 1, as you can simply multiply your object distances to get the equivalent behavior. With the availability of per-voice rolloff, the global rolloff API's value has generally depreciated.</li>
+</ol>
+
+<h2>What the Heck is "Real World" Rolloff?</h2>
+<p>Imitating the rolloff exhibited by sound sources in the 'real world' is a somewhat difficult task. For instance, although in theory, sounds should be point sources, and doubling of distance should reduce power by four times, in practice, most sounds are directional. Therefore, we use the approximation that with doubling of distance, perceived volume is generally halved (reduced by approximately 6 decibels [dB]).<sup>4</sup></P>
+
+<p>There is theoretically no attenuation when the listener and the sound source are at the exact same position (although this is, of course, generally not physically possible). As you travel away from the object, its volume drops according to the distance you are from it. If we begin at full volume at one meter (corresponding to minimum distance), at a two-meter distance, a sound is attenuated by 6 dB. At four meters, the attenuation is 12 dB. At eight meters, the attenuation is 18 dB, and so on, down toward perceived silence. As we'll see in a moment, default minimum distance and rolloff factors correspond to so-called 'real world' audio behavior.</P>
+
+<h2>Attenuation Math</h2>
+<p>3D-related attenuation is applied using the following rules, assuming "magnitude" is the current distance between the sound source and the listener, and RolloffFactor = global rolloff * this voice's rolloff:</P>
+<ol>
+<li>If magnitude &#60;= minimum distance, apply no attenuation (play at full volume)</li>
+<li>If magnitude &#60;= maximum distance, use this formula:<br><br>
+Attenuation (in millibels [mB]) =
+
+<IMG SRC="images/rolloff1.gif"></li>
+
+<li>If magnitude &#62; maximum distance, use the same formula, but swap in maximum distance instead of magnitude:<br><br>
+Attenuation (in mB) =
+
+<IMG SRC="images/rolloff2.gif"></li>
+</ol> 
+
+<IMG SRC="images/rolloff3.gif">
+<p><i><b>Illustration</b>&nbsp;&nbsp; Attenuation versus distance for min distance = 1, max distance = 10, and rolloff factor = 1. The sound is at half-volume at distance of 2, one-quarter volume at distance of 4, and so on. Note that within minimum distance, the sound is not attenuated (0 mB), and beyond maximum distance, no more attenuation is applied (sound remains at -2000 mB).</i></P>
+
+<p>As you can see, for minimum distance of 1 and rolloff factor of 1, we have our so-called real-world rolloff behavior. But from the formula above, we can see that as the minimum distance increases, the actual rolloff becomes more gradual, regardless of if we alter the rolloff factor.</p>
+
+<IMG SRC="images/rolloff4.gif">
+<p><i><b>Illustration</b>&nbsp;&nbsp; Attenuation versus distance comparisons for four different minimum distances with max distance = 10 and rolloff factor = 1. Note that despite the fact that the rolloff factor is constant, the rolloff itself becomes more gradual the larger the minimum distance is.</i></P>
+
+<IMG SRC="images/rolloff5.gif">
+
+<p><i><b>Illustration</b>&nbsp;&nbsp; Attenuation versus distance comparisons for minimum distance = 1, maximum distance = 10, and several rolloff factors.</i></P>
+
+<p>A typical question is how to calculate the 3D-position values so that the rolloff is directed solely by the rolloff factor, and not influenced by minimum distance. Based on the above formulas, if we set the rolloff factor to:</p>
+
+<P><b>Rolloff factor</b> = (our desired rolloff * minimum distance)</p>
+
+<P>then the minimum-distance scaling will cancel out:</p>
+
+<IMG SRC="images/rolloff6.gif">
+
+<p>and we'll get our desired rolloff. For instance, if the minimum distance for an object was 5, and we wanted it to rolloff at twice the real-world setting, we would set the rolloff factor to 10.</p>
+
+<IMG SRC="images/rolloff7.gif">
+<p><i><b>Illustration</b>&nbsp;&nbsp; Achieving the same desired rolloff (in this case, a rolloff of .5) in voices with different minimum distances. We multiply our desired rolloff by the minimum distance for a voice to set its actual rolloff.</i></P>
+
+<h2>Tool: Rolloff Calculator</h2>
+<p>One of the most common desired rolloff scenarios involves a sound's volume trailing off to silence at max distance. To assist content authors and programmers with these calculations, you can use the <a href="http://xds.xbox.com/BPProgInfo.asp?Page=download/RolloffCalculator.xls" target="blank">Rolloff Calculator spreadsheet tool</a>. The <b>Effective Silence</b> value is your specific title's noise floor (the volume below which sounds will not be heard). Voice and mixbin headroom are the attenuation being applied to your sounds by the Xbox hardware (these can be adjusted in XACT and DirectSound; see the specific comments in the spreadsheet itself). If your source sound is not already normalized to full scale, you can adjust the <b>Sound peak</b> to further limit the rolloff factor. Lastly, enter the <b>minimum distance</b> and <b>"silence" distance</b>. Again, the "silence distance" will be the distance at which the sound is attenuated below your effective silence noise floor; it will often make for a logical maximum distance. The rolloff factor is then calculated for you, along with a graph showing how the sound will be attenuated with distance. If your sound is attenuating too steeply, consider raising the "effective silence" volume. Or you can use the alternative to logarithmic rolloff: custom rolloff curves created using <b>SetRolloffCurve</b>.</p> 
+
+<h2>The Alternative: SetRolloffCurve</h2>
+
+<p>Don't like the idea of purely logarithmic attenuation? Or attenuation that doesn't necessarily reach silence? If you want your sounds to have unique attenuation properties over distance, you may want to consider using <b>IDirectSoundBuffer8/Stream8::SetRolloffCurve</b>. This same functionality is available in the Xbox Audio Creation Tool (XACT), via the <b>Enable custom rolloff curve</b> option on the 3D properties page for sounds and sound presets. This method replaces the default per-voice rolloff calculations with a curve that you provide. The curve can consist of as many points as you wish. Sounds within the minimum distance are unattenuated. Sounds from the maximum distance onward will use the final point on the curve for their volume. For instance, in the simplest case of a single point [0], sounds at maximum distance will be fully attenuated, and points in between minimum and maximum distance will be attenuated on a linear curve from 1 (full volume) down to 0 (silence). See the XDK documentation for more details, or try the SetRolloffCurve XDK sample to see custom curves in action. The sample even lets you output the points you create into a text file that you can integrate into your game code.</p>
+
+<h2>Wrap-Up</h2>
+<p>Rolloff is a powerful tool for enhancing (or intentionally defeating) realism in how we perceive sounds with distance. With per-voice rolloff, sounds that convey more important information for a player can be augmented to remain loud at great distances. Conversely, sounds meant to surprise a player may remain fairly quiet until the listener is right on top of them. In either case, the effective use of rolloff will add to the interest of the acoustic environment the player is placed in.</p>
+
+<p>For more information about topics presented here, please consult the Xbox Audio Best Practices Guide, the Xbox Development Kit documentation, or the white papers on Audio Designer&#39;s Corner, or send an e-mail message to <a href="mailto:content@xbox.com">content@xbox.com</a>.</P>
+
+<HR ALIGN="left" WIDTH="300">
+<P class="footnote"><SUP>1</SUP>&nbsp;3D-positioned sounds on Xbox are typically accomplished with HRTF processing in hardware.</p>
+<P class="footnote"><SUP>2</SUP>&nbsp;Throughout this paper, we only discuss attenuation applied by "3D" processing. Volume can also be manipulated on a buffer (<b>SetVolume</b>, <b>SetHeadroom</b>), the mixbins it sends to (<b>SetMixBinVolumes</b>) and globally for mixbins (<b>IDirectSound8::SetMixBinHeadroom</b>). All of these are applied additively with 3D processing. See <a href="cd_aud_wp_bp_chap7.htm" title="Chapter 7 &#8211; Mixing Audio for Xbox">Mixing Audio for Xbox</a> in the Audio Best Practices Guide for more details on managing audio levels.</p>
+<P class="footnote"><SUP>3</SUP>&nbsp;The term "real world" is used here for an approximation of how sounds behave in reality.</p>
+<P class="footnote"><SUP>4</SUP>&nbsp;Even this approximation is somewhat arbitrary. Air is far from a perfect transmission medium, so there is more loss, much of which varies with humidity, altitude, and so on.</p>
+
+<SMALL>Tuesday, January 22, 2002</SMALL>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>
+
+
+
+
+	

@@ -1,0 +1,64 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Xbox Begin/End Blocks</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Xbox Begin/End Blocks"/>
+<MSHelp:Keyword Index="F" Term="Xbox Begin/End Blocks"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Xbox Begin/End Blocks</H1>
+<!--***********************************************************-->
+
+<p>Vertex buffer objects enable applications to directly access the memory allocated for vertex data.  This data can be accessed by calling the <a href="_dx_idirect3dvertexbuffer8_lock_graphics.htm"><b>IDirect3DVertexBuffer8::Lock</b></a> method and then accessing the memory as needed to fill the buffer.  Using the D3DLOCK_NOOVERWRITE flag with this method results in optimal performance when drawing using that vertex buffer.  However, there are instances when there is a need for a dynamic vertex buffer.  It may be necessary to gain a lock on the start of a vertex buffer before the graphics processing unit (GPU) has finished processing the end of that same buffer.  DirectX 8.0 for the PC supports the D3DLOCK_DISCARD to help in these situations; however, DirectX for the Xbox does not support this flag since it results in hidden allocations.</p>
+
+<p>In situations like this, when dealing with CPU-generated vertices where vertex throughput is not critical, a Begin/End block could be employed instead of a vertex buffer.  Using a Begin/End block, it is possible to specify a vertex and its attributes and then send it on immediately to the GPU for processing.  It is possible to work with as many vertices as needed.</p>
+
+<p>Asssuming you have pDevice, a valid pointer to a <b>DIRECT3DDEVICE8</b> interface,  the following bit of code shows how the Begin/End block is used.</p>
+
+<blockquote><pre>pDevice->Begin( D3DPT_TRIANGLELIST );
+// 1. Set vertex attributes.
+// 2. Kick the complete vertex off to the GPU.
+// 3. Repeat steps 1 and 2 for each vertex.
+pDevice->End();</pre></blockquote>
+
+<p>The block always starts with a call to <a href="_dx_idirect3ddevice8_begin_graphics.htm"><b>IDirect3DDevice8::Begin</b></a> and gives the type of primitive that will be rendered.  In addition to triangle lists, the Begin/End block supports the drawing of any of the primitive types descibed by the <a href="_dx_d3dprimitivetype_graphics.htm"><b>D3DPRIMITIVETYPE</b></a> enumeration, including point lists, triangular fans, quad strips, and polygons.  The block is terminated by a call to <a href="_dx_idirect3ddevice8_end_graphics.htm"><b>IDirect3DDevice8::End</b></a>.
+</p>
+
+<p>A vertex attribute is set using <a href="_dx_idirect3ddevice8_SetVertexData4f_graphics.htm"><b>IDirect3DDevice8::SetVertexData4f</b></a>, or its relatives (<a href="_dx_idirect3ddevice8_SetVertexData2f_graphics.htm"><b>IDirect3DDevice8::SetVertexData2f</b></a>, and so on).  For example, the following code sets the diffuse color of a vertex to red and gives it a texture coordinate:</p>
+
+<blockquote><pre>pDevice->SetVertexData4f( D3DVSDE_DIFFUSE, 1.0f, 0.0f, 0.0f, 1.0f );
+pDevice->SetVertexData2f( D3DVSDE_TEXCOORD0, 0.0f, 1.0f );</pre></blockquote>
+
+<p>The position of the vertex is not given until it is ready to be kicked off to the GPU.  The following sets the coordinates of the vertex to (3, 4, 5) and tells the GPU to process that vertex with its attributes.</p>
+
+<blockquote><pre>pDevice->SetVertexData4f( D3DVSDE_VERTEX, 3.0f, 4.0f, 5.0f, 1.0f );</pre></blockquote>
+
+<p>The GPU begins to process the vertex when D3DVSDE_VERTEX is passed as the <i>Register</i> flag to <b>IDirect3DDevice8::SetVertexData4f</b>.</p>
+
+<!--*******************************************************************************-->
+
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

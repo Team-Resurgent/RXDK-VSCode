@@ -1,0 +1,153 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Using DSP Builder</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="Using DSP Builder">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Using DSP Builder"/>
+<MSHelp:Keyword Index="K" Term="DSP Builder, using"/>
+<MSHelp:Keyword Index="F" Term="Using DSP Builder"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="xbox_tools_using_dsp_builder_dxaudio"></A>Using DSP Builder</H1>
+
+
+
+<P>This documentation describes how to create a basic DSP effects image using the DSP Builder tool. The DSP effects image can then be downloaded to the global processor DSP on the Xbox Media Communications (MCP) processor for sound effects.</P>
+
+<p>For a more complex DSP effects image, you can look at the standard DSP effects image file (DSStdFx.fx) in the \Source\DSound\Dspserver\ subdirectory of the directory where the Xbox SDK is installed.</p>
+
+<UL>
+	<LI><A HREF="#xbox_tools_using_dsp_builder_dxaudio_require">Prerequisites and Requirements</A></LI>
+    <LI><A HREF="#xbox_tools_using_dsp_builder_dxaudio_steps">Steps</A></LI>
+    <LI><A HREF="#xbox_tools_using_dsp_builder_dxaudio_related">Related Topics</A></LI>
+</UL>
+
+<H2><A NAME="xbox_tools_using_dsp_builder_dxaudio_require"></A>Prerequisites and Requirements</H2>
+
+<P>To use this tutorial, you will need a copy of the DSP Builder tool (dspbuilder.exe), the Xboxdbg.dll, the state files (.ini files) for your source DSP effects, and the scrambled binary images (.scr files) of the DSP effects. The DSP Builder tool can be found in the \xbox\bin\ subdirectory of the directory where the Xbox SDK is installed (usually C:\Program Files\Microsoft Xbox SDK\). The state files and the scrambled binary images can be found in the \source\dsound\dsp\ini and \source\dsound\dsp\bin subdirectories of the directory where the Xbox SDK is installed.</P>
+
+
+<H2><A NAME="xbox_tools_using_dsp_builder_dxaudio_steps"></A>Steps</H2>
+
+<P>Complete the following steps to create a basic DSP effects image which adds a monophonic echo effect.</P>
+
+<OL>
+    <LI>If the system you are using does not have the Xbox SDK installed, complete the following steps:
+        <OL>            
+            <LI>Access a development system with the Xbox SDK installed.</LI>
+            <LI>Go to the directory where the Xbox SDK is installed.</LI>
+            <LI>Get a copy of the Dspbuilder.exe and Xboxdbg.dll files from the \xbox\bin\ subdirectory of the directory where the Xbox SDK a from a development system that has the SDK installed. Usually, that will be the C:\Program Files\Microsoft Xbox SDK\xbox\bin directory.</LI>
+            <LI>Get a copy of the folder which contains the state files.</LI>
+            <LI>Get a copy of the folder which contains the scrambled binary images.</LI>
+            <LI>Create a directory to store the DSP Builder files. For this tutorial, lets create a C:\dspbuilder\ directory.</LI>
+            <LI>Place the copy of the Dspbuilder.exe and Xboxdbg.dll files in the root of the directory you created.</LI>
+            <LI>Place the copy of the folder with the state files into the directory you created, so you will end up with a C:\dspbuilder\ini\ folder.</LI>
+            <LI>Place the copy of the folder with the scrambled binary images into the directory you created, so you will end up with a C:\dspbuilder\bin\ folder.</LI>
+        </OL></li>
+	<LI>Start the DSP Builder tool. This will bring up the main screen of the DSP Builder tool.
+    <P><IMG SRC="images/xbox_tool_dsp_builder_tutorial_new_dxaudio.jpg" WIDTH="614" HEIGHT="460" BORDER="0" ALT="DSP Builder"></P>
+    <P>If you get the "Unable to load effects. Please specify a valid directory" error message, or you want to change the directories containing the scrambled binary DSP effect images and/or state files, complete the following steps:</P>
+        <OL>
+	        <LI>Click <b>Tools</b>.</LI>
+            <LI>Click <b>Directories</b>.</LI>
+            <LI>Enter the directory which contains the state files (.ini files) for the DSP effects. For a development system with the Xbox SDK installed, this is usually C:\Program Files\Microsoft Xbox SDK\source\dsound\dsp\ini\. If you copied the files to a system without the Xbox SDK installed following the instructions above, it would be the C:\dspbuilder\ini\ directory.</LI>
+            <LI>Enter the directory that contains the scrambled binary images (.scr files) of the DSP effects. For a development system with the Xbox SDK installed, this is usually C:\Program Files\Microsoft Xbox SDK\source\dsound\dsp\bin\. If you copied the files to a system without the Xbox SDK installed following the instructions above, it would be the C:\dspbuilder\bin\ directory.</LI>
+            <LI>Click <b>OK</b>.</LI>
+        </OL></LI>
+    <LI>Right-click on an open area of the screen to bring up the context menu. Since we're just starting, there should only be four items available on the menu: <b>Insert Input Mixbin</b>, <b>Insert Output Mixbin</b>, <b>Insert Effect</b>, and <b>Show Grid</b>.</LI>
+
+    <li>Click <b>Insert Input Mixbin</b> to open another menu with a list of mixbins.</li>
+    
+    <li>Click <b>FX Send 0</b> to get a copy of the input FX Send 0 mixbin. This will be the source of audio data for the effect in this tutorial.</li>
+    
+    <li>Click on a blank part of the workspace to place the mixbin.  To make it easier to draw the patch cables, place other mixbins, and place effects, try to pick a space on the left side of the workspace.
+
+    <p><img src="images/xbox_tool_dsp_builder_tutorial_fxsend0_dxaudio.jpg" border="0" alt=""></p></li>
+
+    <LI>Right-click on an open area of the screen again to bring up the context menu. Notice that the <b>Delete All</b> option is also available now.</LI>
+
+    <li>Click <b>Insert Output Mixbin</b> to open another menu with a list of mixbins.</li>
+
+    <li>Click <b>Speakers</b> to open another menu with a list of speaker mixbins.</li>
+    
+    <li>Click <b>Center</b> to get a copy of the Speaker: Center mixbin. This will be the destination for the audio data processed by the effect. Notice that output mixbins only have one input ("In") in the box.</li>
+    
+    <li>Click on a blank part of the workspace to place the mixbin.  To make it easier to draw the patch cables, place other mixbins, and place effects, try to pick a space on the right side of the workspace.
+
+    <p><img src="images/xbox_tool_dsp_builder_tutorial_fxsend0_center_dxaudio.jpg" width="600" height="450" border="0" alt=""></p></li>
+    
+    <LI>Right-click on an open area of the screen one more time to bring up the context menu.</LI>
+
+    <LI>Click <b>Insert Effect</b> to open another menu with a list of effects.</LI>
+    <LI>Click <b>Mono Echo</b> to get a copy of the monophonic echo effect.</LI>
+    <LI>Click on a blank part of the screen to place the effect. To make it easier to draw the patch cables, try to line the effect up with the FX Send 0 input mixbin.
+    <P><IMG SRC="images/xbox_tool_dsp_builder_tutorial_echo_only_dxaudio.jpg" BORDER="0" ALT=""></P></LI>
+    <LI>Complete the following steps to draw a patch cord from one of the input mixbins to the input on the effect.
+        <OL>
+            <LI>While the mouse pointer is over the dash near "Out" in the FX Send 0 input mixbin, click the left mouse button.</LI>
+            <LI>Move the mouse pointer to the right and over the input ("In") of the monophonic echo effect.</LI>
+            <LI>Click the left mouse button and that should draw the patch cord. If its connected correctly, it should be a black line.</LI>
+        </OL>
+        <P><IMG SRC="images/xbox_tool_dsp_builder_tutorial_echo_in_dxaudio.jpg" BORDER="0" ALT=""></P></LI>
+    <LI>Complete the following steps to draw a patch cord from the effect to one of the output mixbins.
+        <OL>
+            <LI>While the mouse pointer is over the output ("Out") on the monophonic echo effect, click the left mouse button.</LI>
+            <LI>Move the mouse pointer to the right and over the input ("In") that is in the output Speaker: Center mixbin.</LI>
+            <LI>Click the left mouse button and that should draw the path cable. If its connected correctly, it should be a black line.</LI>
+        </OL>
+        <P><IMG SRC="images/xbox_tool_dsp_builder_tutorial_echo_inout_dxaudio.jpg" BORDER="0" ALT=""></P></LI>
+    
+    <li>Click on <b>Tools</b>.</li>
+    
+    <li>Click on <b>Build Options</b> to bring up the <b>Build Options</b> dialog box.
+    
+    <p><img src="images/xbox_tool_dspbuilder_dialogs_build_options_dxaudio.jpg"></p></li>
+    
+    <li>Because our DSP effects image doesn't include a crosstalk cancellation effect or I3DL2 reverberation effect, we can automatically have them added in here. To do this, complete the following steps:
+
+    <ul>
+	    <li>Click on the drop-down list box below <b>I3DL2</b>.</li>
+        <li>Select one of the default environments. For this example, lets use Cave.
+        <p><img src="images/xbox_tool_dsp_builder_tutorial_build_options_cave_dxaudio.jpg" border="0" alt="Selecting the Cave environment"></p></LI>
+        <li>If it isn't checked already, click the check box next to <b>Add XTalk</b> to add the crosstalk cancellation effect.</li>
+        <LI>Optional. Select <b>Add LFE to 3D voice destination</b> to cause the DSP effects image to mix the outputs of the crosstalk mixbins used for 3D sound buffers and send the mix to the low frequency emitter mixbin.</LI>
+        <li>Click <b>OK</b>.</li>
+    </ul></LI>
+
+    
+    <LI>Click <b>File</b>.</LI>
+    <LI>Click <b>Save</b> to bring up the <b>Save</b> dialog box.</LI>
+    <LI>Select the directory you want to use to save your DSP Builder file (.fx file).</LI>
+    <LI>Enter the name for the file.</LI>
+    <LI>Click <b>Save</b>.</LI>
+
+    <LI>Click <b>File</b>.</LI>
+    <LI>Click <b>Generate and Save</b>.</LI>
+</OL>
+
+<H2><A NAME="xbox_tools_using_dsp_builder_dxaudio_related"></A>Related Topics</H2>
+
+<P>The following topics are related to using the DSP Builder tool.</P>
+
+<UL>
+	<LI><A HREF="xbox_dsp_effects_dxaudio.htm">DSP Effects</A></LI>
+    <LI><A HREF="xbox_dsp_effects_processing_dxaudio.htm">DSP Effects Processing</A></LI>
+    <LI><A HREF="xbox_available_dsp_effect_images_dxaudio.htm">Available DSP Effect Images</A></LI>
+    <LI><A HREF="xbox_downloading_images_to_the_global_processor_dxaudio.htm">Downloading Effects to the Global Processor</A></LI>
+	<LI><A HREF="xbox_tool_dsp_builder_overview_dxaudio.htm">DSP Builder Overview</A></LI>
+    <LI><A HREF="xbox_tool_dsp_builder_commands_dxaudio.htm">DSP Builder Commands</A></LI>
+</UL>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

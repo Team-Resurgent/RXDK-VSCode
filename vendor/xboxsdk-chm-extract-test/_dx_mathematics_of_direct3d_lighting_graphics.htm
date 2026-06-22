@@ -1,0 +1,272 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Mathematics of Direct3D Lighting</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Mathematics of Direct3D Lighting"/>
+<MSHelp:Keyword Index="F" Term="Mathematics of Direct3D Lighting"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_mathematics_of_direct3d_lighting_graphics"></A>Mathematics of Direct3D Lighting</H1>
+
+<P>This section describes the mechanics and implementation details behind the Microsoft&#174; Direct3D&#174; lighting engine. Direct3D models illumination by estimating how light behaves in nature. The Direct3D light model keeps track of light color, the direction and distance that light travels, the position of the viewer, and the characteristics of the current material to compute two color components for each vertex in a face. Direct3D uses these color components to compute the color it draws while rasterizing the pixels of a face.</P>
+
+<P class=note><B><i>Note</i></B>&nbsp;&nbsp; All computations are made in model space by transforming the light source's position and direction, along with the camera position to model space using the inverse of the world matrix, then they are back transformed. As a result, if the world or view matrices introduce nonuniform scaling, the resultant lighting might be inaccurate. </P>
+
+<P>This section presents a technical look at the formulas that Direct3D uses to come up with diffuse and specular components. By understanding the approach of Direct3D, you will be better equipped to decide if the Direct3D light model suits your needs. The Direct3D light model was designed to be accurate, efficient, and easy to use. However, if the formulas used by Direct3D don't suit your needs, you can implement your own light model, bypassing the Direct3D lighting module altogether. The following topics are discussed.
+
+<UL>
+	<LI><A HREF="_dx_lighting_notation_graphics.htm">Lighting Notation</A></LI>
+	<LI><A HREF="_dx_camera_space_transformation_graphics.htm">Camera Space Transformation</A></LI>
+	<LI><A HREF="_dx_basic_lighting_formula_graphics.htm">Basic Lighting Formula</A></LI>
+	<LI><A HREF="_dx_diffuse_formula_graphics.htm">Diffuse Formula</A></LI>
+	<LI><A HREF="_dx_specular_formula_graphics.htm">Specular Formula</A></LI>
+	<LI><A HREF="_dx_light_attenuation_over_distance_graphics.htm">Light Attenuation Over Distance</A> </LI>
+	<LI><A HREF="_dx_reflectance_model_graphics.htm">Reflectance Model</A> </LI>
+	<LI><A HREF="_dx_spotlight_falloff_model_graphics.htm">Spotlight Falloff Model</A> </LI>
+</UL>
+
+<P>The parameters used for these formulas are listed in the tables below. Each table has its corresponding default value, type, and a range of accepted values.</P>
+
+<P>The following table lists the position parameters.</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=15%>Parameter</TH>
+<TH align=left width=22%>Default value</TH>
+<TH align=left width=21%>Type</TH>
+<TH align=left width=42%>Description</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%><B>Pe</B></TD>
+<TD width=22%>(0,0,0)</TD>
+<TD width=21%>D3DVECTOR</TD>
+<TD width=42%>Camera position in camera space.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%><B>Po</B></TD>
+<TD width=22%>N/A</TD>
+<TD width=21%>D3DVECTOR</TD>
+<TD width=42%>Position of current model origin (0,0,0,1) in the camera space. This is the fourth row of the <B>Mw*Mv</B> matrix.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%><B>Mw</B></TD>
+<TD width=22%>N/A</TD>
+<TD width=21%>D3DMATRIX</TD>
+<TD width=42%>World matrix, set by D3DTS_WORLD.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%><B>Mv</B></TD>
+<TD width=22%>N/A</TD>
+<TD width=21%>D3DMATRIX</TD>
+<TD width=42%>View matrix, set by D3DTS_VIEW.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%><B>Mwv</B></TD>
+<TD width=22%>N/A</TD>
+<TD width=21%>D3DMATRIX</TD>
+<TD width=42%><B>Mw*Mv.</B></TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%><B>Halfway</B></TD>
+<TD width=22%>N/A</TD>
+<TD width=21%>D3DVECTOR</TD>
+<TD width=42%>Normalized vector, used to compute specular reflection.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%><B>La</B></TD>
+<TD width=22%>(0.0, 0.0, 0.0, 0.0)</TD>
+<TD width=21%>D3DCOLOR</TD>
+<TD width=42%>Ambient color in the light state. Set by D3DRS_AMBIENT.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%><B>V</B></TD>
+<TD width=22%>N/A</TD>
+<TD width=21%>D3DVECTOR</TD>
+<TD width=42%>Vertex position in camera space.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%><B>N</B></TD>
+<TD width=22%>N/A</TD>
+<TD width=21%>D3DVECTOR</TD>
+<TD width=42%>Normalized vertex normal in camera space.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%><B>Vcd</B></TD>
+<TD width=22%>N/A</TD>
+<TD width=21%>D3DCOLORVALUE</TD>
+<TD width=42%>Vertex diffuse color.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%><B>Vcs</B></TD>
+<TD width=22%>N/A</TD>
+<TD width=21%>D3DCOLORVALUE</TD>
+<TD width=42%>Vertex specular color.</TD>
+</TR>
+</TABLE><BR>
+
+<P>The following table lists the material parameters.</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=15%>Parameter</TH>
+<TH align=left width=22%>Default value</TH>
+<TH align=left width=21%>Type</TH>
+<TH align=left width=42%>Description</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%><B>Ma</B></TD>
+<TD width=22%>(0.0, 0.0, 0.0, 0.0)</TD>
+<TD width=21%>D3DCOLORVALUE</TD>
+<TD width=42%>Ambient color.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%><B>Md</B></TD>
+<TD width=22%>(255, 255, 255, 255)</TD>
+<TD width=21%>D3DCOLORVALUE</TD>
+<TD width=42%>Diffuse color.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%><B>Ms</B></TD>
+<TD width=22%>(0.0, 0.0, 0.0, 0.0)</TD>
+<TD width=21%>D3DCOLORVALUE</TD>
+<TD width=42%>Specular color.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%><B>Me</B></TD>
+<TD width=22%>(0.0, 0.0, 0.0, 0.0)</TD>
+<TD width=21%>D3DCOLORVALUE</TD>
+<TD width=42%>Emissive color.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%><B>Mp</B></TD>
+<TD width=22%>0.0</TD>
+<TD width=21%>D3DVALUE</TD>
+<TD width=42%>Specular exponent. Range: (&#8211;&infin;,+&infin;)</TD>
+</TR>
+</TABLE><BR>
+
+<P>The following table lists the light source <I>i</I> parameters.</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=15%>Parameter</TH>
+<TH align=left width=22%>Default value</TH>
+<TH align=left width=21%>Type</TH>
+<TH align=left width=42%>Description</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%><B>Lp<SUB>I</SUB></B></TD>
+<TD width=22%>(0.0, 0.0, 0.0)</TD>
+<TD width=21%>D3DVECTOR</TD>
+<TD width=42%>Position in camera space.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%><B>Ld<SUB>I</SUB></B></TD>
+<TD width=22%>(0.0, 0.0, 1.0)</TD>
+<TD width=21%>D3DVECTOR</TD>
+<TD width=42%>Direction to the light in the camera space.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%><B>Lr<SUB>I</SUB></B></TD>
+<TD width=22%>0.0</TD>
+<TD width=21%>D3DVALUE</TD>
+<TD width=42%>Distance range. Range: [0.0, D3DLIGHT_RANGE_MAX]</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%><B>Lca<SUB>I</SUB></B></TD>
+<TD width=22%>(0.0, 0.0, 0.0, 0.0)</TD>
+<TD width=21%>D3DCOLORVALUE</TD>
+<TD width=42%>Ambient color.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%><B>Lcs<SUB>I</SUB></B></TD>
+<TD width=22%>(0.0, 0.0, 0.0, 0.0)</TD>
+<TD width=21%>D3DCOLORVALUE</TD>
+<TD width=42%>Specular color.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%><B>Lc<SUB>I</SUB></B></TD>
+<TD width=22%>(1.0, 1.0, 1.0, 0.0)</TD>
+<TD width=21%>D3DCOLORVALUE</TD>
+<TD width=42%>Diffuse color.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%><B>att0<SUB>I</SUB></B></TD>
+<TD width=22%>0.0</TD>
+<TD width=21%>D3DVALUE</TD>
+<TD width=42%>Constant attenuation factor. Range: (0, +&infin;)</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%><B>att1<SUB>I</SUB></B></TD>
+<TD width=22%>0.0</TD>
+<TD width=21%>D3DVALUE</TD>
+<TD width=42%>Linear attenuation factor. Range: (0, +&infin;)</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%><B>att2<SUB>I</SUB></B></TD>
+<TD width=22%>0.0</TD>
+<TD width=21%>D3DVALUE</TD>
+<TD width=42%>Quadratic attenuation factor. Range: (0, +&infin;)</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%><B>falloff<SUB>I</SUB></B></TD>
+<TD width=22%>0.0</TD>
+<TD width=21%>D3DVALUE</TD>
+<TD width=42%>Falloff factor. Range: (&#8211;&infin;, +&infin;)</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%><B>theta<SUB>I</SUB></B></TD>
+<TD width=22%>0.0</TD>
+<TD width=21%>D3DVALUE</TD>
+<TD width=42%>Umbra angle of spotlight in radians. Range: [0, &pi;)</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=15%><B>phi<SUB>I</SUB></B></TD>
+<TD width=22%>0.0</TD>
+<TD width=21%>D3DVALUE</TD>
+<TD width=42%>Penumbra angle of spotlight in radians. Range: [theta<B><SUB>I</SUB></B>, &pi;)</TD>
+</TR>
+</TABLE><BR>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

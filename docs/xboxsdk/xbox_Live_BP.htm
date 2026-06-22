@@ -1,0 +1,349 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Best Practices and Lessons Learned</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Best Practices and Lessons Learned"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Best Practices and Lessons Learned</h1>
+<p>This section presents best practices, tips, and suggestions that you can use to help improve your title's Xbox <i>Live</i> implementation.</p><ul>
+<li><a href="#IDATAEV">General Considerations for Xbox Live Games</a></li><li><a href="#IDAPCEV">Creating a Community</a></li><li><a href="#IDAVDEV">User Interface and Gameplay</a></li><li><a href="#IDALFEV">Arbitration</a></li><li><a href="#IDAZGEV">Matchmaking</a></li><li><a href="#IDACFFV">Quality of Service (QoS)</a></li><li><a href="#IDACHFV">Voice Chat</a></li><li><a href="#IDA1KFV">Statistics</a></li></ul>
+<h2><a name="IDATAEV"></a>General Considerations for Xbox Live Games</h2>
+<dl>
+				<dt><b>Look for good examples.</b></dt>
+				<dd>Start by looking at titles that have implemented Xbox <i>Live</i> particularly well&#8212;for example, <i>Moto GP</i>, <i>Whacked!</i>, and <i>Midtown Madness 3</i>. </dd>
+
+				<dt><b>Make your title Xbox <i>Live</i> aware...</b></dt>
+				<dd>
+					<p>...even your offline, single-player titles. Xbox <i>Live</i> aware simply means the ability to sign in with your gamertag at the beginning of the game so you can have access to your friends list and game invitations while playing offline or single-player games. This feature helps keep Xbox <i>Live</i> gamers playing your game, and it enables them to stay connected to the community, to see when people come online to play, and to send and accept invites. With Xbox <i>Live</i> aware titles, gamers don't have to be in a fully Xbox <i>Live</i> title if they want to play and keep an eye on who might be on the service. </p>
+
+					<p>You can easily implement Xbox <i>Live</i> Aware in your title by using Drop-in UI (UIX). The recommended implementation is to silently sign in the last used gamertag at game launch (if an Internet connection is available). Gamers can then set whether they want to enable this feature in the Xbox Dashboard. Note that if you aren't using UIX, there is an API available to help you implement this silent sign-in.</p>
+
+					<p>In sum, with the advent of UIX, no upcoming Xbox <i>Live</i> title should be released without the ability to be "Always Live." We also recommend Always Live for system link titles.</p>
+				</dd>
+
+				<dt><b>Minimize response times.</b></dt>
+				<dd>Get a gamer who has accepted a cross-game invite into the game as quickly as possible. There's no reason for the gamer to have to watch through all of the start-up screens and cinematics if they're trying to get into a specific game session as quickly as possible. <i>Whacked!</i> is a great example of how to implement joining a game with a cross-game invite. </dd>
+
+				<dt><b>Support downloadable content.</b></dt>
+				<dd>Downloadable content is the #1 requested feature of Xbox <i>Live</i> titles. As of July 2003, two out of three Xbox <i>Live</i> titles support downloadable content. </dd>
+
+			</dl>
+<h2><a name="IDAPCEV"></a>Creating a Community</h2>
+<dl>
+				<dt><b>Implement a lobby.</b></dt>
+				<dd>Build a game lobby where gamers can meet, plan, break into teams, configure, launch, return to, and re-launch from. Implementing this can be very different depending on the type of game (team-based, one-on-one, join in-progress games, and so on). The key is to think about ways to allow gamers to continue playing the game easily with people they're already having fun with.</dd>
+				
+				<dt><b>Talk trash.</b></dt>
+				<dd>Nothing is more frustrating to gamers than having a great session and not being able to talk trash afterward. So think about scenarios where teams can talk to each other, then to everyone in the game (good for post-game banter). </dd>
+				
+				<dt><b>Ops.</b></dt>
+				<dd>Make sure gamers have the ability to change game options from the lobby and to re-launch games easily with the same players. </dd>
+				
+				<dt><b>In-session lobbies.</b></dt>
+				<dd>Think about enabling players to join lobbies while a game is in session, so they can wait for the next game (<i>Moto GP</i> does this nicely). Allowing players to watch a game in session is a nice bonus. </dd>
+				
+				<dt><b>Give players control.</b></dt>
+				<dd>Introduce community control options where players can vote to kick out problem users, mute them, ban them from a server, and so on. Return to Castle Wolfenstein offers a great example of this</dd>
+				
+				<dt><b>Take advantage of Xbox <i>Live</i> Web services.</b></dt>
+				<dd>Web services enable you to take Xbox <i>Live</i> service data such as scoreboards, friends lists, presence, and so on, and use these features on your own Web site to build community. We expect to allow you to write arbitrary data to a leaderboard via Web services that you can then display in-game (this is currently read-only). </dd>
+			</dl>
+<h2><a name="IDAVDEV"></a>User Interface and Gameplay</h2>
+<dl>
+				<dt><b>Don't make the player wait for the network unless absolutely necessary.</b></dt>
+				<dd></dd>
+				
+				<dt><b>Minimize text entry.</b></dt>
+				<dd></dd>
+				
+				<dt><b>Keep the player informed.</b></dt>
+				<dd>If network problems cause an unavoidable delay, notify the player as soon as possible. Otherwise, players assume that bugs in your software have caused the game to lock. Players quickly view the software as inferior in quality when this happens. Keeping players informed about adverse network conditions helps them understand where the real problems lie and how to solve them.</dd>
+
+				<dt><b>Don't let a single player hold up the game.</b></dt>
+				<dd>Use sensible timeouts whenver players are waiting for each other. Allowing one inconsiderate player to hold up or derail a game session will rapidly chase players away from your game.</dd>
+
+				<dt><b>Keep your user interface consistent.</b></dt>
+				<dd>A consistent user interface is a major key to a good game experience. Use <b>A</b> to advance in menus, <b>B</b> to go back&#8212;these are the defaults for most games; it's frustrating when games don't support them.</dd>
+
+				<dt><b>Make it easy to get to a friends list.</b></dt>
+				<dd>We recommend using an always-available single button (<b>Y</b> is common). </dd>
+				
+				<dt><b>Make scrolling easy.</b></dt>
+				<dd>Allow the use of D-pad left/right to scroll through list boxes a page at a time.</dd>
+				
+				<dt><b>Use UIX.</b></dt>
+				<dd>Consider using the Xbox Drop-in UI (UIX), which can greatly ease Xbox <i>Live</i> development. UIX currently includes support for sign-in (one-player or four-player) and friends list. Players list, matchmaking, and two-player sign-in are coming soon. As additional features are enabled on Xbox <i>Live</i>, such as teams and tournaments, UIX will evolve to support them. </dd>
+
+				<dt><b></b></dt>
+			</dl>
+<h2><a name="IDALFEV"></a>Arbitration</h2>
+<dl>
+				<dt><b>Arbitrate appropriately.</b></dt>
+				<dd>Don't arbitrate private sessions and, conversely, don't allow friend invitees into arbitrated sessions, except when they receive a slot on the same team as the inviter. Remember that all arbitrated sessions modify the player reliability rating (PRR). For this reason, arbitration should be used exclusively for public, randomly-matched ranked games.</dd>
+
+				<dt><b>Enforce anonymous matchmaking.</b></dt>
+				<dd>Enforce anonymous mxatchmaking for arbitrated games to prevent friends from artificially boosting their PRRs. Make it difficult for players to predict who their opponent(s) will be. </dd>
+
+				<dt><b>No guests.</b></dt>
+				<dd>Do not allow guests in arbitrated sessions. Guests do not have PRRs and can therefore jeopardize a session without penalty. If you must allow guests, make sure that players logged in as guests play on the same team as the guest's host.</dd>
+
+				<dt><b>Balance teams.</b></dt>
+				<dd>Keep team games balanced. Terminate any session that becomes unbalanced due to drops.</dd>
+
+				<dt><b>Allow players to quit.</b></dt>
+				<dd>Provide the an option that lets players quit voluntarily. This is necessary to allow players who are being verbally harassed or attacked to leave an arbitrated session. If the player who quits voluntarily has a better PRR than the remaining player(s), the Xbox <i>Live</i> service does not record stats for that session.</dd>
+
+				<dt><b>Wait to register.</b></dt>
+				<dd>Do not register for an arbitrated session until the full set of participants has been finalized and locked down.</dd>
+
+				<dt><b>No single-player sessions.</b></dt>
+				<dd>Verify all corner cases to make sure that single-player sessions are prevented. </dd>
+
+				<dt><b>Keep the host anonymous.</b></dt>
+				<dd>Players should not be able to deduce who the game host is from the game's user interface. This added protection makes it more difficult for cheaters to attack the game host. </dd>
+
+				<dt><b>Manage Session Time</b></dt>
+				<dd>Allocate time to your arbitrated session conservatively. It is best to maintain approximately a 30-percent margin at any point during the session. If you have a fixed-length session, request 30 percent extra time. If you have a variable-length session, request time extension when you reach two thirds of the originally allocated time. Do NOT call for a time extension more frequently than every five minutes. </dd>
+
+			</dl>
+<h2><a name="IDAZGEV"></a>Matchmaking</h2>
+<ul>
+<li><a href="#IDA4GEV">General Considerations</a></li><li><a href="#IDAXAFV">QuickMatch</a></li><li><a href="#IDANCFV">Optimatch</a></li></ul>
+<h3><a name="IDA4GEV"></a>General Considerations</h3>
+<dl>
+					<dt><b>Use an ascending sort by available public slots.</b></dt>
+					<dd>To avoid offering players sessions that are already full, and hence unjoinable, try to aim players towards sessions with more space available. Be aware that there is a time window between the time the server posts an update to the session and the time the client queries, receives results, completes QoS checks, and finally attempts to join the game. Aiming queries at games with more free space will greatly decrease the chances of the match filling up unexpectedly during that window of time. </dd>
+	
+					<dt><b>Use proximity and rough proximity in sorts.</b></dt>
+					<dd>
+						<p>Network proximity is a form of telemetry on Internet peers, a more-than-educated guess at the network distance between two peers on the Internet. Utilizing giant database tables of IP routes, proximity numbers form something of an "offline" ping time that has proven to be an excellent predictor of real measurements done by QoS. MatchSim already adds an ascending sort by network proximity to all queries by default; this should not be removed.</p>
+						<p>Titles should also consider using rough network proximity. Rough network proximity bucketizes proximity values into five groups. Using this in a sort operator for a query will roughly regionalize the query before any other sort operators are used. The proper use for this is to include it as a sort near the top of the sort order for the query results, before any other sorts, with full network proximity near the bottom of the sort order. Note that, because rough network proximity is based entirely on full proximity measurements, there is no need to include rough network proximity if there are no other sorts between the two.</p>
+					</dd>
+					
+					<dt><b>Include content download dependencies in the match schema and search queries. </b></dt>
+					<dd>In the not so distant future, nearly every multiplayer title should have some form of content download that delivers new levels, new maps, new weapons, and so forth that affect the multiplayer game. Obviously, all players in the game must have the same level data to play the level. In these cases where there is a dependency mismatch, and some players have something the others do not, including download dependencies in the matchmaking schema can greatly increase the friendliness of the game. You can either filter out matches that require a content package that the player does not have or simply include package information as a return parameter in the query that can be used to warn the player that they may need to download the package to play the game.</dd>
+	
+					<dt><b>Use NULL parameters where possible.</b></dt>
+					<dd>NULL parameters allow for a form of optional search parameters. If you're using a query for multiple purposes, NULL parameters allow you to tailor the query to each specific purpose. If you're using the query for OptiMatch, NULL parameters correspond to any parameter that the user might want to treat as a wildcard. </dd>
+		
+					<dt><b>Watch out for public vs. private slots. </b></dt>
+					<dd>
+						<p>The operation of public and private slots has proven to be one of the more confusing procedures of matchmaking. Every session already has two attributes tracking the number of used and free public slots and two attributes tracking the number of used and free private slots. All match queries, by default, will check to ensure that the session has a public slot available and will not return sessions that are full. It has been a common mistake in the past to redundantly include similar parameters and filters; this is not necessary. Clients can determine the total number of players in the session by adding the number of used private slots and the number of used public slots.</p>
+						<p>On the other hand, queries including filters on the current number of players&#8212;such as to find sessions with N or more current players&#8212;will need to account for private slots. In this case, add an attribute to the schema to track "Total Players" and a filter on this instead of the global attribute for used player slots. When updating the session via <b>CUpdate::Session</b> or <b>XOnlineMatchSessionUpdate</b>, the host will need to add the current number of used private slots and public slots and submit it in this session attribute.</p>
+						<p>Note that when clients join a match through matchmaking, they should always consume a public slot, even if one of the users on the client machine is a friend of one of the players in the current match. Private slots are reserved for friends who join the session through an invite or by inviting themselves via the Join Friend command. On the other hand, when friends do join a session through their friends list, the title should first attempt to use a private slot, but can fall back on a public slot if all of the private slots are taken. For consistency, this should be the behavior whether or not the incoming friend is a friend of the game host.</p>
+					</dd>
+
+					<dt><b>Don't use strings in filters or sorts.</b></dt>
+					<dd>
+						<p>From the June 2003 XDK forward, MatchSim does not allow you to filter or sort on parameters or attributes that are of string type. String operations are inefficient for the matchmaking service and in almost all cases the strings can easily be replaced by integer identifiers. </p>
+						<p>In the PC world, searching for a server by name may be somewhat common, but we recommend against this for Xbox. Typing in server names on a console is unwieldy. The friends functionality is the preferred method for friends getting into a private or public session together.</p>
+					</dd>
+				</dl>
+<h3><a name="IDAXAFV"></a>QuickMatch</h3>
+<dl>
+
+					<dt><b>Minimize button presses for QuickMatch</b></dt>
+					<dd>Design the user interface to progress through QuickMatch with the fewest number of presses of the <b>A</b> button possible. Ideally, this should be one button press. The <b>A</b> button is required by the TCR. </dd>
+
+					<dt><b>Be smart behind the scenes.</b></dt>
+					<dd>While QuickMatch should appear relatively simple to the user, its implementation needs to be highly sophisticated to work reliably. Use information from the user's profile, such as a rough skill level or preferred game type, to query on matches and client-side sort lengthy results lists.</dd>
+		
+					<dt><b>Limit search results from the server.</b></dt>
+					<dd>Your QuickMatch functionality will be aiming for a single result, with a handful of alternatives. There is no need to pull down a lengthy result set that will be mostly discarded or ignored. On the other hand, if your game has high-bandwidth requirements, you may need a larger result set to find even a couple of optimal games. Generally, you will need fewer results for QuickMatch than OptiMatch, but different result sizes will require two different queries. Tune the result set to meet your game design.</dd>
+
+					<dt><b>Sort connections by quality.</b></dt>
+					<dd>
+						<p>Use QoS on all QuickMatch results to sort the sessions by connection quality&#8212;and in so doing verify that they still exist. Because QoS can take a long time to complete (see the section on QoS for more details), it is doubly important that your query return a smaller number of results. Consider using fewer probes (four is a reasonable number) to speed the QoS process. Don't decrease the bandwidth used by QoS&#8212;the <i>dwBitsPerSec</i> parameter passed to <b>CSession::Listen</b> method in the MatchSim-generated C++ classes (the equivalent API function is <b>XNetQoSLookup</b>.) The default (as of the June 2003 SDK) of 64 Kbps will give you the best performance and there is likely little else that needs to consume bandwidth in your menu system. </p>
+						<p>If you are using the matchmaking classes generated by MatchSim, if there is a value for QOS_BITS_PER_SEC in the header file, set it to 64000.</p>
+					</dd>
+					
+					<dt><b>Minimize user input after the results are obtained.</b></dt>
+					<dd>Don't display a list of results, and don't ask the user to confirm your choice. If you've built the right cleverness into the QuickMatch process, there is no need to ask users if they want to join the best selected game. If you think users will commonly be picky about some of the session attributes, such as game type, you can add an optional extra screen to QuickMatch that allows the user to pre-choose a small number of these attributes. However, OptiMatch should always be the main path for users to enter games when they want to be selective about session criteria. A lot of the extra decision making (on the part of the user) in QuickMatch is not necessary. </dd>
+
+					<dt><b>If at first you don't succeed...</b></dt>
+					<dd>If a QuickMatch fails, try, try again. You should get a small number of results from the server query. These should be sorted by QoS and tried one by one from the top of the sort. If a game join is attempted from the client but it fails for any number of reasons, step back and try again with the very next session from the list. There is no need to re-query the server for sessions in this path, although it may be helpful to re-check QoS on the remaining results to verify connectivity. Only re-query the server if the previous result set has been exhausted.</dd>
+
+					<dt><b>Be patient.</b></dt>
+					<dd>Finding a good match with the previous recommendations can take time. As with any asynchronous, timely operation, your QuickMatch screen should provide useful status information (such as "Searching for sessions", "Testing connections", "Attempting to join game", "Failed to join game, or Trying next game") and the option to cancel the process.</dd>
+				</dl>
+<h3><a name="IDANCFV"></a>Optimatch</h3>
+<dl>
+					<dt><b>The user interface should be asynchronous.</b></dt>
+					<dd>The full procedure of querying for sessions and checking QoS can take a noticeably long time. Users should be able to back out or attempt to join a session at any point in the process. </dd>
+
+					<dt><b>Give feedback.</b></dt>
+					<dd>Because a great deal of work will be going on behind the scenes, clearly indicate status in an expected text area of the user interface. This includes such status as "Checking for Matches", "Checking for quality of sessions", and "Match search complete". </dd>
+
+					<dt><b>Check the QoS</b></dt>
+					<dd>Issue QoS checks to all potential hosts returned in the server results list. Expect that the entire QoS process will take an undefined period of time that can be longer than some of your users will be willing to wait. Do not time-out QoS. The lookups initiated by <b>XNetQosLookup</b> will time out on their own. The comment in the QuickMatch section above regarding the <i>dwBitsPerSec</i> provisioned for QoS lookups is also true here; use all the bandwidth for QoS that you can.</dd>
+
+					<dt><b>Limit the results returned from the server query to 25 or fewer matches.</b></dt>
+					<dd>With the limited screen real estate of a game console, it can be fairly cumbersome to get more than 25 results even into a multi-paged display. Assuming even a certain number of sessions rejected by QoS as un-joinable or out of date, 25 results from the server will still yield more than enough choices for the OptiMatch user. Keep in mind also that QoS checks could take a long time and a lot of bandwidth to complete for a large number of sessions. At default values, <b>XNetQosLookup</b> will require at minimum 312.5 Kbps to probe 25 sessions (100 bytes per packet &#0215; 8 bits per byte &#0215; 2 packets per probe &#0215; 8 probes default &#0215; 25 sessions.) The maximum bandwidth QoS is allowed to consume is 64 Kbps (default 16 Kbps), and even at that rate the QoS probes would take nearly 5 seconds to complete for all sessions, which doesn't account for any extra delays due to NAT traversal or lost probes.</dd>
+
+					<dt><b>Wait to show results.</b></dt>
+					<dd>
+						<p>You should not show results in the list immediately after the search response has returned from the server. While the matchmaking server can be assumed to have reasonably current data, by the time the results are available on the client, several of the potential host sessions may have disappeared, rebooted, filled, or otherwise become unavailable as hosts. </p>
+						<p>Once per frame, scan the <b>XNQOSINFO</b> structures of potential hosts. As the <b>bFlags</b> member of <b>XNQOSINFO</b> indicates XNET_XNQOSINFO_TARGET_CONTACTED, add hosts to the OptiMatch screen. This indicates that at least a connection can be established to the host, through whatever network hardware may be present. The presence of XNET_XNQOSINFO_TARGET_DISABLED indicates a "Go Away, Leave Me Alone!" response from the host. This session should be removed from any further querying.</p>
+						<p>Alternatively, issue a first set of connectivity-only probes for all results before displaying them in the Results UI. This is the method utilized by the MatchSim matchmaking classes. The <b>CQueryNameQuery::Process</b> method will not finish processing until a connectivity probe has succeeded or failed for every potential result. The matchmaking classes will not issue full bandwidth probes until the Probe method is called.</p>
+					</dd>
+
+					<dt><b>Do not eliminate sessions from the results list on the basis of bandwidth or latency.</b></dt>
+					<dd>It is preferable to indicate in the user interface that the session may play poorly rather than simply not allow the player to see the game at all. The bulk of the recommendations in this section will help ensure that your players are getting into the right games, but if all they get in their results are the wrong games, they should be able to join. To further elaborate, the TCR for required supported network conditions does not establish a "minimum bar" for network games. That is, if games have worse QoS than the TCR stipulates, you are not required to prevent players from playing those games and you should still allow them access. Only prevent players from using matchmaking to join games that are known to be completely unplayable.</dd>
+
+					<dt><b>To sort or not to sort.</b></dt>
+					<dd>
+						<p>As QoS probes return from the various hosts, the statistics available in the <b>XNQOSINFO</b> structures will fluctuate, constantly updating with brand new information. While it is desirable to present the best matches at the top of the list and within only one or two button presses for selection, it can also be disorienting to constantly readjust the OptiMatch results list, flipping hosts back and forth. </p>
+						<p>We definitely recommend against sorting the OptiMatch results list on a frame-by-frame basis. It would be better to sort in two stages. First, as results indicate a CONTACTED status, sort those results to the top of the list. This should happen fairly quickly for almost all results. Second, as results indicate a COMPLETED status, sort those results in order of quality above non-completed hosts. Alternatively, provide a button selection to re-sort and allow the player to control the sorting process.</p>
+					</dd>
+					
+					<dt><b>Use good graphic indicators for QoS results.</b></dt>
+					<dd>With less screen real estate on a console, using red/yellow/green bars to indicate the quality of the particular connection would be preferable to dumping latency and bandwidth numbers, which might be less informative to users. Deciding what constitutes a "good" vs. "medium" vs. "bad" connection is game-dependent and should be determined empirically through game testing.</dd>
+
+					<dt><b>Provide a refresh option on the results list. </b></dt>
+					<dd>Refresh should start from scratch and re-issue the search to the server via <b>XOnlineMatchSearch</b>. Titles should not auto-refresh the results list. It is a TCR violation to generate more than one request per minute to the Xbox <i>Live</i> service that is not initiated by user input. If an automatic refresh of the match seems important, re-issue the QoS lookups for all current hosts without calling <b>XOnlineMatchSearch</b> again. </dd>
+				</dl>
+<h2><a name="IDACFFV"></a>Quality of Service (QoS)</h2>
+<dl>
+				<dt><b>Hosts in join-in-progress games need to enable QoS listening appropriately.</b></dt>
+				<dd>The <b>CSession::Listen</b> method of the MatchSim matchmaking classes will easily do the trick. The equivalent API is <b>XNetQosListen</b>. Note that games enabling a QoS listener must budget a certain amount of Kbps out of the game's total bandwidth budget to dedicate to QoS listening and stipulate this when calling the appropriate function. 4 kbps is the recommended amount. </dd>
+
+				<dt><b>Disable QoS when a game is not joinable.</b></dt>
+				<dd>If a join-in-progress game has reached the maximum capacity of players, or otherwise is no longer joinable, disable QoS via <b>CSession::Listen(FALSE)</b>. This is equivalent to passing XNET_XNQOSINFO_TARGET_DISABLED in the <i>dwFlags</i> parameter to <b>XNetQosListen</b>. This will enable clients searching for games to quickly dismiss this game as a search possibility and let them focus on games that are not full.</dd>
+
+				<dt><b>Add entry points.</b></dt>
+				<dd>Games that do not support join-in-progress are still encouraged to support some form of mid-game join into a pre-game lobby where players can wait for the next appropriate point in game play to jump into the action. See the Pre Game Lobbies section for more discussion on this feature. For games that can't support this facility, the match should be removed from the matchmaking server with <b>CSession::Delete</b> (<b>XOnlineMatchSessionDelete</b>) as soon as game play is started for all clients. </dd>
+
+				<dt><b>Take advantage of the title-specific block of data in QoS probe responses.</b></dt>
+				<dd>On the host, use <b>CSession::SetQosResponse</b> to supply data in the buffer pointed to by the <i>pb</i> parameter passed to <b>XNetQosListen</b>. On the client, this data will appear in the <b>pbData</b> member of that host's resultant <b>XNQOSINFO</b> structure. This mechanism is useful for passing up-to-date match information, most particularly the current count of players and available player slots. While this information is obtained from the match server during a search request, it has the potential to be stale depending on how fast players enter and leave games and how quickly the host updates the match service with changes. QoS data, however, will be  fresh because it is coming directly from the host and not the service intermediary. Of course, you are encouraged to think creatively about this "out of band" channel of session information. Coding for it is easy and the performance impact is negligible.</dd>
+
+				<dt><b>Don't display QoS results.</b></dt>
+				<dd>
+					<p>The bandwidth algorithm makes a few important assumptions. The first assumption is that packets are being sent via a modem that is configured to transmit bits at a certain fixed speed. This is generally true of DSL modems. However, cable modems do not often behave in this way. They typically buffer packets for short periods of time and send them out in spurts. Unfortunately, this behavior can drastically affect QoS bandwidth results. The second assumption the algorithm makes is that packets flying between consoles don't hit any further constriction points. On the Internet, of course, packets traverse multiple routers, and each router introduces unpredictable delays.</p>
+
+					<p>To put it succinctly, the bandwidth algorithm does not always produce reliable results. Worse, there's no way to know whether the results are good or bad. If QoS indicates a bandwidth of 128 Kb/s, the actual bandwidth could be 128 Kb/s or 96 Kb/s, or 256 Kb/s.</p>
+
+					<p>The best way to accurately determine bandwidth is to flood the pipe for a dozen seconds, but flooding the pipe is exactly the opposite of what a listener wants, particularly for a game in progress or a game that wants to support communication in the lobby. The QoS bandwidth algorithm gives only a rough approximation of true bandwidth. It may grossly underestimate true bandwidth, somewhat overstate bandwidth, or it may be perfectly accurate. There's no way to know for sure which.</p>
+
+					<p>What does this mean for games? First of all, avoid displaying QoS bandwidth. You don't want players thinking their bandwidth is half of what their broadband provider supports. Second, avoid making black and white decisions based on bandwidth. For instance, don't assume that a console with a 128 Kb/s upstream bandwidth can support only four players. That console might really have a 256 Kb/s bandwidth that could support eight players. Let the host decide how many players to support, perhaps using four players as a default.</p>
+
+					<p>Given that QoS bandwidth can be inaccurate, you may wonder why the values are provided at all. The numbers can be useful for doing relative comparisons. For instance, choosing a host console during QuickMatch with a bandwidth twice as large as another console is a reasonable thing to do. Sorting a list based on bandwidth is also reasonable.</p>
+
+					<p>QoS latency is a much more accurate and dependable value. QoS bandwidth numbers should generally be avoided except for relative comparisons.</p>
+
+				</dd>
+			</dl>
+<h2><a name="IDACHFV"></a>Voice Chat</h2>
+<dl>
+				<dt><b>Use the Xbox High-Level Voice (XHV) library.</b></dt>
+				<dd>First released in approved form in the April 2003 XDK, XHV greatly simplifies the process of adding voice chat functionality to your title (see the SimpleVoice sample in the XDK). Although the low-level voice chat components are still available for building a custom voice chat engine (see the LowLevelVoiceChat sample in the XDK), XHV is the recommended voice solution for most titles.</dd>
+
+				<dt><b>Plan for voice through speakers.</b></dt>
+				<dd>Now that customers will be able to play games on Xbox <i>Live</i> without having purchased a headset, the TCRs have been updated to include a new requirement that titles support playing voice through the speakers. Since the TCRs are just intended to ensure a baseline level of functionality, they do not specifically address what should happen in more complex multiplayer scenarios. If multiple players on a console have selected voice through speakers, and have conflicting lists of who they should be able to hear, the recommendation is for the title to play the union of all expected voices over the speakers.</dd>
+
+				<dt><b>Enable a voice channel by default.</b></dt>
+				<dd>Always allow gamers to talk when they first enter the game. </dd>
+
+				<dt><b>Indicate during gameplay who's sending and receiving voice transmissions.</b></dt>
+				<dd>
+					<p>Although the TCRs only require titles to indicate who is talking while displaying the players list, it's a good idea to indicate this during gameplay, as well. This could be done by some graphical adornment of player characters on screen, overlaying a list of talking players in the heads-up display (HUD), showing a picture of the player in a status area, and so on. The key goal is for players to have a consistent way of quickly identifying who is talking to them.</p>
+
+					<p>On the flip side, if it's not obvious to players who they're currently talking to (for example, everyone, team members, and so on), it's often a good idea to provide a visual indicator of that, as well. This is more of an issue for titles that dynamically change the voice chat group (such as <i>Moto GP</i>) rather than titles with fairly static voice channels.</p>
+				</dd>
+				
+				<dt><b>Default voice masking to off.</b></dt>
+				<dd>Gamers have spoken loud and clear&#8212;most prefer voice masking to be off by default. In fact, as of the June 2003 Xbox Guide, titles are no longer required to support voice masking at all! If you do choose to support voice masking, be sure to play-test all voice mask settings thoroughly to ensure that players can still be understood clearly. In addition, titles should persist player's voice mask preference so they don't have to set it every time they load the title.</dd>
+
+				<dt><b>Prefer voice activation over "push to talk" models.</b></dt>
+				<dd>
+					<p>While using a "push to talk" model may make some aspects of voice chat easier to manage, it is often confusing for players, especially since the majority of Xbox <i>Live</i> games use a voice activation model. It also tends to increase voice latency (due to the need to verify that a player can acquire the voice channel) and make conversations less responsive (since players often hesitate before responding, to ensure no one else is trying to talk at the same time). Starting with the August 2003 XDK release, XHV even allows titles to replace XHV's built-in voice activation algorithm with their own custom algorithm.</p>
+					<p>If you do decide to use a "push to talk" model, it's a good idea to indicate which player, if any, currently has control of the voice channel, so that players can tell if they will be heard or not. Another approach is to provide audio or visual feedback if a player fails to acquire the voice channel. It's also important to ensure that all players get fair use of the voice channel, so that one player cannot indefinitely block other players from talking. Finally, be careful with the muting TCRs. Seeing that a player has control of the voice channel, but not hearing that player talk is a good indicator that you've been muted by that player.</p>
+				</dd>
+				
+				<dt><b>Support voice during lobby and loading screens.</b></dt>
+				<dd>
+					<p>A common complaint from gamers is that they can't talk while the game is loading. Fortunately, this is an easy problem to solve. All that's required is for the title to keep pumping the voice engine and handle sending and receiving voice payloads over the network. This does require using asynchronous file I/O routines in order to be able to pump the voice engine once per frame, but using asynchronous I/O is always a good idea. (See the Maximizing Xbox File Performance white paper.) As a last resort, if you cannot use asynchronous I/O, it's possible to spin off a worker thread to service the voice engine and network traffic during loading screens.</p>
+					<p>If your title does not return to a lobby area after the session has ended, it's a good idea to allow players to talk after the game has completed, whether it's to gloat or set up a rematch.</p>
+					<p>Finally, if there are times when voice chat is not supported or allowed, titles should indicate this to the player via an on-screen indicator or audible notification through the headset.</p>
+				</dd>
+				
+				<dt><b>Calculate your voice bandwidth usage.</b></dt>
+				<dd>
+					<p>To plan your bandwidth budget around voice traffic, you need to be able to calculate the amount of bandwidth that will be used for voice traffic. Voice bandwidth usage is determined by several factors:</p>
+					<ul>
+						<li>The number of players talking. The Xbox voice chat codec compresses each raw voice stream down to 3.2 Kbps, but adds a 2-byte header to each compressed payload, resulting in 10 bytes for each 20-ms voice payload for a total of 4 Kbps per compressed voice stream.</li>
+						<li>Voice engine used (custom or XHV). When three or four players are playing on the same console, XHV uses the round-robin encoder to limit the total outgoing voice traffic for the console to 8 Kbps. Because the round-robin encoder requires synchronizing multiple microphones, most custom voice chat engines don't use it, consuming 12 Kbps and 16 Kbps for three and four players, respectively.</li>
+						<li>The frequency at which network packets are sent. Because the overhead for Xbox secure packets is larger than the packet overhead of a typical UDP packet, the number of packets sent per second has a significant impact on total bandwidth consumption. See the following table for a comparison of bandwidth loss due to overhead for typical packet rates. To minimize packet overhead, you should send voice data and game data in the same packet whenever possible.</li>
+						<li>The number of consoles to which packets are sent. This is fairly straightforward to calculate. Multiply the results from the previous questions by the number of consoles to which you're sending voice data. If you're sending voice data client-server, you'll need to calculate separately for clients and the server.</li>
+					</ul>
+				</dd>
+				
+				<dt><b>Plan your bandwidth budget early.</b></dt>
+				<dd>Even a well-optimized voice chat engine will still consume a significant amount of bandwidth, so you'll want to plan your bandwidth budget early as you design your network layer.</dd>
+
+				<dt><b>Compress the voice codec headers to save bandwidth.</b></dt>
+				<dd>The codec used for voice chat on Xbox compresses voice data down to 3.2 Kbps, and then adds a 2-byte header containing sequencing and synchronization data used by the receiving voice queue. This results in a 10-byte voice payload for every 20 ms of voice data. When combining multiple voice payloads into one network packet, you can delta-compress these headers to save bandwidth.</dd>
+
+				<dt><b>Limit the size of voice channels.</b></dt>
+				<dd>While it would be great if every player in the game could talk to every other player in the game, that's not usually an achievable goal due to bandwidth constraints. By limiting the size of groups that are sending and receiving voice data, the bandwidth consumed by voice decreases geometrically. One option is to have the player select between voice channels, either explicitly, or implicitly as part of team formation. Alternately, the game can automatically and/or dynamically assign players to voice channels based on its own criteria. Just make sure it's clear to players who they are talking to.</dd>
+
+				<dt><b>Send voice data over the network at regular intervals.</b></dt>
+				<dd>
+					<p>It's important that voice data is sent at fairly regular intervals in order to ensure error-free playback on the receiving side. The receiver uses a jitter buffer to smooth out variations in network latency, but it is designed for small variations (generally not more than 20-ms change over several seconds). If the interval between packets increases significantly (for example, due to a large glitch in frame rate), the payloads will not arrive at their destination before they are scheduled to be played back, and the player's voice will "break up." </p>
+					<p>If the receiver gets enough consecutive payloads arriving significantly later than expected, it assumes that it has lost synchronization with the sender and resets itself in order to resynchronize with that sender. This causes noticeable distortion of the sending player's voice stream, but can be easily avoided by ensuring you do not send stale voice payloads over the network.</p>
+					<p>Once you've determined your desired packet frequency, use a timer to send out packets at that interval, rather than timing based off of a frame count or other frame-rate-dependent means. It's still possible that a frame-rate glitch will happen right before you were scheduled to send a network packet, which will cause you to send it out later than planned. To ensure you don't send stale voice payloads if/when this happens, keep track of the difference between when you send each network packet and when it was scheduled to be sent. If it's more than 250 ms late, discard the stale voice payloads before sending. Finally, if you're using XHV, ensure that the <b>dwOutOfSyncThreshold</b> member in <b>XHV_RUNTIME_PARAMS</b> is larger than the number of voice payloads you typically send in one network packet (the default is 10).</p>
+				</dd>
+				
+				<dt><b>Call DoWork() at regular intervals.</b></dt>
+				<dd>The voice engine has a limited amount of space to store completed voice payloads before the title retrieves them (configured by the dwMaxCompressedBuffers member in XHV_RUNTIME_PARAMS). If this storage overflows because the title is not calling DoWork frequently enough, the voice engine will have to discard payloads, which will cause the player's voice to break up when the receiver realizes it is missing those payloads.</dd>
+
+				<dt><b>Pay attention to debug warnings.</b></dt>
+				<dd>Starting with the June 2003 XDK, XHV will print debug warning messages when it receives payloads that are late and/or out-of-sync. It's important to watch for these warnings and track down their cause. Usually, it is due to the sender transmitting stale voice payloads. It will also print debug warnings when the title is not calling DoWork frequently enough, which can be addressed by increasing the dwMaxCompressedBuffers member when initializing XHV. </dd>
+
+				<dt><b>Read and understand the voice&#8211;related TCRs.</b></dt>
+				<dd>It's important to read and understand the TCRs before you start implementing voice chat in your title, because they can affect design decisions. For example, the requirement to support voice playback through speakers may impact if you allow players on the same console to be on different teams. Pay particular attention to the muting TCRs, in order to ensure that players can not tell when they've been muted by another player.</dd>
+
+				<dt><b>Use a reliable network channel for control messages.</b></dt>
+				<dd>There are certain control messages related to voice chat that need to be sent during a game session, primarily communicator status and mute control. To guarantee that these messages reach their destinations, even with significant packet loss, they must be sent over a reliable network channel, such as TCP or a reliable UDP/VDP scheme. Fortunately, these control messages do not need to be sent frequently, so the extra overhead of sending them over a reliable channel is not significant.</dd>
+			</dl>
+<h2><a name="IDA1KFV"></a>Statistics</h2>
+<dl>
+				<dt><b>Show stats for the player's friends separately.</b></dt>
+				<dd>Gamers want to gauge their progress against friends and the rest of the world. This is one of the most popular features of Xbox <i>Live</i>. <i>Moto GP</i> shows a great example. </dd>
+
+				<dt><b>Center leaderboard output on the player.</b></dt>
+				<dd>Show gamer positions on the leaderboard by default, centered on their gamertag with a few entries above and below for context.</dd>
+
+				<dt><b>Make viewing leaderboards easy.</b></dt>
+				<dd>Provide the ability to quick-jump to the top and bottom of the leaderboard. This saves network resources because many gamers want to see their position relative to the entire leaderboard. Use D-pad left/right to enable users to jump a screen at a time. Enable gamers to quick-jump to their position on any leaderboard.</dd>
+
+				<dt><b>List on-screen the total number of entries on the leaderboard.</b></dt>
+				<dd>This information can be returned with your stats query; you just need to display it.</dd>
+				
+				<dt><b>Punish griefers!</b></dt>
+				<dd>Report stats often, or store the number of games started and number of games finished. The difference between these reveals the number of dropouts.</dd>
+
+				<dt><b>Lay out leaderboards carefully.</b></dt>
+				<dd>Try to create leaderboards such that any player could find something relevant to him or her.</dd>
+
+				<dt><b></b></dt>
+			</dl>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

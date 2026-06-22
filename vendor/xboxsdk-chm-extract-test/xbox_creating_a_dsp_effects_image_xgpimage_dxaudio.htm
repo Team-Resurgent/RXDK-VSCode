@@ -1,0 +1,510 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Creating a DSP Effects Image</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="Using XGPImage">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Creating a DSP Effects Image"/>
+<MSHelp:Keyword Index="F" Term="Creating a DSP Effects Image"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="xbox_creating_a_dsp_effects_image_dxaudio"></A>Using XGPImage</H1>
+
+
+
+<P>This article will describe how to create a DSP effects image on the command line using XGPImage. For information on building DSP images using a graphical user interface, see <A HREF="xbox_tool_dsp_builder_dxaudio.htm"><B>DSP Builder</B></A>.</P>
+
+<UL>
+	<LI><A HREF="#xbox_creating_a_dsp_effects_image_dxaudio_require"><B>Prerequisites and Requirements</B></A></LI>
+    <LI><A HREF="#xbox_creating_a_dsp_effects_image_dxaudio_steps"><B>Implementation Steps</B></A></LI>
+    <LI><A HREF="#xbox_creating_a_dsp_effects_image_dxaudio_related"><B>Related Topics</B></A></LI>
+</UL>
+
+<H2><A NAME="xbox_creating_a_dsp_effects_image_dxaudio_require"></A>Prerequisites and Requirements</H2>
+
+<P>You will need the XgpImage.exe tool that is included in the XDK. You will also need the binary images of the DSP program code for the effects you wish to use. The binary images of the actual DSP program code for the effects currently provided in the XDK can be found in the \source\dsound\dsp\bin directory of the Xbox SDK. The .ini files for those binary images can be found in the \source\dsound\dsp\ini directory.</P>
+
+<H2><A NAME="xbox_creating_a_dsp_effects_image_dxaudio_steps"></A>Implementation Steps</H2>
+
+<P>Complete the following steps to create a DSP effects image.</P>
+
+<OL>
+    <LI>Determine the effects you wish to use in your DSP effects image.  For this tutorial, we will be using the chorus and echo effects provided in the XDK, so we will need the echo.scr, echostate.ini, Chorus_stereo.scr, and Chorus_stereostate.ini files.</LI>
+    <LI>Open the .ini file for the image you wish to create. For this tutorial, call it <I>MyEffects.ini</I>.</LI>
+    <LI>Create the MAIN section of the .ini file.</LI>
+<PRE>
+[MAIN]
+</PRE>
+    <LI>Specify the friendly name that will be used to create the output .h file for referencing the effects using DirectSound. For this tutorial, call it <I>MyEffectsImage</I>.</LI>
+<PRE>
+[MAIN]
+IMAGE_FRIENDLY_NAME=MyEffectsImage
+</PRE>
+    <LI>Specify the number of temporary mixbin locations to allocate for the entire set of effects chains. For this tutorial, specify one.</LI>
+<PRE>
+[MAIN]
+IMAGE_FRIENDLY_NAME=MyEffectsImage
+FX_NUMTEMPBINS=1
+</PRE>
+    <LI>Complete the following steps for each DSP program chain graph.</LI>
+        <OL>
+            <LI>Specify the graph keyword. Each keyword consists of a the word <I>GRAPH</I> and a number. The number must be in sequence with any other graph keywords specified and the first one must start with zero. The maximum value that can be used for the graph number is 20. Prefix the number with <I>GRAPH</I> and add it to the .ini file. Because this is the first one, it should be number zero.</LI>
+<PRE>
+[MAIN]
+IMAGE_FRIENDLY_NAME=MyEffectsImage
+FX_NUMTEMPBINS=1
+GRAPH0
+</PRE>
+            <LI>Specify a graph name. For this tutorial, call it <I>ECHO</I>.</LI>
+<PRE>
+[MAIN]
+IMAGE_FRIENDLY_NAME=MyEffectsImage
+FX_NUMTEMPBINS=1
+GRAPH0=ECHO
+</PRE>
+        </OL>
+        <P>For this tutorial, add a second graph called <I>CHAIN</I>. Because it's the second graph in this .ini file, it should be assigned number one.</P>
+<PRE>
+[MAIN]
+IMAGE_FRIENDLY_NAME=MyEffectsImage
+FX_NUMTEMPBINS=1
+GRAPH0=ECHO
+GRAPH1=CHAIN
+</PRE>
+        <P>Also, all effect images should include the crosstalk cancellation effect, so let's add a third graph, <I>CROSSTALK</I>, into our .ini file.</P>
+<PRE>
+[MAIN]
+IMAGE_FRIENDLY_NAME=MyEffectsImage
+FX_NUMTEMPBINS=1
+GRAPH0=ECHO
+GRAPH1=CHAIN
+GRAPH2=CROSSTALK
+</PRE>
+
+    <LI>Complete the following steps for each DSP program chain graph specified above.</LI>
+        <OL>
+            <LI>Create a section for the graph.  The name of the section must match the name used above. For the first graph (GRAPH0), the name would be <I>ECHO</I>.</LI>
+<PRE>
+[MAIN]
+IMAGE_FRIENDLY_NAME=MyEffectsImage
+FX_NUMTEMPBINS=1
+GRAPH0=ECHO
+GRAPH1=CHAIN
+GRAPH2=CROSSTALK
+
+[ECHO]
+</PRE>
+            <LI>Complete the following steps for each effect in this graph.</LI>
+                <OL>
+                    <LI>Specify the effect keyword. The keyword consists of the letters <I>FX</I> and a number.  The number must be in sequence with any other effect keywords specified and the first one must start with zero. Prefix the number with <I>FX</I> and add it to the .ini file. Because this is the first one, it should be number zero.</LI>
+<PRE>
+[MAIN]
+IMAGE_FRIENDLY_NAME=MyEffectsImage
+FX_NUMTEMPBINS=1
+GRAPH0=ECHO
+GRAPH1=CHAIN
+GRAPH2=CROSSTALK
+
+[ECHO]
+FX0
+</PRE>
+
+                    <LI>Specify the name of the effect to be used. For this tutorial, specify the <I>ECHO</I> effect.</LI>
+<PRE>
+[MAIN]
+IMAGE_FRIENDLY_NAME=MyEffectsImage
+FX_NUMTEMPBINS=1
+GRAPH0=ECHO
+GRAPH1=CHAIN
+GRAPH2=CROSSTALK
+
+[ECHO]
+FX0=ECHO
+</PRE>
+                </OL>
+        </OL>
+        
+        <P>Because the example has three graphs, we need to create a few more sections, <I>CHAIN</I> and <I>CROSSTALK</I>, and add some effects.  For the <I>CHAIN</I> graph, add two effects: <I>FLANGE</I> and <I>AMPMOD</I>. For the <I>CROSSTALK</I> graph, add <I>XTALK</I>.</P>
+
+<PRE>
+[MAIN]
+IMAGE_FRIENDLY_NAME=MyEffectsImage
+FX_NUMTEMPBINS=1
+GRAPH0=ECHO
+GRAPH1=CHAIN
+GRAPH2=CROSSTALK
+
+[ECHO]
+FX0=ECHO
+
+[CHAIN]
+FX0=FLANGE
+FX1=AMPMOD
+
+[CROSSTALK]
+FX0=XTALK
+</PRE>
+
+    <LI>Complete the following steps for each effect specified.</LI>
+        <OL>
+            <LI>Specify the section name. The section name is a combination of the graph name, effect keyword, and effect name. For the first graph in the example, the graph name would be <I>ECHO</I>, the effect keyword would be <I>FX0</I>, and the effect name would be <I>ECHO</I>, so the section name would be <I>ECHO_FX0_ECHO</I>.</LI>
+
+<PRE>
+[MAIN]
+IMAGE_FRIENDLY_NAME=MyEffectsImage
+FX_NUMTEMPBINS=1
+GRAPH0=ECHO
+GRAPH1=CHAIN
+GRAPH2=CROSSTALK
+
+[ECHO]
+FX0=ECHO
+
+[CHAIN]
+FX0=FLANGE
+FX1=AMPMOD
+
+[CROSSTALK]
+FX0=XTALK
+
+[ECHO_FX0_ECHO]
+</PRE>
+            <LI>Specify whether or not the output of the effect should be mixed into its output buffer or if it should overwrite the buffer.  This is done using the keyword <I>FX_MIXOUTPUT</I> and the values zero and one.  Zero indicates that the output should not be mixed; one indicates that the output should be mixed. For this effect, overwrite the buffer.</LI>
+
+<PRE>
+[MAIN]
+IMAGE_FRIENDLY_NAME=MyEffectsImage
+FX_NUMTEMPBINS=1
+GRAPH0=ECHO
+GRAPH1=CHAIN
+GRAPH2=CROSSTALK
+
+[ECHO]
+FX0=ECHO
+
+[CHAIN]
+FX0=FLANGE
+FX1=AMPMOD
+
+[CROSSTALK]
+FX0=XTALK
+
+[ECHO_FX0_ECHO]
+FX_MIXOUTPUT=0
+</PRE>
+            <LI>Specify the location of the binary image of the effect using the <I>FX_DSPCODE</I> keyword.  In this case, it's probably something like C:\Program Files\Microsoft Xbox SDK\source\dsound\dsp\bin\echo.scr.</LI>
+<PRE>
+[MAIN]
+IMAGE_FRIENDLY_NAME=MyEffectsImage
+FX_NUMTEMPBINS=1
+GRAPH0=ECHO
+GRAPH1=CHAIN
+GRAPH2=CROSSTALK
+
+[ECHO]
+FX0=ECHO
+
+[CHAIN]
+FX0=FLANGE
+FX1=AMPMOD
+
+[CROSSTALK]
+FX0=XTALK
+
+[ECHO_FX0_ECHO]
+FX_MIXOUTPUT=0
+FX_DSPCODE=C:\Program Files\Microsoft Xbox SDK\source\dsound\dsp\bin\echo.scr
+</PRE>
+            <LI>Specify the location of the .ini file for the effect using the <I>FX_DSPSTATE</I> keyword.  In this case, it's probably something like C:\Program Files\Microsoft Xbox SDK\source\dsound\dsp\bin\echostate.ini.</LI>
+<PRE>
+[MAIN]
+IMAGE_FRIENDLY_NAME=MyEffectsImage
+FX_NUMTEMPBINS=1
+GRAPH0=ECHO
+GRAPH1=CHAIN
+GRAPH2=CROSSTALK
+
+[ECHO]
+FX0=ECHO
+
+[CHAIN]
+FX0=FLANGE
+FX1=AMPMOD
+
+[CROSSTALK]
+FX0=XTALK
+
+[ECHO_FX0_ECHO]
+FX_MIXOUTPUT=0
+FX_DSPCODE=C:\Program Files\Microsoft Xbox SDK\source\dsound\dsp\bin\echo.scr
+FX_DSPSTATE=C:\Program Files\Microsoft Xbox SDK\source\dsound\dsp\bin\echostate.ini
+</PRE>
+            <LI>Specify the number of inputs for this effect using the <I>FX_NUMINPUTS</I> keyword. For this example, specify one input.</LI>
+
+<PRE>
+[MAIN]
+IMAGE_FRIENDLY_NAME=MyEffectsImage
+FX_NUMTEMPBINS=1
+GRAPH0=ECHO
+GRAPH1=CHAIN
+GRAPH2=CROSSTALK
+
+[ECHO]
+FX0=ECHO
+
+[CHAIN]
+FX0=FLANGE
+FX1=AMPMOD
+
+[CROSSTALK]
+FX0=XTALK
+
+[ECHO_FX0_ECHO]
+FX_MIXOUTPUT=0
+FX_DSPCODE=C:\Program Files\Microsoft Xbox SDK\source\dsound\dsp\bin\echo.scr
+FX_DSPSTATE=C:\Program Files\Microsoft Xbox SDK\source\dsound\dsp\bin\echostate.ini
+FX_NUMINPUTS=1
+</PRE>
+
+            <LI>Specify the number of outputs for this effect using the <I>FX_NUMOUTPUTS</I> keyword. For this example, specify one output.</LI>
+
+<PRE>
+[MAIN]
+IMAGE_FRIENDLY_NAME=MyEffectsImage
+FX_NUMTEMPBINS=1
+GRAPH0=ECHO
+GRAPH1=CHAIN
+GRAPH2=CROSSTALK
+
+[ECHO]
+FX0=ECHO
+
+[CHAIN]
+FX0=FLANGE
+FX1=AMPMOD
+
+[CROSSTALK]
+FX0=XTALK
+
+[ECHO_FX0_ECHO]
+FX_MIXOUTPUT=0
+FX_DSPCODE=C:\Program Files\Microsoft Xbox SDK\source\dsound\dsp\bin\echo.scr
+FX_DSPSTATE=C:\Program Files\Microsoft Xbox SDK\source\dsound\dsp\bin\echostate.ini
+FX_NUMINPUTS=1
+FX_NUMOUTPUTS=1
+</PRE>
+
+            <LI>Complete the following steps for each input specified using the <I>FX_NUMINPUTS</I> keyword.</LI>
+                <OL>
+                    <LI>Specify the keyword for the input. Each keyword consists of the word <I>FX_INPUT</I> and a number. The number must be in sequence with any other inputs specified, and the first one must start with zero. Prefix the number with <I>FX_INPUT</I> and add it to the .ini file. Because this is the first one, it should be number zero.</LI>
+<PRE>
+[MAIN]
+IMAGE_FRIENDLY_NAME=MyEffectsImage
+FX_NUMTEMPBINS=1
+GRAPH0=ECHO
+GRAPH1=CHAIN
+GRAPH2=CROSSTALK
+
+[ECHO]
+FX0=ECHO
+
+[CHAIN]
+FX0=FLANGE
+FX1=AMPMOD
+
+[CROSSTALK]
+FX0=XTALK
+
+[ECHO_FX0_ECHO]
+FX_MIXOUTPUT=0
+FX_DSPCODE=C:\Program Files\Microsoft Xbox SDK\source\dsound\dsp\bin\echo.scr
+FX_DSPSTATE=C:\Program Files\Microsoft Xbox SDK\source\dsound\dsp\bin\echostate.ini
+FX_NUMINPUTS=1
+FX_NUMOUTPUTS=1
+FX_INPUT0
+</PRE>
+                    <LI>Set the keyword equal to one of the constants for effect sources. For this example, use VPMIXBIN_FXSEND0, which is one of the user-definable effects send mixbins.  For a list of the constants, see the <I>Defining Effect Sources and Destinations</I> section of the <A HREF="xbox_jbh_tool_xgpimage.htm"><B>GP DSP Image Builder (xgpimage)</B></A> article.</LI>
+
+<PRE>
+[MAIN]
+IMAGE_FRIENDLY_NAME=MyEffectsImage
+FX_NUMTEMPBINS=1
+GRAPH0=ECHO
+GRAPH1=CHAIN
+GRAPH2=CROSSTALK
+
+[ECHO]
+FX0=ECHO
+
+[CHAIN]
+FX0=FLANGE
+FX1=AMPMOD
+
+[CROSSTALK]
+FX0=XTALK
+
+[ECHO_FX0_ECHO]
+FX_MIXOUTPUT=0
+FX_DSPCODE=C:\Program Files\Microsoft Xbox SDK\source\dsound\dsp\bin\echo.scr
+FX_DSPSTATE=C:\Program Files\Microsoft Xbox SDK\source\dsound\dsp\bin\echostate.ini
+FX_NUMINPUTS=1
+FX_NUMOUTPUTS=1
+FX_INPUT0=VPMIXBIN_FXSEND0
+</PRE>
+                </OL>
+            <LI>Complete the following steps for each input specified using the <I>FX_NUMOUTPUTS</I> keyword.</LI>
+                <OL>
+                    <LI>Specify the keyword for the output. Each keyword consists of the word <I>FX_OUTPUT</I> and a number. The number must be in sequence with any other outputs specified, and the first one must start with zero. Prefix the number with <I>FX_OUTPUT</I> and add it to the .ini file. Because this is the first one, it should be number zero.</LI>
+<PRE>
+[MAIN]
+IMAGE_FRIENDLY_NAME=MyEffectsImage
+FX_NUMTEMPBINS=1
+GRAPH0=ECHO
+GRAPH1=CHAIN
+GRAPH2=CROSSTALK
+
+[ECHO]
+FX0=ECHO
+
+[CHAIN]
+FX0=FLANGE
+FX1=AMPMOD
+
+[CROSSTALK]
+FX0=XTALK
+
+[ECHO_FX0_ECHO]
+FX_MIXOUTPUT=0
+FX_DSPCODE=C:\Program Files\Microsoft Xbox SDK\source\dsound\dsp\bin\echo.scr
+FX_DSPSTATE=C:\Program Files\Microsoft Xbox SDK\source\dsound\dsp\bin\echostate.ini
+FX_NUMINPUTS=1
+FX_NUMOUTPUTS=1
+FX_INPUT0=VPMIXBIN_FXSEND0
+FX_OUTPUT0
+</PRE>
+                    <LI>Set the keyword equal to one of the constants for effect sources. For this example, use GPMIXBIN_FRONTLEFT, which is the output designated for the front left speaker. For a list of the constants, see the <I>Defining Effect Sources and Destinations</I> section of the <A HREF="xbox_jbh_tool_xgpimage.htm"><B>GP DSP Image Builder (xgpimage)</B></A> article.</LI>
+<PRE>
+[MAIN]
+IMAGE_FRIENDLY_NAME=MyEffectsImage
+FX_NUMTEMPBINS=1
+GRAPH0=ECHO
+GRAPH1=CHAIN
+GRAPH2=CROSSTALK
+
+[ECHO]
+FX0=ECHO
+
+[CHAIN]
+FX0=FLANGE
+FX1=AMPMOD
+
+[CROSSTALK]
+FX0=XTALK
+
+[ECHO_FX0_ECHO]
+FX_MIXOUTPUT=0
+FX_DSPCODE=C:\Program Files\Microsoft Xbox SDK\source\dsound\dsp\bin\echo.scr
+FX_DSPSTATE=C:\Program Files\Microsoft Xbox SDK\source\dsound\dsp\bin\echostate.ini
+FX_NUMINPUTS=1
+FX_NUMOUTPUTS=1
+FX_INPUT0=VPMIXBIN_FXSEND0
+FX_OUTPUT0=GPMIXBIN_FRONTLEFT
+</PRE>
+                </OL>
+        </OL>
+<P>Now fill in the information for the other graphs.</P>
+<P CLASS="note"><B><I>Note</I></B>&nbsp;&nbsp;&nbsp;&nbsp;For chained effects, like the <I>CHAIN</I> graph in the example, the <I>FX_MIXOUTPUT</I> value for the first effect in the chain must be set to zero. If you don't do this, the effect may continue to mix silence with its previous data and create undesired sounds.</P>
+
+<PRE>
+[MAIN]
+IMAGE_FRIENDLY_NAME=MyEffectsImage
+FX_NUMTEMPBINS=1
+GRAPH0=ECHO
+GRAPH1=CHAIN
+GRAPH2=CROSSTALK
+
+[ECHO]
+FX0=ECHO
+
+[CHAIN]
+FX0=FLANGE
+FX1=AMPMOD
+
+[CROSSTALK]
+FX0=XTALK
+
+[ECHO_FX0_ECHO]
+FX_MIXOUTPUT=0
+FX_DSPCODE=C:\Program Files\Microsoft Xbox SDK\source\dsound\dsp\bin\echo.scr
+FX_DSPSTATE=C:\Program Files\Microsoft Xbox SDK\source\dsound\dsp\ini\echostate.ini
+FX_NUMINPUTS=1
+FX_NUMOUTPUTS=1
+FX_INPUT0=VPMIXBIN_FXSEND0
+FX_OUTPUT0=GPMIXBIN_FRONTLEFT
+
+[CHAIN_FX0_FLANGE]
+
+FX_MIXOUTPUT=0
+FX_DSPCODE=C:\Program Files\Microsoft Xbox SDK\source\dsound\dsp\bin\flange.scr
+FX_DSPSTATE=C:\Program Files\Microsoft Xbox SDK\source\dsound\dsp\ini\flangestate.ini
+FX_NUMINPUTS=2
+FX_NUMOUTPUTS=1
+FX_INPUT0=VPMIXBIN_FXSEND1
+FX_INPUT1=VPMIXBIN_FXSEND2
+FX_OUTPUT0=GPTEMPBIN0
+
+[CHAIN_FX1_AMPMOD]
+
+FX_MIXOUTPUT=0
+FX_DSPCODE=C:\Program Files\Microsoft Xbox SDK\source\dsound\dsp\bin\ampmod.scr
+FX_DSPSTATE=C:\Program Files\Microsoft Xbox SDK\source\dsound\dsp\ini\ampmodstate.ini
+FX_NUMINPUTS=2
+FX_NUMOUTPUTS=1
+FX_INPUT0=GPTEMPBIN0
+FX_INPUT1=VPMIXBIN_FXSEND4
+FX_OUTPUT0=GPMIXBIN_FXSEND19
+
+[CROSSTALK_FX0_XTALK]
+FX_MIXOUTPUT=1
+FX_DSPCODE=C:\Program Files\Microsoft Xbox SDK\source\dsound\dsp\bin\xtalk.scr
+FX_DSPSTATE=C:\Program Files\Microsoft Xbox SDK\source\dsound\dsp\ini\xtalkstate.ini
+FX_NUMINPUTS=4
+FX_NUMOUTPUTS=4
+FX_INPUT0=VPMIXBIN_XTLK_FR
+FX_INPUT1=VPMIXBIN_XTLK_FL
+FX_INPUT2=VPMIXBIN_XTLK_BL
+FX_INPUT3=VPMIXBIN_XTLK_BR
+FX_OUTPUT0=GPMIXBIN_FRONTRIGHT
+FX_OUTPUT1=GPMIXBIN_FRONTLEFT
+FX_OUTPUT2=GPMIXBIN_BACKLEFT
+FX_OUTPUT3=GPMIXBIN_BACKRIGHT
+</PRE>
+
+<LI>Use the XgpImage.exe tool to create the image. For this example, use MyImage.bin as the name of the binary image that the tool will produce and MyImage.h as the header file the tool will create. The call to the tool on the command line should like something like this:</LI>
+
+<PRE>
+xgpimage MyEffects.ini MyImage.bin MyImage.h
+</PRE>
+</OL>
+
+<H2><A NAME="xbox_creating_a_dsp_effects_image_dxaudio_related"></A>Related Topics</H2>
+
+<P>The following topics are related to creating a DSP effects image.</P>
+
+<UL>
+	<LI><A HREF="xbox_dsp_effects_processing_dxaudio.htm"><B>DSP Effects Processing</B></A></LI>
+    <LI><A HREF="xbox_jbh_tool_xgpimage.htm"><B>XGP DSP Image Builder (xgpimage)</B></A></LI>
+</UL>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

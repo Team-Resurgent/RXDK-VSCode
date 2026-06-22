@@ -1,0 +1,167 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Image Certification Tool (ImageCert)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Image Certification Tool (ImageCert)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+		<MSHelp:Keyword Index="K" Term="ImageCert tool"/>
+		<MSHelp:Keyword Index="K" Term="certification tool for XBE images, ImageCert"/>
+		<MSHelp:Keyword Index="K" Term="XBE images, certifying with ImageCert"/>
+	</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Image Certification Tool (ImageCert)</h1>
+<p>The Image Certification Tool validates that the XBE image containing an 
+		Xbox title passes certification.</p>
+<pre class="clsCode">
+usage: IMAGECERT [options] filename.xbe
+</pre>
+    <table>
+		<tr>
+			<th>Option</th>
+			<th>Description</th>
+		</tr>
+
+		<tr>
+			<td><b>/TITLE</b> or <b>/TCR:C1-3</b></td>
+			<td>Display the Image title.</td>
+		</tr>
+
+		<tr>
+			<td><b>/LIBS</b> or <b>/TCR:C3-1</b></td>
+			<td>Test the libraries used.</td>
+		</tr>
+
+		<tr>
+			<td><b>/NETWORK</b> or <b>/TCR:C3-2</b></td>
+			<td>Test the usage of the network libraries.</td>
+		</tr>
+
+		<tr>
+			<td><b>/CRT</b> or <b>/TCR:C3-3</b></td>
+			<td>Test the CRT usage.</td>
+		</tr>
+
+		<tr>
+			<td><b>/XTL</b> or <b>/TCR:C3-3</b></td>
+			<td>Test the XTL usage.</td>
+		</tr>
+
+		<tr>
+			<td><b>/DEMOHDWRITE</b> or <b>/TCR:C14-1</b></td>
+			<td>Test if this demo mounts the hard disk as writeable.</td>
+		</tr>
+
+		<tr>
+			<td><b>/DEMOHDUTIL</b> or <b>/TCR:C14-2</b></td>
+			<td>Test if this demo mounts Utility region formatted.</td>
+		</tr>
+
+		<tr>
+			<td><b>/DEMONONET</b> or <b>/TCR:C14-3</b></td>
+			<td>Test if this demo is using network libraries.</td>
+		</tr>
+	
+		<tr>
+			<td><b>/HELP</b> or <b>/?</b></td>
+			<td>Display usage information.</td>
+		</tr>
+	
+		<tr>
+			<td><b>/TYPE:</b><i>GameTypeSpecifier</i></td>
+			<td>The type of game being tested, where <i>GameTypeSpecifier</i> is 
+			either GAME, DEMO, SYSLINK, or ONLINE.</td>
+		</tr>
+	
+		<tr>
+			<td><b>/SCAN</b>[<b>:</b><i>path</i>]</td>
+			<td>Scan all files on XD:\ (or the specified path) to find XBE files to 
+			test.</td>
+		</tr>
+	
+		<tr>
+			<td><b>/KEEP</b></td>
+			<td>Don't delete files copied locally by /SCAN.</td>
+		</tr>
+	
+		<tr>
+			<td><b>/X</b> <i>XBoxName</i></td>
+			<td>Specifies the name of the Xbox when using <b>/SCAN</b>.</td>
+		</tr>
+	
+		<tr>
+			<td><b>/NOLOGO</b></td>
+			<td>Suppress display of copyright banner.</td>
+		</tr>
+	
+	</table>
+<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;If no test switches are specified, then all tests are performed.</p><h2><a name="IDACV2K"></a>Example</h2>
+<pre class="clsCode">
+
+ImageCert.exe default.xbe
+Microsoft (R) Xbox Image Certification Tool 1.00.4900.1
+Copyright (C) Microsoft Corporation 2000-2002. All rights reserved.
+
+
+TCR C1-3: Game Identification
+
+        INFO: Title Name is 'My Game'.
+
+        MOREINFO: Name should be compared against title in Xbox Dashboard.
+
+TCR C3-1: XTL Version
+
+        INFO:
+                 XAPILIB 1.0.4361.2 [expired]
+                    D3D8 1.0.4361.1 [expired]
+                XBOXKRNL 1.0.4361.1 [expired]
+                 XGRAPHC 1.0.4361.1 [expired]
+                  LIBCMT 1.0.4361.1 [expired]
+                  DSOUND 1.0.4361.1 [expired]
+                   D3DX8 1.0.4361.1 [expired]
+
+        FAILED : One or more libs are not approved
+
+TCR C3-2: Conditional Approval XTL Libraries.
+
+        PASSED : No 'Conditional Libraries' are being used.
+
+TCR C3-3: C Runtime Library
+
+        INFO:
+                  LIBCMT 1.0.4361.1 [expired]
+
+        PASSED: Xbox CRT is being used.
+
+TCR C14-1: Demo Hard Disk Usage
+
+        FAILED: Hard drive is mounted Read/Write.
+
+TCR C14-2: Demo Utility Region Access
+
+        FAILED: Utility Drive is mounted without the format flag.
+
+TCR C14-3: Demos may not use network functionality
+
+        PASSED : No network libraries used.
+
+
+</pre>
+    <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Input and Support Routines</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Input and Support Routines"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+  <MSHelp:Keyword Index="K" Term="XACT input and support routines"/>
+  <MSHelp:Keyword Index="K" Term="input and support routines, XACT"/>
+  <MSHelp:Keyword Index="K" Term="soundtracks, loading and navigating"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Input and Support Routines</h1>
+<p>This section lists the example routines that tie in with the previous sections. The soundtrack example code wouldn't be useful without a way to navigate through the tracks and soundtracks, so there are two input routines in place here: one to initialize input, and one to poll the controller and take action.  The final routine is for loading files from the Xbox hard disk, and is used for loading the sound bank file and the DSP effect image file.</p>
+<h2><a name="IDAWAEV"></a>Initializing Input</h2>
+<p>Initializing input consists of three steps:</p>
+<ol>
+			<li>Initialize the state information.</li>
+			<li>Initialize the devices. (This example assumes a single standard gamepad attached to port zero.)</li>
+			<li>Obtain a handle to the device, so that the device may be polled later.</li>
+		</ol>
+<p>For a more thorough explanation of using devices, see the <a href="x_mt_input_oview.htm">Using Xbox Peripherals</a> section.</p>
+<pre class="clsCode">
+void InitializeInput()
+{
+    memset( &amp;g_XInputLastState, 0, sizeof( g_XInputLastState ) );
+
+    // Initialize input... assuming 1 gamepad in slot zero...
+    XDEVICE_PREALLOC_TYPE deviceTypes[] =
+    {
+        { XDEVICE_TYPE_GAMEPAD, 1 }
+    };
+
+    XInitDevices( sizeof( deviceTypes ) / sizeof( XDEVICE_PREALLOC_TYPE ), deviceTypes );
+
+    // Sleep for a second while we wait for controller polling to finish...
+    Sleep( 1000 );
+
+    // Make sure the controller is connected...
+    DWORD dwConnectivity = XGetDevices( XDEVICE_TYPE_GAMEPAD );
+    g_hGamePad = XInputOpen( XDEVICE_TYPE_GAMEPAD, XDEVICE_PORT0, XDEVICE_NO_SLOT, NULL );
+    assert( NULL != g_hGamePad );
+}
+</pre>
+    <h2><a name="IDAMBEV"></a>Processing Input</h2>
+<p>Once a handle to the gamepad has been obtained, the device can be polled for state changes. In the ProcessInput routine below, each of the analog buttons on the controller is polled for a state change by comparing the current state to the previous state. The button mappings are as follows:</p>
+<ul>
+			<li>'A' button plays the current soundtrack.</li>
+			<li>'B' button stops the current soundtrack.</li>
+			<li>'X' button switches to the next soundtrack.</li>
+			<li>'Y' button switches to the previous soundtrack.</li>
+			<li>'Right trigger' switches to the next track in the current soundtrack.</li>
+			<li>'Left trigger' switches to the previous track in the current soundtrack.</li>
+		</ul>
+<pre class="clsCode">
+void ProcessInput()
+{
+    // Poll input...
+    XINPUT_STATE xis;
+    DWORD dwResult = XInputGetState( g_hGamePad, &amp;xis );
+    if( ERROR_SUCCESS != dwResult )
+        return;
+
+    // Handle input (we only care about the analog buttons pushed all the way down)...
+    for( int iIndex = 0; iIndex &lt; 8; iIndex++ )
+    {
+        if( ( xis.Gamepad.bAnalogButtons[iIndex] != g_XInputLastState.Gamepad.bAnalogButtons[iIndex] ) &amp;&amp;
+            ( xis.Gamepad.bAnalogButtons[iIndex] == 255 ) )
+        {
+            switch( iIndex )
+            {
+                case XINPUT_GAMEPAD_A:
+                    g_pSoundBank-&gt;Play( g_dwSoundCueIndex, NULL, XACT_FLAG_SOUNDCUE_AUTORELEASE, NULL );
+                    break;
+                case XINPUT_GAMEPAD_B:
+                    g_pSoundBank-&gt;Stop( g_dwSoundCueIndex, 0, NULL );
+                    break;
+                case XINPUT_GAMEPAD_X:
+                    g_uCurrentSoundtrackIndex++;
+                    if( g_uCurrentSoundtrackIndex &gt;= g_vSoundtracks.size() )
+                    {
+                        g_uCurrentSoundtrackIndex = 0;
+                    }
+                    SetXACTPlayList( g_uCurrentSoundtrackIndex );
+                    break;
+                case XINPUT_GAMEPAD_Y:
+                    if( 0 == g_uCurrentSoundtrackIndex )
+                    {
+                        g_uCurrentSoundtrackIndex = g_vSoundtracks.size() - 1;
+                    }
+                    else
+                    {
+                        g_uCurrentSoundtrackIndex--;
+                    }
+                    SetXACTPlayList( g_uCurrentSoundtrackIndex );
+                    break;
+                case XINPUT_GAMEPAD_LEFT_TRIGGER:
+                    g_pWMAPlaylist-&gt;Previous();
+                    break;
+                case XINPUT_GAMEPAD_RIGHT_TRIGGER:
+                    g_pWMAPlaylist-&gt;Next();
+                    break;
+            }
+        }
+    }
+
+    // Store input state for comparison on next poll...
+    memcpy(&amp;g_XInputLastState, &amp;xis, sizeof(xis));
+}
+</pre>
+    <h2><a name="IDACCEV"></a>Loading XACT Files</h2>
+<p>The following support routine loads a file from disk using asynchronous, unbuffered I/O. This routine allocates a buffer using malloc, which it is then the caller's responsibility to free. Since unbuffered I/O requires sector-multiple reads, the buffer may contain some extra space at the end. The pdwSize parameter returned reflects the amount of valid data in the buffer, <i>not</i> the size of the allocation.</p>
+<pre class="clsCode">
+void XACTLoadFile( CHAR* strFilename, VOID** ppvData, DWORD* pdwSize )
+{
+    // Open up the file for unbuffered, asynchronous IO
+    HANDLE hFile = CreateFile( strFilename, GENERIC_READ, FILE_SHARE_READ, NULL,
+                               OPEN_EXISTING, FILE_FLAG_OVERLAPPED | FILE_FLAG_NO_BUFFERING, NULL );
+    assert( INVALID_HANDLE_VALUE != hFile );
+
+    // Determine how large the file is (assuming size is less than 4 GB)
+    DWORD dwFileSize = GetFileSize( hFile, NULL );
+    *pdwSize = dwFileSize;
+    assert( dwFileSize != -1 );
+
+    // Get the sector size of the drive we're reading from, and round
+    // our file size up to a sector multiple
+    DWORD dwSectorSize = XGetDiskSectorSize( "D:\\" );
+    dwFileSize += dwSectorSize - 1;
+    dwFileSize /= dwSectorSize;
+    dwFileSize *= dwSectorSize;
+
+    // Allocate memory to load the wave bank in
+    *ppvData = malloc( dwFileSize );
+    assert( *ppvData );
+
+    // Start the read
+    OVERLAPPED overlapped = {0};
+    ReadFile( hFile, *ppvData, dwFileSize, NULL, &amp;overlapped );
+
+    // Wait for the result to complete
+    DWORD dwBytesRead;
+    GetOverlappedResult( hFile, &amp;overlapped, &amp;dwBytesRead, TRUE );
+    assert( dwBytesRead == *pdwSize );
+
+    // Close the file
+    CloseHandle( hFile );
+}
+</pre>
+    <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

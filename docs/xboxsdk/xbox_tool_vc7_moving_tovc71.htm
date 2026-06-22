@@ -1,0 +1,941 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Moving to the Visual C++ 7.1 Compiler</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Moving to the Visual C++ 7.1 Compiler"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+  <MSHelp:Keyword Index="K" Term="Unicode support in VC 7.1 compiler"/>
+  <MSHelp:Keyword Index="K" Term="Visual C++ 7.1 compiler, moving to"/>
+  <MSHelp:Keyword Index="K" Term="ISO C++ standard, conformance to"/>
+  <MSHelp:Keyword Index="K" Term="common compiler errors in VC 7.1"/>
+  <MSHelp:Keyword Index="K" Term="hash_set and hash_map classes"/>
+  <MSHelp:Keyword Index="K" Term="cross-platform Win32 &amp; Xbox games"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Moving to the Visual C++ 7.1 Compiler</h1>
+<p>The VC 7.1 compiler offers improved conformance to the C++ ISO
+		standard, particularly in the area of templates. This enables Xbox developers to
+		utilize more advanced C++ features.  Moving to VC 7.1 also provides 
+		Pentium-III-specific SSE floating-point optimizations. (In our testing, we have found 
+		that some FPU-bound Xbox games that take advantage of this optimization run up to 
+		2 percent faster.)</p><p>This section provides an overview of moving to the Visual C++ 7.1 compiler
+		in the following topics.</p><ul>
+<li><a href="#IDAAE2K">Visual C++ 7.0 and Visual C++ 7.1</a></li><li><a href="#IDAIE2K">Visual Studio. NET 2003 IDE</a></li><li><a href="#IDAOE2K">Upgrading Your Source Code for Use with the April 2003 XDK</a></li><li><a href="#IDAMF2K">Changes in the VC 7.1 C++ Libraries</a></li><li><a href="#IDAKH2K">Common Compiler Errors</a></li><li><a href="#IDAIC2K">Internal Compiler Errors</a></li><li><a href="#IDADA2K">Changes in for Loop Scope</a></li><li><a href="#IDAMA2K">Areas of Enhanced Conformance to the C++ Standard</a></li><li><a href="#IDASH3K">Changes that Might Break Your Code</a></li><li><a href="#IDAPP3K">Nonstandard Behavior</a></li><li><a href="#IDAKS3K">Developing Cross-Platform Win32 / Xbox Games</a></li></ul>
+<h2><a name="IDAAE2K"></a>Visual C++ 7.0 and Visual C++ 7.1</h2>
+<p>Because of changes to the syntax for templates, the 7.0 and 7.1 header 
+			runtimes are incompatible with each other. Rather than build a pair of 
+			incompatible compilers for the Xbox, Microsoft no longer offers the 
+			Visual C++ 7.0 compiler for the Xbox.</p><p>If it is not yet convenient for you to switch to VC 7.1, you can keep 
+			using an earlier version of the XDK for a few more months. Xbox ATG always 
+			supports development using the last several XDK releases.</p><h2><a name="IDAIE2K"></a>Visual Studio. NET 2003 IDE</h2>
+<p>Although the XDK now includes the Visual C++ 7.1 compiler, it does not
+			contain the Visual Studio. NET 2003 IDE. The Xbox team has not yet finished 
+			porting the Visual Studio. NET 2003 IDE to the Xbox development environment. 
+			Microsoft will offer the Visual Studio .NET 2003 IDE in a future release of 
+			the XDK.</p><h2><a name="IDAOE2K"></a>Upgrading Your Source Code for Use with the April 2003 XDK</h2>
+<p>For most developers, even those using advanced C++ features, all you have 
+			to do is:</p><ol>
+				<li>Install the April XDK.</li>
+				<li>Open each of your VS.NET solutions.</li>
+				<li>Optionally enable the "Enhanced Instruction Set" optimizations (This 
+				can improve your Xbox application's floating-point performance.) For 
+				information on how this is done, see 
+				<a href="xbox_image_enable_sse_prop.htm">Enable SSE</a>.</li>
+				<li>On the Visual Studio .NET <b>Build</b> menu, click 
+				<b>Rebuild All</b>.</li>
+				<li>Fix any compiler errors and warnings that show up.</li>
+				<li>Test your program to verify that it operates as it did before.</li>
+			</ol>
+<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;SSE optimizations are not supported for Win32 applications. To use SSE 
+			optimizations for Win32 applications, you must compile your Win32 programs with 
+			the Visual Studio .NET 2003 compiler.</p><h2><a name="IDAMF2K"></a>Changes in the VC 7.1 C++ Libraries</h2>
+<p>This section decribes the changes made to the VC 7.1 C++ that may be
+			important for Xbox developers.</p><ul>
+<li><a href="#IDATF2K">Modified Features</a></li><li><a href="#IDAFG2K">Removed Features</a></li></ul>
+<h3><a name="IDATF2K"></a>Modified Features</h3>
+<p>The features listed here were modified during the transition from 
+				VC 7.0 to VC 7.1.</p><dl>
+					<dt><b>Standard Template Library</b></dt>
+					<dd>The Standard Template Library implementation has been modified 
+					to compile under the new compiler. However, unless you've done 
+					something tricky (such as make your own modified copies of the STL 
+					headers), this change shouldn't affect your code.</dd>
+					
+					<dt><b>The hash_set and hash_map Classes</b></dt>
+					<dd>Because they are not actually part of the STL, the template 
+					collection classes hash_set and hash_map have been moved from the std 
+					namespace to the stdext namespace. Code that uses std::hash_set or 
+					std::hash_map generates warnings that std::hash_set and std::hash_map 
+					are deprecated. The code will still compile correctly. Use 
+					stdext::hash_set or stdext::hash_map to eliminate the warnings.</dd>
+				</dl>
+<h3><a name="IDAFG2K"></a>Removed Features</h3>
+<p>The following "Old I/O Stream" headers and libraries are obsolete 
+				and have been removed from VC 7.1. If your code uses these headers or
+				libraries, you need to change your code, presumably to use the 
+				corresponding "New I/O Stream" headers and libraries.</p><ul>
+					<li>FStream.h</li>
+					<li>IOManip.h</li>
+					<li>IOS.h</li>
+					<li>IOStream.h</li>
+					<li>IStream.h</li>
+					<li>OStream.h</li>
+					<li>StdIOstr.h</li>
+					<li>StreamB.h</li>
+					<li>StrStrea.h</li>
+					<li>UseOldIO.h</li>
+					<li>libci.lib</li>
+					<li>libcid.lib</li>
+					<li>libcimt.lib</li>
+					<li>libcimtd.lib</li>
+				</ul>
+<h2><a name="IDAKH2K"></a>Common Compiler Errors</h2>
+<p>Based on an analysis performed by the Xbox team, the following issues seem 
+			to be the most common:</p><p><b>Ambiguous call to overloaded function</b></p><p>The 7.1 runtime provides new overloaded versions of many of the math 
+			functions, such as log, abs, and pow. Sometimes the compiler needs to be 
+			told which version you want it to use. For example:</p>
+<pre class="clsCode">
+int i = 3;
+float f = log(i); // Ambiguous - do you want
+// double log(double)  // old version
+// or float log(float) // new overload
+
+</pre>
+    <p>The solution is to use a cast to tell the compiler explicitly which math 
+			function to use.</p>
+<pre class="clsCode">
+int i = 3;
+float f = log((float) i); // use float log(float)
+
+</pre>
+    <p><b>dependent name is not a type</b></p><p>This seems to be the most common template-related breaking change. If you 
+			have template code like this, you need to add the "typename" keyword to help 
+			the compiler understand what's going on:</p>
+<pre class="clsCode">
+//Code that caused error:
+template&lt; typename _T &gt;
+MyVector&lt; _T &gt;::iterator
+MyVector&lt; _T &gt;::begin()
+{
+	return ParentType::begin();
+}
+
+</pre>
+    <p>Fixed code:</p>
+<pre class="clsCode">
+template&lt; typename _T &gt;
+typename MyVector&lt; _T &gt;::iterator
+MyVector&lt; _T &gt;::begin()
+{
+	return ParentType::begin();
+}
+
+</pre>
+    <h2><a name="IDAIC2K"></a>Internal Compiler Errors</h2>
+<p>If you use advanced C++ features, you may encounter an Internal Compiler 
+			Error. They look like this:</p>
+<pre class="clsCode">
+MyCode.cpp(123) : fatal error C1001: INTERNAL COMPILER ERROR
+	(compiler file 'f:\vs70builds\2256\vc\compiler\cxxfe\sl\p1\c\symtable.inl', line 1673) 
+Please choose the Technical Support command on the Visual C++ 
+Help menu, or open the Technical Support help file for more information
+
+</pre>
+    <p>There are two things you should do when you get such an error:</p><ol>
+				<li>Create a test case to send to XboxDS@xbox.com, so that they can 
+				fix this bug in future versions of the compiler. You do this by using 
+				the /P compiler option to create a standalone C++ file that can be 
+				used to reproduce the bug. (Manually add it to the "Advanced Options" 
+				setting for the particular C++ file, and then click 
+				<b>Compile</b> on the <b>Build</b> menu to 
+				compile just that file.)
+				</li>
+				<li>Try rewriting the code near the line that caused the internal 
+				compiler error. It's usually pretty easy to get the error to go 
+				away by correcting, simplifying, or rearranging your source code. If 
+				you get stuck, contact XboxDS@xbox.com.</li>
+			</ol>
+<h2><a name="IDADA2K"></a>Changes in for Loop Scope</h2>
+<p>By default, the VC 7.1 compiler continues to support the Microsoft for loop
+			scope extension. As in VC 7.0, by default a variable declared in a for loop 
+			remains in scope until the end of the scope that contains the for loop.</p><p>If you want the for loop to be conformant to the ISO C++ standard, you must use 
+			either the /Za or the /Zc:forScope flags. (These flags are available in 
+			VC 7.0 as well.)</p><p>There has been one minor change in the VC 7.1 compiler's behavior compared 
+			to 7.0: you now get a warning message when you redefine a for loop variable 
+			that's still in scope. For example:</p>
+<pre class="clsCode">
+for(int i = 0; i &lt; 4; i++)
+{
+}
+int i = 3;	// warning C4288: nonstandard extension used...
+
+</pre>
+    <h2><a name="IDAMA2K"></a>Areas of Enhanced Conformance to the C++ Standard</h2>
+<p>Significant improvements have been made in the areas listed below that 
+			bring Visual C++ 7.1 into greater conformance with the C++ standard.</p><ul>
+<li><a href="#IDAXA2K">Defining Member Templates Outside a Class</a></li><li><a href="#IDAHA3K">Compiler Correctly Disambiguates Complex Expressions 
+			or Types</a></li><li><a href="#IDATA3K">Default Initialization of Scalar Types</a></li><li><a href="#IDA3A3K">Templated User Defined Conversions</a></li><li><a href="#IDABC3K">Universal Character Names</a></li><li><a href="#IDAJC3K">Operator That is Pointer to Function</a></li><li><a href="#IDARC3K">Support Aggregate Initialization</a></li><li><a href="#IDAZC3K">References Supported as Nontype Template Parameters</a></li><li><a href="#IDALD3K">Argument Dependent Name Lookup on Functions</a></li><li><a href="#IDATD3K">Partial Ordering of Function Templates</a></li><li><a href="#IDAFE3K">Partial Specialization of Class Templates</a></li><li><a href="#IDALH3K">Unicode Support</a></li></ul>
+<h3><a name="IDAXA2K"></a>Defining Member Templates Outside a Class</h3>
+<p>The following sample works in Visual C++ .NET 2003 as specified in the C++
+			standard:</p>
+<pre class="clsCode">
+// defining_member_templates_outside_a_class.cpp
+// compile with: /LD
+template &lt;class T&gt;
+struct S
+{
+   template&lt;class U&gt; void f(U);
+};
+
+template&lt;class T&gt; template &lt;class U&gt; void S&lt;T&gt;::f(U)
+{   //defined out of line
+}
+
+</pre>
+    <h3><a name="IDAHA3K"></a>Compiler Correctly Disambiguates Complex Expressions 
+			or Types</h3>
+<p>The following sample works in Visual C++ .NET 2003 as specified in the standard:</p>
+<pre class="clsCode">
+// compiler_correctly_disambiguates_complex_expressions_or_types.cpp
+// Many different variations, this is a simple one
+#include &lt;typeinfo&gt;
+typedef void functype();
+int main()
+{
+   return !(typeid(functype) == typeid(void()));
+   //now these match correctly
+}
+
+</pre>
+    <h3><a name="IDATA3K"></a>Default Initialization of Scalar Types</h3>
+<p>The following sample works in Visual C++ .NET 2003 as specified in 
+				the standard:</p>
+<pre class="clsCode">
+// default_initilization_of_scalar_types.cpp
+struct S
+{
+   int i0;
+   int i1;
+   S() : i1()   // i1 default initialized to 0, i0 value indeterminate
+   {
+   } 
+};
+extern "C" int printf(const char*, ...);
+int main()
+{
+   // points to unitialized int (value at *pi0 is indeterminate)
+   int *pi0 = new int;  
+
+   // pointer to a default initialized int (*pi1 == 0) 
+   int *pi1 = new int();
+   S s;
+   printf("These variables should both be zero: %d and %d\n", *pi1, s.i1);
+   delete pi0;
+   delete pi1;
+}
+<b>Output</b>
+These variables should both be zero: 0 and 0
+
+</pre>
+    <h3><a name="IDA3A3K"></a>Templated User Defined Conversions</h3>
+<p>The following sample works in Visual C++ .NET 2003 as specified in the 
+			standard:</p>
+<pre class="clsCode">
+// templated_user_defined_conversions.cpp
+template &lt;class T&gt;
+struct S
+{
+   template &lt;class U&gt; operator S&lt;U&gt;()
+   {
+      return S&lt;U&gt;();
+   }
+};
+
+int main()
+{
+   S&lt;int&gt; s1;
+   S&lt;long&gt; s2 = s1;   // convert s1 using UDC and copy constructs S&lt;long&gt;
+}
+
+</pre>
+    <h3><a name="IDABC3K"></a>Universal Character Names</h3>
+<p>The following sample works in Visual C++ .NET 2003 as specified in the 
+			standard:</p>
+<pre class="clsCode">
+// universal_character_names.cpp
+int main()
+{
+   int IdentContainingTwoUCNCharacters\u1234\U00001234 = 0;
+}
+
+</pre>
+    <h3><a name="IDAJC3K"></a>Operator That is Pointer to Function</h3>
+<p>The following sample works in Visual C++ .NET 2003 as specified in 
+				the standard:</p>
+<pre class="clsCode">
+// operator_that_is_pointer_to_function.cpp
+// function style call on object will invoke user-defined conversion 
+// if there is one. See secion 13.3.1.1.2 
+typedef void(*ptf)();
+void func()
+{
+}
+struct S
+{
+   operator ptf()
+   {
+      return func;
+   }
+};
+
+int main()
+{
+   S s;
+   s();//operates as s.operator ptf()()
+}
+
+</pre>
+    <h3><a name="IDARC3K"></a>Support Aggregate Initialization</h3>
+<p>The following sample works in Visual C++ .NET 2003 as specified in the 
+			standard:</p>
+<pre class="clsCode">
+// support_aggregate_initialization.cpp
+struct NotAgg
+{
+   NotAgg(int)
+   {
+   }
+};
+
+struct Agg
+{
+   NotAgg mem;
+};
+
+int main()
+{
+   Agg anAggregate = { NotAgg(1) };
+}
+
+</pre>
+    <h3><a name="IDAZC3K"></a>References Supported as Nontype Template Parameters</h3>
+<p>The following sample works in Visual C++ .NET 2003 as specified in the 
+			standard:</p>
+<pre class="clsCode">
+// references__supported_as_nontype_template_parameters.cpp
+extern "C" int printf(const char*,...);
+template &lt;int &amp; ri&gt; struct S
+{
+   S()
+   {
+      printf("ri is %d\n", ri);
+   }
+
+   ~S()
+   {
+      printf("ri is %d\n", ri);
+   }
+};
+
+int i = 1;
+
+int main()
+{
+   S&lt;i&gt; s;
+   i = 0;
+}
+<b>Output</b>
+ri is 1
+ri is 0
+
+</pre>
+    <h3><a name="IDALD3K"></a>Argument Dependent Name Lookup on Functions</h3>
+<p>The following sample works in Visual C++ .NET 2003 as specified in the 
+			standard:</p>
+<pre class="clsCode">
+// argument_dependent_name_AKA_koenig_lookup_on_functions.cpp
+namespace A
+{
+   struct X
+   {
+   };
+
+   void f(const X&amp;)
+   {
+   }
+}
+
+int main()
+{
+   A::X x;
+   f(x);   // finds A::f because argument's type is in namespace ::A
+}
+
+</pre>
+    <h3><a name="IDATD3K"></a>Partial Ordering of Function Templates</h3>
+<p>The following sample works in Visual C++ .NET 2003 as specified in the 
+			standard:</p>
+<pre class="clsCode">
+// partial_ordering_of_function_templates.cpp
+extern "C" int printf(const char*,...);
+template &lt;class T&gt; void f(T)
+{
+   printf("Less specialized function called\n");
+}
+
+template &lt;class T&gt; void f(T*)
+{
+   printf("More specialized function called\n");
+}
+
+int main()
+{
+   int i =0;
+   int *pi = &amp;i;
+   f(i);   // calls less specialized function
+   f(pi);  // calls more specialized function
+   // without partial ordering, the above call would be ambiguous
+}
+<b>Output</b>
+Less specialized function called
+More specialized function called
+
+</pre>
+    <h3><a name="IDAFE3K"></a>Partial Specialization of Class Templates</h3>
+<p>The following sample works in Visual C++ .NET 2003 as specified in the 
+			standard:</p>
+<pre class="clsCode">
+// partial_specialization_of_class_templates.cpp
+template &lt;class T&gt; struct PTS
+{
+   enum
+   {
+      IsPointer = 0,
+      IsPointerToDataMember = 0
+   };
+};
+
+template &lt;class T&gt; struct PTS&lt;T*&gt;
+{
+   enum
+   {
+      IsPointer = 1,
+      IsPointerToDataMember = 0
+   };
+};
+
+template &lt;class T, class U&gt; struct PTS&lt;T U::*&gt;
+{
+   enum
+   {
+      IsPointer = 1,
+      IsPointerToDataMember = 1
+   };
+};
+
+struct S{};
+
+extern "C" int printf(const char*,...);
+
+int main()
+{
+   S s, *pS;
+   int S::*ptm;
+   printf("PTS&lt;S&gt;::IsPointer == %d PTS&lt;S&gt;::IsPointerToDataMember == %d\n", PTS&lt;S&gt;::IsPointer, PTS&lt;S&gt;:: IsPointerToDataMember);
+   printf("PTS&lt;S*&gt;::IsPointer == %d PTS&lt;S*&gt;::IsPointerToDataMember == %d\n", PTS&lt;S*&gt;::IsPointer, PTS&lt;S*&gt;:: IsPointerToDataMember);
+   printf("PTS&lt;int S::*&gt;::IsPointer == %d PTS&lt;int S::*&gt;::IsPointerToDataMember == %d\n", PTS&lt;int S::*&gt;::IsPointer, PTS&lt;int S::*&gt;:: IsPointerToDataMember);
+}
+<b>Output</b>
+PTS&lt;S&gt;::IsPointer == 0 PTS&lt;S&gt;::IsPointerToDataMember == 0
+PTS&lt;S*&gt;::IsPointer == 1 PTS&lt;S*&gt;::IsPointerToDataMember == 0
+PTS&lt;int S::*&gt;::IsPointer == 1 PTS&lt;int S::*&gt;::IsPointerToDataMember == 1
+
+</pre>
+    <h3><a name="IDALH3K"></a>Unicode Support</h3>
+<p>In this version of the compiler, Unicode characters that cannot be 
+			represented in the current system code page are not allowed. The compiler
+			support both Unicode characters and universal-character-names in comments, 
+			string literals, and character literals.</p><h2><a name="IDASH3K"></a>Changes that Might Break Your Code</h2>
+<p>The following information provides a list of changes that give Visual C++
+			7.1 improved conformance to the ISO C++ standard, but might cause problems in 
+			your existing code.</p><ul>
+<li><a href="#IDAZH3K">Compiler Errors</a></li><li><a href="#IDAVJ3K">Runtime Errors</a></li></ul>
+<h3><a name="IDAZH3K"></a>Compiler Errors</h3>
+<p>This topic summarizes the compile-time errors and warnings that will 
+				now be issued on code that compiled without errors or warnings in Visual 
+				Studio .NET or earlier versions.</p><ul>
+ 					<li>Closing parentheses now required for the defined preprocessor 
+					directive (C2004). </li>
+					<li>Explicit specializations no longer find template parameters from 
+					primary template (C2146). </li>
+					<li>A protected member (n) can be accessed only through a member 
+					function of a class (B) that inherits from the class (A) of which it 
+					(n) is a member (C2247). </li>
+					<li>Improved accessibility checks in compiler now detect inaccessible 
+					base classes (C2248). </li>
+					<li>An exception cannot be caught if the destructor and/or copy 
+					constructor is inaccessible (C2316). </li>
+					<li>Default arguments on pointers to functions no longer allowed 
+					(C2383). </li>
+					<li>A static data member cannot be initialized via derived class 
+					(C2477). </li>
+					<li>The initialization of a typedef is not allowed by the standard and 
+					now generates a compiler error (C2513). </li>
+					<li>bool is now a proper type (C2632). </li>
+					<li>A UDC can now create ambiguity with overloaded operators 
+					(C2666).</li> 
+					<li>More expressions are now considered valid null pointer constants 
+					(C2668). </li>
+					<li>template&lt;&gt; is now required in places where the compiler 
+					would previously imply it (C2768). </li>
+					<li>The explicit specialization of a member function outside the 
+					class is not valid if the function has already been explicitly 
+					specialized via a template class specialization. (C2910). </li>
+					<li>Floating-point non-type template parameters are no longer allowed 
+					(C2993). </li>
+					<li>Class templates are not allowed as template type arguments 
+					(C3206). </li>
+					<li>Friend function names are no longer introduced into containing 
+					namespace (C3767). </li>
+					<li>The compiler will no longer accept extra commas in a macro 
+					(C4002). </li>
+					<li>An object of POD type constructed with an initializer of the form 
+					() will be default-initialized (C4345). </li>
+					<li>typename is now required if a dependent name is to be treated as a 
+					type (C4346). </li>
+					<li>Functions that were incorrectly considered template specializations 
+					are no longer considered so (C4347). </li>
+					<li>Static data members cannot be initialized via derived class 
+					(C4356). </li>
+					<li>A class template specialization needs to be defined before it 
+					was used in a return type (C4686). </li>
+					<li>The compiler now reports unreachable code (C4702). </li>
+				</ul>
+<h3><a name="IDAVJ3K"></a>Runtime Errors</h3>
+<p></p><ul>
+<li><a href="#IDA2J3K">String Literals Have Proper Type of const char[]</a></li><li><a href="#IDAWK3K">Overloading of Function Templates</a></li><li><a href="#IDAWL3K">Argument Dependent (Koenig) Lookup Now Supported</a></li><li><a href="#IDAEM3K">Zero Initialization of POD and Scalar Types</a></li><li><a href="#IDA4M3K">Old-Style Name Mangling for Exported Template 
+				Instantiations</a></li></ul>
+<h4><a name="IDA2J3K"></a>String Literals Have Proper Type of const char[]</h4>
+<p>String literals now have the type const char [] and are now placed 
+					in a read-only section of memory. Changing that memory will now cause 
+					an access violation. Code compiled in previous versions using /GF will 
+					also cause the access violation.</p><p>The following sample compiles and runs in Visual Studio .NET but 
+					will fail at run time in Visual Studio .NET 2003:</p>
+<pre class="clsCode">
+// bc_string_literals_have_proper_type_of_const_char.cpp
+// compile with: /c
+void f(char *c)
+{
+   c[0] = 'Q';   // Now gives run-time access violation
+}
+
+int main()
+{
+   f("TEST");
+}
+</pre>
+    <p>In addition, the run-time behavior of code such as the following 
+					example has now changed:</p>
+<pre class="clsCode">
+// bc_string_literals_have_proper_type_of_const_char2.cpp
+#include "stdio.h"
+void f(const char *)   // called in Visual Studio .NET 2003
+{
+   printf("in f(const char *)\n");
+}
+void f(char *)   //called in Visual Studio .NET
+{
+   printf("in f(char *)\n");
+}
+
+int main()
+{
+   f("TEST");
+}
+
+</pre>
+    <p>To resolve this error, do not pass string literals to functions 
+					where they will be modified.</p><p>For code that will be valid in the current and previous versions of 
+					Visual C++ in the case where functions are overloaded by explicitly 
+					casting string literals to const char* and by define variables on the 
+					stack or the heap.</p><p>The following code will be valid in the Visual Studio .NET 2003 
+					and Visual Studio .NET versions of Visual C++, causing an access 
+					violation in neither:</p>
+<pre class="clsCode">
+// bc_string_literals_have_proper_type_of_const_char3.cpp
+#include &lt;stdio.h&gt;
+void f(const char *psz)
+{
+   printf("const version\n");
+}
+
+void f(char *psz)
+{
+   printf("version where we modify it\n");
+   psz[0] = 'x';
+}
+
+int main()
+{
+   char myStr[] = "TEST";
+   f((const char*)"TEST");
+   f(myStr);
+}
+
+</pre>
+    <h4><a name="IDAWK3K"></a>Overloading of Function Templates</h4>
+<p>In Visual Studio .NET, the compiler treated functions whose 
+					signature mapped to an explicit specialization of a template function 
+					(even if the function was not preceded by template&lt;&gt;) as a 
+					specialization. Now, such functions are treated as non-template 
+					overloads.</p><p>Run-time behavior may change in cases like:</p>
+<pre class="clsCode">
+// bc_overloading_of_function_templates.cpp
+#include &lt;stdio.h&gt;
+template&lt;class Tgt/&gt;
+void f(T)   // called in Visual Studio .NET 2003
+{
+   printf("in void f(T)\n");
+}
+
+void f(int)   // called in Visual Studio .NET
+// for identical behavior for both compiler versions, use
+// template&lt;&gt; void 
+// f&lt;int&gt;(int)
+{
+   printf("in void f(int)\n");
+}
+
+int main()
+{
+   f&lt;int&gt;(3);   // Visual C++ .NET calls template function specialization
+           // because explicit template arguments were provided. 
+           // The current compiler will also call specialization because 
+           // explicit template arguments were provided.
+           // But these will call different functions because the previous 
+           // compiler explicitly specializes on int, and the current
+           // compiler does not (creates non-template overload)
+
+   f(4);   // Visual C++ .NET will call template function specialization
+           // because no global non-template overload defined.
+           // The current compiler will call the non-template overload.
+}
+
+</pre>
+    <p>For the previous example, note that identical behavior can be 
+					achieved by making f(int) an explicit specialization instead of what 
+					should be an overload. The specialization will be called in both the 
+					Visual Studio .NET 2003 and Visual Studio .NET versions of Visual 
+					C++.</p><h4><a name="IDAWL3K"></a>Argument Dependent (Koenig) Lookup Now Supported</h4>
+<p>Koenig lookup is now fully implemented in the Visual C++ 
+					compiler.</p><p>The following sample behaves differently at run time in Visual 
+					Studio .NET than it does in Visual Studio .NET 2003:</p>
+<pre class="clsCode">
+// bc_argument_dependent_AKA_Koenig_lookup_now_supported.cpp
+// compile with: /W1
+#include &lt;stdio.h&gt;
+namespace N
+{
+   class X
+   {
+   };
+
+   void f(X *pX)
+   {
+      printf("in N::X::f\n");
+   };   // called if compiled with 7.1
+}
+
+void f(void *pv)
+{
+   printf("in ::f\n");
+};   // called if compiled with 7.0
+
+int main()
+{
+   N::X *pX = 0;
+   f(pX);   // C4675
+   // The following lines will result in the same behavior
+   // in Visual Studio .NET or Visual Studio .NET 2003
+   f((void*)pX);   // Cast pX to void before calling f; calls global f
+   ::f(pX);   // Explicitly specify global f
+   N::f(pX);   // Explicitly specify f in namespace
+}
+
+</pre>
+    <h4><a name="IDAEM3K"></a>Zero Initialization of POD and Scalar Types</h4>
+<p>POD and scalar types will always be zero initialized if 
+					instantiated with the default constructor syntax.</p>
+<pre class="clsCode">
+struct S {
+   void *operator new (unsigned int size, void*p, int i)
+   {
+      ((S*)p)-&gt;i = i; return p;
+   }
+     
+   int i;
+};
+
+struct T
+{
+   int i;
+   char c;
+};
+
+class C
+{
+   T t;
+   int i;
+public:
+   C(): t(), i() {}   // Zero initializes members of class.
+};
+
+// Zero initialize members of t.
+// t-&gt;i == 0 &amp; t-&gt;c == 0
+T* t = new T();
+
+// Call placement new operator for S, then
+// zero initialize members of pS.
+// pS-&gt;i == 0 &amp; pS-&gt;i != 10
+S s;
+S* pS = new( &amp;s, 10 ) S();
+
+// Zero initialize *pI
+// *pI == 0
+int* pI = new int();
+
+// Zero initialize members of c
+// c.t.i == 0 &amp; c.t.c == 0 &amp; c.i == 0
+C c;
+
+</pre>
+    <p>The Visual Studio .NET behavior ignores the () parentheses after 
+					the initialization and will always leave the members uninitialized. To 
+					revert to the Visual Studio .NET behavior for types initialized 
+					outside of a constructor's initialization list, remove the () 
+					parentheses as follows:</p>
+<pre class="clsCode">
+T* t = new T;   // Members contain uninitialized data.
+S s;
+S* pS = new( &amp;s, 10 );   // pS-&gt;i == 10
+int* pI = new int;   // *pI is uninitialized.
+
+</pre>
+    <p>To revert to the Visual Studio .NET behavior for types initialized 
+					inside of a constructor's initialization list, remove initialization from 
+					the list as follows.</p>
+<pre class="clsCode">
+class C
+{
+   T t;
+   int i;
+public:
+   C() {}   // Members of class are not initialized.
+};
+
+</pre>
+    <h4><a name="IDA4M3K"></a>Old-Style Name Mangling for Exported Template 
+				Instantiations</h4>
+<p>One aspect of the Visual C++ conformance work is to allow the 
+					overloading of specializations of function templates and regular 
+					templates.</p><p>For example, the following sample compiles in Visual Studio .NET 
+					2003 but will fail in Visual Studio .NET:</p>
+<pre class="clsCode">
+// bc_exported_templ_instan.cpp
+template&lt;typename T, typename U&gt;
+T ConvertTo(const U &amp;u)
+{
+   return static_cast&lt;T&gt;(u);
+}
+
+char ConvertTo(const int &amp;i)
+{
+   return static_cast&lt;char&gt;(i);
+}
+
+int main()
+{
+   char c1 = ConvertTo(1);
+   char c2 = ConvertTo&lt;char, int&gt;(2);
+}
+
+</pre>
+    <p>To support the overloading of specializations of function templates 
+					and regular templates, the compiler changed how it creates decorated 
+					names for specializations of function templates. An updated decorated 
+					name now includes encoding of the template arguments, as well as 
+					encoding of the function parameter and return types. For the functions 
+					in the previous example, the C++ compiler in Visual Studio .NET 2003 
+					will generate the following name decorations:</p>
+<pre class="clsCode">
+?ConvertTo@@YADABH@Z      - char ConvertTo(const int &amp;);
+??$ConvertTo@DH@@YADABH@Z - char ConvertTo&lt;char, int&gt;(const int &amp;);
+
+</pre>
+    <p>This should not imply any change in the way that you develop your 
+					applications. One area where this change does affect users is if the 
+					export is a specialization of a function template from a DLL used in 
+					an application that has not been recompiled with the new compiler. 
+					For example:</p>
+<pre class="clsCode">
+// bc_exported_templ_instan2.h
+#include &lt;iostream&gt;
+#ifdef _DLL_EXPORT
+#define DLL_LINKAGE __declspec(dllexport)
+#else
+#define DLL_LINKAGE __declspec(dllimport)
+#endif
+
+template&lt;typename T&gt;
+void f(const T &amp;rT)
+{
+   std::cout &lt;&lt; "i = " &lt;&lt; rT &lt;&lt; std::endl;
+}
+template DLL_LINKAGE void f&lt;int&gt;(const int &amp;);
+
+</pre>
+    <p>The following code will be compiled to create the DLL:</p>
+<pre class="clsCode">
+// bc_exported_templ_instan2.cpp
+// compile with: /D_DLL_EXPORT /EHsc /LD
+#include "bc_exported_templ_instan2.h"
+
+</pre>
+    <p>If you then do:</p>
+<pre class="clsCode">
+dumpbin /exports bc_exported_templ_instan2.dll
+</pre>
+    <p>You see that the decorated name of the exported specialization of 
+					the function template is ??$f@H@@YAXABH@Z.</p><p>If an existing application has a dependency on this DLL and this 
+					application was built with the Visual C++ compiler in Visual Studio 
+					.NET (or an earlier version) and they cannot or do not want to rebuild 
+					this application, then they will get a run-time error, because the 
+					application will be expecting an entry point with the old name. 
+					However, the new DLL will only be exporting a function with the new 
+					name.</p>
+<pre class="clsCode">
+// bc_exported_templ_instan3.cpp
+// compile with: /EHsc /link bc_exported_templ_instan2.lib
+#include "bc_exported_templ_instan2.h"
+int main()
+{
+   f(1);
+}
+
+</pre>
+    <p>The fix for this problem is to change how the DLL is built so it 
+					will export both the old and new name for the specialization of the 
+					function template. This is done by using /export to the link program. 
+					For example:</p>
+<pre class="clsCode">
+cl /D_DLL_EXPORT /EHsc /LD a.cpp /link /export:?f@@YAXABH@Z=??$f@H@@YAXABH@Z 
+</pre>
+    <p>This tells the link to create an export for both the specified 
+					names but to have them map to the same symbol.</p><h2><a name="IDAPP3K"></a>Nonstandard Behavior</h2>
+<ul>
+<li><a href="#IDAUP3K">Compiler Limits</a></li><li><a href="#IDARQ3K">Covariant Return Types</a></li><li><a href="#IDAXQ3K">export Keyword on a Template</a></li><li><a href="#IDAHR3K">Dependent Names</a></li><li><a href="#IDAZR3K">Function Exception Specifiers</a></li><li><a href="#IDABS3K">The uncaught_exception Function</a></li></ul>
+<h3><a name="IDAUP3K"></a>Compiler Limits</h3>
+<p>The C++ standard recommends limits for various language constructs. The 
+				following is a list of constructs where the Visual C++ compiler does not 
+				implement the recommended limits. The first number is the recommended 
+				limit and the second number is the limit implemented by Visual C++: </p><ul>
+					<li>Nesting levels of compound statements, iteration control 
+					structures, and selection control structures [256] (247). </li>
+					<li>Parameters in one macro definition [256] (127).</li>
+					<li>Arguments in one macro invocation [256] (127).</li>
+					<li>Characters in a character string literal or wide string literal 
+					(after concatenation) [65536] (65535).</li>
+					<li>Levels of nested class, structure, or union definitions in a 
+					single struct-declaration-list [256] (16).</li>
+					<li>Member initializers in a constructor definition [6144] 
+					(approximately 600, memory dependent, can increase with the /Zm compiler option).</li>
+					<li>Scope qualifications of one identifier [256] (127).</li>
+					<li>Nested external specifications [1024] (10).</li>
+					<li>Template arguments in a template declaration [1024] (64).</li>
+				</ul>
+<h3><a name="IDARQ3K"></a>Covariant Return Types</h3>
+<p>Virtual base classes are not supported as covariant return types.</p><h3><a name="IDAXQ3K"></a>export Keyword on a Template</h3>
+<p>The export keyword is not supported on templates. For example, the 
+				following sample will not compile:</p>
+<pre class="clsCode">
+export template &lt;class T&gt; void fun(T);
+export template &lt;class T&gt; class A;
+</pre>
+    <h3><a name="IDAHR3K"></a>Dependent Names</h3>
+<p>The Visual C++ compiler does not currently support binding nondependent 
+				names when initially parsing a template. This can cause overloads to be 
+				declared after the template (but before the template is instantiated) to 
+				be seen.</p>
+<pre class="clsCode">
+// DependentNames.cpp
+#include &lt;stdio.h&gt;
+namespace N 
+{
+   void f(int) 
+   { 
+      printf("f(int)\n");
+   }
+}
+
+template &lt;class T&gt; void g(T) 
+{
+   N::f('a');   // calls f(char) should call f(int)
+}
+
+namespace N 
+{
+   void f(char) 
+   { 
+       printf("f(char)\n");
+   }
+}
+
+int main() 
+{
+   g('c');
+}
+<b>Output</b>
+f(char)
+
+</pre>
+    <h3><a name="IDAZR3K"></a>Function Exception Specifiers</h3>
+<p>Function exception specifiers other than throw() are parsed but not 
+				used. For example:</p>
+<pre class="clsCode">
+void f() throw(int); // parsed but not used
+void g() throw();    // parsed and used
+
+</pre>
+    <h3><a name="IDABS3K"></a>The uncaught_exception Function</h3>
+<p>As can be seen in the Visual C++ source file, uncaught.cpp, 
+				uncaught_exception always returns false even in cases where the standard 
+				specifies that it should return true.</p><p>See Knowledge Base article Q242192 for more information.</p><h2><a name="IDAKS3K"></a>Developing Cross-Platform Win32 / Xbox Games</h2>
+<p>Developing cross-platform Win32 / Xbox games with the April XDK release 
+			can be done as follows:</p><ul>
+				<li>Use the VS.NET IDE.</li>
+				<li>Use the 7.0 compiler with your Win32 configuration.</li>
+				<li>Use the 7.1 compiler with your Xbox configuration.</li>
+			</ul>
+<p>If you develop this way, you will have to ensure that your C/C++ code 
+			compiles correctly with both the VC 7.0 and VC 7.1 compilers. You may find 
+			it useful to use the _MSC_VER macro to detect which version of the C compiler 
+			is compiling your code. The VC 7.0 compiler defines _MSC_VER ==1300, and 
+			the VC 7.1 compiler defines _MSC_VER == 1310.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineSignatureVerify</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineSignatureVerify"/>
+<MSHelp:Keyword Index="F" Term="XOnlineSignatureVerify"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineSignatureVerify</h1>
+<p>Creates an asynchronous task to submit Xbox <i>Live</i> signature and digest pairs to the signature service for verification.</p><pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineSignatureVerify(</b>
+    <b>const XONLINE_SIGNATURE_TO_VERIFY</b> *<i>rgSignaturesToVerify</i><b>,</b>
+    <b>DWORD</b> <i>dwSignaturesToVerify</i><b>,</b>
+    <b>HANDLE</b> <i>hWorkEvent</i><b>,</b>
+    <b>PXONLINETASK_HANDLE</b> <i>phTask</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+<dt><i>rgSignaturesToVerify</i></dt>
+<dd>[in]  Array of <a href="XONLINE_SIGNATURE_TO_VERIFY.htm">XONLINE_SIGNATURE_TO_VERIFY</a> structures containing the digest/signature pairs to verify.</dd>
+            
+<dt><i>dwSignaturesToVerify</i></dt>
+<dd>[in]  Number of arrays contained in <i>rgSignaturesToVerify</i>.</dd>
+            
+<dt><i>hWorkEvent</i></dt>
+<dd>[in, optional]  Handle to an event that will be signaled when there is work to be done on the verification task. This parameter can be NULL if no such event is required.</dd>
+            
+<dt><i>phTask</i></dt>
+<dd>[out]  Pointer to a variable of type <b>XONLINETASK_HANDLE</b> that receives a task handle representing this verification request. The handle can then be used in calls to <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> to perform work associated with this task.</dd>
+            
+</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>Returns S_OK if successful, an error code otherwise.</p>
+<h4><a name="remarks"></a>Remarks</h4>
+<p>Data written to storage is potentially vulnerable to attack or modification.  Before using such data or uploading it to the Xbox <i>Live</i> service, titles must call <b>XOnlineSignatureVerify</b> to verify the data with the signature service.  The data must have been signed with an Xbox <i>Live</i> signature at the time it was written to storage.</p>
+
+<p>To verify data:</p>
+<ol>
+<li>Load the data and the Xbox <i>Live</i> signature previously computed and associated with the data.</li>
+<li>Use <a href="x_mt_xcalculatesignaturebegin.htm">XCalculateSignatureBegin</a> with XCALCSIG_FLAG_DIGEST to calculate a digest over the data.</li>
+<li>Fill the <a href="XONLINE_SIGNATURE_TO_VERIFY.htm">XONLINE_SIGNATURE_TO_VERIFY</a> structure with the digest and signature.</li>
+<li>Call <b>XOnlineSignatureVerify</b> to create an asynchronous online task to verify the data.</li>
+<li>Call <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> until it returns a value other than XONLINETASK_S_RUNNING.</li>
+<li>Call <a href="XOnlineSignatureVerifyGetResults.htm">XOnlineSignatureVerifyGetResults</a> to retrieve the verification results.</li>
+<li>Examine the returned <i>prgHresults</i> array to determine the results for each digest/signature pair.</li>
+<li>Call <a href="XOnlineTaskClose.htm">XOnlineTaskClose</a> with the verify task handle to close the task and free associated resources.</li>
+</ol>
+
+<p>To use <b>XOnlineSignatureVerify</b>, the title must be currently logged onto the Xbox <i>Live</i> service, and the XONLINE_SIGNATURE_SERVICE service ID must have been specified when the title called <a href="XOnlineLogon.htm">XOnlineLogon</a> (and a connection to the signature service successfully completed).</p>
+
+<p>For more information, see <a href="x_mt_storage_ov_live_signatures.htm">Xbox Live Signatures</a>.</p>
+
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonlines.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="x_mt_xonline_structures.htm">Xbox Live Structures</a>, <a href="x_mt_storage_ov_live_signatures.htm">Xbox Live Signatures</a> |
+<a href="XOnlineSignatureVerifyGetResults.htm">XOnlineSignatureVerifyGetResults</a>,
+
+<a href="x_mt_xcalculatesignaturebegin.htm">XCalculateSignatureBegin</a>,
+<a href="x_mt_xcalculatesignatureend.htm">XCalculateSignatureEnd</a>
+</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

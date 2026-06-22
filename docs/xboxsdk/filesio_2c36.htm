@@ -1,0 +1,127 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>ReadFileScatter</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="ReadFileScatter">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="ReadFileScatter"/>
+<MSHelp:Keyword Index="F" Term="ReadFileScatter"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_readfilescatter"></A>ReadFileScatter</H1>
+
+<P>The <B>ReadFileScatter</B> function reads data from a file and stores the data into a set of buffers.</P>
+
+<P>This function is designed for both synchronous and asynchronous operation.</P>
+
+<PRE class=syntax><B>BOOL ReadFileScatter(
+  HANDLE</B><I> hFile</I><B>,                          </B>// handle to file 
+<B>  FILE_SEGMENT_ELEMENT </B><I>aSegmentArray</I><B>[ ], </B>// array of buffer pointers
+<B>  DWORD</B><I> nNumberOfBytesToRead</I><B>,            </B>// number of bytes to read
+<B>  LPDWORD</B><I> lpNumberOfBytesRead</I><B>,           </B>// number of bytes read
+<B>  LPOVERLAPPED</B><I> lpOverlapped              </I>// OVERLAPPED structure
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>hFile</I></DT>
+
+<DD>[in] Handle to the file to be read. 
+
+<P>This file handle must have been created using GENERIC_READ to specify read access to the file, and FILE_FLAG_NO_BUFFERING to specify non-cached I/O.  For asynchronous read operations, <I>hFile</I> can be a handle opened with the FILE_FLAG_OVERLAPPED flag.</P> 
+</DD>
+
+<DT><I>aSegmentArray</I></DT>
+
+<DD>[in] Pointer to an array of <B>FILE_SEGMENT_ELEMENT </B>pointers to buffers. The function stores the data it reads from the file into this set of buffers. 
+
+<P>Each buffer must be at least the size of a system memory page and must be aligned on a system memory page size boundary. The system will read one system memory page of data into each buffer that a <B>FILE_SEGMENT_ELEMENT</B> pointer points to.
+
+
+<P>The function stores the data into the buffers in a sequential manner: it stores data into the first buffer, and then into the second buffer, and then into the next, filling each buffer, until there is no more data or there are no more buffers.
+
+
+<P>The final element of the array must be a 64-bit NULL pointer.
+
+
+
+<P class=note><B><I>Note</I></B>&nbsp;&nbsp;The array must contain one member for each system memory page&#8211;sized chunk of the total number of bytes to read from the file, plus one member for the final NULL pointer. For example, if the number of bytes to read is 40 KB and the system page size is 4 KB, this array must have 10 members for data plus one member for the final NULL member for a total of 11 members.
+
+</DD>
+
+<DT><I>nNumberOfBytesToRead</I></DT>
+
+<DD>[in] Specifies the total number of bytes to read from the file; each element of <I>aSegmentArray</I> contains a one-page chunk of this total. Because the file must be opened with FILE_FLAG_NO_BUFFERING, the number of bytes to write must be a multiple of the sector size of the file system on which the file resides.</P></DD>
+
+
+<DT><I>lpNumberOfBytesRead</I></DT>
+
+<DD>If <I>lpOverlapped</I> is NULL, <I>lpNumberOfBytesRead</I> cannot be NULL. If <I>lpOverlapped</I> is not NULL, <I>lpNumberOfBytesRead</I> can be NULL. If this is an overlapped read operation, you can get the number of bytes read by calling <A HREF="synchro_75v8.htm">GetOverlappedResult</A>. If <I>hFile</I> is associated with an I/O completion port, you can get the number of bytes read by calling <A HREF="filesio_071v.htm">GetQueuedCompletionStatus</A>.</DD>
+
+<DT><I>lpOverlapped</I></DT>
+
+<DD>[in] Pointer to an <A HREF="synchro_8tf6.htm">OVERLAPPED</A> data structure.  This structure is required if <I>hFile</I> was created with FILE_FLAG_OVERLAPPED.</P>
+
+<P>If <I>hFile</I> was opened with FILE_FLAG_OVERLAPPED, the <I>lpOverlapped</I> parameter must not be NULL. It must point to a valid <B>OVERLAPPED</B> structure. If <I>hFile</I> was created with FILE_FLAG_OVERLAPPED and <I>lpOverlapped</I> is NULL, the function can incorrectly report that the read operation is complete.</P>
+
+<P>If <I>hFile</I> was opened with FILE_FLAG_OVERLAPPED and <I>lpOverlapped</I> is not NULL, the <B>ReadFileScatter</B> function starts reading data from the file at a position specified by the <B>Offset</B> and <B>OffsetHigh</B> members of the <B>OVERLAPPED</B> structure, and <B>ReadFileScatter</B> may return before the read operation has completed. In that case, the <B>ReadFileScatter</B> function returns the value zero, and the <A HREF="errors_3uwi.htm">GetLastError</A> function returns the value ERROR_IO_PENDING. This asynchronous operation of <B>ReadFileScatter</B> lets the calling process continue while the read operation completes. The event specified in the <B>OVERLAPPED</B> structure is set to the signaled state upon completion of the read operation.  You can call the <A HREF="synchro_75v8.htm">GetOverlappedResult</A>, <A HREF="synchro_738k.htm">HasOverlappedIoCompleted</A>, or <A HREF="filesio_071v.htm">GetQueuedCompletionStatus</A> function to obtain information about the completion of the read operation.</P>
+
+<P>If <I>hFile</I> was not opened with FILE_FLAG_OVERLAPPED and <I>lpOverlapped</I> is NULL, the read operation starts at the current file position and <B>ReadFile</B> does not return until the operation has been completed.</P>
+
+<P>If <I>hFile</I> is not opened with FILE_FLAG_OVERLAPPED and <I>lpOverlapped</I> is not NULL, the read operation starts at the offset specified in the <B>OVERLAPPED</B> structure. <B>ReadFileScatter</B> does not return until the read operation has been completed.</P>
+
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is nonzero.</P>
+
+<P>If the function fails, the return value is zero. To get extended error information, call the <A HREF="errors_3uwi.htm">GetLastError</A> function.</P>
+
+<P>If the function attempts to read past the end of the file, the function returns zero, and <B>GetLastError</B> returns ERROR_HANDLE_EOF.</P>
+
+<P>If the function returns before the read operation has completed, the function returns zero, and <B>GetLastError</B> returns ERROR_IO_PENDING.</P>
+
+<H4>Remarks</h4>
+<p>When <I>nNumberOfBytesToRead</I> requests data past the end of the file, <b>ReadFileScatter</b> may write to an <I>aSegmentArray</I> buffer beyond what is read from the file.  <b>ReadFileScatter</b> is optimized to perform direct DMA using the specified buffers rather than double-buffering with an internal buffer.  If <I>nNumberOfBytesToRead</I> indicates that the <I>aSegmentArray</I> buffers are large enough, a full sector transfer will be performed even if it extends beyond the end of the file.  In this case, *<I>lpNumberOfBytesRead</I> will be set to the actual number of bytes read from the file, but up to <I>nNumberOfBytesToRead</I> bytes may be written to the <I>aSegmentArray</I> buffers.</p>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p>
+
+<H4>See Also</H4>
+<P>
+
+<A HREF="xbox_mt_xtl_sll_file_io_functions.htm">File I/O Functions</A> | 
+<A HREF="filesio_7wmd.htm">CreateFile</A>,
+<A HREF="synchro_75v8.htm">GetOverlappedResult</A>,
+<A HREF="filesio_071v.htm">GetQueuedCompletionStatus</A>,
+<A HREF="synchro_738k.htm">HasOverlappedIoCompleted</A>,
+<A HREF="synchro_8tf6.htm">OVERLAPPED</A>,
+<A HREF="filesio_39id.htm">ReadFile</A>,
+<A HREF="filesio_0660.htm">ReadFileEx</A>,
+<A HREF="filesio_55iq.htm">WriteFileGather</A>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

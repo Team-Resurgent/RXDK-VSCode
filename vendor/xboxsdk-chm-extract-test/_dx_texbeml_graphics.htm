@@ -1,0 +1,66 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>texbeml</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="texbeml">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="texbeml"/>
+<MSHelp:Keyword Index="F" Term="texbeml"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_texbeml_graphics"></A>texbeml</H1>
+
+<P>Takes the color sampled by the preceding stage as DuDvL perturbation data with luminance information. </P>
+
+<PRE class=syntax>texbeml   tDest, tSrc0
+</PRE>
+
+<H4>Registers</H4>
+
+<DL>
+<DT><B>tDest</B></DT>
+
+<DD>Destination register, holding the result of the operation.</DD>
+
+<DT><B>tSrc0</B></DT>
+
+<DD>Temporary source register, specifying the input argument.
+</DD>
+</DL>
+
+<H4>Remarks</H4>
+
+<p>The <b>texbeml</b> texture mode is identical to <b>texbem</b> except that the output color is scaled by a luminance value from the displacement texture map as follows:</p>
+<blockquote><pre>rgb = rgb * (lum_scale*t0.b + lum_bias)</pre></blockquote>
+
+<p>The displacement map contains the u and v offset in addition to the luminance value.  It can use the D3DFMT_L6V5U5 format or the D3DFMT_X8L8V8U8 format.</p>
+
+<p>lum_scale is set using the D3DTSS_BUMPENVLSCALE texture stage state. lum_bias is set using the D3DTSS_BUMPENVLOFFSET. On the Xbox hardware, the luminance calculating takes place at a stage of the pipeline after the texture units. This means that if subsequent texture stages use the output of the texbeml stage, they will read the color before it has been adjusted by the luminance equation.</p>
+
+<p>Like the <b>texbem</b> instruction, the <b>texbeml</b> instruction implements DirectX 6-style bump mapping. It uses a texture value read in a previous stage from a displacement map to perturb the texture coordinates at the current stage. The displacement map contains 2's complement signed values that are used to perturb the texture coordinates on the current stage. The new texture coordinates are calculated by multiplying the red and green components from the tSrc register by a 2 &times; 2 matrix. If tDest is t1 and tSrc is t0, then u and v are calculated as follows:</p>
+
+<blockquote><pre>u = t1.s + mat00 * t0.r + mat10 * t0.g
+v = t1.t + mat01 * t0.r + mat11 * t0.g</pre></blockquote>
+
+<p>u and v then specify a 2D texture address that is used to do a normal texture lookup on stage 1. The 2 &times; 2 matrix is used to take into account movement of the eye point relative to the light source. It is specified using the D3DTSS_BUMPENVMAT00 through D3DTSS_BUMPENVMAT11 texture stage states. The texbeml texture mode is typically used immediately after a texture stage that reads the u and v displacement values as shown below:</p>
+
+<blockquote><pre>tex t0          // Look up the bump map (2D bump map).
+texbeml t1, t0  // Calculate a 2D texture address based on the 
+                // displacement from stage 0 and then do a tex lookup.</pre></blockquote>
+
+<P>Note that this instruction has an unnamed input which is the assigned texture that corresponds to this texture stage.</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

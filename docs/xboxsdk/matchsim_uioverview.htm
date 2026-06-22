@@ -1,0 +1,288 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Introducing MatchSim</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Introducing MatchSim"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Introducing MatchSim</h1>
+<p>This section introduces the use of the MatchSim program in the following sections.</p>
+<ul>
+<li><a href="#IDARYM2">MatchSim Main Window</a></li><li><a href="#IDA1YM2">Game Title</a></li><li><a href="#IDAZZM2">Attributes</a></li><li><a href="#IDAC2M2">Constants</a></li><li><a href="#IDAH4M2">Queries</a></li><li><a href="#IDA14N2">Query Quality of Service (QoS)</a></li><li><a href="#IDAHIO2">Sessions</a></li></ul>
+<h2><a name="IDARYM2"></a>MatchSim Main Window</h2>
+<p>The Matchmaking Simulator interface is divided into two panes. The left pane is a tree view, from which you 
+	can select different panels that appear in the right pane. The following image shows a typical MatchSim 
+	session.</p><img src="images/xbox_tool_matchsim_ui.jpg"><p><i><b>Illustration</b>&nbsp;&nbsp;A Typical MatchSim Session</i></p>
+<h2><a name="IDA1YM2"></a>Game Title</h2>
+<p>The <b>Game Title</b> panel enables you to specify the name and title ID of your game. </p><p>The <b>Session Expiration</b> value is the minimum number of seconds that MatchSim keeps a 
+	Matchmaking session that has not been updated.  For sessions that aren't hosted by PC game servers, this is 
+	a backup in the event that dead Xbox detection fails. For these sessions, the value should be left at its 
+	default. For PC game servers, the value should be much smaller (60&#8211;120 seconds), because there is 
+	no way of detecting when a PC that is hosting a session goes offline.</p><p>This panel also contains the <b>Statistics</b> group box, which is shown in the figure below. 
+	The <b>Statistics</b> group box displays information about the current MatchSim session.</p><img src="images/xbox_tool_matchsim_gametitle.jpg"><p><i><b>Illustration</b>&nbsp;&nbsp;The Game Title Panel</i></p>
+<p>Specifying a value for <b>Game Title Name</b> is optional; it only changes the title name 
+	displayed in the left pane. However, you must specify your game's title ID (in hexadecimal) in the 
+	<b>Game Title ID</b> text box.</p><h2><a name="IDAZZM2"></a>Attributes</h2>
+<p>The <b>Attributes</b> panel, shown in the illustration below, is where you specify 
+	attributes that your game advertises.</p><img src="images/xbox_tool_matchsim_schema.jpg"><p><i><b>Illustration</b>&nbsp;&nbsp;The Attributes Panel</i></p>
+<p>To add a new attribute to the schema, use the following steps.</p><ol>
+		<li>
+			<p>In the <b>Schema</b> dialog box, click <b>Add</b>. The 
+			<b>Add/Modify Attribute</b> dialog box appears, as shown below:</p>
+	
+			<img src="images/xbox_tool_matchsim_schema_add_attribute.jpg">
+		</li>
+	
+		<li>In the <b>Attribute Name</b> text box, enter a name for the new attribute.</li>
+		
+		<li>From the <b>Attribute Type</b> series of radio buttons, select the appropriate 
+		attribute type.</li>
+	
+		<li>
+			<p>Specify the maximum length of string or binary attributes.</p>
+			<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Be sure to specify only as much space as you really need for string and binary attributes. 
+			The C++ code that MatchSim generates uses these values. As a result, specifying a data length 
+			longer than your title requires may unnecessarily increase the memory required to build a 
+			matchmaking query.</p>
+		</li>
+	
+		<li>
+			<p>To save a new attribute, click <b>OK</b>.</p>
+			<p> -Or- </p>
+			<p> Click <b>Cancel</b> to leave the dialog box without making any modifications.</p>
+		</li>
+	</ol>
+<p>To edit an existing attribute, do the following:</p><ol>
+		<li>From the list, select the existing attribute you want to edit, and then click <b>Edit</b>. The 
+		<b>Add/Modify Attribute</b> dialog box appears.</li>
+		
+		<li>Edit the attribute's properties, and then click <b>OK</b> to save the modifications.</li>
+		
+	</ol>
+<p>To delete an attribute, select it from the list and click <b>Delete</b>.</p><h2><a name="IDAC2M2"></a>Constants</h2>
+<p>The <b>Constants</b> panel, pictured below, enables you to define constants whose
+	values can be included in a matchmaking query.</p><img src="images/xbox_tool_matchsim_constants.jpg"><p><i><b>Illustration</b>&nbsp;&nbsp;The Constants Panel</i></p>
+<p>To add a new constant to the schema, do the following:</p><ol>
+		<li>
+			<p>Click <b>Add</b>. The <b>Add/Modify Constant</b> dialog box appears, 
+			as shown below:</p>
+		
+			<img src="images/xbox_tool_matchsim_add_constant.jpg">
+		</li>
+		
+		<li>Enter a name for the new constant in the <b>Constant Name</b> text box.</li>
+		
+		<li>
+			<p>Enter a value in the <b>Constant Value</b> text box.</p>
+			<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Constants must be unsigned decimal integer values.</p>
+		</li>
+		
+		<li>Click <b>OK</b> to save a new constant.</li>
+		<p>-Or-</p>
+		<p>Click <b>Cancel</b> to leave the dialog box without making any modifications.</p>
+	</ol>
+<p>To edit an existing constant, do the following:</p><ol>
+		<li>From the list, select the constant you would like to edit, and then click <b>Edit</b>. The 
+		<b>Add/Modify Constant</b> dialog box appears.</li>
+		<li>Edit the constant's properties.</li>
+		<li>Click <b>OK</b> to save the modifications when finished.</li>
+	</ol>
+<p>To delete a constant, select it in the list, and then click <b>Delete</b>.</p><h2><a name="IDAH4M2"></a>Queries</h2>
+<ul>
+<li><a href="#IDAM4M2">Types of Queries</a></li><li><a href="#IDAS4M2">Creating, Copying, and Deleting Queries</a></li><li><a href="#IDAFZN2">Editing Queries</a></li></ul>
+<h3><a name="IDAM4M2"></a>Types of Queries</h3>
+<p>MatchSim generates three types of queries: Normal, Find From ID, and Sessions Summary. Find From ID and 
+		Sessions Summary queries are specialized for particular purposes. Use a Find From ID query for Friend invites, 
+		host migration, and reconnecting after rebooting between levels. Use Sessions Summary queries to collect 
+		information grouped by a specified attribute.</p><h3><a name="IDAS4M2"></a>Creating, Copying, and Deleting Queries</h3>
+<p>When you first start the Matchmaking Simulator, the <b>Queries</b> item in the tree 
+		view is empty. To add a query, follow the steps below:</p><ol>
+			<li>
+				<p>In the toolbar, click <b>New Query</b> (it is marked with a "Q").</p>
+				<p> -Or- </p>
+				<p>On the <b>Match</b> menu, click <b>New Query</b>.</p>
+				<p> -Or- </p>
+				<p>Right-click the Queries node in the tree view, and then click <b>New Query</b> 
+				on the pop-up menu that appears.</p>
+			</li>
+	
+			<li>Type a name for the new query into the <b>Enter Name</b> dialog box that appears.</li>
+			
+			<li>You can optionally set the maximum number of results that the query returns by entering a value in the 
+			<b>Max Results</b> text box. If you decline to do so, MatchSim defaults to 25.</li>
+			
+			<li>You can select the <b>Don't require available public slots (for Friends invites)</b> check 
+			box to create a special query that is used when receiving a Friends Invite request; see the description of 
+			the <b>General</b> tab below for more details about creating this kind of query.</li>
+			
+			<li>Select the query type using the <b>Type</b> radio buttons. The available types include 
+			<b>Normal</b>, <b>Find From ID</b>, and <b>Sessions Summary</b>. 
+			If you create a sessions summary query, you must also specify the attribute on which the query will be 
+			grouped. Use the <b>Group By</b> drop-down list to select from the available attributes.</li>
+			
+			<li>When you have entered the information into the dialog box, click <b>OK</b>. </li>
+		</ol>
+<p>The new query appears underneath the <b>Queries</b> node in the tree view.</p><p>To copy an existing query, select the query node in the tree view that you wish to copy. Next, click 
+		<b>Copy Query</b> on the <b>Query</b> menu. Alternately, you can right-click a 
+		query in the tree view, and then click <b>Copy Query</b> on the pop-up menu.</p><p>To delete a query, select the query node in the tree view that you wish to delete. Next, choose
+		<b>Delete Query</b> from the <b>Query</b> menu. Alternately, you can right-click 
+		a query in the tree view, and then choose <b>Delete Query</b> from the pop-up menu.</p><h3><a name="IDAFZN2"></a>Editing Queries</h3>
+<p>To edit or test a query, click the node for the appropriate query. The query editing and testing 
+		panel appears in the right pane. Functions of the query editing and testing panel are divided into 
+		seven subpanels in a tabbed dialog box. Through the tabs, you can select the following options:</p><dl>
+			<dt><b>General</b> </dt>
+			<dd>
+		  		<p>This panel enables you to specify general properties of the query as a whole. The 
+				<b>General</b> panel displays the Query ID for the selected query, in 
+				hexadecimal. (You cannot edit this value.) Enter the maximum number of results that this 
+				query is allowed to return in the <b>Max Results</b> text box. (There is an 
+				absolute maximum of 50 results, regardless of what you enter.)</p>
+		
+			     <p>Click <b>Apply</b> to save changes made in the <b>General</b> tab.</p>
+			</dd>
+			
+			<dt><b>Parameters</b></dt>
+			<dd>
+				<p>This panel enables you to define parameters for the query. To insert a new parameter, click 
+				<b>Insert</b>, which brings up the <b>Insert/Modify Parameter</b> dialog box, 
+				shown here.</p>
+		
+			    <img src="images/xbox_tool_matchsim_query_insert_param.jpg">
+		
+				<p>As for attributes, parameters may be integer, string, or binary values. In 
+				addition, you can select the <b>Allow Parameter to be NULL</b> check box to signal 
+				that the parameter can be ignored in the filtering stage of the query. This allows a parameter 
+				to be used as part of an "any" style query, where any value is valid for that particular 
+				parameter.</p>
+			
+				<p>To edit an existing parameter, select it in the list and click 
+				<b>Edit</b>. To delete a parameter, select it and click <b>Delete</b>. You 
+				can also move a selected parameter up and down in the list by clicking the <b>Move Up</b> 
+				and <b>Move Down</b> buttons.</p>
+			</dd>
+		    
+			<dt><b>Filters</b></dt>  
+			<dd>
+			  	<p>Use the <b>Filters</b> panel to define rules that 
+				restrict the sessions returned by a query. To create a filter, click <b>Add</b>. This 
+				opens the <b>Add/Modify Filter</b> dialog box, which is shown below.</p>
+			
+			    <img src="images/xbox_tool_matchsim_query_add_filter.jpg">
+			
+				<p>Choose the two values you wish to compare in the filter by selecting them from the 
+				<b>Left Side</b> and <b>Right Side</b> drop-down lists. You can select 
+				custom attributes, parameters, and session attributes. Next, choose a comparison operator from the
+				<b>Operator</b> drop-down list. The dialog box displays your filter in the 
+				<b>Filter</b> section.</p>
+			
+				<p>To edit an existing filter, click <b>Edit</b>. To delete a filter, click 
+				<b>Delete</b>.</p>
+			</dd>
+		
+			<dt><b>Sort Operators</b></dt>
+			<dd>
+				<p>Use this panel to sort the sessions returned from the matchmaking server. To add a new sort
+		      	operator, click <b>Insert</b>, which displays the 
+			  	<b>Add/Modify Sort Operator</b> dialog box:</p>
+		
+				<img src="images/xbox_tool_matchsim_query_add_sort.jpg">
+		
+				<p>Select an attribute from the <b>Sort Criteria</b> drop-down list, and then, in the 
+				<b>Type</b> drop-down list, choose 
+				the type of sort that should be performed. This can be a simple sort, such as sorting the results in 
+				<b>Ascending</b> or <b>Descending</b> order. You can also use the values 
+				<b>Near</b> and <b>Far</b> for <i>fuzzy matching</i>. Fuzzy 
+				matching enables you to create queries that return sessions with attributes that are close to, but 
+				not exactly matching, a specified parameter value. You can think of the parameter value as the 
+				center point. The list of sessions the query returns is sorted by the distance from the center 
+				point, ordered with either the near values first (ascending) or the far values first (descending). 
+				Specify the center point value using the <b>Attribute</b> drop-down list.</p>
+		
+		      	<p>To edit an existing sort operator, select it in the list and click <b>Edit</b>. To 
+				delete a selected sort operator, click <b>Delete</b>. You can control the order in 
+				which sort operators are processed by moving them up and down in the list with the 
+				<b>Move Up</b> and <b>Move Down</b> buttons. The matchmaking server 
+				processes sort operators at the top of the list before operators located lower in the list.</p>
+			</dd>
+		      
+			<dt><b>Return Values</b> </dt>
+			<dd>
+				<p>The next panel is where you specify the values that your matchmaking query returns. To add a 
+				return value, click <b>Insert</b>, which displays the <b>Add/Modify Return 
+				Value</b> dialog box.</p>
+	
+				<img src="images/xbox_tool_matchsim_query_add_return.jpg">
+		
+				<p>Select the attribute you wish to return from the <b>Attribute Name</b> 
+				drop-down list. You may also need to select the return type from the <b>Return Type</b> 
+				list.</p>
+		
+				<p>To edit an existing return value, select it in the list, and then click <b>Edit</b>. To 
+				delete a return value, highlight it, and then click <b>Delete</b>. You can control the order 
+				in which values are returned by moving them up and down in the list with the <b>Move Up</b> 
+				and <b>Move Down</b> buttons.</p>
+		  	</dd>
+		
+		  	<dt><b>Query Tester</b></dt>
+		  	<dd>
+				<p>This panel displays the values for the query's parameters in the <b>Parameter Values</b> 
+			  	section at the top of the panel. To test your query, select a number of users from the 
+			  	<b>Number of Users</b> drop-down list and click <b>Run Query</b>. The results 
+			  	from running the query appear in the grid on the lower half of the panel.</p>
+		  	</dd>
+		      
+		  	<dt><b>Filter Summary</b></dt>
+		  	<dd>
+		  		<p>This panel displays a pseudocode summary of the filter settings that you created in the 
+				<b>Filters</b> tab.</p>
+		  	</dd>
+		</dl>
+<h2><a name="IDA14N2"></a>Query Quality of Service (QoS)</h2>
+<p>There is a quality of service (QoS) code generation check box option for queries on the 
+	<b>General</b> tab. When you select this check box, the wizard generates code that performs 
+	connectivity probing before returning the list of matching sessions, and QoS bandwidth probing after returning 
+	the list.  The check box option is available both at query creation time (in the <b>New Query</b> 
+	dialog box) and also in the <b>General</b> tab when inspecting existing queries. Title developers 
+	can turn on or off QoS code generation on a query-by-query basis as needed.</p><p>If you enable QoS probing, MatchSim adds an attribute called <b>qosprobe</b> to the 
+	&lt;<b>query</b>&gt; element in the .xms file it generates. This is demonstrated in the following 
+	sample query.</p>
+<pre class="clsCode">
+&lt;queries&gt;
+	&lt;query id="0x1" name="OptiMatch" maxresults="25" nopubok="0" qosprobe="1"&gt;
+	
+</pre>
+    <p>For more information, see the <a href="matchsim_code.htm#QoS_Probing_Listening">QoS Probing and Listening</a> 
+	section of the <a href="matchsim_code.htm">MatchSim Generated Code</a> topic.</p><h2><a name="IDAHIO2"></a>Sessions</h2>
+<p>Selecting the <b>Sessions</b> node in the left pane displays either: 1) advertised session data 
+	from a running title, or 2) data imported from a Matchmaking Simulator data file (.xmd file extension). The 
+	matchmaking queries you define in the MatchSim tool run against the data displayed in the 
+	<b>Sessions</b> panel.</p><p>Clicking the <b>Sessions</b> node populates the list in the right pane; you can refresh 
+	the list by clicking the <b>Refresh</b> button.</p><p>Once you have put date into the <b>Sessions</b> panel, you may export that data to a file by clicking 
+	<b>Export Data</b>. To import saved session data, click <b>Import Data</b>.</p><p>The MatchSim tool can simulate a running session so you do not have to have an extra Xbox Development Kit 
+	running your game title. To create a simulated session, click <b>Add Session</b>. The <b>Add 
+	Session</b> dialog box appears, which contains an entry field for each attribute that you have defined in 
+	MatchSim. In addition, it always contains the <b>Public Open</b>, <b>Public Filled</b>, 
+	<b>Private Open</b>, and <b>Private Filled</b> attributes. The following image is an 
+	example of how the dialog box might look.</p><img src="images/xbox_tool_matchsim_sessions_add_session.jpg"><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;The actual appearance of the <b>Add Session</b> dialog box depends on the attributes you 
+	have defined.</p><p>Fill in the values that should appear in the simulated session. To add the session to the list that is 
+	displayed in the MatchSim tool's <b>Sessions</b> panel, click <b>Add</b>.</p><p>Sessions do not disappear from MatchSim when a development console is turned off as they would in the Xbox 
+	<i>Live</i> service when a connected Xbox console is turned off. The reason is that the normal 
+	presence mechanism is not involved in the communication between the development console and MatchSim.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

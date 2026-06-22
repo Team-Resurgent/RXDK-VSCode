@@ -1,0 +1,94 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>IXACTSoundBank::Play</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="F" Term="Play"/>
+<MSHelp:Keyword Index="K" Term="Play (IXACTSoundBank)"/>
+<MSHelp:Keyword Index="K" Term="IXACTSoundBank::Play"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>IXACTSoundBank::Play</h1>
+<p>Plays a sound cue.</p>
+<pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>Play(</b>
+    <b>DWORD</b> <i>dwSoundCueIndex</i><b>,</b>
+    <b>PXACTSOUNDSOURCE</b> <i>pSoundSource</i><b>,</b>
+    <b>DWORD</b> <i>dwFlags</i><b>,</b>
+    <b>PXACTSOUNDCUE</b> *<i>ppSoundCue</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+			<dt><i>dwSoundCueIndex</i></dt>
+				<dd>[in]  Sound cue index to play. When passing in a sound cue that has already been <i>prepared</i>, this parameter is not required and can be set to XACT_SOUNDCUE_INDEX_UNUSED (that is, it is not neccessary to track the sound cue index after calling <a href="xbox_ixactsoundbank_prepare_dxaudio.htm">IXACTSoundBank::Prepare</a>).</dd>
+			
+			<dt><i>pSoundSource</i></dt>
+				<dd>[in]  A pointer to an <a href="xbox_ixactsoundsource_dxaudio.htm">IXACTSOUNDSOURCE</a> on which to play the sound cue. This parameter can be NULL if the default sound source is desired.<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;The default sound source (NULL) should be used for playing back any cue whose sounds play waves that are two or more channels (for example, stereo, 4.0, 5.1), as the custom 2D and 3D sound sources each use a MIXIN buffer (and thus can only play mono).</p></dd>
+			
+			<dt><i>dwFlags</i></dt>
+				<dd>[in]  Flags affecting playback. Can be zero or the following:</dd>
+				<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+					<tr>
+<td>XACT_FLAG_SOUNDCUE_AUTORELEASE</td>
+<td>Causes the cue to be automatically released when playback is finished (no sound cue pointer is returned). This has no effect on subsequent playback of the cue.</td>
+</tr>
+					<tr>
+<td>XACT_FLAG_SOUNDCUE_PREPARED</td>
+<td>This flag must be set when passing a valid sound cue instance from a prior call to the <a href="xbox_ixactsoundbank_prepare_dxaudio.htm">IXACTSoundBank::Prepare</a> method.<p>This flag is not valid for use with the XACT_FLAG_SOUNDCUE_USE_LAST_VARIATION flag.</p></td>
+</tr>
+					<tr>
+<td>XACT_FLAG_SOUNDCUE_USE_LAST_VARIATION</td>
+<td>Indicates that the sound cue should use the last sound selected, assuming that multiple sounds are associated with the cue. That sound will continue to be selected until the function is called without specifying XACT_FLAG_SOUNDCUE_USE_LAST_VARIATION, at which point the sounds are selected at random again.<p>This does not affect wave variations. If the sound has a play event with wave variations, the waves will be selected at random. Similarly, pitch and volume variations are unaffected by this flag.</p><p>If no previous sound has been selected before using this flag, a sound will be selected at random.</p><p>This flag is not valid for use with the XACT_FLAG_SOUNDCUE_PREPARED flag.</p></td>
+</tr>
+					
+				</table>
+				<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;When calling <b>Play</b> with <i>dwFlags</i> set to zero, and passing a valid <i>ppSoundCue</i> out parameter, <b>Play</b> will fill <i>ppSoundCue</i> with a cue instance. However, if the cue holds a WMAPlayList then <b>Play</b> will return without setting <i>ppSoundCue</i>.</p>
+			
+			<dt><i>ppSoundCue</i></dt>
+				<dd>[in, out]  The address of an IXACTSoundCue pointer. If the XACT_FLAG_SOUNDCUE_PREPARED flag is specified, this parameter must be a valid pointer (<i>in</i> parameter) to a sound cue obtained by calling the <a href="xbox_ixactsoundbank_prepare_dxaudio.htm">IXACTSoundBank::Prepare</a> function. If this parameter is NULL, meaning no sound cue is desired, the XACT_FLAG_SOUNDCUE_AUTORELEASE flag must be specified. Otherwise, a sound cue pointer is returned.</dd>
+			
+		</dl>
+<h4><a name="return"></a>Return Values</h4>
+            <p>Returns DS_OK if successful, an error code otherwise.</p>
+        <h4><a name="remarks"></a>Remarks</h4>
+			<p>The layer of a sound cue is not applied until the cue is played. Calling <b>Play</b> with XACT_FLAG_SOUNDCUE_PRIME or calling <a href="xbox_ixactsoundbank_prepare_dxaudio.htm">IXACTSoundBank::Prepare</a> will not interrupt playing cues.</p>
+
+<p>Titles must call <a href="xbox_ixactsoundbank_stop_dxaudio.htm">Stop</a> to release sound cue pointers returned by <b>Play</b>, <a href="xbox_ixactsoundbank_playex_dxaudio.htm">PlayEx</a>, <a href="xbox_ixactsoundbank_prepareex_dxaudio.htm">PrepareEx</a>, or <b>Prepare</b>.  For sound cues that play to completion, call <b>Stop</b> when the cue's stop notification arrives.  Sound cue pointers are not returned (and need not be released) when XACT_FLAG_SOUNDCUE_AUTORELEASE is specified.</p>
+
+
+		<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in XACT.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use XACTEng.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="xbox_ixactsoundbank_playex_dxaudio.htm">IXACTSoundBank::PlayEx</a>,
+<a href="xbox_ixactsoundsource_dxaudio.htm">IXACTSOUNDSOURCE</a>,
+<a href="xbox_ixactsoundbank_stop_dxaudio.htm">IXACTSoundBank::Stop</a>
+</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

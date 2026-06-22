@@ -1,0 +1,67 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>ILiveEngine::Render</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="F" Term="Render"/>
+<MSHelp:Keyword Index="K" Term="Render (ILiveEngine)"/>
+<MSHelp:Keyword Index="K" Term="ILiveEngine::Render"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>ILiveEngine::Render</h1>
+<p>Renders active Xbox Drop-in UI screens to the specified surface.</p><pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>Render(</b>
+    <b>IDirect3DSurface8</b> *<i>pSurface</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+<dt><i>pSurface</i></dt>
+<dd>[in]  Pointer to an <a href="_dx_idirect3dsurface8_graphics.htm">IDirect3DSurface8</a> interface representing the surface to render to.</dd>
+</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>Returns S_OK if successful, an error code otherwise.</p>
+<h4><a name="remarks"></a>Remarks</h4>
+<p>Titles should call <b>Render</b> within their render loop after performing game rendering to the specified surface. <b>Render</b> need be called only when the <a href="ILiveEngine_DoWork.htm">ILiveEngine::DoWork</a> method indicates that rendering is required.</p>
+
+<p>Some advanced Direct3D states and features are not recognized or supported by <b>Render</b>. For example, the Xbox Drop-in UI cannot retrieve from Direct3D a vertex shader instruction state that was directly loaded. For these unsupported states, the title must save the state and reset the state back to defaults before calling <b>Render</b>. After the call to <b>Render</b>, the title can then restore the state as needed.</p>
+
+<p>The following states and features are not recognized or supported by <b>Render</b>:</p>
+<ul>
+<li>Direct vertex shader programs, reached by methods of the <a href="_dx_idirect3ddevice8_graphics.htm">IDirect3DDevice8</a> interface (<a href="xbox_dxg_IDirect3DDevice8_loadvertexshader.htm">LoadVertexShader</a>, <a href="_dx_idirect3ddevice8_loadvertexshaderprogram_graphics.htm">LoadVertexShaderProgram</a>, <a href="xbox_dxg_IDirect3DDevice8_selectvertexshader.htm">SelectVertexShader</a>, <a href="_dx_idirect3ddevice8_selectvertexshaderdirect_graphics.htm">SelectVertexShaderDirect</a>, <a href="_dx_idirect3ddevice8_setvertexshaderinput_graphics.htm">SetVertexShaderInput</a>, and <a href="_dx_idirect3ddevice8_setvertexshaderinputdirect_graphics.htm">SetVertexShaderInputDirect</a>)</li>
+<li>Direct pixel shader programs, set by the <a href="_dx_idirect3ddevice8_setpixelshaderprogram_graphics.htm">IDirect3DDevice8::SetPixelShaderProgram</a> method</li>
+<li>Clip planes, set by <b>IDirect3DDevice8</b> methods (<a href="_dx_idirect3ddevice8_setdepthclipplanes_graphics.htm">SetDepthClipPlanes</a>, <a href="_dx_idirect3ddevice8_settransform_graphics.htm">SetTransform</a> with the D3DTS_PROJECTION constant)</li>
+<li>Back buffer scaling, set by the <a href="_dx_idirect3ddevice8_setbackbufferscale_graphics.htm">IDirect3DDevice8::SetBackBufferScale</a> method</li> 
+<li>Direct3D pure devices (that is, devices created using the <a href="_dx_idirect3d8_createdevice_graphics.htm">D3DCREATE_PUREDEVICE</a> flag).</li>
+</ul>
+
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Uix.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Uix.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="ILiveEngine_DoWork.htm">ILiveEngine::DoWork</a>,
+<a href="_dx_idirect3dsurface8_graphics.htm">IDirect3DSurface8</a>
+</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineFriendsRevokeGameInvite</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineFriendsRevokeGameInvite"/>
+<MSHelp:Keyword Index="F" Term="XOnlineFriendsRevokeGameInvite"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineFriendsRevokeGameInvite</h1>
+            <p>Revokes a pending game invitation issued to a specified list of friends.</p>
+			<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;It is recommended that titles use <a href="XOnlineGameInviteRevoke.htm">XOnlineGameInviteRevoke</a> instead of this method.</p>
+        <pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineFriendsRevokeGameInvite(</b>
+    <b>DWORD</b> <i>dwUserIndex</i><b>,</b>
+    <b>XNKID</b> <i>SessionID</i><b>,</b>
+    <b>DWORD</b> <i>dwFriendListCount</i><b>,</b>
+    <b>const XONLINE_FRIEND</b> *<i>pToFriendList</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+            <dt><i>dwUserIndex</i></dt>
+<dd>[in]  Controller index (zero-based) of the user revoking the invite.  The user must have been successfully logged on with a previous call to <a href="XOnlineLogon.htm">XOnlineLogon</a>.</dd>
+            
+            <dt><i>SessionID</i></dt>
+<dd>[in]  Game session identifier of the game invitation to revoke. This identifier must match the one used in the call to <a href="XOnlineFriendsGameInvite.htm">XOnlineFriendsGameInvite</a> when the game invitation was sent.</dd>
+            
+            <dt><i>dwFriendListCount</i></dt>
+<dd>[in]  Number of friends in the <i>pToFriendList</i> array.</dd>
+            
+            <dt><i>pToFriendList</i></dt>
+<dd>[in]  Pointer to an array of <a href="XONLINE_FRIEND.htm">XONLINE_FRIEND</a> structures specifying the friends whose invitations should be revoked.</dd>
+            
+        </dl>
+<h4><a name="return"></a>Return Values</h4>
+
+
+    
+    
+    <p>If <b>XOnlineFriendsRevokeGameInvite</b> succeeds, the return value is S_OK.</p>
+
+
+
+
+<p>If <b>XOnlineFriendsRevokeGameInvite</b> fails, the return value is one of the following error codes.</p>
+
+<table>
+
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td>XONLINE_E_NOTIFICATION_TOO_MANY_REQUESTS</td>
+<td>Too many pending requests to service. To avoid this error, pump the handle returned  by <a href="XOnlineFriendsStartup.htm">XOnlineFriendsStartup</a> more frequently. If you get this error during a game, pump the handle returned by <b>XOnlineFriendsStartup</b>, and then call <b>XOnlineFriendsRevokeGameInvite</b> again.
+</td>
+</tr>
+<tr>
+<td>XONLINE_E_NOTIFICATION_NO_TASK</td>
+<td>The friends startup task is not active. You must first call <b>XOnlineFriendsStartup</b> to create the startup task.</td>
+</tr>
+<tr>
+<td>E_OUTOFMEMORY</td>
+<td>Insufficient memory. Free some memory.</td>
+</tr>
+
+<tr>
+<td>Other</td>
+<td>See <a href="xbox_online_errors.htm">Online Errors</a> for information about other possible errors.</td>     
+</tr>
+</table>
+
+
+
+
+
+            <p>If the function succeeds, the return value is S_OK.</p>
+        <h4><a name="remarks"></a>Remarks</h4>
+			<p>The task returned by the <a href="XOnlineFriendsEnumerate.htm">XOnlineFriendsEnumerate</a> function must be active at the time the title calls the <b>XOnlineFriendsRevokeGameInvite</b> function.</p>
+            <p><a href="XOnlineTaskContinue.htm">Pump</a> the task returned by <a href="XOnlineFriendsStartup.htm">XOnlineFriendsStartup</a> in order to carry out the revocation.</p>
+            <p>Passing in a value of zero for <i>dwFriendListCount</i> and a value of NULL for <i>pToFriendList</i> revokes all invitations sent by this player. In this case only, the task returned by <b>XOnlineFriendsEnumerate</b> need not be active when calling <b>XOnlineFriendsRevokeGameInvite</b>.</p>
+
+            <p><b>XOnlineFriendsRevokeGameInvite</b> cannot revoke an invitation if the receiving player has enumerated their friends list since receiving the invitation.</p>
+
+            <p>Setting the <i>sessionID</i> parameter to zero in a call to <a href="XOnlineNotificationSetState.htm">XOnlineNotificationSetState</a> automatically expires all previously sent invitations, regardless of whether they have been enumerated by the receiving player.</p>
+        <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+             <a href="x_mt_xonline_functions.htm">Xbox Live Functions</a> | <a href="xbox_Live_Friends.htm">Friends Lists</a> | <a href="XOnlineFriendsGameInvite.htm">XOnlineFriendsGameInvite</a>, <a href="XOnlineFriendsAnswerGameInvite.htm">XOnlineFriendsAnswerGameInvite</a>, <a href="XOnlineFriendsStartup.htm">XOnlineFriendsStartup</a>
+        </p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

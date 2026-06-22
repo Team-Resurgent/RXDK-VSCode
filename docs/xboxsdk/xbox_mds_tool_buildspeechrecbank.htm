@@ -1,0 +1,103 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Build Speech Recognition Bank (BuildSpeechRecBank)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Build Speech Recognition Bank (BuildSpeechRecBank)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+  <MSHelp:Keyword Index="K" Term="vocabulary list for speech recognition, building"/>
+  <MSHelp:Keyword Index="K" Term="speech recognition files, generating vocabulary for"/>
+  <MSHelp:Keyword Index="K" Term="Packed Neural Network file (.pni)"/>
+  <MSHelp:Keyword Index="K" Term="Pronunciation Dictionary file (.pdc)"/>
+  <MSHelp:Keyword Index="K" Term="BuildSpeechRecBank"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Build Speech Recognition Bank (BuildSpeechRecBank)</h1>
+<p>The Build Speech Recognition Bank (BuildSpeechRecBank) tool uses a section-based .txt file containing vocabulary information to generate an Xbox Speech Recognition (.xsr) file that can be copied directly to Xbox game discs and loaded into memory at runtime by the XHV API. For information on the XHV interface, see the <a href="XHV_Speech_Recognition_Reference.htm">XHV Speech Recognition Reference</a> section.</p><h2><a name="IDA5AEV"></a>Usage</h2>
+<pre class="clsCode">
+USAGE: buildspeechrecbank outputfile.xsr vocablist.txt [options]
+</pre>
+    <table>
+<tr>
+<th>Option</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>-l</td>
+<td>Specifies the language file set to use. "USEnglish", "UKEnglish", "French", "German", "Japanese", or "Spanish" may be specified, with the default being "USEnglish".</td>
+</tr>
+<tr>
+<td>-n</td>
+<td>Specifies the number of simultaneous users supported. Can be a value between 1 and 4, with the default being 1.</td>
+</tr>
+<tr>
+<td>-h <i>filename</i></td>
+<td>Specifies the name of a header (.h) file to be generated. The generated header file contains defines for each section represented in the resulting .xsr file.</td>
+</tr>
+</table>
+<p>Two language support files are required to be in either the tool's installation directory or the current working directory where the tool is being run. These files consist of a Pronunciation Dictionary file (.pdc) and a Packed Neural Network file (.pni). Additionally, the files are labeled <i>language</i>.pdc and <i>language</i>.pni, where <i>language</i> is "USEnglish", "UKEnglish", "French", "German", "Japanese", or "Spanish". BuildSpeechRecBank requires these files in order to build the .xsr file for the target language.</p><h3><a name="IDA5BEV"></a>Creating a Vocabulary List</h3>
+<p>A vocabulary list is simply a Unicode .txt file containing word sections, word indices, and vocabulary words. For example, a vocabulary list containing a word section called [actions], followed by the vocabulary words <i>run</i>, <i>jump</i>, and <i>fly</i> might look like this:
+
+<pre class="clsCode">
+[actions]
+100 Run
+101 Jump
+102 Fly
+</pre>
+    
+This will cover some basic actions for a character in a game title. You may add more groups to support voice recognition in different contexts of the game. The game may load a new context depending on the game state. For example, the following entries could be added to the same .txt file to support menu controls:
+
+<pre class="clsCode">
+[menu]
+200 Up
+201 Down
+202 Left
+203 Right
+204 Select
+</pre>
+    
+
+Note that in each of the above sections, the numbers associated with the vocabulary words are unique. This is not a requirement of the engine, but is a recommended practice because it may alleviate confusion during development.</p><h3><a name="IDAPCEV"></a>Generating a Header File</h3>
+<p>As specified in the command-line arguments, the <b>-h</b> switch will generate a header file based on the section information listed in the .txt file. To generate a header, you would use the following command line:
+
+<pre class="clsCode">
+buildspeechrecbank title.xsr title.txt -h title.h
+</pre>
+    
+For the example .txt above, the resulting header file would appear as follows:
+
+<pre class="clsCode">
+#include &lt;xhv.h&gt;
+
+const XHV_SR_VOCAB_SECTION XHV_SR_VOCAB_ACTIONS = 0;
+const XHV_SR_VOCAB_SECTION XHV_SR_VOCAB_MENU = 1;
+
+const DWORD XHV_SR_WORD_RUN = 100;
+const DWORD XHV_SR_WORD_JUMP = 101;
+const DWORD XHV_SR_WORD_FLY = 102;
+const DWORD XHV_SR_WORD_UP = 200;
+const DWORD XHV_SR_WORD_DOWN = 201;
+const DWORD XHV_SR_WORD_LEFT = 202;
+const DWORD XHV_SR_WORD_RIGHT = 203;
+const DWORD XHV_SR_WORD_SELECT = 204;
+</pre>
+    
+
+The first two constants in this example can be used when calling <a href="XHVEngine_SelectVocabulary.htm">IXHVEngine::SelectVocabulary</a> to determine which vocabulary (or vocabularies) are active. The constants that follow (elements from the [actions] and [menu] sections of the vocabulary list) may be used when calling the <a href="ITitleXHV_SpeechRecognized.htm">ITitleXHV::SpeechRecognized</a> method to identify unique words.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

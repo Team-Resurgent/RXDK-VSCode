@@ -1,0 +1,37 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Custom Loading</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Custom Loading"/>
+<MSHelp:Keyword Index="F" Term="Custom Loading"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_custom_loading_dxaudio"></A>Custom Loading</H1>
+
+<P>Specialized applications might create their own object types that encapsulate data from a file or resource. It can be convenient to have the DirectMusic loader handle the loading of such objects. This is especially true if the custom object is referenced by other objects or contains references to other objects. </P>
+
+<P>To implement a loading mechanism that takes advantage of the DirectMusic loader, take the following steps:
+
+<UL>
+	<LI>Register the object class so that it can be found by <A HREF="_dx_idirectmusicloader8_getobject_dxaudio.htm">IDirectMusicLoader8::GetObject</A>.</LI>
+
+	<LI>Implement the <A HREF="_dx_idirectmusicobject8_dxaudio.htm">IDirectMusicObject8</A> interface on the object so that the loader can get the information that it needs to find and cache it.</LI>
+
+	<LI>Implement the <B>IPersistStream</B> interface on the object, with full functionality in the <B>IPersistStream::Load</B> method. This is where you parse the data that you obtain through calls on the <B>IStream</B> interface passed by the DirectMusic loader.</LI>
+
+	<LI>In the implementation of <B>Load</B>, ensure that references to other objects are dealt with by querying the <B>IStream</B> for the <A HREF="_dx_idirectmusicgetloader8_dxaudio.htm">IDirectMusicGetLoader8</A> interface, then calling <A HREF="_dx_idirectmusicgetloader8_getloader_dxaudio.htm">IDirectMusicGetLoader8::GetLoader</A> to obtain a pointer to the DirectMusic loader that created the stream. Once you have this pointer, you can call<B> IDirectMusicLoader8::GetObject</B> to load the new object.</LI>
+</UL>
+
+<P>It might happen that an application needs to manage file input itself&#8212;for example, because all objects are stored in a special compressed resource file. The application can create its own loader by creating an object that supports the <B>IDirectMusicLoader8</B> interface, with the <B>IDirectMusicLoader8::GetObject</B> method implemented. All other methods are optional. This implementation of the loader must also create its own stream object that has both the <B>IStream</B> and the <B>IDirectMusicGetLoader8</B> interfaces. </P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

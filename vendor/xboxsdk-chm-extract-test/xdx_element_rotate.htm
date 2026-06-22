@@ -1,0 +1,88 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>rotate Element</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+<MSHelp:Attr Name="DevLang" Value="XML"/>
+<MSHelp:Attr Name="DevLang" Value="XSL"/>
+<MSHelp:Attr Name="Technology" Value="XML"/>
+<MSHelp:Keyword Index="K" Term="rotate element"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>rotate Element</h1>
+<p>The &lt;<b>rotate</b>&gt; element groups rotation data that rotates the frame in local space via quaternions.</p>
+<pre class="syntax" xml:space="preserve">&lt;rotate
+   value = string
+/&gt;</pre>
+<h4>Required Attributes</h4>
+<p>None.</p><h4>Optional Attributes</h4>
+<dl id="idXML">
+<dt><b>value</b></dt>
+<dd>
+						<p>If specified, the <b>value</b> attribute should contain four space-delimited floating-point values comprising the quaternion by which to rotate the frame. In most cases, <b>value</b> will be "0 0 0 -1"&#8212;no rotation. If there is animation associated to the frame, this attribute should be left undefined. See the examples below.</p>
+					</dd>
+</dl>
+<h4>Element Information</h4>
+<table>
+<tr>
+<td><b>Parent Elements</b></td>
+<td><a href="xdx_element_matrix.htm">matrix</a></td>
+</tr>
+<tr>
+<td><b>Child Elements</b></td>
+<td><a href="xdx_element_animate.htm">animate</a>, <a href="xdx_element_keyTimes.htm">keyTimes</a>, <a href="xdx_element_values.htm">values</a></td>
+</tr>
+</table>
+<h4><a name="examples"></a>Examples</h4>
+<dl><dt><b>A. Simple Rotation Without Animation</b></dt>
+<dd><p>In this example, the frame is rotated 90 degrees around the x-axis. Since this is a simple rotation, the &lt;<b>rotate</b>&gt; element has no children.</p>
+
+<pre class="clsCode">
+&lt;rotate value="0 0.7071 0 0.7071"/&gt;
+</pre>
+    
+</dd>
+<dt><a name="animation"></a><b>B. Rotation With Animation</b></dt>
+<dd><p>This rotation involves an animation that starts at 0 seconds and lasts for 36 seconds. It is broken up into multiple key times (ranging from 0 to 1.) Each key time corresponds to a single rotation by a quaternion. For example, at key time 0.5, the frame will be rotated by the quaternion (0, -1, 0, 7.54979e-008). Because there is animation with multiple rotations, the <b>value</b> attribute of the &lt;<b>rotate</b>&gt; element is undefined.</p>
+						
+
+<pre class="clsCode">
+&lt;rotate&gt;
+   &lt;animate begin="0s" dur="36s"/&gt;
+   &lt;values&gt;
+      0 0 0 -1
+      0 -1 0  7.54979e-008
+      0 -1.50996e-007 0 -1
+   &lt;/values&gt;
+   &lt;keyTimes&gt;
+      0
+      0.5
+      1
+   &lt;/keyTimes&gt;
+&lt;/rotate&gt;
+</pre>
+    
+						</dd>
+</dl>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

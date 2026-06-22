@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirect3DDevice8::BeginPush</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="BeginPush (IDirect3DDevice8)"/>
+<MSHelp:Keyword Index="K" Term="IDirect3DDevice8::BeginPush"/>
+<MSHelp:Keyword Index="F" Term="BeginPush"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_idirect3ddevice8_beginpush_graphics"></A>IDirect3DDevice8::BeginPush</H1>
+
+<P>Allows the caller to write directly to Direct3D's primary push-buffer. <b>BeginPush</b> is most useful for situations where the caller uses the CPU to generate vertex data, and does not wish to incur the function-call overhead associated with using <a href="_dx_begin_end_blocks_graphics.htm"><b>Xbox Begin/End Block</b></a>, or the copy overhead of <a href="xbox_dxg_IDirect3DDevice8_DrawVerticesUP.htm"><b>IDirect3DDevice8::DrawVerticesUP</b></a>.</P>
+
+<PRE class=syntax><B>HRESULT BeginPush(
+  DWORD</B><I> Count</I><b>,
+  DWORD</b> <i>**ppPush</i>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>Count</I></DT>
+
+<DD>[in] The number of DWORDS to be reserved in the push-buffer. The caller can use less than this amount, but Direct3D will always guarantee that there are at least <i>Count</i> DWORDs free when <b>BeginPush</b> returns. For best performance, <i>Count</i> should be less than the <i>KickOffSize</i>, as specified by <a href="xbox_dx_graphics_IDirect3D8_SetPushBufferSize.htm"><b>IDirect3D8::SetPushBufferSize</b></a>. The caller must never write more data than space has been reserved for.</DD>
+
+<DT><I>ppPush</I></DT>
+
+<DD>[out] Address of a pointer to a DWORD. On return, <i>*ppPush</i> points directly into Direct3D's primary push-buffer.</DD>
+
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the method succeeds, the return value is <A HREF="_dx_return_values_graphics.htm#_dx_s_ok_graphicsd3dx"><B>S_OK</B></A>.</P>
+
+<h4>Remarks</h4>
+
+<p>After calling <b>BeginPush</b>, <a href="_dx_idirect3ddevice8_endpush_graphics.htm"><b>IDirect3DDevice8::EndPush</b></a> must be called once the data is completely written. On debug builds, Direct3D will generate a "Nested calls the push-buffer allocator" error if <b>EndPush</b> is not called. No Direct3D functions that write to the push-buffer may be used until <b>EndPush</b> is called.</p>
+
+<p>Direct3D performs no validation on the data written to the push-buffer, even on debug builds. However, if the data is bad, the GPU may generate a "GRAPHICS HARDWARE" error, where "Method" is the method, "Data" is the value written to that method, and "Get" points to a location in the push-buffer that can be as far away as 1 KB past the offending data. When debugging an error, be sure to dump the 1 KB of push-buffer data that precedes the point indicated by "Get", and search the dump data for the values given as the "Method" and "Data".</p>
+
+<p>The GPU may also generate a "GRAPHICS PARSE" error, where "Get" points to the exact location in the push-buffer where the bad data is located.</p>
+
+<p>To be used as a replacement for <b>DrawVerticesUP</b>, the caller needs to set the vertex format using <a href="_dx_idirect3ddevice8_setvertexshader_graphics.htm"><b>IDirect3DDevice8::SetVertexShader</b></a> before calling <b>BeginPush</b>. All attributes in the vertex format must be padded DWORD multiples, and the vertex attributes must be specified in the canonical FVF ordering (position followed by weight, normal, diffuse, and so on).</p>
+
+<p>The following example shows how code using <b>BeginPush</b> might look:</p>
+
+<pre>// This code assumes that pDevice is a valid pointer
+// to an IDirect3DDevice8 interface.
+
+DWORD *pPush; 
+DWORD dwordCount = 4 * VertexCount;
+pDevice-&gt;SetVertexShader( D3DFVF_XYZRHW );
+
+// The "+5" is to reserve enough overhead for the encoding
+// parameters. It can safely be more, but no less.
+pDevice-&gt;BeginPush( dwordCount + 5, &amp;pPush );
+
+// Note that pPush is returned as a pointer to write-combined memory. Writes to
+// write-combined memory should be consecutive and in increasing order. Reads
+// should be avoided. Additionally, any CPU reads from memory or the L2 cache
+// can force expensive partial flushes of the 32-byte write-combine cache.
+
+pPush[0] = D3DPUSH_ENCODE( D3DPUSH_SET_BEGIN_END, 1 );
+pPush[1] = D3DPT_TRIANGLELIST;
+
+// NOTE: A maximum of 2047 DWORDs can be specified to D3DPUSH_ENCODE.
+//   If there is more than 2047 DWORDs of vertex data, simply split
+//   the data into multiple D3DPUSH_ENCODE( D3DPUSH_INLINE_ARRAY )
+//   sections.
+
+pPush[2] = D3DPUSH_ENCODE( D3DPUSH_NOINCREMENT_FLAG | D3DPUSH_INLINE_ARRAY, dwordCount );
+pPush += 3;
+
+for (i = 0; i &lt; VertexCount; i++)
+{
+  pPush[0] = *((DWORD*) &amp;MyVertexArray[i].x);
+  pPush[1] = *((DWORD*) &amp;MyVertexArray[i].y);
+  pPush[2] = *((DWORD*) &amp;MyVertexArray[i].z);
+  pPush[3] = *((DWORD*) &amp;MyVertexArray[i].w);
+  
+  pPush += 4;
+}
+
+pPush[0] = D3DPUSH_ENCODE( D3DPUSH_SET_BEGIN_END, 1 );
+pPush[1] = 0;
+pPush += 2;
+
+pDevice-&gt;EndPush( pPush );
+</pre>
+
+<H4>Requirements</H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in D3d8.h.<BR>
+<B>&nbsp;&nbsp;Import Library:</B> Use D3d8.lib.</P>
+
+<H4>See Also</H4>
+
+<p><a href="_dx_idirect3ddevice8_endpush_graphics.htm"><b>IDirect3DDevice8::EndPush</b></a>, <A HREF="_dx_idirect3ddevice8_beginstate_graphics.htm"><B>IDirect3DDevice8::BeginState</B></A>, <A HREF="_dx_idirect3ddevice8_endstate_graphics.htm"><B>IDirect3DDevice8::EndState</B></A></p>
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

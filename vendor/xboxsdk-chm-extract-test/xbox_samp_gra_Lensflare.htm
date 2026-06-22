@@ -1,0 +1,99 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>LensFlare Sample</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="LensFlare Sample"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>LensFlare Sample</h1>
+<p>The LensFlare sample shows how to use Xbox-specific features to create a convincing 
+lens flare effect. </p>
+
+<h2><a name="IDA1CYK"></a>Overview</h2>
+<p>This sample uses both Xbox's visibility processing and its GPU texture 
+copying abilities.</p><h2><a name="IDABDYK"></a>Path</h2>
+<p>Source: (XDK Root)\Samples\Xbox\Graphics\Lensflare</p><h2><a name="IDAHDYK"></a>Remarks</h2>
+<p>The sample first renders a light sprite into the back buffer.  It then uses the 
+visibility of the light sprite as well as a "stretched" version of the back buffer 
+alpha channel to achieve the light "flare out" and element rendering effects.</p><p>The algorithm for drawing the lens flare is as follows: Given a light sprite 
+(alpha texture and color), a number of flare element sprites (an alpha texture, distance 
+from light, and color per element), the light direction, and the eye vector, do the 
+following.</p><ol>
+	<li>Clear the back buffer alpha at the light source (render the light sprite with 
+	the z buffer and color write disabled, and alpha write enabled). Set back buffer 
+	alpha = 0.</li>
+	
+	<li>Render the light sprite (with the z buffer enabled) to determine visibility and
+       fill in the back buffer alpha. Set back buffer alpha = light texture alpha where 
+	   the light is visible (passes z test). Set it to 0 where the light is not visible 
+	   (fails z test). Set the visibility ratio = number of visible pixels / max number 
+	   of visible pixels.</li>
+	   
+	<li>Copy the portion of the back buffer rendered to by the light sprite to a texture.
+	Transform the light sprite quad into screen space to find the source rectangle. Be 
+	sure to account for sampling artifacts and clipping of the sprite.</li>
+	
+	<li>Render the light in the "flare out" style. To do so, be sure to do the following.
+	<ul>
+		<li>Enable alpha blending.</li>
+        <li>Use the back buffer copy for the light sprite texture.</li>
+        <li>Render the light sprite n times while increasing the sprite's size on each 
+		pass.</li>
+        <li>Light intensity = dotproduct(eye vector, light direction).</li>
+        <li>Set sprite rgb      = f( light intensity, light color.rgb ).</li>
+        <li>Set sprite alpha    = f( light intensity, light color.a, back buffer alpha, n ).</li>
+	</ul>
+	</li>
+	
+	<li>Render the flare element sprites along the element vector. To do so, set the 
+	following values.
+	<ul>
+		<li>element vector  = ( screen space light position - screen space light
+                              center (usually screen center) )</li>
+        <li>distance ratio  = length( element vector ) / max distance</li>
+        <li>position        = element vector * element distance from light</li>
+        <li>scale           = f( distance ratio )</li>
+        <li>sprite rgb      = element color.rgb</li>
+        <li>sprite alpha    = f( distance ratio, visibility ratio, element color.a,
+                               light intensity )</li>
+	</ul>
+	</li>
+</ol>
+<p>The sample encapsulates this algorithm in the CLensFlare class.  It uses a structure 
+to contain the light and an array of structs. This structure defines each flare element. 
+The program uses the structure to create an instance of the class.  After the parameters 
+have been filled in, the sample simply calls CLensFlare::Render() while processing each 
+frame to produce the desired results. You can tune the creation parameters to achieve a 
+wide variety of lens flare effects.</p><p>The LensFlare sample implements the following optimizations:</p><ul>
+	<li>The effect is culled if it is outside of the view frustum.</li>
+    <li>If the visibility ratio is 0, the effect is occluded.</li>
+    <li>IDirect3DDevice8::CopyRects is used for the back buffer copy.</li>
+    <li>Alpha textures are used for the light and elements.</li>
+    <li>The back buffer is not copied if the light is fully visible.</li>
+</ul>
+<p>Further optimizations for an "in-game" implementation are possible. The sample stalls 
+while it waits for the completion of the first rendering of the light sprite (it must 
+wait for the sprite to be rendered to copy the back buffer and get the results of the 
+visibility test).  An in-game implementation could render other objects during this 
+period to avoid the stall (as long as they could not occlude the light or render into the 
+alpha channel of the color buffer).  The light source could also be moved further 
+overhead to avoid rendering the effect with other "expensive" objects near the ground 
+plane.  Finally, the code could be rewritten for speed, which may sacrifice clarity.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

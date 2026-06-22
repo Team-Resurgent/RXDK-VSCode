@@ -1,0 +1,79 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Kernel Memory Management</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Kernel Memory Management"/>
+<MSHelp:Keyword Index="F" Term="Kernel Memory Management"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Kernel Memory Management</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<P>The kernel provides the basic memory management functionality for the Xbox.  The Xbox kernel implements virtual memory, but not demand paging.</P>
+
+<H3>Virtual Memory</H3>
+
+<P>With virtual memory, there is a translation layer between memory addresses used by the game title and the physical RAM that those addresses represent.  Titles can address up to 4 GB of virtual memory using 32-bit linear addresses.  The 64 MB of available physical RAM is mapped into that 4 GB address space in 4 KB chunks called <em>pages</em>.  The kernel's virtual memory management support is exposed to titles through the virtual memory functions in the XTL, such as <a href="memman_3elf.htm">VirtualAlloc</a>.  Most virtual addresses used by titles will be in the lower two gigabytes, but some virtual addresses, such as thread stacks and physical memory allocations (discussed below) will be in the upper two gigabytes of the address space.</P>
+
+<P>The advantage to using virtual memory addresses backed by pages of RAM is that available RAM can be mapped into a contiguous virtual address range even if the RAM itself is fragmented throughout physical memory.  For example, a title could allocate 14 MB of memory and address it as a contiguous address space, even though there may not be 14 MB of contiguous RAM available.  Though physical RAM itself may be fragmented, titles can still allocate as much total RAM as is available and not worry about the fragmentation.</P>
+
+<H3>Heap Memory</H3>
+
+<P>The heap functions enable a title to create and access a <em>private heap</em>, a block of one or more pages of virtual memory in the address space of the title. The title can then use the heap functions (such as <a href="memman_6krn.htm">HeapAlloc</a>) to manage the memory in that heap. A heap is designed and optimized for the allocation and deallocation of small blocks of memory (typically, smaller than the system page size of 4KB), but allocations of larger blocks can also be performed. From a system perspective, there is no difference between memory allocated from a private heap and that allocated by using the virtual memory allocation functions.  The heap functions provide a structured layer above the virtual memory functions.  Heaps allocate virtual memory using the virtual memory functions, and then manage smaller allocations and deallocations within that section of virtual memory.  The memory management routines in the C runtime libraries are built on top of the heap functions themselves, so it is more efficient to call the heap functions directly rather than relying on CRT allocation routines.</P>
+
+<H3>Physical Memory</H3>
+
+<P>As mentioned above when discussing virtual memory, a contiguous range of virtual memory may not be backed by a contiguous range of physical memory.  Adjacent, committed pages in the virtual address space may be backed by two pages of RAM located in completely different parts of the 64 MB physical memory.  Often, when dealing with video or other hardware, it is beneficial (or even necessary) for a continguous range of physical memory to be used.  For example, a DMA transfer may require that all memory blocks used in a single DMA operation be adjacent.  The kernel provides support for allocating contiguous physical memory when required.  Again, as with virtual memory, this kernel support is made available through XTL routines, in this case the <B>XPhysical<I>xxx</I></B> functions, such as <a href="xbox_mt_sll_memman_xphysicalalloc.htm">XPhysicalAlloc</a>.  When requesting physical memory, the allocation request will fail if the requested amount of RAM is not available in one contiguous section of free physical memory.</P>
+
+<H3>Demand Paging</H3>
+
+<P>The kernel does not perform demand paging.  In demand paging, the contents of a portion of physical memory are written to the hard disk and then that physical memory is freed for use by another process (or another portion of the same process).  Later, when the first process attempts to access that memory again, the original data is read back from the hard drive and once again stored in physical memory.</P>
+
+<P>Writing to the hard disk is a time-consuming task compared to reading data directly from memory.  Demand paging sacrifices performance so that multiple processes can allocate more memory than is available, and not worry (as much) about the effects on other processes or the system software itself.</P>
+
+<P>The Xbox kernel makes the opposite choice, favoring performance.  Because only a single process is running at a time, demand paging would offer little benefit and would inflict performance losses and periodic interrupts on the title.  Instead, a title must keep track of the amount of memory it allocates and avoid requesting more memory than is physically available.  Memory allocations will begin to fail after all available physical RAM (64 MB) has been allocated.</P>
+
+<a name="dev_system_memory"></a>
+<H3>Xbox Development System Memory</H3>
+
+<P>Xbox development and debug consoles have an extra "upper" 64 MB of physical RAM that can be used while developing and debugging titles.  This upper memory is not available on retail Xbox consoles. (So game titles should not rely on it.)  For testing purposes, this upper bank can be disabled with the <a href="xbox_jbh_tool_imagebld.htm">ImageBld</a> switch /LIMITMEM.</P>
+
+<P>The upper memory (if not disabled) will be used by the virtual and heap memory allocation functions to satisfy memory requests after all memory in the lower 64 MB has been allocated.  For example, a call to <a href="memman_3elf.htm">VirtualAlloc</a> or <a href="memman_6krn.htm">HeapAlloc</a> may, once the lower bank is full, return a virtual address backed by physical RAM residing in the upper memory bank.  Additionally, virtual or heap memory backed by RAM in the lower bank may be moved into the upper bank to satisfy requests specifically for memory in the lower bank.</P> 
+
+<P>The physical memory allocation functions (<a href="xbox_mt_sll_memman_xphysicalalloc.htm">XPhysicalAlloc</a> and <a href="xbox_dxg_D3D_AllocContiguousMemory.html">D3D_AllocContiguousMemory</a>) will allocate memory only from the <I>lower bank</I>, regardless of whether /LIMITMEM is specified, and will fail if the requested amount of memory cannot be obtained from the 64 MB lower memory bank.  As mentioned above, virtual or heap memory backed by RAM in the lower bank will be moved to the upper bank (if it is not disabled) in order to satisfy requests for physical memory in the lower bank.</P>
+
+<P>The debug manager and debug manager routines, used for debugging and remote access on development and debug consoles, will allocate memory only from the <I>upper</I> bank, regardless of whether /LIMITMEM is specified.  The <a href="xbox_jbh_debugapi_function_dmallocatepool.htm">DmAllocatePool</a> function will always allocate and return memory from the upper 64 MB of RAM.  Debug and development tools (and the title's own debug routines) can thus allocate memory without interfering with the title's normal allocations in the lower bank.</P>
+
+
+<!--*******************************************************************************-->
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

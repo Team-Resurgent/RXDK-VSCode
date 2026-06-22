@@ -1,0 +1,268 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Memory and Bandwidth Considerations for XACT Streaming Wave Banks</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Memory and Bandwidth Considerations for XACT Streaming Wave Banks"/>
+<MSHelp:Keyword Index="K" Term="streaming wave banks, memory use"/>
+<MSHelp:Keyword Index="K" Term="latency, streaming wave banks"/>
+<MSHelp:Keyword Index="K" Term="zero-latency streaming"/>
+<MSHelp:Keyword Index="K" Term="streaming, zero-latency"/>
+<MSHelp:Keyword Index="K" Term="bandwidth usage, streaming wave banks"/>
+<MSHelp:Keyword Index="K" Term="XACT, streaming wave banks"/>
+<MSHelp:Keyword Index="K" Term="XACT, bandwidth considerations"/>
+<MSHelp:Keyword Index="F" Term="Memory and Bandwidth Considerations for XACT Streaming Wave Banks"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1 class="heading"><A NAME=""></A>Memory and Bandwidth Considerations for XACT Streaming Wave Banks</H1>
+
+<p><i>By Scott Selfon, Audio Content Consultant, Xbox Advanced Technology Group</i></p>
+
+<h2>Introduction</h2>
+<p>As discussed in more detail in the XACT chapters <a href="cd_aud_wp_bp_chap9.htm">Authoring with the Xbox Audio Creation Tool (XACT)</a> and <a href="cd_aud_wp_bp_chap10.htm">Programming with the Xbox Audio Creation Tool (XACT)</a> of <a href="cd_aud_wp_bp.htm">Best Practices for Xbox Audio Design</a>, XACT can be used to bundle waves into wave banks. These wave banks can be authored as "in memory," where their binary images are loaded entirely into memory, or they can be "streaming," where most of the wave data will reside on the hard disk and/or game disc, to be read into memory when needed. The focus of this paper will be on the memory and bandwidth aspects of using these streamed wave banks. The accompanying <a href="https://xds.xbox.com/content/download/WaveBankResourceEstimator.xls" target="blank">spreadsheet</a> can be used to determine the memory impact for streaming one or more waves, as well as an estimate of the bandwidth requirements.</p>
+<h2>Memory Use for Streaming Wave Banks</h2>
+<p>Determining the amount of memory a streaming wave bank will use depends on several factors: the wave format, the packet size, and, if looping and/or zero-latency streaming is being used, the prime packet size.</p>
+<h3>Wave Format</h3>
+<p>Wave format will determine the raw data rate for streaming this wave file. It can be determined by the following formula (units in parenthesis):</p>
+<img src="images/XACTStreaming1.gif" width="593" height="51" alt="Data rate formula" border="0">
+<p>For instance, a 44.1-kHz 16-bit stereo (two-channel) wave would be:</p>
+<img src="images/XACTStreaming2.gif" width="387" height="50" alt="Data rate example" border="0">
+<p>If ADPCM compression is used, the compressed data rate is:</p>
+<img src="images/XACTStreaming3.gif" width="593" height="51" alt="ADPCM data rate formula" border="0">
+<p>which is roughly 3.5 times smaller than the source content.</p>
+<h3>Packet Size</h3>
+<p>Packet size determines how much audio data will be accessed with each specific request. A larger packet size will mean more data is available (and the chance for a stream starving [running out of data] will be less), but each packet will require more system memory. Conversely, a small packet size will use less memory but increases the possibility that audio data won't be available when it needs to be played. Packet size also has bandwidth implications that will be discussed a little later.</p>
+<p>Packet size is determined by the programmer at the time that a streamed wave bank is registered (via <b>IXACTEngine::RegisterStreamedWaveBank</b>), by setting the dwPacketSizeInMilliSecs element of the XACT_WAVEBANK_STREAMING_PARAMETERS structure. Note that packet size is indeed in milliseconds, meaning that the actual size in bytes will vary based on the format of each particular wave. In addition, recall that to provide for optimal asynchronous nonbuffered I/O, which will not block the CPU during reads,<sup>1</sup> XACT automatically sector-aligned all waves in streamed wave banks. This alignment will now also apply to our packet size. For the hard disk, the sector size is 512 bytes, while on the game disc, sectors are 2048 bytes. Packet size does not depend on the length of the source wave, so whether we're using a five-second wave or a twenty-minute wave, the packet size will remain the same.</p>
+<p>The formula for actual packet size:</p>
+<img src="images/XACTStreaming4.gif" width="593" height="56" alt="Packet size formula" border="0">
+<p>where <img src="images/XACTStreaming5.gif" width="20" height="20" alt="" border="0"> means that we round up to the nearest sector size (512 bytes if streaming from the hard disk, or 2048 bytes if streaming from the game disc).</p>
+<p>As an example, using the 44.1-kHz 16-bit stereo wave once again, if the wave was streamed from the hard disk and used a packet size of 100 msec (quite reasonable for the hard disk), the memory used per packet would be:</p>
+<img src="images/XACTStreaming6.gif" width="593" height="53" alt="Packet size example streaming from hard disk" border="0">
+<p>Similarly, if a packet size of 500 msec was streamed from the game disc, the memory used per packet would be:</p>
+<img src="images/XACTStreaming7.gif" width="593" height="44" alt="Packet size example streaming from game disc" border="0">
+<p>Streaming ADPCM waves adds another element to the mix. Remember that the Xbox audio hardware requires all ADPCM content to be 64-sample aligned. For mono waves, that translates into 36 bytes, and for stereo waves, 72 bytes. This same alignment requirement will need to be applied to the packet size.</p>
+<p><i>ADPCM Alignment (HD)</i> &#61; <i>L.C.M.</i> (512,36) &#61; 512 &#215; 9 &#61; 4608 <i>bytes</i></p>
+<p><i>ADPCM Alignment (Game Disc)</i> &#61; <i>L.C.M.</i> (2048,36) &#61; 2048 &#215; 9 &#61; 18432 <i>bytes</i></p>
+<p>Remembering that the ADPCM data rate is 36/128 the size of the source PCM material, the packet size for the hard disk stream above would be:</p>
+<img src="images/XACTStreaming8.gif" width="540" height="72" alt="ADPCM packet size streaming from hard disk" border="0">
+<p>And the packet size for the game disc stream would be:</p>
+<img src="images/XACTStreaming9.gif" width="543" height="72" alt="ADPCM packet size streaming from game disc" border="0">
+<p>Note that the larger alignment size means that it's entirely possible that a streamed ADPCM wave might take more memory than its corresponding PCM source. As an example, if a 16-bit 22-kHz (22050 Hz) mono wave was streaming off the hard disk with a 90 msec packet size:</p>
+<img src="images/XACTStreaming10.gif" width="644" height="53" alt="PCM packet size streaming from hard disk" border="0"><br>
+<img src="images/XACTStreaming11.gif" width="703" height="56" alt="ADPCM packet size streaming from hard disk" border="0">
+<p>When waves are streaming, two packets are used per playing instance, so that one can always be accepting data while the other one is playing.</p>
+<h3>Prime Packet Size</h3>
+<p>Prime packets are used when one or more extra packets will be read in for a wave at the time the bank is initialized. A prime packet will be used in two scenarios:</p>
+<ul>
+<li>Sample-accurate looping of a streamed wave</li>
+<li>Zero-latency ("primed") streaming of a wave</li></ul>
+<p>In the case where a wave is both looped and using zero-latency streaming, two prime packets are used.</p>
+<p>As with regular packets, prime packet size is set in milliseconds by the programmer when the streaming wave bank is registered. It's often easiest to use the same size for prime packets as was used for regular packets. The formula used to determine the prime packet size in bytes is the same as that used for regular packets:</p>
+<img src="images/XACTStreaming11a.gif" width="595" height="55" alt="Prime packet size formula" border="0">
+<p>The same sector alignment restrictions are used as with regular packets.</p>
+<h3>Number of Packets</h3>
+<p>Now that we know the size of each of our packets and prime packets, we need only to determine how many packets our particular waves will use to determine the actual memory needed. The memory implications of a playing streamed wave are as follows:</p>
+<table class="preferred">
+<tr>
+ <td class="preferred">Streaming, non-looped</td>  
+ <td class="preferred">2 packets, 0 prime packets</td>  
+</tr>
+<tr>  
+ <td class="preferred">Streaming, looped</td>
+ <td class="preferred">2 packets, 1 prime packet</td>
+</tr>
+<tr>  
+ <td class="preferred">Zero-latency streaming, non-looped</td>
+ <td class="preferred">2 packets, 1 prime packet</td>
+</tr>
+<tr>  
+ <td class="preferred">Zero-latency streaming, looped</td>
+ <td class="preferred">2 packets, 2 prime packets</td>
+</tr></table>
+<p>Prime packets are allocated when the streaming wave bank is registered, while regular packets will be allocated only when individual streaming waves are played. Note that unlike regular packets, which will be created per playing instance of the wave, prime packets are only created once per wave. As an example, if a room has twenty torches in it, and each will be composed of the same looping wave, each torch would use its own pair of regular packets, but every torch would share the same single prime packet for the loop point of the wave. Similarly, a zero-latency wave would have a single prime packet created when its streaming wave bank was registered, and that single packet would be reused every time that wave was played.</p>
+<h2>Access Time and Bandwidth Implications</h2>
+<p>A natural question to ask would be what a reasonable packet size should be for the hard disk or the game disc. Based on typical and worst case access times (discussed in detail in the white paper <a href="prog_wp_maxperf.htm">Maximizing Xbox File Performance</a>), here are some recommended numbers for packet (and prime packet) size.</p>
+<table class="preferred">
+<tr>
+ <th class="preferred"></th>  
+ <th class="preferred">Conservative</th>  
+ <th class="preferred">Minimum</th>
+</tr>
+<tr>  
+ <td class="preferred">Hard disk</td>
+ <td class="preferred">100 msec</td>
+ <td class="preferred">30 msec</td>
+</tr>
+<tr>  
+ <td class="preferred">Game disc</td>
+ <td class="preferred">500 msec</td>
+ <td class="preferred">200 msec</td>
+</tr></table>
+<p>As far as bandwidth, remember that many factors will influence how many streams you can play successfully from media at a time, including:</p>
+<ul>
+<li><i>Physical distance.</i> Keeping all of the streamed data in a single wave bank, or at least wave banks that are in adjoining disk sectors, will minimize this number.</li>
+<li><i>Number of concurrent accesses.</i> This includes non-XACT accesses. Textures and geometry being streamed from the game disc at the same time as audio will, of course, reduce the bandwidth available for audio.</li>
+</ul>
+<p>Even if all streamed data were read contiguously, the hard disk and game disc can read only a certain amount of data per second. Remember that the game disc uses constant angular velocity (CAV), so bandwidth for the innermost ring will be less than reads from locations farther out on the disc.</p>
+<table class="preferred">
+<tr>
+ <th class="preferred"></th>  
+ <th class="preferred">Conservative</th>  
+ <th class="preferred">Theoretical Max</th>
+</tr>
+<tr>  
+ <td class="preferred">Hard disk</td>
+ <td class="preferred">5 MB/sec</td>
+ <td class="preferred">12 MB/sec</td>
+</tr>
+<tr>  
+ <td class="preferred">Game disc (inner ring)</td>
+ <td class="preferred">1.5 MB/sec</td>
+ <td class="preferred">2.7 MB/sec</td>
+</tr>
+<tr>  
+ <td class="preferred">Game disc (outer usable<sup>2</sup> ring)</td>
+ <td class="preferred">3.0 MB/sec</td>
+ <td class="preferred">6.4 MB/sec</td>
+</tr></table>
+<p>These numbers are discussed in more detail in the aforementioned <a href="prog_wp_maxperf.htm">Maximizing Xbox File Performance</a> white paper.</p>
+<h2>Optimizing Packet Size</h2>
+<p>Now that we understand how packet size is influenced by wave format and more importantly, sector size, let's briefly look at some boundary conditions that might be good guidelines when determining packet size. In particular, because sector alignment means that certain packet/prime packet sizes will round up to the same read size (in bytes), XACT is going to use the largest packet size that fits the amount of data that is going to be read.</p>
+<p>As an example, streaming a 44.1-kHz mono wave from the hard disk, sector alignment means that the packet size is identical for a range of roughly 5 milliseconds. For instance, a packet size of 30 to 34 msec will result in the same actual packet size: 3072 bytes. So XACT will stream this wave with 34 msec read ahead regardless of if the programmer requested 30, 31, 32, 33, or 34 msec. </p>
+<img src="images/XACTStreaming12.gif" width="618" height="413" alt="Graph of memory footprint for streaming" border="0">
+<p class="caption"><span class="label">Illustration</span>&nbsp;&nbsp; Because packet sizes are sector aligned, they do not increase strictly linearly. (The curve of a nonlooping zero-latency streamed wave would be identical to that of the looped regular streaming curve.) </p>
+<p>The numbers become more significant for game disc reads with the larger sector alignment size. For the 44.1-kHz mono wave, packet sizes between 186 and 208 msec all translate to 18432 bytes, so 208 msec will be the actual packet size used for all of those requested values.</p>
+<img src="images/XACTStreaming13.gif" width="620" height="405" alt="Graph of memory footprint for streaming" border="0">
+<p>And ADPCM alignment of course widens the range of values that will read the same amount of memory. For a 44.1-kHz mono ADPCM wave being streamed from the hard disk, packet sizes of up to 185 msec will use the minimum sector alignment of 4608 bytes, while a 186 msec packet size would bump us up to double that value, at 9216 bytes. </p>
+<img src="images/XACTStreaming14.gif" width="618" height="413" alt="Graph of memory footprint for streaming" border="0">
+<p>Determining these kinds of "boundary points" can be done quite easily by plugging values into the accompanying spreadsheet for your particular format of waves and seeing how high you can push the packet size (in milliseconds) before the packet size (in bytes) becomes too large.</p>
+<h2>Packet Size Recommendations (Conservative)</h2>
+<p>Based on the above data, here are some basic recommendations for packet size for the most commonly encountered formats. Again, these are fairly conservative as far as packet size (using a minimum size of 100 msec for the hard disk and 500 msec for the game disc); if no other aspects of a title need access to the file system in-game, packet size could potentially be significantly reduced.</p>
+<h3>Hard Disk</h3>
+<table class="preferred">
+<tr>
+ <th class="preferred">Format (assume 16 bits for PCM waves)</th>  
+ <th class="preferred">Packet/prime packet size (msec)</th>  
+ <th class="preferred">Bandwidth</th>
+<th class="preferred">Memory: nonlooped regular streaming / nonlooped zero-latency streaming</th></tr>
+<tr>  
+ <td class="preferred">48 kHz mono</td>
+ <td class="preferred">101 msec</td>
+ <td class="preferred">96 KB/sec</td>
+ <td class="preferred">19 KB / 29 KB</td></tr>
+ <tr>  
+ <td class="preferred">48 kHz stereo</td>
+ <td class="preferred">101 msec</td>
+ <td class="preferred">192 KB/sec</td>
+ <td class="preferred">39 KB / 58 KB</td></tr>
+ <tr>  
+ <td class="preferred">44.1 kHz mono</td>
+ <td class="preferred">104 msec</td>
+ <td class="preferred">88 KB/sec</td>
+ <td class="preferred">18 KB / 28 KB</td></tr>
+ <tr>  
+ <td class="preferred">44.1 kHz stereo</td>
+ <td class="preferred">104 msec</td>
+ <td class="preferred">176 KB/sec</td>
+ <td class="preferred">36 KB / 55 KB</td></tr>
+ <tr>  
+ <td class="preferred">44.1 kHz quad</td>
+ <td class="preferred">100 msec</td>
+ <td class="preferred">353 KB/sec</td>
+ <td class="preferred">71 KB / 106 KB</td></tr>
+ <tr>  
+ <td class="preferred">44.1 kHz ADPCM mono</td>
+ <td class="preferred">185 msec</td>
+ <td class="preferred">25 KB/sec</td>
+ <td class="preferred">9 KB / 14 KB</td></tr>
+ <tr>  
+ <td class="preferred">44.1 kHz ADPCM stereo</td>
+ <td class="preferred">185 msec</td>
+ <td class="preferred">50 KB/sec</td>
+ <td class="preferred">18 KB / 28 KB</td></tr>
+ <tr>  
+ <td class="preferred">22.05 kHz mono</td>
+ <td class="preferred">104 msec</td>
+ <td class="preferred">44 KB/sec</td>
+ <td class="preferred">9 KB / 14 KB</td></tr>
+ <tr>  
+ <td class="preferred">22.05 kHz stereo</td>
+ <td class="preferred">104 msec</td>
+ <td class="preferred">88 KB/sec</td>
+ <td class="preferred">18 KB / 28 KB</td></tr></table>
+  <h3>Game Disc</h3>
+<table class="preferred">
+<tr>
+ <th class="preferred">Format (assume 16 bits for PCM waves)</th>  
+ <th class="preferred">Packet/prime packet size (msec)</th>  
+ <th class="preferred">Bandwidth</th>
+<th class="preferred">Memory: nonlooped regular streaming / nonlooped zero-latency streaming</th></tr>
+<tr>  
+ <td class="preferred">48 kHz mono</td>
+ <td class="preferred">512 msec</td>
+ <td class="preferred">96 KB/sec</td>
+ <td class="preferred">98 KB / 147 KB</td></tr>
+ <tr>  
+ <td class="preferred">48 kHz stereo</td>
+ <td class="preferred">501 msec</td>
+ <td class="preferred">192 KB/sec</td>
+ <td class="preferred">192 KB / 289 KB</td></tr>
+ <tr>  
+ <td class="preferred">44.1 kHz mono</td>
+ <td class="preferred">510 msec</td>
+ <td class="preferred">88 KB/sec</td>
+ <td class="preferred">90 KB / 135 KB</td></tr>
+ <tr>  
+ <td class="preferred">44.1 kHz stereo</td>
+ <td class="preferred">510 msec</td>
+ <td class="preferred">176 KB/sec</td>
+ <td class="preferred">180 KB / 270 KB</td></tr>
+ <tr>  
+ <td class="preferred">44.1 kHz quad</td>
+ <td class="preferred">505 msec</td>
+ <td class="preferred">353 KB/sec</td>
+ <td class="preferred">356 KB / 535 KB</td></tr>
+ <tr>  
+ <td class="preferred">44.1 kHz ADPCM mono</td>
+ <td class="preferred">743 msec</td>
+ <td class="preferred">25 KB/sec</td>
+ <td class="preferred">37 KB / 55 KB</td></tr>
+ <tr>  
+ <td class="preferred">44.1 kHz ADPCM stereo</td>
+ <td class="preferred">743 msec</td>
+ <td class="preferred">50 KB/sec</td>
+ <td class="preferred">74 KB / 111 KB</td></tr>
+ <tr>  
+ <td class="preferred">22.05 kHz mono</td>
+ <td class="preferred">510 msec</td>
+ <td class="preferred">44 KB/sec</td>
+ <td class="preferred">45 KB / 68 KB</td></tr>
+ <tr>  
+ <td class="preferred">22.05 kHz stereo</td>
+ <td class="preferred">510 msec</td>
+ <td class="preferred">88 KB/sec</td>
+ <td class="preferred">90 KB / 135 KB</td></tr></table>
+<h2>Wrap-Up</h2>
+<p>Streaming from the hard disk or game disc gives you enormous flexibility over strictly in-memory playback of wave data. For a fraction of the memory footprint, you can have access to many hundreds (if not thousands) of megabytes of audio data. This allows you to use richer, higher fidelity sounds, as well as more variation in the source material that a game chooses from. Keep in mind the above considerations for memory use and bandwidth restrictions, and always communicate memory and file I/O budgets as early in the process as possible. Happy authoring!</p>
+<p>For more information about topics presented here, please consult the Xbox Audio Best Practices Guide, the Xbox Development Kit documentation, or the white papers in the Audio Designer's Corner, or send an e-mail message to <a href="mailto:content@xbox.com">content@xbox.com</a>.</p>
+<HR ALIGN="left" WIDTH="300">
+<p class="footnote"><sup>1</sup> For more information on asynchronous streaming and how it can be applied to non-audio  data streaming, see the white paper <a href="prog_wp_maxperf.htm">Maximizing Xbox File Performance</a>.</p>
+<p class="footnote"><sup>2</sup> The outermost roughly 10 percent of the game disc often spins fast enough to generate read errors in all but ideal circumstances, leading to lessened bandwidth and increased access time.</p>
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

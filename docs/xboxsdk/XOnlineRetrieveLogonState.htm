@@ -1,0 +1,78 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineRetrieveLogonState</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineRetrieveLogonState"/>
+<MSHelp:Keyword Index="F" Term="XOnlineRetrieveLogonState"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineRetrieveLogonState</h1>
+<p>Retrieves logon state information from an <a href="XONLINE_LOGON_STATE.htm">XONLINE_LOGON_STATE</a> structure obtained with a previous call to <a href="XOnlineSaveLogonState.htm">XOnlineSaveLogonState</a>.  This information can be used to perform a logon with the same players and services that were logged on at the time <b>XOnlineSaveLogonState</b> was called.</p>
+<pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineRetrieveLogonState(</b>
+    <b>const XONLINE_LOGON_STATE</b> *<i>pLogonState</i><b>,</b>
+    <b>PXONLINE_USER</b> <i>pUsers</i><b>,</b>
+    <b>DWORD</b> *<i>pdwServiceIDs</i><b>,</b>
+    <b>DWORD</b> *<i>pdwServices</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+<dt><i>pLogonState</i></dt>
+<dd>[in]  Pointer to an <a href="XONLINE_LOGON_STATE.htm">XONLINE_LOGON_STATE</a> structure that specifies the logon state information previously obtained with a call to <b>XOnlineSaveLogonState</b>.</dd>
+            
+
+<dt><i>pUsers</i></dt>
+<dd>[out]  Pointer to an array of <a href="XONLINE_USER.htm">XONLINE_USER</a> structures that receive the player logon states as extracted from the <i>pLogonState</i> data. The array must be able to hold at least XONLINE_MAX_LOGON_USERS structures of type <b>XONLINE_USER</b>.</dd>
+            
+
+<dt><i>pdwServiceIDs</i></dt>
+<dd>[out]  Pointer to an array of <b>DWORD</b> values that receive the service identifiers as extracted from the <i>pLogonState</i> data. This represents the services that were logged onto when the logon state was saved.  The array must be able to hold at least XONLINE_MAX_LOGON_STATE_SERVICES values of type <b>DWORD</b>.</dd>
+            
+
+<dt><i>pdwServices</i></dt>
+<dd>[in, out]  Pointer to a variable of type <b>DWORD</b> that specifies the number of <b>DWORD</b> values that can be stored in the <i>pdwServiceIDs</i> buffer.  If this value is not large enough to hold the required number of service identifiers, the function will fail and return E_INVALIDARG.  Upon a successful return, <i>pdwServices</i> contains the actual number of service identifiers written to <i>pdwServiceIDs</i>.</dd>
+            
+
+</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>If the function is successful, the return value is S_OK.</p>
+<p>If the value specified in <i>pdwServices</i> is less than the required number of service identifiers, the return value is E_INVALIDARG.</p>
+<h4><a name="remarks"></a>Remarks</h4>
+<p><b>XOnlineRetrieveLogonState</b> extracts the data returned 
+by a previous <b>XOnlineSaveLogonState</b> call.  The returned <i>pUsers</i> 
+and <i>pdwServiceIDs</i> arrays can be used in an <a href="XOnlineLogon.htm">XOnlineLogon</a> 
+call to attempt to logon onto Xbox Live using the same 
+players and services that were logged on when <b>XOnlineSaveLogonState</b> was originally called.</p> 
+
+<p>To persist logon information through a reboot, the game title calls <b>XOnlineSaveLogonState</b> before the reboot. The game title then places the returned <b>XONLINE_LOGON_STATE</b> somewhere in the <a href="x_mt_launchdata.htm">LAUNCH_DATA</a> before calling <a href="x_jsk_xlaunchnewtitle.htm">XLaunchNewImage</a>. After the reboot, the game title extracts the <b>XONLINE_LOGON_STATE</b> from the launch data, and then calls <b>XOnlineRetrieveLogonState</b> to extract all the parameters needed to call <b>XOnlineLogon</b> again.</p> 
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="x_mt_xonline_functions.htm">Xbox Live Functions</a> | <a href="XOnlineSaveLogonState.htm">XOnlineSaveLogonState</a>, <a href="XONLINE_LOGON_STATE.htm">XONLINE_LOGON_STATE</a>, <a href="XONLINE_USER.htm">XONLINE_USER</a>, <a href="XOnlineLogon.htm">XOnlineLogon</a>
+</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

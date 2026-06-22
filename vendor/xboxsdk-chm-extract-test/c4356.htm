@@ -1,0 +1,93 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Stock Text. Do not change.****-->
+<TITLE>Compiler Warning (level 2) C4356</TITLE>
+<!--**********************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="C4356"/>
+<MSHelp:Keyword Index="F" Term="C4356"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Stock Text. Do not change.****-->
+<H1 class="heading"><A NAME="c4356"></A>Compiler Warning (level 2) C4356</H1>
+<!--**********************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<P><b>'<i>member</i>' : static data member cannot be initialized via derived class</b></P>
+
+<P>The initialization of a static data member was ill formed. The compiler accepted 
+the initialization.</p>
+
+<p>This is a breaking change in the Visual C++ .NET 2003 compiler.</p>
+
+<p>For code that works the same in all versions of Visual C++, initialize the 
+member through the base class.</p>
+
+<p>The following sample generates C4356:</p>
+
+<pre class = "code">// C4356.cpp
+// compile with: /W2 /EHsc
+#include &lt;iostream&gt;
+
+template &lt;class T&gt;
+class C
+{
+   static int n;
+};
+
+class D : C&lt;int&gt;
+{
+};
+
+int D::n = 0; // C4356
+// try the following line instead
+// int C&lt;int&gt;::n = 0;
+
+class A
+{
+public:
+   static int n;
+};
+
+class B : public A
+{
+};
+
+int B::n = 10;   // C4356
+// try the following line instead
+// int A::n = 99;
+
+int main()
+{
+   using namespace std;
+   B myb;
+   cout &lt;&lt; B::n &lt;&lt; endl;
+}</PRE>
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+
+</BODY>
+</HTML>

@@ -1,0 +1,415 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Pixel Shader Optimizing</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="optimize a pixel shader"/>
+<MSHelp:Keyword Index="F" Term="Pixel Shader Optimizing"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1 class="heading"><A NAME="wp_pixel_shader"></A>Pixel Shader Optimizing</H1>
+
+<p><i>By Bruce Dawson, Xbox Advanced Technology Group</i></p>
+
+<p>This paper demonstrates techniques for hand-optimizing of pixel shaders. Careful use of Xbox&#174;-specific pixel shader instructions and the final combiner can frequently double the performance of pixel shaders, making this a worthwhile endeavor for expensive, fill-bound rendering operations.</p>
+
+<p>Hand-optimizing of pixel shaders is important because the Xbox pixel shader assembler does no optimizations. It's all up to you.</p>
+
+<p>This paper demonstrates the optimizing of a seven-stage (four-cycle) pixel shader into three or four stages (two cycles). The original shader is representative of shaders that we have seen in actual shipping games&#8212;similar optimization opportunities are not uncommon.</p>
+
+<p>The purpose of the shader is not initially given in order to demonstrate that substantial pixel shader optimizing can be done, even if you don't know what the shader does!</p>
+
+<h2>Original Shader</h2>
+
+<pre>
+xps.1.1              // use Xbox extensions
+
+def c0, 1.0f, 0.0f, 0.0f, 0.0f
+def c1, 0.0f, 1.0f, 0.0f, 0.0f
+
+//--- Texture Stages ---
+tex t0
+tex t1
+tex t2
+tex t3
+
+//--- Combiner Stage 0 ---
+mul r0.rgb, t3.rgb, v1.a
++ mov r0.a, v1.b
+
+//--- Combiner Stage 1 ---
+mad r0, t2, r0.a, r0
+
+//--- Combiner Stage 2 ---
+dp3 r1, v1, c1
+
+//--- Combiner Stage 3 ---
+mad r0, t1, r1, r0
+
+//--- Combiner Stage 4 ---
+dp3 r1, v1, c0
+
+//--- Combiner Stage 5 ---
+mad r0, t0, r1, r0
+
+//--- Combiner Stage 6 ---
+mul_x2 r0, r0, v0
+
+//--- Final Combiner ---
+xfc zero, zero, r0, zero, zero, zero, r0.a
+</pre>
+
+<h3>Turning the Shader into Pseudo-code</h3>
+
+<p>First, we go through the shader, one stage at a time, and rewrite it in a more readable form.</p>
+
+<table>
+	<tr>
+		<td rowspan="2" style="background: #CCCCCC">Cycle 1</td>
+		<td style="background: #CCCCCC">Stage 0</td>
+		<td style="background: #CCCCCC">r0.rgb = t3.rgb * v1.a<br>r0.a = v1.b</td>
+	</tr>
+	<tr>
+		<td>Stage 1</td>
+		<td>r0 = t2 * r0.a + r0</td>
+	</tr>
+	<tr>
+		<td rowspan="2">Cycle 2</td>
+		<td style="background: #CCCCCC">Stage 2</td>
+		<td style="background: #CCCCCC">r1 = v1 dot c1</td>
+	</tr>
+	<tr>
+		<td>Stage 3</td>
+		<td>r0 = t1 * r1 + r0</td>
+	</tr>
+	<tr>
+		<td rowspan="2" style="background: #CCCCCC">Cycle 3</td>
+		<td style="background: #CCCCCC">Stage 4</td>
+		<td style="background: #CCCCCC">r1 = v1 dot c0</td>
+	</tr>
+	<tr>
+		<td>Stage 5</td>
+		<td>r0 = t0 * r1 + r0</td>
+	</tr>
+	<tr>
+		<td rowspan="2">Cycle 4</td>
+		<td style="background: #CCCCCC">Stage 6</td>
+		<td style="background: #CCCCCC">r0 = 2 * r0 * v0</td>
+	</tr>
+	<tr>
+		<td>Stage 7</td>
+		<td>Unused</td>
+	</tr>
+	<tr>
+		<td style="background: #CCCCCC"></td>
+		<td style="background: #CCCCCC">Final combiner</td>
+		<td style="background: #CCCCCC">result = r0</td>
+	</tr>
+</table>
+
+<h3>Turning the Shader into a Single Expression</h3>
+
+<p>Now we want to turn this into a single equation so that we can work on it more easily. In the equations below, the newly inserted expressions are underlined for emphasis. We start with the last equation:</p>
+
+<pre>r0 = 2 * v0 * r0</pre>
+
+<p>then insert the calculated value for r0 from stage 5.</p>
+
+<pre>r0 = 2 * v0 * (t0 * r1 + r0)</pre>
+
+<p>then insert the calculated value for r1 from stage 4.</p>
+
+<pre>r0 = 2 * v0 * (t0 * (v1 dot c0) + r0)</pre>
+
+<p>then insert the calculated value for r0 from stage 3.</p>
+
+<pre>r0 = 2 * v0 * (t0 * (v1 dot c0) + t1 * r1 + r0)</pre>
+
+<p>then insert the calculated value for r1 from stage 2.</p>
+
+<pre>r0 = 2 * v0 * (t0 * (v1 dot c0) + t1 * (v1 dot c1) + r0)</pre>
+
+<p>then insert the calculated value for r0 from stage 1.</p>
+
+<pre>r0 = 2 * v0 * (t0 * (v1 dot c0) + t1 * (v1 dot c1) + t2 * r0.a + r0)</pre>
+
+<p>Finally, insert the values for r0.rgb and r0.a from stage 0.</p>
+
+<pre>r0 = 2 * v0 * (t0 * (v1 dot c0) + t1 * (v1 dot c1) + t2 * v1.b + t3.rgb * v1.a)</pre>
+
+<p>That's not so bad.</p>
+
+<p>It turns out that this shader implements a blend between four textures. The four channels of the specular color, v1, select between the textures, allowing an arbitrary mix between these textures. This shader can be used, for instance, to blend between four different terrain textures&#8212;perhaps gravel, road, grass, and dirt&#8212;to allow rendering a range of terrain types and transitions in a single draw call.</p>
+
+<p>t2 and t3 are controlled by v1.b and v1.a, respectively. t0 and t1 are controlled by v1.r and v1.g, with dot products being used to isolate those channels&#8212;by setting c0 and c1 to pure red and pure green, respectively.</p>
+
+<p>The result is then multiplied by the diffuse color and simultaneously multiplied by two.</p>
+
+<h2>Xbox Pixel Shader Hardware</h2>
+
+<p>Before we start optimizing, we need to understand the capabilities of the Xbox hardware. A combiner stage on the Xbox takes four inputs and can produce three outputs. The possible outputs and the instructions to invoke them are:</p>
+
+<ul>
+	<li><b>dot</b>/<b>dot</b>/<b>discard</b> - <b>xdd</b></li>
+	<li><b>dot</b>/<b>mult</b>/<b>discard</b> - <b>xdm</b></li>
+	<li><b>mult</b>/<b>mult</b>/<b>mux</b> - <b>xmmc</b></li>
+	<li><b>mult</b>/<b>mult</b>/<b>sum</b> - <b>xmma</b></li>
+</ul>
+
+<p>These operations are what the Xbox GPU natively supports. Other instructions, such as <a href="_dx_mul_graphics.htm">mul</a>, <a href="_dx_add_graphics.htm">add</a>, <a href="_dx_mov_graphics.htm">mov</a>, and <a href="_dx_cnd_graphics.htm">cnd</a> are not supported directly; instead, they are implemented using these four instructions. So, for instance, this instruction:</p>
+
+<pre>mad r0, t0, t1, t2</pre>
+
+<p>is assembled to the same combiner stage definition as this:</p>
+
+<pre>xmma discard, discard, r0, t0, t1, 1 - zero, t2</pre>
+
+<p>Similarly, this trivial instruction:</p>
+
+<pre>mov r0, t0</pre>
+
+<p>is implemented using this instruction:</p>
+
+<pre>xmma r0, discard, discard, t0, 1 - zero, zero_sat, zero_sat</pre>
+
+<p>In other words, in order to move values from t0 to r0, the Xbox GPU multiplies t0 by one, then multiplies zero by zero, then adds the two products, and then finally writes the result to r0. This is a common technique used in the design of RISC floating-point instruction sets, so it's no surprise to see it showing up in the Xbox GPU.</p>
+
+<p>While there's nothing wrong with using the <a href="_dx_mov_graphics.htm">mov</a> instruction, it's clear that <a href="_dx_mov_graphics.htm">mov</a> is not making full use of the hardware. If you can arrange your shader so that you're not always multiplying by one and zero, then you can get more work done in fewer stages, and maybe save a few clock cycles.</p>
+
+<h2>Optimizing for Xbox Combiner Stages</h2>
+
+<p>We can do the two dot products in one combiner stage using <b>dot</b>/<b>dot</b>/<b>discard</b>, storing the results in r0 and r1. We can then do a <b>mult</b>/<b>mult</b>/<b>sum</b> on the dot product results to blend in the textures, so we've calculated this:</p>
+
+<pre>r0 = t0 * (v1 dot c0) + t1 * (v1 dot c1)</pre>
+
+<p>in two combiner stages, like this:</p>
+
+<pre>xdd r0, r1, v1, c0, v1, c1
+xmma discard, discard, r0, t0, r0, t1, r1</pre>
+
+<p>We can then calculate this:</p>
+
+<pre>r1 = t2 * v1.b + t3.rgb * v1.a</pre>
+
+<p>using another <b>mult</b>/<b>mult</b>/<b>sum</b>, like this:</p>
+
+<pre>xmma discard, discard, r1, t2, v1.b, t3, v1.a</pre>
+
+<p>Then we need to add the results in r0 and r1, multiply them by v0, and double the result. Another way of looking at this is we need to multiply both results by v0, add them, and double the results. So we need another <b>mult</b>/<b>mult</b>/<b>sum</b>, with an _x2 modifier:</p>
+
+<pre>xmma_x2 discard, discard, r0, v0, r0, v0, r1</pre>
+
+<p>The problem with this code is that it doesn't quite work. In the rgb pipe, the .b modifier has no effect. So in stage two, when we multiply by v1.b, we are actually multiplying by v1.rgb&#8212;which is not what we want. To avoid this, we have to use a previous instruction to copy v1.b to the alpha field of some temporary register. In this case, we can move v1.b to r1.a in stage 1, because r1 is temporarily unneeded. If we didn't have a spare register, we could use the alpha channel of a texture register or of v0 or v1.</p>
+
+<p>The copy from v1.b to r1.a can be done in parallel with RGB operations and does not add any extra stages, because the Xbox pixel shaders have separate RGB and alpha pipelines. For any combiner stage, you can specify separate instructions for the RGB and alpha pipelines. You specify this by adding the .rgb modifier to the operands of one instruction, adding the .a modifier to the operands of the other, and putting a plus sign in front of the second instruction. The plus sign indicates to the assembler that you want the instructions paired; it's necessary because the pixel shader assembler will not automatically pair them.</p>
+
+<p>The modified code is shown below:</p>
+
+<h3>Final Code: Four-stage Version</h3>
+
+<pre>
+xps.1.1              // use Xbox extensions
+
+def c0, 1.0f, 0.0f, 0.0f, 0.0f
+def c1, 0.0f, 1.0f, 0.0f, 0.0f
+
+//--- Texture Stages ---
+tex t0
+tex t1
+tex t2
+tex t3
+
+; Calculate r0 = v1 dot c0, r1 = v1 dot c1
+xdd r0, r1, v1, c0, v1, c1
+
+; Calculate r0 = t0 * r0 + t1 * r1
+; This gives us r0 = t0 * (v1 dot c0) + t1 * (v1 dot c1)
+; It also copies v1.b to r1.a, for easier use in the
+; next stage. Note that this means that r0.a will
+; not receive any alpha from t1 or t0. The .rgb and .a
+; instructions are paired, and execute simultaneously.
+xmma discard.rgb, discard.rgb, r0.rgb, t0.rgb, r0.rgb, t1.rgb, r1.rgb
+; Plus sign to indicate pairing.
++mov r1.a, v1.b
+
+; Calculate r1 = t2 * v1.b + t3 * v1.a
+; Note that v1.b is now stored in r1.a
+xmma discard, discard, r1, t2, r1.a, t3, v1.a
+
+; Now calculate r0 = 2 * (v0 * r0 + v0 * r1)
+xmma_x2 discard, discard, r0, v0, r0, v0, r1
+
+; This implements result = r0
+xfc zero, zero, r0, zero, zero, zero, r0.a
+</pre>
+
+<p>Or, in more readable form:</p>
+
+<table>
+	<tr>
+		<td rowspan="2" style="background: #CCCCCC">Cycle 1</td>
+		<td style="background: #CCCCCC">Stage 0</td>
+		<td style="background: #CCCCCC">r0 = v1 dot c0<br>
+r1 = v1 dot c1</td>
+	</tr>
+	<tr>
+		<td>Stage 1</td>
+		<td>r0.rgb = t0.rgb.rgb * r0.rgb + t1.rgb * r1.rgb<br>
+r1.a = v1.b</td>
+	</tr>
+	<tr>
+		<td rowspan="2">Cycle 2</td>
+		<td style="background: #CCCCCC">Stage 2</td>
+		<td style="background: #CCCCCC">r1 = t2 * r1.a + t3 * v1.a</td>
+	</tr>
+	<tr>
+		<td>Stage 3</td>
+		<td>r0 = 2 * v0 * (r0 + r1)</td>
+	</tr>
+	<tr>
+		<td style="background: #CCCCCC"></td>
+		<td style="background: #CCCCCC">Final combiner</td>
+		<td style="background: #CCCCCC">result = r0</td>
+	</tr>
+</table>
+
+
+<p>We've shortened this shader from seven combiner stages (four clock cycles) to four combiner stages (two clock cycles). The only difference with the optimized version is that it ignores the alpha from t0 and t1. This shader was never used with textures containing alpha&#8212;the original shader ignored the alpha from t3&#8212;so this loss doesn't matter.</p>
+
+<h3>Using the Final Combiner</h3>
+
+<p>Our shader is now running twice as fast. However, it's worth noting that we're not using the final combiner for anything useful. The final combiner is overlapped with other operations, so it costs nothing to use it.</p>
+
+<p>The final combiner does the following math:</p>
+
+<pre>
+rgbout = s0 * s1 + (1 - s0) * s2 + s3
+alphaout = s6.b (or s6.a if the .a modifier is used)
+prod = s4 * s5
+sum = r0 + v1
+</pre>
+
+<p>You get to specify what s0 through s6 represent, using the <a href="xbox_jbh_dxref_psh_xfc.htm">xfc</a> instruction. If we set s0 and s1 to v0 and r0, then we get our first multiplication. We have to set s2 to zero, since that part of the final combiner is no use to us. We can get our second multiplication using the special 'prod' register. 'prod' is the product of s4 and s5, and we can then specify it as s3. Thus, this final combiner:</p>
+
+<pre>xfc v0, r0, zero, prod, v0, r1, zero</pre>
+
+<p>almost perfectly takes the place of the final <a href="xbox_jbh_dxref_psh_xmma.htm">xmma</a>. It isn't quite perfect because we're now missing the times 2. That can't be moved up into the other <a href="xbox_jbh_dxref_psh_xmma.htm">xmma</a> instructions because this causes premature saturation; the intermediate results are 9-bit signed values with a range of only 1.0 (255 = 0x0FF) to &#8211;1.0 (&#8211;255 = 0x101).</p>
+
+<p>This gives us a three-combiner-stage pixel shader. This three-stage shader won't run any faster than the four-stage version, but it leaves us with one combiner stage available for additional functionality. For instance, if we need the alpha from all four textures, then we could use this extra stage to copy v1.b to an alpha channel, instead of pairing this copy, to allow all calculations to operate on all four channels.</p>
+
+<p>The optimization to three combiner stages is a tradeoff, since we can no longer multiply by two when multiplying by the diffuse color, so this optimization may not be the appropriate choice for this shader.</p>
+
+<p>Another limitation of using the final combiner is that the inputs to the final combiner are always saturated. Any negative numbers will be clamped to zero.</p>
+
+<p>Finally, D3D normally programs the final combiner to handle fog and specular. If you use the final combiner for other purposes, you will have to handle these effects on your own.</p>
+
+<h3>Final Code: Three-stage Version</h3>
+
+<pre>
+xps.1.1              // use Xbox extensions
+
+def c0, 1.0f, 0.0f, 0.0f, 0.0f
+def c1, 0.0f, 1.0f, 0.0f, 0.0f
+
+//--- Texture Stages ---
+tex t0
+tex t1
+tex t2
+tex t3
+
+; Calculate r0 = v1 dot c0, r1 = v1 dot c1
+xdd r0, r1, v1, c0, v1, c1
+
+; Calculate r0 = t0 * r0 + t1 * r1
+; This gives us r0 = t0 * (v1 dot c0) + t1 * (v1 dot c1)
+; It also copies v1.b to r1.a, for easier use in the
+; next stage. Note that this means that r0.a will
+; not receive any alpha from t1 or t0.
+xmma discard.rgb, discard.rgb, r0.rgb, t0.rgb, r0.rgb, t1.rgb, r1.rgb
++mov r1.a, v1.b
+
+; Calculate r1 = t2 * v1.b + t3 * v1.a
+; Note that v1.b is now stored in r1.a
+xmma discard, discard, r1, t2, r1.a, t3, v1.a
+
+; Use the final combiner to finish up.
+; This implements result = v0 * r0 + prod, where prod = v0 * r1
+; Thus, this implements result = v0 * r0 + v0 * r1,
+; or result = v0 * (r0 + r1)
+; Since we no longer have a times two, the diffuse colour should
+; be brighter to compensate.
+xfc v0, r0, zero, prod, v0, r1, zero
+</pre>
+
+<p>Or, in more readable form:</p>
+
+<table>
+	<tr>
+		<td rowspan="2" style="background: #CCCCCC">Cycle 1</td>
+		<td style="background: #CCCCCC">Stage 0</td>
+		<td style="background: #CCCCCC">r0 = v1 dot c0<br>r1 = v1 dot c1</td>
+	</tr>
+	<tr>
+		<td>Stage 1</td>
+		<td>r0.rgb = t0.rgb * r0.rgb + t1.rgb * r1.rgb<br>r1.a = v1.b</td>
+	</tr>
+	<tr>
+		<td rowspan="2">Cycle 2</td>
+		<td style="background: #CCCCCC">Stage 2</td>
+		<td style="background: #CCCCCC">r1 = t2 * r1.a + t3 * v1.a</td>
+	</tr>
+	<tr>
+		<td>Stage 3</td>
+		<td>Unused</td>
+	</tr>
+	<tr>
+		<td style="background: #CCCCCC"></td>
+		<td style="background: #CCCCCC">Final combiner</td>
+		<td style="background: #CCCCCC">result = v0 * r0 + v0 * r1</td>
+	</tr>
+</table>
+
+<p>Even if we did somehow optimize this down to two combiner stages, it would not improve performance. The four texture fetches take at least two cycles. Also, any shader that uses both diffuse and specular takes at least two cycles, because the Xbox GPU only has one general purpose interpolator. Because pixel shader performance is determined by the maximum of texture lookup cost, pixel shader cost, and interpolator cost, our maximum performance is two cycles.</p>
+
+<h2>Summary</h2>
+
+<p>The Xbox Development Kit, as of November 2003, contains the QuadLerp (four-way linear interpolation) sample, which can be used to compare the different versions of the pixel shader that are discussed in this paper.</p>
+
+<p>When thinking about Xbox pixel shader optimizing, consider the following advice:</p>
+
+<ul>
+	<li>Don't optimize where it doesn't matter. Use PIX to identify draw calls that are expensive, fill bound, and not texture bound before hand-optimizing things. In most games, only a handful of pixel shaders actually need to be optimized.</li>
+	<li>The Xbox-specific instructions&#8212;<a href="xbox_jbh_dxref_psh_xmma.htm">xmma</a>, <a href="xbox_jbh_dxref_psh_xmmc.htm">xmmc</a>, <a href="xbox_jbh_dxref_psh_xdm.htm">xdm</a>, <a href="xbox_jbh_dxref_psh_xdd.htm">xdd</a>, and <a href="xbox_jbh_dxref_psh_xfc.htm">xfc</a>&#8212;open up much more pixel shader power, since they represent the full capabilities of the underlying hardware.</li>
+	<li>If you use v0 and v1 in the same shader, then your maximum performance is two cycles per pixel, because the Xbox GPU has only one general-purpose interpolator.</li>
+	<li>Don't forget about the PROD and SUM registers. They are crucial to optimal use of the final combiner.</li>
+	<li>If you are using fog, or otherwise need the final combiner, then some of the final combiner optimizations may not be available to you.</li>
+	<li>If you are using alpha in your textures then some of the parallel pipeline optimizations (separate rgb and alpha operations) may not be available to you.</li>
+	<li>Don't forget to look at the fillrate tool and TexAddrOps-AllTests.txt to find out what the maximum fill rate for your selection of texture ops is.</li>
+	<li>Roughly half of unoptimized shaders benefit just from getting rid of the one straggling odd instruction. Remember that pixel shaders take int((numStages + 1) / 2) cycles, so an odd number of stages is wasteful.</li>
+	<li>Break up geometry so that only relevant textures apply, instead of a works-in-all-cases shader. For instance, instead of using a four-texture shader to draw all of your terrain (blending between rock, grass, road, and dirt), draw those areas that are just one type of texture using a simpler shader. The savings in memory bandwidth and pixel shader instructions can be dramatic.</li>
+	<li>You can write to registers v0, v1, t3, t2, t1, and t0 and use them as temp registers. However, use this technique only when necessary because it can lead to unreadable code.</li>
+	<li>Beware of different results if the _x2 is moved to an earlier stage. Instead of "canceling out" the diffuse multiply, it will cause premature saturation.</li>
+	<li>When getting started writing pixel shaders, consider using the Xbox Preview Pipeline as an aid. You can view your models using the Preview Pipeline, apply the combination of effects that you want, and then use PIX to capture a frame and view the pixel shaders used.</li>
+	<li>The pixel debugger and pixel shader debugger in PIX are handy tools for debugging pixel shader problems.</li>
+	<li>You can make your code more readable by using #defines to give symbolic names to the constant registers.</li>
+	<li>Vertex shaders also have Xbox-specific instructions that can be used for maximum performance.</li>
+	<li>See the XDK Help for more information on pixel shaders.</li>
+</ul>
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

@@ -1,0 +1,97 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>lit</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="lit">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="lit"/>
+<MSHelp:Keyword Index="F" Term="lit"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_lit_graphicsd3dx"></A>lit</H1>
+
+<P>Provides lighting partial support.</P>
+
+<PRE class=syntax>lit   vDest, vSrc0
+</PRE>
+
+<H4>Registers</H4>
+
+<DL>
+<DT><B>vDest</B></DT>
+
+<DD>Destination register, holding the result of the operation.</DD>
+
+<DT><B>vSrc0</B></DT>
+
+<DD>Source register, specifying the input argument.
+</DD>
+</DL>
+
+<H4>Operation</H4>
+
+<P>The following code fragment shows the operations performed by the <B>lit</B> instruction to write a result to the destination.</P>
+
+<PRE>    SetDestReg();
+    SetSrcReg(0);
+
+    m_TmpReg.x = 1;
+    m_TmpReg.y = 0;
+    m_TmpReg.z = 0;
+    m_TmpReg.w = 1;
+    float power = m_Source[0].w;
+    const float MAXPOWER = 127.9961f;
+    if (power &lt; -MAXPOWER)
+        power = -MAXPOWER;          // Fits into 8.8 fixed point format
+    else
+    if (power &gt; MAXPOWER)
+        power = -MAXPOWER;          // Fits into 8.8 fixed point format
+
+    if (m_Source[0].x &gt; 0)
+    {
+        m_TmpReg.y = m_Source[0].x;
+        if (m_Source[0].y &gt; 0)
+        {
+            // Allowed approximation is EXP(power * LOG(m_Source[0].y))
+            m_TmpReg.z = (float)(pow(m_Source[0].y, power));
+        }
+    }
+
+    WriteResult();
+</PRE>
+
+<H4>Remarks</H4>
+
+<P>The <B>lit</B> instruction produces undefined results if fed a negative value for the exponent.</P>
+
+<P>This instruction calculates lighting coefficients from two dot products and a power. The source vector is assumed to contain the values shown in the following pseudocode.</P>
+
+<PRE>vSrc0.x = N*L        ; The dot product between normal and direction to light.
+vSrc0.y = N*H        ; The dot product between normal and half vector.
+vSrc0.z = ignored    ; This value is ignored.
+vSrc0.w = power      ; The power, this value must be in the range from -128.0 through 128.0.
+</PRE>
+
+<P>Reduced precision arithmetic is acceptable in evaluating <B>vDest</B>.z. An implementation must support at least 8 fraction bits in the power argument. Dot products are calculated with normalized vectors, and clamp limits are &#8211;128 to 128. </P>
+
+<P>Error should correspond to a <A HREF="_dx_logp_graphicsd3dx.htm">logp</A> and <A HREF="_dx_expp_graphicsd3dx.htm">expp</A> combination, or no more than approximately 1 least significant bit (LSB) for an 8-bit color component.</P>
+
+<P>The following example illustrates how the <B>lit</B> instruction might be used.</P>
+
+<PRE>lit r0, r1
+</PRE>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

@@ -1,0 +1,239 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>D3DPERF</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="D3DPERF">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="D3DPERF"/>
+<MSHelp:Keyword Index="F" Term="D3DPERF"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_D3DPERF_graphics"></A>D3DPERF</H1>
+
+<P>Describes all performance information gathered by the driver.</P>
+
+<PRE class=syntax>typedef struct _D3DPERF
+{
+    ULONGLONG m_TSCLastResetVal;
+    ULONGLONG m_TSCLastPresentVal;
+    D3DWAITINFO m_FrameTimeMin;
+    D3DWAITINFO m_FrameTimeMax;
+    DWORD m_BreakCount;
+    D3DPERF_PerformanceCounters m_Breakperfctr;
+    DWORD *m_pPutLocationAtReset;
+    ULONGLONG m_PushBufferEndDwordsSkipped;
+    DWORD m_FrameRateIntervalTime;
+    DWORD m_dwDumpFPSInfoMask;
+    PFNDumpFrameRateInfoHandler m_pfnDumpFrameRateInfoHandler;
+    DWORD m_DumpWaitCycleTimesThreshold;
+    PFNCycleThresholdHandler m_pfnCycleThresholdHandler;
+    BOOL m_SetRenderStateOverridesOnReset;
+    DWORD m_ProfileSamples;
+    ULONGLONG m_TSCProfileStartTime;
+    WORD m_ProfileData[105000];
+    DWORD m_ProfileBusyCounts[D3DPERF_PROF_MAX];
+    DWORD RecordD3DPerfEvents;
+    DWORD D3DPerfEventSpewFrameStart;
+    DWORD D3DPerfEventSpewFrameCount;
+    DWORD m_DumpPerfCycleTimesThresholdCpu;
+    DWORD m_DumpPerfCycleTimesThresholdGpu;
+    DWORD CurrentD3DPerfEvent;
+    DWORD CountD3DPerfEvents;
+    D3DPERFEvent *pD3DPerfEvents;
+    D3DOVERRIDERENDERSTATE m_RenderStateOverrides[D3DRS_MAX];
+    D3DWAITINFO m_PerformanceCounters[D3DPERF_MAX];
+    DWORD m_APICounters[D3DAPI_MAX];
+    DWORD m_RenderStateCounters[D3DRS_MAX];
+    DWORD m_TextureStateCounters[D3DTSS_MAX];
+} D3DPERF;
+</PRE>
+
+<H4>Members</H4>
+
+<DL>
+<DT><B>m_TSCLastResetVal</B></DT>
+
+<DD>Time Stamp Counter value of last <a href="_dx_d3dperf_reset_graphics.htm"><b>D3DPERF_Reset</b></a> call.</DD>
+
+<DT><B>m_TSCLastPresentVal</B></DT>
+
+<DD>Time Stamp Counter value of last <a href="_dx_idirect3ddevice8_present_graphics.htm"><b>IDirect3DDevice8::Present</b></a> call.</DD>
+
+<DT><B>m_FrameTimeMin</B></DT>
+
+<DD>Describes the minimum frame number and cycle counts. See <a href="_dx_d3dwaitinfo_graphics.htm"><b>D3DWAITINFO</b></a>.</DD>
+
+<DT><B>m_FrameTimeMax</B></DT>
+
+<DD>Describes the maximum frame number and cycle counts. See <a href="_dx_d3dwaitinfo_graphics.htm"><b>D3DWAITINFO</b></a>.</DD>
+
+<DT><B>m_BreakCount</B></DT>
+
+<DD>Describes the number of times the performance counter specified by the <B>m_Breakperfctr</B> member of <b>D3DPERF</b> should be hit before breaking.</DD>
+
+<DT><B>m_Breakperfctr</B></DT>
+
+<DD>A member of the <a href="_dx_d3dperf_performancecounters_graphics.htm"><B>D3DPERF_PerformanceCounters</B></a> enumeration. Specifies on which performance counter a breakpoint should be set.</DD>
+
+<DT><B>m_pPutLocationAtReset</B></DT>
+
+<DD>Pointer to a DWORD value containing the location of the push-buffer at the time of the call to <b>D3DPERF_Reset</b>. This is used to determine the value of <b>PushBufferBytesWritten</b> in the <a href="_dx_d3dpushbufferinfo_graphics.htm"><b>D3DPUSHBUFFERINFO</b></a> structure as it is returned by <a href="_dx_d3dperf_getpushbufferinfo_graphics.htm"><B>D3DPERF_GetPushBufferInfo</b></a>.</DD>
+
+<DT><B>m_PushBufferEndDwordsSkipped</B></DT>
+
+<DD>Count of DWORDs skipped jumping back to pushbuffer start.  This is used to determine the value of <b>PushBufferBytesWritten</b> in the <b>D3DPUSHBUFFERINFO</b> structure as it is returned by <B>D3DPERF_GetPushBufferInfo</b>.</DD>
+
+<DT><B>m_FrameRateIntervalTime</B></DT>
+
+<DD>Interval time to dump framerate information, in milliseconds. By default, this value is zero.</DD>
+
+<DT><B>m_dwDumpFPSInfoMask</B></DT>
+
+<DD>Mask that controls what information <a href="_dx_d3dperf_dumpframerateinfo_graphics.htm"><b>D3DPERF_DumpFrameRateInfo</b></a> spits out. The mask can be any of the following values ORed together:
+<dl>
+<dt>D3DPERF_DUMP_FPS_INTINFO</dt>
+<dd>Dump interrupts and context information.</dd>
+
+<dt>D3DPERF_DUMP_FPS_MEMORY</dt>
+<dd>Dump memory information.</dd>
+
+<dt>D3DPERF_DUMP_FPS_PUSHBUFFER</dt>
+<dd>Dump push-buffer information.</dd>
+
+<dt>D3DPERF_DUMP_FPS_WAITINFO</dt>
+<dd>Dumps the various wait timings.</dd>
+
+<dt>D3DPERF_DUMP_FPS_PERFPROFILE</dt>
+<dd>Dumps times for percent busy and percent idle using a 100-ns timer that pings the GPU. Dumping this information is very expensive and should be avoided unless this is specifically the information you want.</dd>
+
+<dt>D3DPERF_DUMP_FPS_VERTEXINFO</dt>
+<dd>Dumps information about vertices processed.</dd>
+
+<dt>D3DPERF_DUMP_FPS_PERFEVENTS</dt>
+<dd>Dumps information about performance events. Setting this value will cause output similar to that generated by <a href="_dx_d3dperf_dumpperfevents.htm"><b>D3DPERF_DumpPerfEvents</b></a>.</dd>
+
+</dl>
+<p>The default value is (D3DPERF_DUMP_FPS_INITINFO | D3DPERF_DUMP_FPS_MEMORY | D3DPERF_DUMP_FPS_PUSHBUFFER | D3DPERF_DUMP_FPS_WAITINFO | D3DPERF_DUMP_FPS_VERTEXINFO).</p>
+
+</DD>
+
+<DT><B>m_pfnDumpFrameRateInfoHandler</B></DT>
+
+<DD>Pointer to the function called that handles framerate information. The default value is <a href="_dx_d3dperf_dumpframerateinfo_graphics.htm"><b>D3DPERF_DumpFrameRateInfo</b></a>. PFNDumpFrameRateHandler is defined as follows:
+<pre class=syntax>typedef void (WINAPI *PFNDumpFrameRateInfoHandler)(void);</pre></DD>
+
+<DT><B>m_DumpWaitCycleTimesThreshold</B></DT>
+
+<DD>Holds threshold cycle count for spewing wait times.</DD>
+
+<DT><B>m_pfnCycleThresholdHandler</B></DT>
+
+<DD>Pointer to the function called when the threshold cycle count is hit as was set in <b>m_DumpWaitCycleTimesThreshold</b>. The default value is <a href="_dx_d3dperf_dumpcountercycleinfo_graphics.htm"><b>D3DPERF_DumpCounterCycleInfo</b></a>. PFNCycleThresholdHandler is defined as follows:
+<pre class=syntax>typedef void (WINAPI *PFNCycleThresholdHandler)(
+  D3DPERF_PerformanceCounters perfctr,
+  ULONGLONG Cycles
+);
+</pre></DD>
+
+<DT><B>m_SetRenderStateOverridesOnReset</B></DT>
+
+<DD>If TRUE, the next call to <a href="_dx_d3dperf_reset_graphics.htm"><b>D3DPERF_Reset</b></a> will go through the array stored in <b>m_RenderStateOverrides</b> and set all render states that have the <b>Override</b> member set to TRUE. The default value is FALSE.</DD>
+
+<DT><B>m_ProfileSamples</B></DT>
+
+<DD>Total number of profile samples read.</DD>
+
+<DT><B>m_TSCProfileStartTime</B></DT>
+
+<DD>Time profiler was started. Initialized in <a href="_dx_d3dperf_startperfprofile_graphics.htm"><b>D3DPERF_StartPerfProfile</b></a>.</DD>
+
+<DT><B>m_ProfileData[105000]</B></DT>
+
+<DD>Performance state bitmask history over last 10 ms where it then wraps. Each element of the array represents what was busy during the sampling at that time. The sampling occurs every 100 ns. The bitmask can be interpreted as (1 &lt;&lt; <i>value</i>) where <i>value</i> is a member of the <a href="_dx_d3dperfprof_graphics.htm"><b>D3DPERFPROF</b></a> enumeration. For example, since 0x7 = (1 &lt;&lt; D3DPERF_PROF_GPU) &amp; (1 &lt;&lt; D3DPERF_PROF_FE) &amp; (1 &lt;&lt; D3DPERF_PROF_BE), this value would indicate that the GPU, the front end, and the back end were all busy. This array is cleared when <A HREF="_dx_d3dperf_startperfprofile_graphics.htm"><B>D3DPERF_StartPerfProfile</B></A> or <A HREF="_dx_d3dperf_reset_graphics.htm"><B>D3DPERF_Reset</B></A> is called.</DD>
+
+<DT><B>m_ProfileBusyCounts[D3DPERF_PROF_MAX]</B></DT>
+
+<DD>Total busy counts for each unit read while profiler was enabled.</DD>
+
+<dt><b>RecordD3DPerfEvents</b></dt>
+<dd>DWORD value that represents a bit mask of the performance events that are getting recorded. To determine if a given event is getting recorded, bitwise-AND the DWORD with (1 &lt;&lt; <i>Event</i>) where <i>Event</i> is an element of the <a href="_dx_d3dperfeventstype.htm"><b>D3DPERFEventsType</b></a> enumeration.</dd>
+
+<dt><b>D3DPerfEventSpewFrameStart</b></dt>
+<dd>Number of frames to wait before <a href="_dx_d3dperf_dumpperfevents.htm"><b>D3DPERF_DumpPerfEvents</b></a> begins displaying performance information.</dd>
+
+<dt><b>D3DPerfEventSpewFrameCount</b></dt>
+<dd>Number of frames for which performance event information should be spewed.</dd>
+
+<dt><b>m_DumpPerfCycleTimesThresholdCpu</b></dt>
+<dd>Minimum number of cycles required to spew CPU performance times.</dd>
+
+<dt><b>m_DumpPerfCycleTimesThresholdGpu</b></dt>
+<dd>Minimum number of cycles required to spew GPU performance times.</dd>
+
+<dt><b>CurrentD3DPerfEvent</b></dt>
+<dd>Current open event in <b>pD3DPerfEvents</b>.</dd>
+
+<dt><b>CountD3DPerfEvents</b></dt>
+<dd>Total number of elements in <b>pD3DPerfEvents</b>.</dd>
+
+<dt><b>pD3DPerfEvents</b></dt>
+<dd>Pointer to an array of <a href="_dx_d3dperfevent.htm"><b>D3DPERFEvent</b></a> enumerated types, which describe the performance events getting monitored.</dd>
+
+<DT><B>m_RenderStateOverrides[D3DRS_MAX]</B></DT>
+
+<DD>Used to override any calls to <a href="_dx_idirect3ddevice8_setrenderstate_graphics.htm"><b>IDirect3DDevice8::SetRenderState</b></a> at the next call of <b>D3DPERF_Reset</b>. This array is indexed using the <a href="_dx_d3drenderstatetype_graphics.htm"><b>D3DRENDERSTATETYPE</b></a> enumeration. For example, to change the fill mode:
+<blockquote>
+<pre>
+D3DOVERRIDERENDERSTATE OverrideFillMode = { TRUE, D3DFILL_WIREFRAME };
+
+D3DPERF *pPerf = D3DPERF_GetStatistics;
+pPerf-&gt;m_RenderStateOverrides[ D3DRS_FILLMODE ] = OverrideFillMode;
+</pre>
+</blockquote></DD>
+
+<DT><B>m_PerformanceCounters[D3DPERF_MAX]</B></DT>
+
+<DD>The count of the number of times certain performance-related events happen.  The <A HREF="_dx_d3dperf_performancecounters_graphics.htm"><B>D3DPERF_PerformanceCounters</B></A> enumeration is used to index this array.</DD>
+
+<DT><B>m_APICounters[D3DAPI_MAX]</B></DT>
+
+<DD>The count of the number of times each Direct3D function is called.  The <a href="_dx_d3dperformancecounters_graphics.htm"><b>D3DPeformanceCounters</b></a> enumeration is used to index this array.</DD>
+
+<DT><B>m_RenderStateCounters[D3DRS_MAX]</B></DT>
+
+<DD>The count of the number of times each render state is set. The <a href="_dx_d3drenderstatetype_graphics.htm"><b>D3DRENDERSTATETYPE</b></a> enumeration is used to index this array.</DD>
+
+<DT><B>m_TextureStateCounters[D3DTSS_MAX]</B></DT>
+
+<DD>The count of the number of times each texture state is set. The <a href="_dx_d3dtexturestagestatetype_graphics.htm"><b>D3DTEXTURESTAGESTATETYPE</b></a> enumeration is used to index this array.</DD>
+
+</DL>
+
+<h4>Remarks</h4>
+
+<p>This structure is generally obtained, accessed, and modifed using a pointer returned by <a href="_dx_d3dperf_getstatistics_graphics.htm"><b>D3DPERF_GetStatistics</b></a>.</p>
+
+<pre>D3DPERF *pPerf = GetStatistics();
+pPerf-&gt;m_SetRenderStateOverridesOnReset = TRUE;</pre>
+
+<p>The pointer returned by <b>D3DPERF_GetStatistics</b> should not be freed since it is statically allocated.</p>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in d3d8perf.h.</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

@@ -1,0 +1,710 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Xbox Live Messaging</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Xbox Live Messaging"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Xbox Live Messaging</h1>
+<p><i>By Jeff Allen, Program Manager, Xbox Live</i></p><ul>
+<li><a href="#IDAMAJV">Summary</a></li><li><a href="#_terminology">Terminology</a></li><li><a href="#_design_overview">Design Overview</a></li><li><a href="#_messaging_operations">Messaging Operations</a></li><li><a href="#_policy">Policy</a></li><li><a href="#_design_specifics">Design Specifics</a></li><li><a href="#_global_property_tags">Global Property Tags</a></li><li><a href="#appendix_a">Appendix A: Client API</a></li></ul>
+<h2><a name="IDAMAJV"></a>Summary</h2>
+<p>With the release of Xbox <i>Live</i><sup style="font-size:smaller">TM</sup> version 3.0, Microsoft is introducing 
+a persistent Messaging Service for use by game developers and publishers. Persistent messaging 
+complements the existing communication features of voice chat and other real-time Xbox 
+<i>Live</i> experiences. All Xbox <i>Live</i> subscribers have a message 
+queue allocated to them on Xbox <i>Live</i>, the contents of which are loaded during 
+connection to Xbox <i>Live</i>.</p><p>Game developers may use messaging to help build player community within their title. Publishers may 
+create messages such as a Message of the Day to be delivered directly to the players of their titles. 
+Other Xbox <i>Live</i> 3.0 features such as Teams and Competitions will use messaging to help build events and coordinate play. Friend Requests and Game Invites will be enhanced to include an optional voice attachment to personalize the requests. The messaging framework is flexible and generic enough to pass additional 
+information if a title wants to supplement a message with supporting data. For instance, messages can 
+have voice attachments, text attachments, larger content attachments (such as a supporting graphic image), 
+and so on. </p><p>Titles are not required to support the voice or text capabilities of a message. All messages have 
+an associated type and therefore have context by themselves by definition. Voice or text annotations 
+further refine and personalize the message, but they are optional. If a title chooses to use voice or 
+text, then certain requirements will apply to ensure a consistent Xbox Live experience.</p><h2><a name="_terminology"></a>Terminology</h2>
+<ul>
+<li>Publisher messages:  These are messages that a publisher creates externally to target users of 
+	their specific title. Think of these as classic Message of the Day messages displayed to the user 
+	when they go online with the title. The messages are assembled and submitted to the service using 
+	the XLAST tool included in the XDK, and may include text, voice, or other title-specific attachments</li>
+<li>System messages:  These are messages sent on behalf of the Xbox <i>Live</i> service to indicate things 
+	such as changes to the Terms of Use (TOU) that all users must see. The presence of a system message 
+	is returned as an error code at logon time. There are technical certificate requirements (TCRs) that 
+	describe how a title must handle these error codes.</li>
+<li>Title-specific messages:  Every title has the option of creating a unique message for use within 
+	the title. This enables developers to innovate above and beyond what's generically provided by the 
+	service.</li>
+<li>Friend Request vs. Game Invite:  A Friend Request means asking someone to be your friend and 
+	appear on your Friends List. A Game Invite is an invitation from an existing friend to play a game.</li>
+</ul>
+<h2><a name="_design_overview"></a>Design Overview</h2>
+<ul>
+<li><a href="#_message_components">Message Components</a></li><li><a href="#_user_message_queues">User Message Queues</a></li><li><a href="#_message_lifetime">Message Lifetime</a></li><li><a href="#IDASCJV">Notifications and "Always On" Messaging</a></li><li><a href="#IDAZCJV">Cross-Title Messages</a></li></ul>
+<h3><a name="_message_components"></a>Message Components</h3>
+<p>A message is simply a collection of properties. These collections are organized into three 
+	distinct parts based on when the information is retrieved and from where. These parts are:</p><ol>
+<li>Summary information</li>
+<li>Message details</li>
+<li>Attachments</li>
+</ol>
+<dl>
+<dt><b>Message Properties</b></dt>
+<dd><p>The basic building block of a message is the message property. These properties are the 
+		smallest units of data on a message. Each property is given a unique ID and a type that defines 
+		the property's contents. The type and ID together form a property tag that is used when setting 
+		and retrieving the property from a message. Titles are required to request only the properties 
+		they are interested in from a message rather than being able to see all the properties on a 
+		message. This is done so that a particular message that a title is familiar with handling does 
+		not break the title if new properties are added to the message type in the future. Titles may 
+		embed title-specific properties for use within the title as they see fit.</p></dd>
+<dt><b>Summary Information</b></dt>
+<dd><p>The message summary contains the common set of properties a developer can expect to find 
+		on any message. Think of this as the base metadata about the message. This information is used 
+		to make initial decisions about the routing and displaying of the message to the user. The 
+		message summary is 64 bytes in size. During the logon process, the summary information for each 
+		message is retrieved, remains resident on the client, and is kept up-to-date via notifications.</p></dd>
+<dt><b>Message Details</b></dt>
+<dd><p>Message details are a collection of properties applicable to the particular message type. 
+		Some messages have required properties that are predefined and expected in the message details. 
+		Developers may define their own properties to embed in the details. Details are a maximum of 
+		4,096 bytes in size. The details of a message are retrieved when the user opens the message.</p></dd>
+<dt><b>Attachments</b></dt>
+<dd><p>A message may have attachments that accompany the message. Imagine a user sharing a map created 
+		in-game with a friend and annotating the map with a voice message. The map would be attached to the 
+		message. Attachments are represented as URLs to the Xbox <i>Live</i> Storage service and stored as 
+		properties in the message details. Think of this as a pointer to the external storage for the 
+		attachment. Attachments are retrieved upon user action after the details information has been 
+		retrieved. Attachments are governed by the policy and requirements of the Xbox Live Storage 
+		service.</p></dd>
+</dl>
+<h3><a name="_user_message_queues"></a>User Message Queues</h3>
+<p>Each user on the Xbox <i>Live</i> service is assigned a unique message queue. The queue contains messages 
+	for the individual user and is limited to 125 messages. All messages from all titles occupy the single 
+	per-user queue. An API allows a user to enumerate and delete from this list, as well as send new 
+	messages to the queues of other users.</p><h3><a name="_message_lifetime"></a>Message Lifetime</h3>
+<p>The Message Service is not designed as a place to permanently store data or communications and 
+	there are aggressive expiration policies in place around messages and attachments. To reinforce 
+	this, titles are required to display the expiration date of messages as they are processed by the 
+	user. Upon expiration, the message summary, details, and all accompanying attachments are removed 
+	from the service.</p><p>All messages have a maximum expiration time defined by message type. The maximum expiration 
+	of any message is 45 days. Titles that implement a title-specific message may choose an expiration 
+	value that makes sense for their message type, providing it's less than 45 days.</p><p>Special expiration policy applies to Xbox <i>Live</i> global messages: system messages and 
+	publisher-sent messages. These message types have two expiration methods controlled by a flag 
+	on the message. By the first method, a global message can be set to expire on a specific date 
+	similar to normal messages in the user message queue. This could be used to send a message of 
+	the day or week, which is then set to expire at the end of the specified time period, after 
+	which it is no longer applicable. By the second method, a global message can be set to begin 
+	expiring once it is first placed in the user's queue. Publishers could use this method to post 
+	welcome messages to their titles. New users logging on to those titles would receive the message, 
+	which would then expire in the selected number of days.</p><h3><a name="IDASCJV"></a>Notifications and "Always On" Messaging</h3>
+<p>Notifications are used to alert the user to the presence of new messages. The existing Xbox <i>Live</i> notification architecture has been reworked to include rich message handling and improved ease-of-use for title developers. In the new architecture, Messaging is "always on" once the user logs on. With the exception of retrieving details and attachments, and sending messages, all Messaging APIs are synchronous. Work is done through the Logon task handle on behalf of the Messaging service in order to keep all message lists up-to-date automatically behind the scenes. This is done in an efficient and low-bandwidth manner for notifications and the downloading of message summary information. Titles may choose to disable the auto-retrieval of summary information if they feel that the extra bandwidth to upload summaries is too burdensome.</p><p>Notifications now include the message IDs of up to the last three new messages for a user. This 
+	allows the title developer to instantly grab the summary information from a message, in-game, if they 
+	wish to innovate in this area and process messages without requiring the user to pause the game.</p><p>Embedded in the notification is a flags data member that indicates whether or not to the title is 
+	required to display an in-game notification icon. Titles will be required to consult this setting to 
+	determine whether to display a notification icon in-game. A title is delivered notifications only for 
+	those messages that are specific to that title. The TCRs will be updated to call out when and which 
+	icons need to be displayed for each message type.</p><h3><a name="IDAZCJV"></a>Cross-Title Messages</h3>
+<p>The Xbox <i>Live</i> team is considering ways to enable a title to process all messages from a title's 
+	publisher and not just those specific to the title. However, the current plan of record is that messages 
+	are not made available cross-title. In other words, a message sent from Title A can be received and 
+	processed only in Title A. As a corollary, players will be sent notifications only for messages 
+	applicable to the title they are currently playing. The Xbox <i>Live</i> team is investigating the possibility 
+	of a centralized message facility in future Dashboards, but no commitment to that has been made.</p><h2><a name="_messaging_operations"></a>Messaging Operations</h2>
+<ul>
+<li><a href="#IDAEDJV">Initialization/Logon</a></li><li><a href="#IDAJDJV">Receiving/Processing Messages</a></li><li><a href="#_sending_messages">Sending Messages</a></li></ul>
+<h3><a name="IDAEDJV"></a>Initialization/Logon</h3>
+<p>At logon time, <a href="XOnlineLogon.htm">XOnlineLogon</a> retrieves and caches a current snapshot of the user's message list, 
+	including the summary information. This list is managed internally by the messaging core and kept 
+	up-to-date locally behind the scenes as new message notifications arrive (when messages are added 
+	and deleted). Since the user can have a maximum of 125 messages and each summary is 64 bytes, 8,000 
+	bytes of memory is pre-allocated per user to hold message summary information.</p><h3><a name="IDAJDJV"></a>Receiving/Processing Messages</h3>
+<p>Title developers must determine how to best incorporate messages within the context of their game. 
+	For example, they may want their game to have an area where users can see all of their pending messages 
+	for that title. Here, users could potentially browse, delete, and respond to their messages. Or titles 
+	may choose, upon receiving a notification, to process messages immediately within the context of the 
+	game. Message delivery is best-effort and is not guaranteed. Message voice and text properties may not 
+	be saved to the local Xbox hard disk nor may they be forwarded, due to policy.</p><dl>
+<dt><b>Notification Handling</b></dt>
+<dd><p>Upon receiving a notification, the title developer may be required to display an in-game 
+		notification icon. The icon to be displayed depends on the message type in the notification information. Other flags are also immediately 
+		available and indicate if the message is from a Friend, if the message has voice or text attached, 
+		if the message is from a team or competition mate, and if the message is from the same title. 
+		Up to three new message IDs are returned in the notification for immediate consumption. By default, 
+		message summaries are also automatically retrieved at the time the notification arrives. If they 
+		feel that the extra bandwidth to upload summaries is too burdensome, titles may choose to disable 
+		the auto-retrieval of summary information by calling <a href="XOnlineMessageSetSummaryRefresh.htm">XOnlineMessageSetSummaryRefresh</a>.</p></dd>
+<dt><b>Message Enumeration</b></dt>
+<dd><p>Message lists are returned to the client sorted in the order in which they are received by the 
+		service. The data returned in an enumeration is the summary information on each message. The idea 
+		is to give the developer enough information about each message to make routing and UI decisions 
+		about where to display new message icons. In addition, the summary contains enough data to help 
+		the user make an informed decision whether or not to open and read in more detail.</p><p>Titles will be required to present the option of sending feedback about the message and also 
+		to block the sender from sending further messages.</p></dd>
+<dt><b>Message Details Retrieval</b></dt>
+<dd><p>Message retrieval is used to get the details of a message and requires knowing the user XUID 
+		and message ID of the message of interest. A client is expected to have first obtained the message 
+		ID by enumerating the messages in a user's queue, receiving a new message notification, or 
+		receiving the message ID from another Xbox <i>Live</i> service. This operation returns both the 64-byte 
+		message summary as well as the (up-to-4,096-byte) details of the message. Any attachments stored 
+		in the Storage service are represented as Storage URLs in the message details. Attachment retrieval 
+		is separated from message retrieval because attachments can potentially be very large (extent TBD) 
+		and should require additional user interaction prior to downloading them. Retrieving details is 
+		an asynchronous process and requires a task handle.</p></dd>
+<dt><b>Attachment Retrieval</b></dt>
+<dd><p>Properties over a certain threshold (4,096 bytes is the maximum size of the details) should 
+		be stored on the Storage server as attachments, and represented as Storage URLs in the message 
+		details. These properties could contain things such as a large map, armor, or a ghost race. They 
+		are not retrieved along with other message details until the client explicitly requests them to 
+		be retrieved. An explicit Messaging API is used for storing and retrieving attachments. Once the 
+		Storage URL is retrieved from Messaging, it is up to the client to call the appropriate APIs to 
+		download the attachment. Retrieving an attachment is an asynchronous process and requires a task 
+		handle.</p></dd>
+<dt><b>Message Deletion</b></dt>
+<dd><p>A message may be deleted in several different ways: explicit deletion by a title/user/service, 
+		message expiration, or lost messages due to a full user queue. Messages will not be deleted 
+		automatically upon viewing. Messages may be explicitly deleted by a service such as the Presence 
+		service deleting game invites when the sending user logs off, or the Competitions service deleting 
+		messages related to a cancelled tournament. A user may also explicitly delete messages from their 
+		own queue. Publisher-created messages may be tagged as non-deletable in XLAST if deleting the 
+		message would cause a less optimal experience in their title. An example might be a Message of 
+		the Week banner that the publisher displays across the top of its title's main menu. Titles must 
+		gracefully handle the case where an expected message is missing for some reason.</p></dd>
+</dl>
+<h3><a name="_sending_messages"></a>Sending Messages</h3>
+<p>Messages can be sent from a user to another user (or users) within a title or from a publisher to 
+	all of the users for that title. The XDK will contain the APIs for processing messages, including 
+	voice codec support and tools. We don't monitor the substance of user communications, so text/voice 
+	messages are not vetted for profanity. Our policy for this is that messages are controlled by the 
+	community through the feedback mechanism, and take-down is possible. Although the service handles 
+	full message queues, the title must ensure that users do not spam each other by creating excessive 
+	numbers of messages. Although the server does not screen for this, guidance will be provided and 
+	message sending may be throttled on the Xbox.</p><dl>
+<dt><b>User-to-User Messaging</b></dt>
+<dd><p>When a client wants to send a message, it builds up the required properties for the type of 
+		message being sent and then builds a list of XUIDs the message will be sent to, which may be up 
+		to 100 users. The XUIDs could be the user's teammates, friends, players in a game/tournament, and 
+		so on. The Messaging service does not validate one user's rights to send to another user; we 
+		expect client policy to control this.</p></dd>
+<dt><b>Sending Messages from a Publisher</b></dt>
+<dd><p>Publisher-created messages targeting users of a specific title are supported. These messages 
+		are assembled and submitted to the service using the XLAST tool included in the XDK. The server 
+		will set certain properties on the message at the time of receipt, such as the sent time when the 
+		message is placed in a recipient's queue. Users are presented with publisher messages only for 
+		the titles that they own. Users cannot reply to publisher messages.</p><p>Titles have free reign around publisher-created messages when processed within the context of 
+		their title. However, the vision is that these messages would eventually also be available to 
+		players in the Dashboard or Web, or both, in a read-only fashion. In order to make messaging 
+		viable for external devices in the future, titles need to follow certain guidelines for the use 
+		of the voice and text members. In particular, the optional voice attachments must be created using 
+		the approved XDK codecs. It is also recommended that the required text property contain characters 
+		from the languages and characters supported in the Dashboard.</p><p>Don't think of publisher messaging as a generic way to share game data, state, assets, tunables, 
+		and so on, to all players of your title. Titles wishing to do that may use title storage to 
+		accomplish these types of transactions. Publishers may not use this facility to advertise products 
+		on another platform.</p></dd>
+<dt><b>Message Revocation</b></dt>
+<dd><p>A message sender is allowed to revoke any message that they send. The revoke API accepts 
+		parameters that are very similar to the reply returned from the send API, so that any client or 
+		service sending messages can easily store the send reply if they later anticipate needing to 
+		revoke the message. The revoke API accepts the same limit of 100 recipients in one call that the 
+		send API does.</p></dd>
+</dl>
+<h2><a name="_policy"></a>Policy</h2>
+<ul>
+<li><a href="#_user_queue_handling">Full User-Queue Handling</a></li><li><a href="#_feedback">Providing Feedback</a></li><li><a href="#_voice_and_text_msg_block">Voice and Text Message Blocking</a></li><li><a href="#_per_player_block">Per-Player Blocking</a></li></ul>
+<h3><a name="_user_queue_handling"></a>Full User-Queue Handling</h3>
+<p>When a user's message queue is full (at 125 messages) and he or she receives a new message, 
+	an algorithm determines which message will be deleted to make room for the new message. A user 
+	sending a message never gets an error that the recipient's queue is full; rather, an old message 
+	is always deleted to make room for a new one. This allows a user to continue to receive new, 
+	potentially important messages. The game must warn users when their queue is full (or almost 
+	full) so that they know they are losing messages.</p><p>The deletion algorithm implements the following scheme when the queue is full.</p><p>a) If the user has more than 10 messages from the current title, the oldest 
+	message from that title is deleted.</p><p>b) If the user has more than 10 messages from the sender of the newly-arrived 
+	message, the oldest message from that sender is deleted.</p><p>c) If neither (a) or (b) applies, the oldest message in the user's queue is deleted.</p><p>d) Xbox <i>Live</i> service messages are never deleted.</p><h3><a name="_feedback"></a>Providing Feedback</h3>
+<p>Users must be able to send feedback on a message (that is, the person who sent them the 
+	message). This is required by TCR. Two specific feedback types have been created for messaging:
+	"offensive message" and "harassing message". Users who continue to send offensive or harassing 
+	messages will be banned from creating voice/text messages according to policy.</p><h3><a name="_voice_and_text_msg_block"></a>Voice and Text Message Blocking</h3>
+<p>Text and voice attachments in messages are subject to the TCR on communication banning. Thus, 
+	if a user is voice banned, or his or her parent has set parental controls to disable voice, the 
+	title is not able to display these message fields. Similarly, if a user has muted another player, 
+	he or she should not send or receive voice attachments in messages to or from that user.</p><h3><a name="_per_player_block"></a>Per-Player Blocking</h3>
+<p>When users delete a message, they have the option of blocking the sender of that message from 
+	sending them messages in the future...as well as the option of sending feedback on the sender. 
+	Users may unblock a user they have previously blocked by sending that user any message. When a 
+	message is sent to a user who has blocked the sender, a special error code is returned to the 
+	client that may or may not be displayed to the user depending on the client policy.</p><p>A user must be able to block the following communications.</p><ul>
+<li>Friend request</li>
+<li>Team recruit</li>
+<li>Tournament join</li>
+</ul>
+<p>A user cannot block system messages or messages created by publishers.</p><h2><a name="_design_specifics"></a>Design Specifics</h2>
+<ul>
+<li><a href="#">Message Structure</a></li><li><a href="#IDA5FJV">ULONGLONG qwMessageContext</a></li><li><a href="#_message_flags">Message Flags</a></li></ul>
+<h3><a name=""></a>Message Structure</h3>
+<p>The following structure holds the message summary:</p>
+<pre class="clsCode">
+typedef struct _XONLINE_MSG_SUMMARY
+{
+    XUID        xuidSender;        // User ID of sender
+    WORD        wMsgType;          // Type of the message
+    ULONGLONG   qwMessageContext;  // Message-specific context value
+    FILETIME    ftSentTime;        // Time at which message was sent
+    DWORD       dwMessageID;       // ID of message
+    DWORD       dwMessageFlags;    // Flags describing message
+    DWORD       dwSenderTitleID;   // ID of title in which message was sent
+    WORD        wExpireMinutes;    // Offset in minutes from the sent time
+    WORD        cbDetails;         // Size of details BLOB, excluding downloadable content
+    char        szSenderName[XONLINE_GAMERTAG_SIZE]; // Gamertag of sender
+} XONLINE_MSG_SUMMARY, *PXONLINE_MSG_SUMMARY;
+</pre>
+    <h3><a name="IDA5FJV"></a>ULONGLONG qwMessageContext</h3>
+<p>The Message Context (qwMessageContext) is used to pass type-specific information about 
+	the message, the main purpose of which is to immediately give the title enough knowledge about 
+	the message to make an informed decision on how to visually indicate pending messages to the 
+	user. Think of this as "bread crumbs" that help lead the user to the appropriate place to take 
+	action on the message. Including this information in the summary alleviates the need to make 
+	a separate asynchronous request to get message details. The sender context is well-defined for 
+	each known message and may be used by title-specific messages in a manner applicable to that 
+	message's application.</p><dl>
+<dt><b>Friend Request</b></dt>
+<dd><p><table>
+<tr>
+<td>Description</td>
+<td>Another player is requesting a friend relationship, either 
+			through the player's menu or via the Dashboard.</td>
+</tr>
+<tr>
+<td>Message type</td>
+<td>XONLINE_MSG_TYPE_FRIEND_REQUEST</td>
+</tr>
+<tr>
+<td>Sender context</td>
+<td>&lt;none&gt;</td>
+</tr>
+<tr>
+<td>Required properties</td>
+<td>&lt;none&gt;</td>
+</tr>
+<tr>
+<td>Delivered cross-title?</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>In-game notification required?</td>
+<td>Optional, with Friend Request icon</td>
+</tr>
+<tr>
+<td>Expiration policy</td>
+<td>45 days</td>
+</tr>
+</table>
+</p></dd>
+<dt><b>Game Invite</b></dt>
+<dd><p><table>
+<tr>
+<td>Description</td>
+<td>A game invite that was sent from the Friends, Teams, 
+			or Competitions UI.</td>
+</tr>
+<tr>
+<td>Message type</td>
+<td>XONLINE_MSG_TYPE_GAME_INVITE</td>
+</tr>
+<tr>
+<td>Sender context</td>
+<td>Sender contextual, could be &lt;none&gt;, Team_ID, or CompID</td>
+</tr>
+<tr>
+<td>Required properties</td>
+<td>XONLINE_MSG_PROP_SESSION_ID (ID of the session the 
+			user is being invited to)</td>
+</tr>
+<tr>
+<td>Delivered cross-title?</td>
+<td>Yes, if recipient is already a Friend</td>
+</tr>
+<tr>
+<td>In-game notification required?</td>
+<td>Yes, with envelope</td>
+</tr>
+<tr>
+<td>Expiration policy</td>
+<td>Transient</td>
+</tr>
+</table>
+</p></dd>
+<dt><b>Personal Voice Message</b></dt>
+<dd><p><table>
+<tr>
+<td>Description</td>
+<td>A personal voice message sent between parties with an existing 
+			Friend, Team, or Competition relationship</td>
+</tr>
+<tr>
+<td>Message type</td>
+<td>XONLINE_MSG_TYPE_VOICE</td>
+</tr>
+<tr>
+<td>Sender context</td>
+<td>&lt;none&gt;</td>
+</tr>
+<tr>
+<td>Required properties</td>
+<td>
+<p>XONLINE_MSG_PROP_VOICE_DATA (Storage URL to the actual voice data)</p><p>XONLINE_PROP_VOICE_DATA_CODEC (codec and bitrate used to encode the voice data)</p></td>
+</tr>
+<tr>
+<td>Delivered cross-title?</td>
+<td>No</td>
+</tr>
+<tr>
+<td>In-game notification required?</td>
+<td>Optional, with envelope</td>
+</tr>
+<tr>
+<td>Expiration policy</td>
+<td>7 days</td>
+</tr>
+</table>
+</p></dd>
+<dt><b>Personal Text Message</b></dt>
+<dd><p><table>
+<tr>
+<td>Description</td>
+<td>A personal text message sent between parties with an existing Friend, 
+			Team, or Competition relationship</td>
+</tr>
+<tr>
+<td>Message type</td>
+<td>XONLINE_MSG_TYPE_TEXT</td>
+</tr>
+<tr>
+<td>Sender context</td>
+<td>&lt;none&gt;</td>
+</tr>
+<tr>
+<td>Required properties</td>
+<td>
+<p>XONLINE_MSG_PROP_TEXT (text of the message)</p><p>XONLINE_PROP_TEXT_LANGUAGE (language of the text in the 
+			XMSG_PROP_TEXT property)</p></td>
+</tr>
+<tr>
+<td>Delivered cross-title?</td>
+<td>No</td>
+</tr>
+<tr>
+<td>In-game notification required?</td>
+<td>Optional, with envelope</td>
+</tr>
+<tr>
+<td>Expiration policy</td>
+<td>7 days</td>
+</tr>
+</table>
+</p></dd>
+<dt><b>Team Recruitment</b></dt>
+<dd><p><table>
+<tr>
+<td>Description</td>
+<td>A message sent to solicit a player to join a team</td>
+</tr>
+<tr>
+<td>Message type</td>
+<td>XONLINE_MSG_TYPE_TEAM_RECRUIT</td>
+</tr>
+<tr>
+<td>Sender context</td>
+<td>Team_ID</td>
+</tr>
+<tr>
+<td>Required properties</td>
+<td>XONLINE_MSG_PROP_TEAM_NAME (string indicating name of team)</td>
+</tr>
+<tr>
+<td>Delivered cross-title?</td>
+<td>No</td>
+</tr>
+<tr>
+<td>In-game notification required?</td>
+<td>Optional, with Friend Request icon</td>
+</tr>
+<tr>
+<td>Expiration policy</td>
+<td>Title-specified, max 45 days</td>
+</tr>
+</table>
+</p></dd>
+<dt><b>Competition Recruitment</b></dt>
+<dd><p><table>
+<tr>
+<td>Description</td>
+<td>A message sent to solicit a player to join a competition event</td>
+</tr>
+<tr>
+<td>Message type</td>
+<td>XONLINE_MSG_TYPE_COMP_RECRUIT</td>
+</tr>
+<tr>
+<td>Sender context</td>
+<td>Comp_ID</td>
+</tr>
+<tr>
+<td>Required properties</td>
+<td>
+<p>XONLINE_MSG_PROP_COMP_NAME (string indicating 
+			name of competition)</p><p>XONLINE_MSG_PROP_COMP_EVENT_START (starting date of the event)</p><p>XONLINE_MSG_PROP_COMP_ADMIN (XUID of the admin)</p><p>XONLINE_MSG_PROP_COMP_REG_CLOSE (when the competition is available for registration)</p><p>XONLINE_MSG_PROP_COMP_RECURRENCE</p></td>
+</tr>
+<tr>
+<td>Delivered cross-title?</td>
+<td>No</td>
+</tr>
+<tr>
+<td>In-game notification required?</td>
+<td>Optional, with envelope</td>
+</tr>
+<tr>
+<td>Expiration policy</td>
+<td>title-specified, max 45 days</td>
+</tr>
+</table>
+</p></dd>
+<dt><b>Competition Match Reminder</b></dt>
+<dd><p><table>
+<tr>
+<td>Description</td>
+<td>As a precursor to an upcoming match, this message is sent 
+			to a player who previously joined the competition event. This message is created by the 
+			service and delivered to a player shortly before the match begins.</td>
+</tr>
+<tr>
+<td>Message type</td>
+<td>XONLINE_MSG_TYPE_COMP_REMINDER</td>
+</tr>
+<tr>
+<td>Sender context</td>
+<td>Comp_ID</td>
+</tr>
+<tr>
+<td>Required properties</td>
+<td>
+<p>XONLINE_MSG_PROP_COMP_NAME  (string indicating 
+			name of competition)</p><p>XONLINE_MSG_PROP_COMP_EVENT_START  (starting date of the event)</p></td>
+</tr>
+<tr>
+<td>Delivered cross-title?</td>
+<td>No</td>
+</tr>
+<tr>
+<td>In-game notification required?</td>
+<td>Yes, with envelope when in title</td>
+</tr>
+<tr>
+<td>Expiration policy</td>
+<td>15 minutes from start of competition (final value TBD by 
+			Xbox <i>Live</i> team)</td>
+</tr>
+</table>
+</p></dd>
+<dt><b>Title-Specific Message</b></dt>
+<dd><p><table>
+<tr>
+<td>Description</td>
+<td>Titles are each allowed to create a title-specific message 
+			for use within the title as they see fit. A title may have multiple message types, but 
+			they will all appear as this type to the Messaging service and to external clients. A title 
+			can use the title-reserved bits in the message flags or the sender context to distinguish its 
+			own internal types.</td>
+</tr>
+<tr>
+<td>Message type</td>
+<td>XONLINE_MSG_TYPE_TITLE_CUSTOM</td>
+</tr>
+<tr>
+<td>Sender context</td>
+<td>&lt;Title's discretion&gt;</td>
+</tr>
+<tr>
+<td>Required properties</td>
+<td>&lt;Title's discretion&gt; (A title may define 
+			any properties that are needed for its custom type.)</td>
+</tr>
+<tr>
+<td>Delivered cross-title?</td>
+<td>No</td>
+</tr>
+<tr>
+<td>In-game notification required?</td>
+<td>&lt;Title's discretion&gt;</td>
+</tr>
+<tr>
+<td>Expiration policy</td>
+<td>Title-specified, max 45 days</td>
+</tr>
+</table>
+</p></dd>
+<dt><b>Publisher-Specific Message (MOTD)</b></dt>
+<dd><p><table>
+<tr>
+<td>Description</td>
+<td>Publishers are each allowed to create a publisher-specific message 
+			targeted to an individual title. This message will be delivered to all users of that title.</td>
+</tr>
+<tr>
+<td>Message type</td>
+<td>XONLINE_MSG_TYPE_PUBLISHER_CUSTOM</td>
+</tr>
+<tr>
+<td>Sender context</td>
+<td>&lt;none&gt;</td>
+</tr>
+<tr>
+<td>Required properties</td>
+<td>
+<p>XMSG_PROP_TEXT (text of the message)</p><p>XMSG_PROP_TEXT_LANGUAGE  (language of the text in the XMSG_PROP_TEXT property)</p></td>
+</tr>
+<tr>
+<td>Delivered cross-title?</td>
+<td>No</td>
+</tr>
+<tr>
+<td>In-game notification required?</td>
+<td>&lt;Title's discretion&gt;</td>
+</tr>
+<tr>
+<td>Expiration policy</td>
+<td>Title-specified, max 45 days. This is a special case whereby 
+			the publisher may choose an absolute expiration date or a delta consisting of the number of 
+			days from the time the message is first delivered to the user.</td>
+</tr>
+</table>
+</p></dd>
+<dt><b>Game Invite Reply</b></dt>
+<dd><p><table>
+<tr>
+<td>Description</td>
+<td>A reply to a previously sent Friend, Team, 
+			or Competition game invite</td>
+</tr>
+<tr>
+<td>Message type</td>
+<td>XONLINE_MSG_TYPE_GAME_INVITE_REPLY</td>
+</tr>
+<tr>
+<td>Sender context</td>
+<td>yes/no (Session_ID???)</td>
+</tr>
+<tr>
+<td>Required properties</td>
+<td>XMSG_PROP_SESSION_ID (ID of the session the user 
+			is being invited to)</td>
+</tr>
+<tr>
+<td>Delivered cross-title?</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>In-game notification required?</td>
+<td>Yes, with envelope</td>
+</tr>
+<tr>
+<td>Expiration policy</td>
+<td>7 days</td>
+</tr>
+</table>
+</p></dd>
+</dl>
+<h3><a name="_message_flags"></a>Message Flags</h3>
+<p>The message flags are part of the summary properties. Titles may consult these bits 
+	to make informed decisions on what to display in-game or when constructing a message list.</p><table>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>XMSG_FLAG_REQUIRED</td>
+<td>The message is a required message that must be 
+	read before continuing other activities on the service.</td>
+</tr>
+<tr>
+<td>XMSG_FLAG_RECOMMENDED</td>
+<td>The message is a recommended message that users 
+	will be advised to read when they log on.</td>
+</tr>
+<tr>
+<td>XMSG_FLAG_HAS_VOICE</td>
+<td>The message contains a voice attachment.</td>
+</tr>
+<tr>
+<td>XMSG_FLAG_HAS_TEXT</td>
+<td>The message contains a text body.</td>
+</tr>
+<tr>
+<td>XMSG_FLAG_READ</td>
+<td>The message details have been read. </td>
+</tr>
+<tr>
+<td>XMSG_FLAG_NON_EXPORTABLE</td>
+<td>This message should be displayed only on Xbox consoles. 
+	This flag hides the message from the Web, from alerts, and from future non-console clients.</td>
+</tr>
+<tr>
+<td>XMSG_FLAG_NOTIFY</td>
+<td>This message should cause a new message 'bink' to be displayed 
+	to the user in-game upon arrival.</td>
+</tr>
+</table>
+<h2><a name="_global_property_tags"></a>Global Property Tags</h2>
+<ul>
+</ul>
+<p>Some property flags are global and are allowed in any message type. All message types can contain a voice attachment specified in the following properties:</p><ul>
+<li>XONLINE_MSG_PROP_VOICE_DATA</li>
+<li>XONLINE_MSG_PROP_VOICE_DATA_CODEC</li>
+<li>XONLINE_MSG_PROP_VOICE_DATA_DURATION</li>
+</ul>
+<p>All three of the above properties should be specified together. The XONLINE_MSG_FLAG_HAS_VOICE message flag can be used to test for the presence of these properties before the message details have been retrieved.</p><p>Additionally, all message types can contain a text summary specified in the following properties:</p><ul>
+<li>XONLINE_MSG_PROP_TEXT</li>
+<li>XONLINE_MSG_PROP_TEXT_LANGUAGE</li>
+</ul>
+<p>Both of the above properties should be specified together. The XONLINE_MSG_FLAG_HAS_TEXT message flag can be used to test for the presence of these properties before the message details have been retrieved. The text summary should be 256 characters or less and may be used by Xbox <i>Live</i> anywhere that a  summary of the message is useful, such as in an alert, on the Web, or in the Xbox Dashboard.</p><h2><a name="appendix_a"></a>Appendix A: Client API</h2>
+<p>The following APIs are available for message support:</p><ul>
+<li><a href="XOnlineMessageCreate.htm">XOnlineMessageCreate</a></li>
+<li><a href="XOnlineMessageDelete.htm">XOnlineMessageDelete</a></li>
+<li><a href="XOnlineMessageDestroy.htm">XOnlineMessageDestroy</a></li>
+<li><a href="XOnlineMessageDetails.htm">XOnlineMessageDetails</a></li>
+<li><a href="XOnlineMessageDetailsGetResultsProperty.htm">XOnlineMessageDetailsGetResultsProperty</a></li>
+<li><a href="XOnlineMessageDetailsGetResultsSummary.htm">XOnlineMessageDetailsGetResultsSummary</a></li>
+<li><a href="XOnlineMessageDownloadAttachmentGetProgress.htm">XOnlineMessageDownloadAttachmentGetProgress</a></li>
+<li><a href="XOnlineMessageDownloadAttachmentToDirectory.htm">XOnlineMessageDownloadAttachmentToDirectory</a></li>
+<li><a href="XOnlineMessageDownloadAttachmentToMemory.htm">XOnlineMessageDownloadAttachmentToMemory</a></li>
+<li><a href="XOnlineMessageDownloadAttachmentToMemoryGetResults.htm">XOnlineMessageDownloadAttachmentToMemoryGetResults</a></li>
+<li><a href="XOnlineMessageEnableReceivingFamilyTitleIDs.htm">XOnlineMessageEnableReceivingFamilyTitleIDs</a></li>
+<li><a href="XOnlineMessageEnumerate.htm">XOnlineMessageEnumerate</a></li>
+<li><a href="XOnlineMessageRevoke.htm">XOnlineMessageRevoke</a></li>
+<li><a href="XOnlineMessageSend.htm">XOnlineMessageSend</a></li>
+<li><a href="XOnlineMessageSendGetProgress.htm">XOnlineMessageSendGetProgress</a></li>
+<li><a href="XOnlineMessageSendGetResults.htm">XOnlineMessageSendGetResults</a></li>
+<li><a href="XOnlineMessageSetFlags.htm">XOnlineMessageSetFlags</a></li>
+<li><a href="XOnlineMessageSetProperty.htm">XOnlineMessageSetProperty</a></li>
+<li><a href="XOnlineMessageSetSendingFamilyTitleID.htm">XOnlineMessageSetSendingFamilyTitleID</a></li>
+<li><a href="XOnlineMessageSetSummaryRefresh.htm">XOnlineMessageSetSummaryRefresh</a></li>
+<li><a href="XOnlineMessageSummary.htm">XOnlineMessageSummary</a></li>
+</ul>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

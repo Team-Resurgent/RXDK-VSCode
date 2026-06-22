@@ -1,0 +1,75 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineChangeLogonUsersTaskGetResults</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineChangeLogonUsersTaskGetResults"/>
+<MSHelp:Keyword Index="F" Term="XOnlineChangeLogonUsersTaskGetResults"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineChangeLogonUsersTaskGetResults</h1>
+<p>Returns the results of a completed (or failed) <a href="XOnlineChangeLogonUsers.htm">XOnlineChangeLogonUsers</a> call.</p> 
+<pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineChangeLogonUsersTaskGetResults(</b>
+    <b>XONLINETASK_HANDLE</b> <i>hLogonTask</i><b>,</b>
+    <b>HRESULT</b> *<i>phr</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+
+<dt><i>hLogonTask</i></dt>
+<dd>[in]  Online task handle returned by the call to <b>XOnlineChangeLogonUsers</b>.</dd>
+            
+
+
+<dt><i>phr</i></dt>
+<dd>[out]  Pointer to a buffer that will receive the result codes for each player specified in the <b>XOnlineChangeLogonUsers</b> call.  The specified buffer should be large enough to hold XONLINE_MAX_LOGON_USERS values of type <b>HRESULT</b>.  This argument can be NULL if this information is not needed.</dd>
+            
+
+
+
+</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>The return value is the result status of the completed <b>XOnlineChangeLogonUsers</b> call.</p>
+             
+<h4><a name="remarks"></a>Remarks</h4>
+<p><b>XOnlineChangeLogonUsersTaskGetResults</b> returns the results of a logon change task initiated with a call to <b>XOnlineChangeLogonUsers</b>, and optionally retrieves the result status for each player that was specified in the logon change request.</p>
+
+<p>Typically, <b>XOnlineChangeLogonUsersTaskGetResults</b> is called in response to a return code of XONLINE_E_LOGON_CHANGE_USER_FAILED from <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> for the logon change task.  That error return code indicates that there was some problem logging on one or more of the new players (or possibly one of the existing players).  If the problem can be associated with one or more of the new players specified in the <b>XOnlineChangeLogonUsers</b> call, then the error result codes returned in the <i>phr</i> array indicate specific result codes for each individual player, in the same order that they were specified in the call to <b>XOnlineChangeLogonUsers</b>.  It is possible that no error codes specific to the new players can be determined, in which case all of the result codes returned in <i>phr</i> will be S_OK.</p>
+
+<p>The possible result codes returned in the <i>phr</i> array are:</p>
+<ul>
+<li>S_OK:  The player was successfully logged on, and has no messages.</li>
+<li>XONLINE_S_LOGON_USER_HAS_MESSAGE:  The player was successfully logged on, and has a dynamic message available for viewing.  The player should be given the option of rebooting into the Xbox Dashboard in order to view the message.</li>
+<li>XONLINE_E_LOGON_USER_ACCOUNT_REQUIRES_MANAGEMENT:  The player cannot be successfully logged on.  The player must reboot into the Xbox Dashboard to determine the reason for this failure and to resolve the issue before they may participate in online game play.  Note that the failure may simply be caused by a required message that must be read.</li>
+</ul>
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="x_mt_xonline_functions.htm">Xbox Live Functions</a> | <a href="XOnlineChangeLogonUsers.htm">XOnlineChangeLogonUsers</a>
+</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

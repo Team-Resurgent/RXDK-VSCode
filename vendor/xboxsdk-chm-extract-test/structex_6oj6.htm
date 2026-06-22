@@ -1,0 +1,93 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>SetUnhandledExceptionFilter</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="SetUnhandledExceptionFilter">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="SetUnhandledExceptionFilter"/>
+<MSHelp:Keyword Index="F" Term="SetUnhandledExceptionFilter"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_setunhandledexceptionfilter"></A>SetUnhandledExceptionFilter</H1>
+
+<P>The <B>SetUnhandledExceptionFilter</B> function enables a title to supersede the top-level exception handler.</P>
+
+<P>After calling this function, if an exception occurs in a title that is not being debugged, and the exception makes it to the unhandled exception filter, that filter will call the exception filter function specified by the <I>lpTopLevelExceptionFilter</I> parameter. </P>
+
+<PRE class=syntax><B>LPTOP_LEVEL_EXCEPTION_FILTER SetUnhandledExceptionFilter(
+  LPTOP_LEVEL_EXCEPTION_FILTER</B> <I>lpTopLevelExceptionFilter</I> 
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>lpTopLevelExceptionFilter</I></DT>
+
+<DD>[in] Pointer to a top-level exception filter function that will be called whenever the <A HREF="structex_9gky.htm">UnhandledExceptionFilter</a> function gets control, and the title is not being debugged. A value of NULL for this parameter specifies default handling within <B>UnhandledExceptionFilter</B>. 
+
+<P>The filter function has the same signature as <B>UnhandledExceptionFilter</B>: It uses the WINAPI calling convention, takes a single parameter of type <B>LPEXCEPTION_POINTERS</B>, and returns a <B>LONG</B> value. The filter function should return one of the following values. 
+
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=36%>Value</TH>
+<TH align=left width=64%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=36%>EXCEPTION_EXECUTE_HANDLER</TD>
+<TD width=64%>Return from <A HREF="structex_9gky.htm">UnhandledExceptionFilter</a> and execute the associated exception handler. This usually results in the game console freezing.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=36%>EXCEPTION_CONTINUE_EXECUTION</TD>
+<TD width=64%>Return from <B>UnhandledExceptionFilter</B> and continue execution from the point of the exception. Note that the filter function is free to modify the continuation state by modifying the exception information supplied through its <B>LPEXCEPTION_POINTERS</B> parameter.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=36%>EXCEPTION_CONTINUE_SEARCH</TD>
+<TD width=64%>Proceed with normal execution of <B>UnhandledExceptionFilter</B>.</TD>
+</TR>
+</TABLE><BR>
+
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>The <B>SetUnhandledExceptionFilter</B> function returns the address of the previous exception filter established with the function. A NULL return value means that there is no current top-level exception handler. </P>
+
+<H4>Remarks</H4>
+
+<P>Issuing <B>SetUnhandledExceptionFilter</B> replaces the existing top-level exception filter for all existing and all future threads in the title. </P>
+
+<P>The exception handler specified by <I>lpTopLevelExceptionFilter</I> is executed in the context of the thread that caused the fault. This can affect the exception handler's ability to recover from certain exceptions, such as an invalid stack. </P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p><H4>See Also</H4>
+<P> 
+<a href="xbox_mt_xtl_sll_structured_exception_handling_overview.htm">Structured Exception Handling Overview</a>,
+<a href="xbox_mt_xtl_sll_structured_exception_handling_functions.htm">Structured Exception Handling Functions</a> | 
+<A HREF="structex_9gky.htm">UnhandledExceptionFilter</a> </P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

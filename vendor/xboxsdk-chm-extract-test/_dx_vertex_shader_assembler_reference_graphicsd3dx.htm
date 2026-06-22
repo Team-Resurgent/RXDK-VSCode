@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Vertex Shader Assembler Reference</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Vertex Shader Assembler Reference"/>
+<MSHelp:Keyword Index="F" Term="Vertex Shader Assembler Reference"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_vertex_shader_assembler_reference_graphicsd3dx"></A>Vertex Shader Assembler Reference</H1>
+
+<P>This section contains reference information for the vertex shader assembler. Reference material is divided into the following categories. 
+
+<UL>
+	<LI><A HREF="_dx_registers_graphicsd3dx.htm">Registers</A></LI>
+	<LI><A HREF="_dx_instructions_graphicsd3dx.htm">Instructions</A></LI>
+	<LI><A HREF="_dx_modifiers_graphicsd3dx.htm">Modifiers</A></LI>
+</UL>
+
+<P>The vertex shader assembler is composed of a set of registers defined along with a set of operations that can be performed on the registers. Operations are expressed as instructions composed of an operator and one or more arguments (operands).</P>
+
+<p>For additional information, see the <a href="xbox_jbh_tool_xsasm.htm">Shader Assembler Tool (XSAsm)</a>.</p>
+
+<H3 class="subheading1">Xbox Vertex Shader Extensions</H3>
+
+<P>Vertex shaders programs provide a way to set specialized functions in the vertex processing portion of the Xbox GPU pipeline.  The Xbox GPU provides several vertex shader features that require additional methods in the Xbox version of Direct3D.</P>
+
+<P>In addition to allowing multiple vertex shader programs to be loaded simultaneously, the format that is loaded directly to hardware has been exposed. The vertex shader assembler will assemble instructions directly to this format.  This will allow applications to assemble individual vertex shaders and then concatenate them together when they are loaded onto the graphics chip.</P>
+
+<H3 class="subheading2">Different Kinds of Vertex Shaders</H3>
+
+<P>The Xbox GPU supports several kinds of vertex shaders.<P>
+
+<TABLE>
+<TR><TH NOWRAP>Shader Tag</TH><TH>C/C++ Constant</TH><TH>Description</TH></TR>
+<TR><TD><a href="_dx_vs_graphicsd3dx.htm">vs</a></TD><TD>SASMT_VERTEXSHADER</TD><TD>Normal DirectX 8.0 Vertex Shader.</TD></TR>
+<TR><TD><a href="_dx_xvs_graphicsd3dx.htm">xvs</a></TD><TD>SASMT_VERTEXSHADER</TD><TD>Xbox vertex shader. Using xvs allows access to the extra instructions, output registers, constant registers.</TD></TR>
+<TR><TD><a href="_dx_xvsw_graphicsd3dx.htm">xvsw</a></TD><TD>SASMT_READWRITE_VERTEXSHADER</TD><TD>Xbox read-write vertex shader. Like a normal Xbox vertex shader, but you can also write to the constant registers.</TD></TR>
+<TR><TD><a href="_dx_xvss_graphicsd3dx.htm">xvss</a></TD><TD>SASMT_VERTEXSTATESHADER</TD><TD>Xbox vertex state shader. Used to set up values in constant registers. Only v0 can be used for input, and you can only write to constant registers, not output registers.</TD></TR>
+</TABLE>
+
+<H3 class="subheading2">Multiple Resident Vertex Shader Programs</H3>
+
+<P>The Xbox GPU chip allows multiple vertex shader programs to be resident at the same time.  When a vertex shader program is loaded, the vertex shader portion of the Xbox GPU pipeline must be flushed.  This can cost substantial performance penalties if many programs must be loaded over the course of a single frame.  In many cases, vertex programs are small enough that it makes sense to load several at a time and then switch between them as necessary.  It takes far less time to switch between loaded vertex programs than it does to load a new program.</P>
+
+<P>It is up to an application to determine how the vertex programs will be packed into the 136 available addresses on the chip.  The <a href="xbox_dxg_IDirect3DDevice8_GetVertexShaderSize.htm">IDirect3DDevice8::GetVertexShaderSize</a> method can be used to determine how large a vertex shader is.  This information can be used to assign a starting address to each vertex shader program, which is then used in the <a href="xbox_dxg_IDirect3DDevice8_LoadVertexShader.htm">IDirect3DDevice8::LoadVertexShader</a> method to load the programs.  After the programs are loaded, the application can use <a href="xbox_dxg_IDirect3DDevice8_SelectVertexShader.htm">IDirect3DDevice8::SelectVertexShader</a> to specify where the vertex shader execution will begin.  Note that the address specified in <B>IDirect3DDevice8::SelectVertexShader</B> does not have to be one of the start addresses specified in <B>IDirect3DDevice8::LoadVertexShader</B>.  This provides a way to begin execution of a vertex shader at some point other than the start.</P>
+
+<H3 class="subheading2">Vertex Shader Constants</H3>
+
+<P>Vertex shader programs make use of constants that are stored in the shader constant memory.  The Xbox GPU chip provides 96 constants for vertex shader programs, and each constant contains four floating-point numbers.</P>
+
+<P>The chip provides storage for an additional 96 constants for use by the fixed-function pipeline.  These constants are available to an application if these two conditions are met:</P>
+
+<OL>
+<LI>The fixed-function pipeline is not used by the application.</LI>
+<LI>The application saves the constants before changing them and restores them before switching back to the fixed-function pipeline.</LI>
+</OL>
+
+<P>If an application meets these requirements, it may enable access to the additional 96 constants by a call to <a href="xbox_dxg_IDirect3DDevice8_setshaderconstantmode.htm">IDirect3DDevice8::SetShaderConstantMode</a>.  The default state is that access to these constants is not enabled and any attempt to set these constants will fail. This includes setting the constants by using a read/write vertex shader, a vertex state shader, a vertex shader declaration, or by calling <a href="_dx_idirect3ddevice8_setvertexshaderconstant_graphics.htm">IDirect3DDevice8::SetVertexShaderConstant</a>.
+
+<P>When enabled, the additional 96 constants are addressed using negative offsets. The syntax is c[&#8211;96] to c[&#8211;1].<P>
+
+<P>Note that several constants in the extended range are reserved for use by Direct3D. See the documentation for <b>IDirect3DDevice8::SetShaderConstantMode</b>.<P>
+
+<H3 class="subheading3">Relative Addressing with Negative Offsets</H3>
+
+<P>Xbox vertex shaders can use negative offsets for relative addressing. For example, c[a0.x&#8211;1] is allowed. Offsets can range from &#8211;96 to 95, whether or not negative constant registers are enabled.</P>
+
+<H3 class="subheading2">Additional Vertex Shader Inputs</H3>
+
+<P>Vertex attributes are read via one or more streams from one or more vertex buffers.  The declaration section of a vertex shader defines how each of the vertex attributes is read from the vertex buffers.  Three vertex attributes have been added to support two-sided lighting so that the corresponding additions to the declarator macros for the vertex shader language have been made. The following three additional inputs to the <b>D3DVSD</b> macro have been defined:</P>
+
+<PRE>D3DVSDE_BACKDIFFUSE
+D3DVSDE_BACKSPECULAR
+D3DVSDE_FOG
+
+</PRE>
+<!--D3DVSDE_FOG-->
+
+<P>These new register definitions allow the Back Diffuse, Back Specular, and Fog vertex attributes to be set from a vertex buffer stream.</P>
+
+<H3 class="subheading2">Additional Vertex Shader Outputs</H3>
+
+<P>Direct3D 8.0 on the PC defines two color outputs for vertex shaders: oD0 and oD1.  Direct3D on Xbox defines an additional two registers, oB0 and oB1.  These two registers can be used to store the color value for the back side of a polygon.  The Xbox GPU sends oD0 and oD1 to the pixel shader in the v0 and v1 registers if the triangle is front-faced.  Conversely, it passes oB0 and oB1 to pixel shader registers v0 and v1 if the triangle is back-faced.</P>
+
+<H3 class="subheading2">Additional Vertex Shader Instructions</H3>
+
+<P>The Xbox GPU provides two additional vertex shader instructions: <B>dph</B> and <B>rcc</B>. Both of these instructions are quite similar to other existing instructions. The <B>dph</B> instruction calculates the homogeneous dot product. The <B>rcc</B> instruction calculates a clamped reciprocal. To allow these instructions to be used in a token stream, the following two additional macros have been defined:</P>
+
+<PRE>D3DSIO_DPH
+D3DSIO_RCC
+</PRE>
+
+<H3 class="subheading2">Instruction Combining</H3>
+
+<P>The Xbox GPU allows up to three vertex shader instructions to be combined into a single instruction. The three instructions that are combined must follow strict rules, which limit the usefulness of this feature. The vertex shader assembler's global optimizer does a good job of automatically combining instructions. However, if desired, the "+" operator can be used to manually pair vertex shader instructions. An example combination is:</P>
+
+<PRE>mul r0,r2,v0
++ mul oPos,r2,v0
++ rsq r1,r1.w
+</PRE>
+
+<H3 class="subheading2">#pragma screenspace</H3>
+
+<P>If your vertex shader outputs vertices that are already in screen space,  you can save two instruction slots and four vertex shader cycles by using the <B>#pragma screenspace</B> statement somewhere in your vertex shader.</P>
+
+<P>If you use this pragma and you want your graphics to be rasterized so that they exactly match graphics rasterized without the <B>#pragma</B>, you must add a constant offset to your screen coordinates. See <a href="#calculating_screen_space_scale_and_offset">Calculating the Screen Space Scale and Offset Parameters</a> for more information. Sometimes this addition can be done as part of some other operation. Other times, you may decide that you don't need the exact sub-pixel accuracy that this final adjustment provides.
+</P>
+
+<H3>The oPos to Screen Space Transformation</H3>
+<P class="content">For normal vertex shaders, the XSAsm assembler automatically appends the following instructions on to the end of the vertex shader:</P>
+<PRE>mul oPos.xyz, r12, c-38 ; scale
++ rcc r1.x, r12.w       ; compute 1/w
+mad oPos.xyz, r12, r1.x, c-37 ; scale by 1/w, add offset
+</PRE>
+<P class="content">These instructions transform the vertex position from homogenous space into screen space. As you can see, these instructions simply perform a scale, perspective divide, and offset.</P>
+<P class="content">Examining these instructions, we see the use of r12 to read back the current value of oPos. You can use this technique in your own code if you want to. It allows you to treat oPos as a thirteenth temporary register. There's no performance penalty to doing this.</P>
+<P class="content">There's no requirement that these instructions be the final instructions of the vertex shader. And, in fact, the XSAsm optimizer will often move the mul/rcc pair up to avoid the stall between the rcc and the mad.</P>
+<P class="content">Depending upon how your shader computes oPos, you may be able to save some cycles by merging these three instructions with other calculations that you're already doing. If this is the case, you can use the "#pragma screenspace" statement to tell XSAsm not to append these three instructions.</P>
+<P class="content">#pragma screenspace affects only how the shader microcode is generated. It doesn't tell Direct3D to stop generating values for registers c-37 and c-38. If want to use registers c-37 and c-38 for your own purposes, you must call <B>Direct3D::SetShaderConstantMode</B> with the D3DSCM_NORESERVEDCONSTANTS flag. This flag prevents Direct3D from modifying registers c-37 and c-38.</P>
+
+<H3><a name="calculating_screen_space_scale_and_offset"></a>Calculating the Screen Space Scale and Offset Parameters</H3>
+<P class="content">DirectX calculates the scale and offset values from the arguments to the <B>Direct3DDevice::SetViewport</B> call. If you calculate these values on your own, you must first transform the x, y, and z values into screen space, and then make adjustments.</P>
+<P class="content">Screen space means:
+<UL><LI>0 &#60;= x &#60; width (in pixels)</LI>
+<LI>0 &#60;= y &#60; height (in pixels)</LI>
+<LI>0 &#60;= z &#60;= D3DZ_MAX_D16, D3DZ_MAX_D24S8, D3DZ_MAX_F16, or D3DZ_MAX_F24S8, depending upon the depth buffer format.</LI></UL></P>
+<P class="content">The adjustment table:</P>
+<TABLE WIDTH="100%">
+<TR><TH rowspan="2">D3DMULTISAMPLE_TYPE</TH><TH colspan="2">Scale</TH><TH colspan="2">Offset</TH></TR>
+<TR><TH>X</TH><TH>Y</TH><TH>X</TH><TH>Y</TH></TR>
+<TR><TD>D3DMULTISAMPLE_NONE</TD><TD>1.0</TD><TD>1.0</TD><TD>0.53125</TD><TD>0.53125</TD></TR>
+<TR><TD>D3DMULTISAMPLE_2_SAMPLES_MULTISAMPLE_LINEAR</TD><TD>1.0</TD><TD>1.0</TD><TD>0.03125</TD><TD>0.03125</TD></TR>
+<TR><TD>D3DMULTISAMPLE_2_SAMPLES_MULTISAMPLE_QUINCUNX</TD><TD>1.0</TD><TD>1.0</TD><TD>0.03125</TD><TD>0.03125</TD></TR>
+<TR><TD>D3DMULTISAMPLE_2_SAMPLES_SUPERSAMPLE_HORIZONTAL_LINEAR&nbsp;&nbsp;</TD><TD>2.0</TD><TD>1.0</TD><TD>0.53125</TD><TD>0.53125</TD></TR>
+<TR><TD>D3DMULTISAMPLE_2_SAMPLES_SUPERSAMPLE_VERTICAL_LINEAR</TD><TD>1.0</TD><TD>2.0</TD><TD>0.53125</TD><TD>0.53125</TD></TR>
+<TR><TD>D3DMULTISAMPLE_4_SAMPLES_MULTISAMPLE_LINEAR</TD><TD>1.0</TD><TD>1.0</TD><TD>0.03125</TD><TD>0.03125</TD></TR>
+<TR><TD>D3DMULTISAMPLE_4_SAMPLES_MULTISAMPLE_GAUSSIAN</TD><TD>1.0</TD><TD>1.0</TD><TD>0.03125</TD><TD>0.03125</TD></TR>
+<TR><TD>D3DMULTISAMPLE_4_SAMPLES_SUPERSAMPLE_LINEAR</TD><TD>2.0</TD><TD>2.0</TD><TD>0.53125</TD><TD>0.53125</TD></TR>
+<TR><TD>D3DMULTISAMPLE_4_SAMPLES_SUPERSAMPLE_GAUSSIAN</TD><TD>2.0</TD><TD>2.0</TD><TD>0.53125</TD><TD>0.53125</TD></TR>
+<TR><TD>D3DMULTISAMPLE_9_SAMPLES_MULTISAMPLE_GAUSSIAN</TD><TD>1.5</TD><TD>1.5</TD><TD>0.03125</TD><TD>0.03125</TD></TR>
+<TR><TD>D3DMULTISAMPLE_9_SAMPLES_SUPERSAMPLE_GAUSSIAN</TD><TD>3.0</TD><TD>3.0</TD><TD>0.53125</TD><TD>0.53125</TD></TR></TABLE>
+<P class="content">The offset value of 0.53125 is 0.5 + 1/32. The number 0.5 is the difference between the OpenGL pixel center rasterization rules and the Direct3D rasterization rules. Adding 1/32 implements rounding to the nearest 1/16 of a pixel. The offset of 0.5 is not used when multisampling.</P>
+<P class="content">From this table you can see that the D3DMULTISAMPLE_9_SAMPLES_MULTISAMPLE_GAUSSIAN mode is actually implemented by the hardware as a four-sample multisample followed by a 1.5 &times; 1.5 supersample.</P>
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

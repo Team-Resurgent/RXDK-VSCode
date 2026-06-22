@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>connect</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="connect">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="connect"/>
+<MSHelp:Keyword Index="F" Term="connect"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="xbox_connect_winsock"></A>connect</H1>
+
+<P>Establishes a connection to a specified socket.</P>
+
+<PRE class=syntax><B>int connect(
+  SOCKET </B><I>s</I>,<B>                          </B>
+<B>  const struct sockaddr FAR </B><I>*name</I>,<B>  </B>
+<B>  int </B><I>namelen                        </I>
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>s</I></DT>
+
+<DD>[in] Descriptor identifying an unconnected socket.</DD>
+
+<DT><I>name</I></DT>
+
+<DD>[in] Name of the socket to which the connection should be established.</DD>
+
+<DT><I>namelen</I></DT>
+
+<DD>[in] Length of <I>name</I>.
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If no error occurs, <B>connect</B> returns zero. Otherwise, it returns SOCKET_ERROR, and a specific error code can be retrieved by calling <A HREF="xbox_wsagetlasterror_winsock.htm">WSAGetLastError</A>.</P>
+
+<P>On a blocking socket, the return value indicates success or failure of the connection attempt.</P>
+
+<P>With a nonblocking socket, the connection attempt cannot be completed immediately. In this case, <B>connect</B> will return SOCKET_ERROR, and <B>WSAGetLastError</B> will return <A HREF="xbox_winsock_error_codes_winsock.htm#_win32_wsaewouldblock_2">WSAEWOULDBLOCK</A>. In this case use the <A HREF="xbox_select_winsock.htm">select</A> function to determine the completion of the connection request by checking to see if the socket is writeable.</P>
+
+<P>Until the connection attempt completes on a nonblocking socket, all subsequent calls to <B>connect</B> on the same socket will fail with the error code <A HREF="xbox_winsock_error_codes_winsock.htm#_win32_wsaealready_2">WSAEALREADY</A>.  When the connection attempt completes successfully, all subsequent calls to <B>connect</B> on the same socket will fail with the error code <A HREF="xbox_winsock_error_codes_winsock.htm#_win32_wsaeisconn_2">WSAEISCONN</A>.  It is recommended that titles not use multiple calls to <B>connect</B> to detect connection completion. If they do, they must be prepared to handle WSAEALREADY and WSAEISCONN error values the same way that they handle WSAEWOULDBLOCK, to assure robust execution.</P>
+
+<P>If the error code returned indicates the connection attempt failed (that is, <A HREF="xbox_winsock_error_codes_winsock.htm#_win32_wsaeconnrefused_2">WSAECONNREFUSED</A> or <A HREF="xbox_winsock_error_codes_winsock.htm#_win32_wsaetimedout_2">WSAETIMEDOUT</A>) the title can call <B>connect</B> again for the same socket.</P>
+
+<H4>Remarks</H4>
+
+<P>The <B>connect</B> function is used to create a connection to the specified destination. If socket <I>s</I>, is unbound, unique values are assigned to the local association by the system, and the socket is marked as bound.</P>
+
+<P>For connection-oriented sockets (for example, type <B>SOCK_STREAM</B>), an active connection is initiated to the foreign host using <I>name</I> (an address in the name space of the socket; for a detailed description, see <A HREF="xbox_bind_winsock.htm">bind</A> and <A HREF="xbox_sockaddr_winsock.htm">SOCKADDR</A>). </P>
+
+<P>When the socket call completes successfully, the socket is ready to send and receive data. If the address member of the structure specified by the <I>name</I> parameter is all zeroes, <B>connect</B> will return the error <A HREF="xbox_winsock_error_codes_winsock.htm#_win32_wsaeaddrnotavail_2">WSAEADDRNOTAVAIL</A>. Any attempt to reconnect an active connection will fail with the error code <A HREF="xbox_winsock_error_codes_winsock.htm#_win32_wsaeisconn_2">WSAEISCONN</A>.</P>
+
+<P>For connection-oriented, nonblocking sockets, it is often not possible to complete the connection immediately. In such a case, this function returns the error <A HREF="xbox_winsock_error_codes_winsock.htm#_win32_wsaewouldblock_2">WSAEWOULDBLOCK</A>. However, the operation proceeds. </P>
+
+<P>The client can use the <B>select</B> function to determine the outcome of the socket connect attempt.  Success is reported in the writefds set and failure is reported in the exceptfds set.</P>
+
+<P>After <B>connect</B> is called on a nonblocking socket, data cannot be sent on that socket until the connection has been completed (the connection status can be determined by calling <B>select</B>).  The connection can often be completed quickly when on a fast network (such as a LAN), so it may appear that a <B>send</B> can be issued immediately after a call to <B>connect</B>.  This is not always the case, however.  The connection status should always be determined by calling <B>select</B>, and no data should be sent until the connection is established.</P>
+
+<P>For a connectionless socket (for example, type <B>SOCK_DGRAM</B>), the operation performed by <B>connect</B> is merely to establish a default destination address that can be used on subsequent <A HREF="xbox_send_winsock.htm">send</A>/<A HREF="xbox_wsasend_winsock.htm">WSASend</A> and <A HREF="xbox_recv_winsock.htm">recv</A>/<A HREF="xbox_wsarecv_winsock.htm">WSARecv</A> calls. Any datagrams received from an address other than the destination address specified will be discarded. If the address member of the structure specified by <I>name </I>is all zeroes, the socket will be disconnected. Then, the default remote address will be indeterminate, so <B>send/WSASend</B> and <B>recv/WSARecv</B> calls will return the error code <A HREF="xbox_winsock_error_codes_winsock.htm#_win32_wsaenotconn_2">WSAENOTCONN</A>. However, <A HREF="xbox_sendto_winsock.htm">sendto</A><B>/<A HREF="xbox_wsasendto_winsock.htm">WSASendTo</A></B> and <A HREF="xbox_recvfrom_winsock.htm">recvfrom</A><B>/<A HREF="xbox_wsarecvfrom_winsock.htm">WSARecvFrom</A></B> can still be used. The default destination can be changed by simply calling <B>connect</B> again, even if the socket is already connected. Any datagrams queued for receipt are discarded if <I>name</I> is different from the previous <B>connect</B>.</P>
+
+<P>For connectionless sockets, <I>name</I> can indicate any valid address, including a broadcast address. However, to connect to a broadcast address, a socket must use <A HREF="xbox_setsockopt_winsock.htm">setsockopt</A> to enable the SO_BROADCAST option. Otherwise, <B>connect</B> will fail with the error code <A HREF="xbox_winsock_error_codes_winsock.htm#_win32_wsaeacces_2">WSAEACCES</A>.</P>
+
+<P>When a connection between sockets is broken, the sockets should be discarded and recreated. When a problem develops on a connected socket, the title must discard and recreate the needed sockets in order to return to a stable point.</P>
+
+<H4>Error Codes</H4>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=35%>Error code</TH>
+<TH align=left width=65%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>WSANOTINITIALISED</TD>
+<TD width=65%>A successful <A HREF="xbox_wsastartup_winsock.htm">WSAStartup</A> call must occur before using this function.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>WSAEADDRINUSE</TD>
+<TD width=65%>The socket's local address is already in use and the socket was not marked to allow address reuse with SO_REUSEADDR. This error usually occurs when executing <A HREF="xbox_bind_winsock.htm">bind</A>, but could be delayed until this function if the <B>bind</B> was to a partially wildcard address (involving ADDR_ANY) and if a specific address needs to be committed at the time of this function.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>WSAEINPROGRESS</TD>
+<TD width=65%>A blocking call is in progress.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>WSAEALREADY</TD>
+<TD width=65%>A nonblocking <B>connect</B> call is in progress on the specified socket.
+</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>WSAEADDRNOTAVAIL</TD>
+<TD width=65%>The remote address is not a valid address (such as ADDR_ANY).</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>WSAECONNREFUSED</TD>
+<TD width=65%>The attempt to connect was forcefully rejected.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>WSAEINVAL</TD>
+<TD width=65%>The parameter <I>s</I> is a listening socket.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>WSAEISCONN</TD>
+<TD width=65%>The socket is already connected (connection-oriented sockets only).</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>WSAENOBUFS</TD>
+<TD width=65%>No buffer space is available. The socket cannot be connected.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>WSAENOTSOCK</TD>
+<TD width=65%>The descriptor is not a socket.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>WSAETIMEDOUT</TD>
+<TD width=65%>Attempt to connect timed out without establishing a connection.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>WSAEWOULDBLOCK </TD>
+<TD width=65%>The socket is marked as nonblocking and the connection cannot be completed immediately.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>WSAEACCES</TD>
+<TD width=65%>Attempt to connect datagram socket to broadcast address failed because <A HREF="xbox_setsockopt_winsock.htm">setsockopt</A> option SO_BROADCAST is not enabled.</TD>
+</TR>
+</TABLE><BR>
+
+<H4>Requirements</H4>
+<p>
+<b>Header: </b>Declared in winsockx.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xnet.lib for titles that only support system link play, XOnline.lib for titles that support online play. Use the secure versions of the library file (Xnets.lib or XOnlines.lib) for final testing.
+</p>
+
+
+<H4>See Also</H4>
+
+<P>
+<a href="xbox_winsock_overview_winsock.htm">Winsock Overview</A>,
+<a href="xbox_winsock_functions_winsock.htm">Winsock Functions</A> |
+  <A HREF="xbox_accept_winsock.htm">accept</A>, <A HREF="xbox_bind_winsock.htm">bind</A>, <A HREF="xbox_getsockname_winsock.htm">getsockname</A>, <A HREF="xbox_select_winsock.htm">select</A>, <A HREF="xbox_socket_winsock.htm">socket</A> </P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

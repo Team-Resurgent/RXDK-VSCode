@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>XLaunchNewImage</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="XLaunchNewImage">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XLaunchNewImage"/>
+<MSHelp:Keyword Index="F" Term="XLaunchNewImage"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_xbox_xlaunchnewimage"></A>XLaunchNewImage</H1>
+
+<P>Reboots the Xbox console to launch a different XBE file from the DVD drive.</P>
+
+<PRE class=syntax><B>DWORD XLaunchNewImage(
+  LPCSTR</B>  <I>lpImagePath</I>,
+<B>  PLAUNCH_DATA</B>  <I>pLaunchData</I>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+
+<DT><I>lpImagePath</I></DT>
+<DD>[in] Pointer to a null-terminated string that specifies the path and file name of the executable to launch.</DD>
+
+<DT><I>pLaunchData</I></DT>
+<DD>[in] Pointer to a <A HREF="x_mt_launchdata.htm">LAUNCH_DATA</A> structure that specifies data passed to the new executable.</DD>
+
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the machine reboots and there is no return value.</P>
+
+<P>If the function fails, the return value is an error code defined in winerror.h. The function does not use <B>SetLastError</B> to set the calling thread's last-error code.</P>
+
+<h4>Remarks</h4>
+
+
+<P>Pass NULL to <I>lpImagePath</I> to reboot to the Xbox Dashboard; otherwise,
+the path specified by <I>lpImagePath</I> should be the path to a valid XBE file
+located on the DVD drive (the path should begin with "D:\" and end with ".xbe"). Titles cannot
+reboot to an XBE file that has been copied onto the hard disk (except on development consoles, discussed below).</P>
+
+<P>Data is passed across the reboot in the <B>LAUNCH_DATA</B> structure.  The newly executed title can retrieve the launch data with <a href="x_jc_xgetlaunchinfo.htm">XGetLaunchInfo</a>.</P>
+
+<P>When launching the Xbox Dashboard (by specifying NULL for <I>lpImagePath</I>), <I>pLaunchData</I> must be a pointer to a filled-in <A HREF="x_mt_ld_launch_dashboard.htm">LD_LAUNCH_DASHBOARD</A> structure that specifies the reason the Dashboard is being launched and the action the Dashboard should take upon launch.</P>
+
+<p>
+If you use <b>XLaunchNewImage</b> with reason code XLD_LAUNCH_DASHBOARD_ACCOUNT_MANAGEMENT to boot to the Xbox Dashboard, do not call <a href="xonlinecleanup.htm">XOnlineCleanup</a>, 
+</p>
+
+<p>When calling <B>XLaunchNewImage</B>, the title should be performing as little activity as possible. It should not be performing activity in other threads or have other asynchronous tasks pending, be writing to the hard disk, performing audio or graphics in another thread, submixing, or performing I/O to the DVD, hard disk, or MU (including pending asynchronous I/O).  See the <B>Quick-Booting</B> section of the <A HREF="x_mt_softarch_xtl.htm">XTL Overview</A> for more information.</p>
+
+<p><P class="note"><B><I>Note</I></B>&nbsp;&nbsp;&nbsp;<b>XLaunchNewImage</b> is usable by Xbox <i>Live</i> titles, and supersedes the obsolete <b>XOnlineLaunchNewImage</b> function.</p>
+
+<P>Notes on using <B>XLaunchNewImage</B> on the Xbox Development Console:</P>
+
+<P>On the development console, <B>XLaunchNewImage</B> can be used to launch titles from the hard disk, in which case D:\ is mapped to the directory from which the title was launched.  Further calls to <B>XLaunchNewImage</B> by that title will not change the mapping.</P>
+
+<P>When instructed to launch the Dashboard, <B>XLaunchNewImage</B> launches the "default" title on the console. For retail consoles, the default title is the Xbox Dashboard, so launching to the Xbox Dashboard will work as expected. For the development console, however, the default title is initially set to the <a href="xbox_mds_concept_xdk_launcher.htm">XDK Launcher</a>.  In order to test your title's support for launching to the Xbox Dashboard, you will need to change the console's "default" title.  The <a href="xbox_jbh_tool_remote_xbsetcfg.htm">XbSetCfg</a> command-line tool allows you to switch between the XDK Launcher and the Xbox Dashboard as the default title. To set the Xbox Dashboard as the default title, use <b>xbsetcfg -d</b>. To set the XDK Launcher as the default title, use <b>xbsetcfg -l</b>.  Note that while the default title is set to the Xbox Dashboard, the XDK Launcher will not launch at boot and you will be unable to use the launcher to run titles from the hard disk.</P>  
+
+<P>When a title launches the Xbox Dashboard, the Xbox Dashboard will attempt to return to the title when the Dashboard is exited. The Dashboard always tries to launch the title from the game disc, not from the hard disk. During development, if you launch your title from the hard disk, the Xbox Dashboard will not be able to find your title when rebooting. To allow the Xbox Dashboard to reboot to your title, run the title from the game disc emulator or from hard media (a game disc).</P>
+
+
+
+<H4>See Also</H4>
+<P>
+<A HREF="x_jsk_executable_file_functions.htm">Executable File Functions</a> |
+<A HREF="x_jc_xgetlaunchinfo.htm">XGetLaunchInfo</a>,
+<A HREF="x_mt_launchdata.htm">LAUNCH_DATA</a>,
+<A HREF="x_mt_ld_launch_dashboard.htm">LD_LAUNCH_DASHBOARD</a>
+</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in xbox.h, for include use xtl.h.<br><b>Import Library: </b>Use xapilib.lib
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation. All rights reserved.</DIV>
+
+</BODY>
+</HTML>

@@ -1,0 +1,101 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>What are Competitions?</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="What are Competitions?"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+		<MSHelp:Keyword Index="K" Term="competitions, overview"/>
+		<MSHelp:Keyword Index="K" Term="competitions, terminology"/>
+	</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>What are Competitions?</h1>
+<p>Competing with other players is a common reason why video game players venture online. The Xbox <i>Live</i> competitions service provides opportunities for developers to offer structured competitions, called tournaments, in their games. The competitions service is responsible for scheduling competitions, sending reminders to players, and progressing players. Implementing competitions requires the following services: competitions, arbitration, presence, and matchmaking. Optionally, it may also require the statistics, teams, and messaging services.</p><p>This document offers an introduction to the terms and concepts of competitions and includes an overview of how to use it. It also references the <a href="xbox_tool_xlast_competitions.htm">XLAST Competitions Configuration tool</a>, which is used for generating competitions and competitions code.</p><p>This overview presents the following topics.</p><ul>
+<li><a href="#comp_tournament_structure">Competition Tournament Structure</a></li><li><a href="#IDADCEV">Competitions and Arbitration</a></li><li><a href="#IDAQCEV">XLAST Competition Configuration Tool</a></li><li><a href="#IDA3CEV">Terminology</a></li></ul>
+<h2><a name="comp_tournament_structure"></a>Competition Tournament Structure</h2>
+<p>Tournaments on Xbox <i>Live</i> consist of two or more entrants playing each other in matches. An entrant can be an individual or a team. Matches can consist of one or more games. Tournaments typically schedule multiple matches for the same time period. The group of matches is called a <i>round</i>. The winners of each round move on in the tournament. Currently, Xbox <i>Live</i> supports single-elimination tournaments. This means the  winners continue to play, and the losers are dropped from the tournament at the end of each round. This continues until there are only two entrants. The remaining two entrants then play a round called the "finals," the winner of which is the winner of the entire tournament. </p><p>The competitions service offers additional flexibility over typical competition structures through the concept of events. An <i>event</i> is one or more matches. Therefore, for complex tournaments, each round can consist of an event composed of several matches, with each match consisting of a collection of individual games. The structure of a tournament is also called its <i>topology</i>.</p><p>There are many types of tournaments in use today. Examples are single-elimination, double-elimination, ladder, and round-robin tournaments. As mentioned previously, Xbox <i>Live</i> currently supports single-elimination tournaments. However, to provide the capability of offering other types of tournaments in the future, the competitions service supports the notion of a tournament format. As other types of tournaments are added, your titles will use the tournament format to select them.</p><p>When a tournament begins, there are a fixed number of available slots for entrants. The number of slots available in a single elimination competitions is always contain the largest power of two that contains the registered number of players. If there are not enough entrants to fill all available slots, the entrant with no competitor is given a <i>bye</i>. The bye moves the entrant on to the next round without playing.</p><p>At the start of a competition, entrants are each assigned a slot based on their seed value. The <i>seed value</i> is an ordering of entries in a competition that your game assigns when it registers each entrant. Games usually assign seed values based on the relative rankings of players. It is important to remember that the competition system does not determine the seeds for the entrants and that the rankings of the entrants in the competition are entirely based on these specified seed values. Entrants maintain their seed values throughout the competition.</p><p>In sports competitions, a "bracket" is often physically drawn on a sheet of paper or whiteboard showing who is playing whom for the benefit of spectators and players, making it easy to see who will be matched up in future rounds depending on who wins each game. The competitions service can bracket players automatically. At registration, your title passes in the relative ranking for each player, which determines the player's seed. The service then brackets players in a fashion similar to a tennis tournament, where the best seeds do not play each other until later rounds. The first match in the round has the highest seed playing the lowest seed. The last match in the round has the second highest seed playing the second lowest seed, and so on. Should the number of players not be a multiple of 2, bracketing grants byes to the highest seeded players. These players do not have to play in the first round and automatically progress to the next round. </p><h2><a name="IDADCEV"></a>Competitions and Arbitration</h2>
+<p>All Xbox <i>Live</i> tournament matches are arbitrated. The Xbox <i>Live</i> arbitration service enables accurate score reporting for all tournament matches. Arbitrated sessions require all players to register before a match. After the match, a complete score report is submitted for all participating players. The service makes the binding decision about the final outcome of the match, looking up the past profiles of each of the players to settle any disputes. Client functions ensure that all tournament matches are arbitrated in this way. For more information, see <a href="xbox_Live_Arbitration.htm">Arbitration.</a></p><h2><a name="IDAQCEV"></a>XLAST Competition Configuration Tool</h2>
+<p>The <a href="xbox_tool_xlast_competitions.htm">XLAST</a> competition configuration tool provides the Xbox <i>Live</i> service the query configuration file it requires and generates editable code to help with development of competitions.</p><h2><a name="IDA3CEV"></a>Terminology</h2>
+<p>The following terms and concepts are used in competitions.</p><dl>
+				<dt><i>bracket</i></dt>
+				<dd>The grouping of players per round. It indicates who plays whom for a given round.</dd>
+				<dt><i>check-in</i></dt>
+				<dd>For each round in a competition, a player must check-in prior to the round starting. 
+				Players may choose to check-in to a competition before the allotted round start time.</dd>
+				<dt><i>competition</i></dt>
+				<dd>Any form of competitive play. This includes both tournaments and other forms of competition, 
+				such as ladders. </dd>
+				<dt><i>entrant</i></dt>
+				<dd>An individual player or a team in a competition, uniquely identified by Gamertag or team PUID. </dd>
+				<dt><i>entry</i></dt>
+				<dd>The atomic unit competing in a competition. An entry could represent 
+				either a player or a team. An entry always advances or is eliminated from the competition as a whole,
+				regardless of the individual stats of the members who make up that entry.</dd>
+				<dt><i>event</i></dt>
+				<dd>A set of matches with one result per entry reported to the tournaments service. An event is most 
+				commonly represented by a single match. Events take place with a collection of two or more entries
+				participating in the competition. </dd>
+				<dt><i>format</i></dt>
+				<dd>The basic structure of the tournament. Ladder, single-elimination, or round-robin are examples of
+				competition formats.</dd>
+				<dt><i>match</i></dt>
+				<dd>A single game session. </dd>
+				<dt><i>multilevel</i></dt>
+				<dd>Tournaments in which both the winners and losers from each round progress to the next round. However, 
+				the winners from each round are bracketed with the other winners from that round, and the losers from 
+				each round are bracketed with the other losers from that round.</dd>
+				<dt><i>rank</i></dt>
+				<dd>The relative ordinal position of an entry based on rating. Ranks may be scoped to an event 
+				or competition, or globally (stats).</dd>
+				<dt><i>rating</i></dt>
+				<dd>The entrant's score. The ratings of entrants are ordered to determine relative rank. </dd>
+				<dt><i>registration</i></dt>
+				<dd>The window of time before the first round in which players can register their entry in 
+				a competition. </dd>
+				<dt><i>round</i></dt>
+				<dd>A time frame where one or more events take place. A given entry will play in only one event 
+				per entry. </dd>
+				<dt><i>seed</i></dt>
+				<dd>The initial ordering of entries in a competition. An entry maintains its seed throughout the 
+				competition. It is analogous to the initial order of the competition-specific leaderboard. Seed values 
+				are commonly used to describe an event&#8212;for example, the first seed plays the third seed in the
+				semifinals.</dd>
+				<dt><i>session registration</i></dt>
+				<dd>The process of registering players in a competition event 
+				with the arbitration service.</dd>
+				<dt><i>single-elimination</i></dt>
+				<dd>A tournament in which the winner of each round moves to the next round and the loser 
+				is eliminated.</dd>
+				<dt><i>slot</i></dt>
+				<dd>The ordinal position of an entry in the initial listing of an event. This concept can be used to 
+				describe who has "home field" advantage in the event; it can also be used for similar concepts. </dd>
+				<dt><i>slotting</i></dt>
+				<dd>The process of mapping seeds to slots within a competition.</dd>
+				<dt><i>start time</i></dt>
+				<dd>The time by which entrants much check in for an event.</dd>
+				<dt><i>team</i></dt>
+				<dd>A group of players that compete together as a unit.</dd>	
+				<dt><i>topology</i></dt>
+				<dd>Information about each round and each match or event in each round.</dd>
+				<dt><i>tournament</i></dt>
+				<dd>A structured competition with rounds. Tournaments are best 
+				exemplified by traditional formats such as single-elimination and round-robin. </dd>
+			</dl>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

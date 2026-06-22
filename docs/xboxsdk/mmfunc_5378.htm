@@ -1,0 +1,138 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>timeSetEvent</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="timeSetEvent">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="timeSetEvent"/>
+<MSHelp:Keyword Index="F" Term="timeSetEvent"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_gettickcount"></A>timeSetEvent</H1>
+
+<P>The <B>timeSetEvent</B> function starts a specified timer event. The multimedia timer runs in its own thread. After the event is activated, it calls the specified callback function or sets or pulses the specified event object.</P>
+
+<PRE class=syntax><B>MMRESULT timeSetEvent(
+  UINT</B><I> uDelay</I><B>,                </B>
+<B>  UINT</B><I> uResolution</I><B>,           </B>
+<B>  LPTIMECALLBACK</B><I> lpTimeProc</I><B>,  </B>
+<B>  DWORD</B><I> dwUser</I><B>,               </B>
+<B>  UINT</B><I> fuEvent                </I>
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>uDelay</I></DT>
+
+<DD>Event delay, in milliseconds. If this value is not in the range of the minimum and maximum event delays supported by the timer, the function returns an error.</DD>
+
+<DT><I>uResolution</I></DT>
+
+<DD>Resolution of the timer event.  This parameter is ignored; the resolution is always one millisecond (1 ms).</DD>
+
+<DT><I>lpTimeProc</I></DT>
+
+<DD>Pointer to a callback function that is called once upon expiration of a single event or periodically upon expiration of periodic events. If <I>fuEvent</I> specifies the TIME_CALLBACK_EVENT_SET or TIME_CALLBACK_EVENT_PULSE flag, the <I>lpTimeProc</I> parameter is interpreted as a handle to an event object. The event will be set or pulsed upon completion of a single event or periodically upon completion of periodic events. </DD>
+
+<DT><I>dwUser</I></DT>
+
+<DD>User-supplied callback data.</DD>
+
+<DT><I>fuEvent</I></DT>
+
+<DD>Timer event type. This parameter may include one of the following values.
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=56%>Value</TH>
+<TH align=left width=44%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=56%>TIME_ONESHOT</TD>
+<TD width=44%>Event occurs once, after <I>uDelay</I> milliseconds.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=56%>TIME_PERIODIC</TD>
+<TD width=44%>Event occurs every <I>uDelay</I> milliseconds.</TD>
+</TR>
+</TABLE><BR>
+
+
+
+<P>The <I>fuEvent</I> parameter may also include one of the following values. 
+
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=56%>Value</TH>
+<TH align=left width=44%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=56%>TIME_CALLBACK_FUNCTION</TD>
+<TD width=44%>When the timer expires, Windows calls the function pointed to by the <I>lpTimeProc</I> parameter. This is the default. </TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=56%>TIME_CALLBACK_EVENT_SET</TD>
+<TD width=44%>When the timer expires, Windows calls the <A HREF="synchro_8ut0.htm">SetEvent</a> function to set the event pointed to by the <I>lpTimeProc</I> parameter. The <I>dwUser</I> parameter is ignored. </TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=56%>TIME_CALLBACK_EVENT_PULSE</TD>
+<TD width=44%>When the timer expires, Windows calls the <A HREF="synchro_1ylw.htm">PulseEvent</a> function to pulse the event pointed to by the <I>lpTimeProc</I> parameter. The <I>dwUser</I> parameter is ignored. </TD>
+</TR>
+</TABLE><BR>
+
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>Returns an identifier for the timer event if successful or an error otherwise. This function returns NULL if it fails and the timer event was not created. (This identifier is also passed to the callback function.)</P>
+
+<H4>Remarks</H4>
+
+<P>Each call to <B>timeSetEvent</B> for periodic timer events requires a corresponding call to the <B>timeKillEvent</B> function.</P>
+
+<P>Up to 63 timers can be active at one time.</P>
+
+<P>The multimedia timer thread, used for all multimedia timers, is created with a stack size equal to the default stack size of the title.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in dsound.h, for include use xtl.h.<br><b>Import Library: </b>Use xapilib.lib
+
+<P></P>
+
+<H4>See Also</H4>
+<P>
+
+<a href="xbox_mt_xtl_sll_time_functions.htm">Time Functions</a> |
+<A HREF="synchro_51o2.htm">CreateWaitableTimer</a>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirect3D8::CheckDeviceFormat</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="IDirect3D8::CheckDeviceFormat [C++]">
+<META NAME="MS-HKWD" CONTENT="CheckDeviceFormat (IDirect3D8) [C++]">
+<META NAME="MS-HKWD" CONTENT="CheckDeviceFormat [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="CheckDeviceFormat (IDirect3D8)"/>
+<MSHelp:Keyword Index="K" Term="IDirect3D8::CheckDeviceFormat"/>
+<MSHelp:Keyword Index="F" Term="CheckDeviceFormat"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_idirect3d8_checkdeviceformat_graphics"></A>IDirect3D8::CheckDeviceFormat</H1>
+
+<P>Determines whether a surface format is available as a specified resource type and can be used as a texture, depth-stencil buffer, or render target, or any combination of the three, on a device representing this adapter.</P>
+
+<PRE class=syntax><B>HRESULT CheckDeviceFormat(
+  UINT</B><I> Adapter</I><B>,</B>
+<B>  D3DDEVTYPE</B><I> DeviceType</I><B>,</B>
+<B>  D3DFORMAT</B><I> AdapterFormat</I>,
+<B>  DWORD</B> <I>Usage</I><B>,</B>
+<B>  D3DRESOURCETYPE</B> <I>RType</I><B>,</B>
+<B>  D3DFORMAT</B><I> CheckFormat</I>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>Adapter</I></DT>
+
+<DD>[in] Ordinal number denoting the display adapter to query. D3DADAPTER_DEFAULT is always the primary display adapter. This method returns D3DERR_INVALIDCALL when this value equals or exceeds the number of display adapters in the system. </DD>
+
+<DT><I>DeviceType</I></DT>
+
+<DD>[in] Member of the <A HREF="_dx_d3ddevtype_graphics.htm"><B>D3DDEVTYPE</B></A> enumerated type, identifying the device type.</DD>
+
+<DT><I>AdapterFormat</I></DT>
+
+<DD>[in] Member of the <A HREF="_dx_d3dformat_graphics.htm"><B>D3DFORMAT</B></A> enumerated type, identifying the format of the display mode into which the adapter will be placed.</DD>
+
+<DT><I>Usage</I></DT>
+
+<DD>[in] Requested usage for a surface of the <I>CheckFormat</I>. One or more of the following flags can be specified.
+
+<DL>
+<DT>D3DUSAGE_DEPTHSTENCIL</DT>
+
+<DD>Set to indicate that the surface can be used as a depth-stencil surface.</DD>
+
+<DT>D3DUSAGE_RENDERTARGET</DT>
+
+<DD>Set to indicate that the surface can be used as a render target. In cases where the <I>RType</I> parameter value unambiguously implies a specific usage, the application can leave the <I>Usage</I> parameter as 0.</DD>
+</DL>
+</DD>
+
+<DT><I>RType</I></DT>
+
+<DD>[in] A member of the <A HREF="_dx_d3dresourcetype_graphics.htm"><B>D3DRESOURCETYPE</B></A> enumerated type, specifying the resource type requested for use with the queried format.</DD>
+
+<DT><I>CheckFormat</I></DT>
+
+<DD>[in] Member of the <B>D3DFORMAT</B> enumerated type. Indicates the format of the surfaces which may be used, as defined by <I>Usage</I>.
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the format is compatible with the specified device for the requested usage, this method returns <A HREF="_dx_return_values_graphics.htm#_dx_d3d_ok_graphics"><B>D3D_OK</B></A>.</P>
+
+<P><A HREF="_dx_return_values_graphics.htm#_dx_d3derr_invalidcall_graphics"><B>D3DERR_INVALIDCALL</B></A> is returned if <I>Adapter</I> equals or exceeds the number of display adapters in the system, or if <I>DeviceType</I> is unsupported. This method returns <A HREF="_dx_return_values_graphics.htm#_dx_d3derr_notavailable_graphics"><B>D3DERR_NOTAVAILABLE</B></A> if the format is not acceptable to the device for this usage. </P>
+
+<H4>Remarks</H4>
+
+<P>A typical use of <B>CheckDeviceFormat</B> is to verify the existence of a particular depth-stencil surface format. <!--See <A HREF="_dx_selecting_a_device_graphics.htm"><B>Selecting a Device</B></A> for more detail on the enumeration process.--> The following code fragment shows how you could use <B>CheckDeviceFormat</B> to verify the existence of a depth-stencil format.</P>
+
+<PRE>BOOL IsDepthFormatExisting( D3DFORMAT DepthFormat, D3DFORMAT AdapterFormat ) {
+    HRESULT hr = pD3D-&gt;CheckDeviceFormat( D3DADAPTER_DEFAULT,
+                                          D3DDEVTYPE_HAL,
+                                          AdapterFormat,
+                                          D3DUSAGE_DEPTHSTENCIL,
+                                          D3DRTYPE_SURFACE,
+                                          DepthFormat);
+
+    return SUCCEEDED( hr );
+}
+</PRE>
+
+<P>The preceding call will return FALSE if <I>DepthFormat</I> does not exist on the system.</P>
+
+<P>Another typical use of <B>CheckDeviceFormat</B> would be to verify if textures existing in particular surface formats can be rendered, given the current display mode. The following code fragment shows how you could use <B>CheckDeviceFormat</B> to verify that texture formats are compatible with specific back buffer formats.</P>
+
+<PRE>BOOL IsTextureFormatOk( D3DFORMAT TextureFormat, D3DFORMAT AdapterFormat ) {
+    HRESULT hr = pD3D-&gt;CheckDeviceFormat( D3DADAPTER_DEFAULT,
+                                          D3DDEVTYPE_HAL,
+                                          AdapterFormat,
+                                          0,
+                                          D3DRTYPE_TEXTURE,
+                                          TextureFormat);
+
+    return SUCCEEDED( hr );
+}
+</PRE>
+
+<P>The preceding call will return FALSE if <I>TextureFormat</I> cannot be used to render textures while the adapter surface format is <I>AdapterFormat</I>.</P>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in D3d8.h.<BR>
+<B>&nbsp;&nbsp;Import Library:</B> Use D3d8.lib.</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

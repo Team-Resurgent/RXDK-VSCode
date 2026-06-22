@@ -1,0 +1,135 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>XMountMU</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="XMountMU">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XMountMU"/>
+<MSHelp:Keyword Index="F" Term="XMountMU"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_xbox_xmountmu"></A>XMountMU</H1>
+
+<P>The <B>XMountMU</B> function mounts the specified memory unit into the file system namespace and returns the drive letter that can then be used to access that memory unit.</P>
+
+<PRE class=syntax><B>DWORD XMountMU(</B>
+  <b>DWORD</b><I> dwPort</I><b>,  </b>                
+  <b>DWORD</b><I> dwSlot</I><b>,  </b>                
+  <b>PCHAR</b><I> pchDrive</I><b>  </b>             
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>dwPort</I></DT>
+<DD>[in] The port number of the controller that contains the memory unit to be mounted.    This parameter must be one of the following values:
+
+<TABLE>
+<TR>
+<TH align=left>Port</TH>
+<TH align=left>Description</TH>
+</TR>
+
+<TR>
+<TD>XDEVICE_PORT0</TD>
+<TD>The leftmost controller port (port 0).</TD>
+</TR>
+
+<TR>
+<TD>XDEVICE_PORT1</TD>
+<TD>The second controller port from the left (port 1).</TD>
+</TR>
+
+<TR>
+<TD>XDEVICE_PORT2</TD>
+<TD>The third controller port from the left (port 2).</TD>
+</TR>
+
+<TR>
+<TD>XDEVICE_PORT3</TD>
+<TD>The rightmost controller port (port 3).</TD>
+</TR>
+</TABLE>
+</DD>
+
+<DT><I>dwSlot</I></DT>
+<DD>[in] The controller slot that the memory unit is located in.  This parameter must be one of the following values:
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=33%>Value</TH>
+<TH align=left width=67%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD>XDEVICE_TOP_SLOT</TD>
+<TD>The top slot of the controller specified in <I>dwPort</I>.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD>XDEVICE_BOTTOM_SLOT</TD>
+<TD>The bottom slot of the controller specified in <I>dwPort</I>.</TD>
+</TR>
+</TABLE>
+</DD>
+
+<DT><I>pchDrive</I></DT>
+<DD>[out] Pointer to a character that receives the drive letter through which the memory unit can now be accessed. </DD>
+
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is ERROR_SUCCESS.</P>
+
+<P>If the function fails, the return value is an error code defined in Winerror.h. The function does not use <B>SetLastError</B> to set the calling thread's last-error code.</P>
+
+<H4>Remarks</H4>
+
+<P>Before calling <B>XMountMU</B>, <A HREF="x_mt_xinitdevices.htm">XInitDevices</a> must be called to initialize the Xbox peripherals.</P>
+
+<P>After a title detects connected memory units by calling either <A HREF="x_jsk_xgetdevices.htm">XGetDevices</a> or <A HREF="x_jsk_xgetdevicechanges.htm">XGetDeviceChanges</a>, the available memory units must be mounted into the file system namespace before they can be read from or written to.</P>
+
+<P><B>XMountMU</B> mounts the specified memory unit and returns a drive letter that is mapped to the memory unit and that can be used to access the MU.  The drive to mount cannot be chosen; it is predetermined based on slot location.</P>
+
+<P>Once mounted into the file system, the normal file I/O functions (such as <A HREF="filesio_7wmd.htm">CreateFile</a>) can be used on the memory unit.</P>
+
+<P>When the title is finished interfacing with the MU, it should call <A HREF="x_jsk_xunmountmu.htm">XUnmountMU</a> to unmount the MU and free up the associated resources.  Attempting to mount an MU that is already mounted will fail.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Xbox.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+
+<H4>See Also</H4>
+<P>
+<A HREF="x_jsk_xmu_functions.htm">Memory Unit Functions</a> |
+<A HREF="x_mt_xinitdevices.htm">XInitDevices</a>,
+<A HREF="x_jsk_xgetdevices.htm">XGetDevices</a>,
+<A HREF="x_jsk_xgetdevicechanges.htm">XGetDeviceChanges</a>,
+<A HREF="x_jsk_xunmountmu.htm">XUnmountMU</a>,
+<A HREF="x_jsk_xmuportfromdriveletter.htm">XMUPortFromDriveLetter</a>,
+<A HREF="x_jsk_xmuslotfromdriveletter.htm">XMUSlotFromDriveLetter</a>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

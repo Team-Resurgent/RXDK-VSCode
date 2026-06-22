@@ -1,0 +1,79 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>XFindFirstSaveGame</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="XFindFirstSaveGame">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XFindFirstSaveGame"/>
+<MSHelp:Keyword Index="F" Term="XFindFirstSaveGame"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+
+
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_xbox_xfindfirstsavegame"></A>XFindFirstSaveGame</H1>
+
+<P>The <B>XFindFirstSaveGame</B> function begins an enumeration of a title's save games on the specified device.</P>
+
+<PRE class=syntax><B>HANDLE XFindFirstSaveGame(</B>
+  <b>LPCSTR</b><I> lpRootPathName</I><b>,                </b>
+  <b>PXGAME_FIND_DATA</b><I> pFindGameData</I><b>         </b>
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>lpRootPathName</I></DT>
+<DD>[in] Pointer to a null-terminated string that specifies the root directory of the user data storage region to search. The parameter must contain only a drive letter, colon, and trailing backslash; a subdirectory cannot be specified.</DD>
+
+<DT><I>pFindGameData</I></DT>
+<DD>[out] Pointer to an <A HREF="x_jsk_xgame_find_data.htm">XGAME_FIND_DATA</a> structure that receives information about the first save game found.</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is a search handle used in a subsequent call to <A HREF="x_jsk_xfindnextsavegame.htm">XFindNextSaveGame</a> or <A HREF="x_jsk_xfindclose.htm">XFindClose</a>.
+</P>
+
+<P>If the function fails, the return value is INVALID_HANDLE_VALUE.  To get extended error information, call <A HREF="errors_3uwi.htm">GetLastError</a>.</P>
+
+<H4>Remarks</H4>
+
+<P>The storage region specified in <I>lpRootPathName</I> can be the title's user data region on the hard disk (U:\), a mapped user data region for an alternate title (X:\), or the title's user data region of a mounted memory unit (F:\ through M:\).</P>
+
+<P><B>XFindFirstSaveGame</B> opens a search handle and returns information about the first save game found.  The search handle can then be used in <A HREF="x_jsk_xfindnextsavegame.htm">XFindNextSaveGame</a> to continue enumeration of the available save games.  When the search handle is no longer needed, close it using the <A HREF="x_jsk_xfindclose.htm">XFindClose</a> function.</P>
+
+<P>The <I>lpRootPathName</I> parameter determines the storage device that will be searched.  The title's user data region of the specified device will be examined, and the save games located there enumerated.  The exception to this general behavior occurs when the alternate title drive (X:\) is specified.  In that case, if an alternate title's user data region has been successfully mapped with <A HREF="x_mt_xmountalternatetitle.htm">XMountAlternateTitle</a>, the save games in the mapped region will be enumerated.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Xbox.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+<BR><B><A HREF="xbox_mt_xtl_sll_strings_oview_unioview.htm">Unicode</a>:</B> The function is ANSI only, but the returned structure contains both Unicode and ANSI members.<BR>
+
+<H4>See Also</H4>
+<P>
+<A HREF="x_jsk_xfindnextsavegame.htm">XFindNextSaveGame</a>,
+<A HREF="x_jsk_xfindclose.htm">XFindClose</a>,
+<A HREF="x_jsk_xcreatesavegame.htm">XCreateSaveGame</a>,
+<A HREF="x_jsk_xdeletesavegame.htm">XDeleteSaveGame</a>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

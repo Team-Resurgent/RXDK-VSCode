@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Creating Sound Buffers</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Creating Sound Buffers"/>
+<MSHelp:Keyword Index="F" Term="Creating Sound Buffers"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H4><A NAME="_dx_creating_secondary_buffers_dxaudio"></A>Creating Sound Buffers</H4>
+
+<P>To create a sound buffer, call the <A HREF="_dx_idirectsound8_createsoundbuffer_dxaudio.htm"><B>IDirectSound8::CreateSoundBuffer</B></A> method. This method returns a pointer to an <A HREF="_dx_idirectsoundbuffer8_dxaudio.htm"><B>IDirectSoundBuffer8</B></A> interface, which the application uses to manipulate and play the buffer.</P>
+
+<P>The following example shows how to create a sound buffer: </P>
+
+<PRE>BOOL AppCreateBasicBuffer( 
+        LPDIRECTSOUND8      lpDirectSound, 
+        LPDIRECTSOUNDBUFFER *lplpDsb) 
+{ 
+    WAVEFORMATEX wfx; 
+    DSBUFFERDESC  dsbdesc; 
+    HRESULT       hr; 
+ 
+    // Set up wave format structure. 
+    memset(&amp;wfx, 0, sizeof(WAVEFORMATEX)); 
+    wfx.wFormatTag = WAVE_FORMAT_PCM; 
+    wfx.nChannels = 2; 
+    wfx.nSamplesPerSec = 22050; 
+    wfx.nBlockAlign = 4; 
+    wfx.nAvgBytesPerSec = 
+    wfx.nSamplesPerSec * wfx.nBlockAlign; 
+    wfx.wBitsPerSample = 16; 
+    wfx.cbSize = 0;
+ 
+    // Set up DSBUFFERDESC structure.  
+    memset(&amp;dsbdesc, 0, sizeof(DSBUFFERDESC)); 
+    dsbdesc.dwSize = sizeof(DSBUFFERDESC); 
+    dsbdesc.dwFlags = 0; 
+ 
+    dsbdesc.dwBufferBytes = 3 * wfx.nAvgBytesPerSec; 
+    dsbdesc.lpwfxFormat = &amp;wfx; 
+ 
+    // Create buffer.  
+    hr = lpDirectSound-&gt;CreateSoundBuffer(&amp;dsbdesc, lplpDsb, NULL); 
+    if SUCCEEDED(hr) 
+    { 
+        // IDirectSoundBuffer interface is in *lplpDsb. 
+        return TRUE; 
+    } 
+    else 
+    { 
+        // Failed. 
+        *lplpDsb = NULL; 
+        return FALSE; 
+    } 
+}
+</PRE>
+
+
+<P>The example creates a buffer large enough to hold three seconds of data.</P>
+
+<P>Buffer objects are owned by the DirectSound object that created them. When the DirectSound object is released, all buffers created by that object also will be released and should not be referenced.</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

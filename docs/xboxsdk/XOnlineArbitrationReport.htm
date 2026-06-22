@@ -1,0 +1,129 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineArbitrationReport</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineArbitrationReport"/>
+<MSHelp:Keyword Index="F" Term="XOnlineArbitrationReport"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineArbitrationReport</h1>
+            <p>Files an arbitration report. This updates players' reliability ratings.</p>
+        <pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineArbitrationReport(</b>
+    <b>const XONLINE_ARB_ID</b> *<i>pArbID</i><b>,</b>
+    <b>DWORD</b> <i>dwNumStatProcs</i><b>,</b>
+    <b>const XONLINE_STAT_PROC</b> *<i>pStatProcs</i><b>,</b>
+    <b>const XONLINE_ARB_REPORT_DATA</b> *<i>pReportData</i><b>,</b>
+    <b>DWORD</b> <i>dwFlags</i><b>,</b>
+    <b>HANDLE</b> <i>hWorkEvent</i><b>,</b>
+    <b>PXONLINETASK_HANDLE</b> <i>phTask</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+            <dt><i>pArbID</i></dt>
+				<dd>[in]  Arbitration session ID.</dd>
+            
+			
+
+            <dt><i>dwNumStatProcs</i></dt>
+				<dd>[in, optional]  Number of statistical entries in the array specified by 
+				the <i>pStatProcs</i> parameter.</dd>
+            
+			
+
+            <dt><i>pStatProcs</i></dt>
+				<dd>[in, optional]  Array of <a href="XONLINE_STAT_PROC.htm">XONLINE_STAT_PROC</a> structures that are 
+				used to report the stats for each player.</dd>
+            
+			
+
+            <dt><i>pReportData</i></dt>
+				<dd>[in, optional]  Array of <a href="XONLINE_ARB_REPORT_DATA.htm">XONLINE_ARB_REPORT_DATA</a> structures that are 
+				used to report the round's results for each player.</dd>
+            
+			
+
+            <dt><i>dwFlags</i></dt>
+				<p><dd>[in]  Set of zero or more of the following flags combined  
+				with a bitwise OR operation. If these flags are not needed, set this parameter
+				to zero.</dd>
+				
+				<table>
+					<tr>
+						<th>Flag</th>	<th>Value</th>	<th>Description</th>
+					</tr>
+					<tr>
+						<td>XONLINE_ARB_REPORT_FLAG_WAS_HOST</td>
+						<td>00000001</td>
+						<td>Caller was the host for the arbitrated round.</td>
+					</tr>
+					<tr>
+						<td>XONLINE_ARB_REPORT_FLAG_VOLUNTARILY_QUITTING</td>
+						<td>00000002</td>
+						<td>Caller accepts disconnect penalty and stats submitted by 
+						other participants, but wants to report connectivity or 
+						suspicious information before leaving.</td>
+					</tr>
+				</table>
+				
+				</p>
+			
+
+            <dt><i>hWorkEvent</i></dt>
+				<dd>[in, optional]  Handle to an event that will be signaled when there is work to be done on this task. 
+				This parameter can be NULL if no such event is required.</dd>
+            
+			
+
+            <dt><i>phTask</i></dt>
+				<dd>[out]  Address of an <b>XONLINETASK_HANDLE</b> variable. Upon return, this variable 
+				contains the handle of the task initiated by this function.</dd>
+            
+			
+			
+        </dl>
+<h4><a name="return"></a>Return Values</h4>
+            
+                <p>Returns S_OK if successful, an error code otherwise.</p>
+            
+        <h4><a name="remarks"></a>Remarks</h4>
+			<p>This function reports the results of a specified round. If 
+			stats are specified, every participant must pass the stats 
+			for all participants. The arbitration server matches up and analyzes 
+			the stats, connectivity problems, and suspicious information 
+			reported by every participant to determine the outcome of the round. 
+			Discrepancies may affect a user's reliability in future 
+			arbitration.</p>
+			
+			<p>For competitions, call <a href="XOnlineCompetitionSubmitResults.htm">XOnlineCompetitionSubmitResults</a>.</p>
+		<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+			<a href="XOnlineArbitrationRegister.htm">XOnlineArbitrationRegister</a>, <a href="XOnlineCompetitionSubmitResults.htm">XOnlineCompetitionSubmitResults</a>
+		</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

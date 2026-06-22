@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>VirtualFree</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="VirtualFree">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="VirtualFree"/>
+<MSHelp:Keyword Index="F" Term="VirtualFree"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_virtualfree"></A>VirtualFree</H1>
+
+<P>The <B>VirtualFree</B> function releases, decommits, or releases and decommits a region of pages within the virtual address space of the title. </P>
+
+<PRE class=syntax><B>BOOL VirtualFree(
+  LPVOID</B><I> lpAddress</I><B>,   </B>// address of region
+<B>  SIZE_T</B><I> dwSize</I><B>,      </B>// size of region
+  <B>DWORD</B> <I>dwFreeType</I>    // operation type
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>lpAddress</I></DT>
+
+<DD>[in] Pointer to the base address of the region of pages to be freed. If the <I>dwFreeType</I> parameter includes MEM_RELEASE, this parameter must be the base address returned by the <A HREF="memman_3elf.htm">VirtualAlloc</a> function when the region of pages was reserved. </DD>
+
+<DT><I>dwSize</I></DT>
+
+<DD>[in] Specifies the size, in bytes, of the region to be freed. If the <I>dwFreeType</I> parameter includes MEM_RELEASE, this parameter must be zero. Otherwise, the region of effected pages includes all pages containing one or more bytes in the range from the <I>lpAddress</I> parameter to (<I>lpAddress</I>+<I>dwSize</I>). This means that a 2-byte range straddling a page boundary causes both pages to be freed. </DD>
+
+<DT><I>dwFreeType</I></DT>
+
+<DD>[in] Specifies the type of free operation. This parameter must be one of the following values. 
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=29%>Value</TH>
+<TH align=left width=71%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=29%>MEM_DECOMMIT</TD>
+<TD width=71%>Decommits the specified region of committed pages.
+<P>An attempt to decommit an uncommitted page will not cause the function to fail. This means that a range of committed or uncommitted pages can be decommitted without having to worry about a failure.</P>
+</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=29%>MEM_RELEASE</TD>
+<TD width=71%><P>Releases the specified region of reserved pages. If this value is specified, the <I>dwSize</I> parameter must be zero, or the function fails.</P>
+<P>If any pages in the region are currently committed, the function first decommits and then releases them.  The function does not fail if you attempt to release pages that are in different states, some reserved and some committed. This means that you can release a range of pages without first determining their current commitment state.</P></TD>
+</TR>
+</TABLE><BR>
+
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is nonzero.</P>
+
+<P>If the function fails, the return value is zero. To get extended error information, call <A HREF="errors_3uwi.htm">GetLastError</a>. </P>
+
+<H4>Remarks</H4>
+
+<P><B>VirtualFree</B> can perform one of the following operations: 
+
+<UL>
+	<LI>Decommit a region of committed or uncommitted pages. </LI>
+
+	<LI>Release a region of reserved pages. </LI>
+
+	<LI>Decommit and release a region of committed or uncommitted pages. </LI>
+</UL>
+
+<P>Pages that have been released are free pages available for subsequent allocation operations. Attempting to read from or write to a free page results in an access violation exception. </P>
+
+<P><B>VirtualFree</B> can decommit an uncommitted page; this means that a range of committed or uncommitted pages can be decommitted without having to worry about a failure. Decommitting a page releases its physical storage in memory. If a page is decommitted but not released, its state changes to reserved, and it can be committed again by a subsequent call to <B>VirtualAlloc</B>. Attempting to read from or write to a reserved page results in an access violation exception. </P>
+
+<P>The current state of the entire range of pages must be compatible with the type of free operation specified by the <I>dwFreeType</I> parameter. Otherwise, the function fails and no pages are released or decommitted. </P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p><H4>See Also</H4>
+<P> 
+
+<a href="xbox_mt_xtl_sll_memory_management_functions.htm">Memory Management Functions</a>
+|
+<A HREF="memman_3elf.htm">VirtualAlloc</a>
+</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

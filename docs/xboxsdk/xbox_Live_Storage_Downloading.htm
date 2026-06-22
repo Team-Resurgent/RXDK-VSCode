@@ -1,0 +1,27 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Downloading from Storage</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Downloading from Storage"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Downloading from Storage</h1>
+<p>Before downloading, your title can find whether files are available for download by calling the <a href="XOnlineStorageEnumerate.htm">XOnlineStorageEnumerate</a> function. This starts an asynchronous task whose handle must be "pumped" by calling <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a>. When <b>XOnlineTaskContinue</b> indicates that results are ready, your title obtains them by calling <a href="XOnlineStorageEnumerateGetResults.htm">XOnlineStorageEnumerateGetResults</a>.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;The task started by <b>XOnlineStorageEnumerate</b> does not operate recursively through the server's directory structure. Therefore, if the directory contains subdirectories and your title needs the content of those subdirectories, your title must enumerate their contents.</p><p>Downloading files require a server path that specifies the file name. You must either obtain the file name by enumeration or by hard-coding it into your title. Either way, your title must "know" the file name before it can perform the download. It is recommended that your title uses predictable file names when uploading to storage so that they can be easily found and downloaded. For example, if your title allows players to upload custom maps, you might use a file naming scheme along the lines of Player001.map, Player002.map, and so on. When creating your server path, you can use wildcards such as Player*.map.</p><p>To retrieve a file from server storage, call the <a href="XOnlineStorageDownload.htm">XOnlineStorageDownload</a> or <a href="XOnlineStorageDownloadToMemory.htm">XOnlineStorageDownloadToMemory</a> function. <b>XOnlineStorageDownload</b> can download game clips, global data, per-team data, or per-user data. <b>XOnlineStorageDownloadToMemory</b> downloads items that were previously uploaded from memory with the <a href="XOnlineStorageUploadFromMemory.htm">XOnlineStorageUploadFromMemory</a> function. Both <b>XOnlineStorageDownload</b> and <b>XOnlineStorageDownloadToMemory</b> begin an asynchronous task that must be pumped with calls to <b>XOnlineTaskContinue</b>. If your title uses <b>XOnlineStorageDownloadToMemory</b>, it must call <a href="XOnlineStorageDownloadToMemoryGetResults.htm">XOnlineStorageDownloadToMemoryGetResults</a> when <b>XOnlineTaskContinue</b> indicates that results are ready.</p><p>There is no mechanism for maintaining partial downloads and resuming from previous checkpoints. As most storage areas are limited greatly in size, downloads are not expected to take enough time to require resume functionality. Publishers expecting to release extremely large downloads to players should consider packaging these as <a href="xbox_Live_Downloading.htm">content download packages</a> rather than using global title-managed storage.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

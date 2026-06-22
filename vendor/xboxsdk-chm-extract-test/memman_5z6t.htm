@@ -1,0 +1,116 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>HeapCreate</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="HeapCreate">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="HeapCreate"/>
+<MSHelp:Keyword Index="F" Term="HeapCreate"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_heapcreate"></A>HeapCreate</H1>
+
+<P>The <B>HeapCreate</B> function creates a heap object that can be used by a title. The function reserves space in the virtual address space of the title and allocates physical storage for a specified initial portion of this block. </P>
+
+<PRE class=syntax><B>HANDLE HeapCreate(
+  DWORD</B><I> flOptions</I><B>,       </B>// heap allocation attributes
+<B>  SIZE_T</B><I> dwInitialSize</I><B>,  </B>// initial heap size
+<B>  SIZE_T</B><I> dwMaximumSize</I>   // maximum heap size
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>flOptions</I></DT>
+
+<DD>[in] Specifies optional attributes for the new heap. These options affect subsequent access to the new heap through calls to the heap functions (<A HREF="memman_6krn.htm">HeapAlloc</a>, <A HREF="memman_7b1h.htm">HeapFree</a>, <A HREF="memman_6ahv.htm">HeapReAlloc</a>, and <A HREF="memman_9l5x.htm">HeapSize</a>). You can specify one or more of the following values. 
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=43%>Value</TH>
+<TH align=left width=57%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=43%>HEAP_GENERATE_EXCEPTIONS</TD>
+<TD width=57%>Specifies that the system will raise an exception to indicate a function failure, such as an out-of-memory condition, instead of returning NULL.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=43%>HEAP_NO_SERIALIZE</TD>
+<TD width=57%>Specifies that mutual exclusion will not be used when the heap functions allocate and free memory from this heap. The default, when HEAP_NO_SERIALIZE is not specified, is to serialize access to the heap. Serialization of heap access allows two or more threads to simultaneously allocate and free memory from the same heap.</TD>
+</TR>
+</TABLE><BR>
+
+</DD>
+
+<DT><I>dwInitialSize</I></DT>
+
+<DD>[in] Specifies the initial size, in bytes, of the heap. This value determines the initial amount of physical storage that is allocated for the heap. The value is rounded up to the next page boundary. Xbox system software uses a page size of 4 KB.</DD>
+
+<DT><I>dwMaximumSize</I></DT>
+
+<DD>[in] If <I>dwMaximumSize</I> is a nonzero value, it specifies the maximum size, in bytes, of the heap. The <B>HeapCreate </B>function rounds <I>dwMaximumSize</I> up to the next page boundary and then reserves a block of that size in the title's virtual address space.  This reserved block is dedicated for use by the heap. If allocation requests made by the <A HREF="memman_6krn.htm">HeapAlloc</a> or <A HREF="memman_6ahv.htm">HeapReAlloc</a><B> </B>functions exceed the initial amount of physical storage specified by <I>dwInitialSize</I>, the system allocates additional pages of physical storage for the heap, up to the heap's maximum size. 
+
+<P>In addition, if <I>dwMaximumSize</I> is nonzero, the heap cannot grow, and an absolute limitation arises: the maximum size of a memory block in the heap is a bit less than 0x7FFF8 bytes. Requests to allocate larger blocks will fail, even if the maximum size of the heap is large enough to contain the block.
+
+
+<P>If <I>dwMaximumSize</I> is zero, it specifies that the heap is growable. The heap's size is limited only by available memory. Requests to allocate blocks larger than 0x7FFF8 bytes do not automatically fail; the system calls <A HREF="memman_3elf.htm">VirtualAlloc</a> to obtain the memory needed for such large blocks. Applications that need to allocate large memory blocks should set <I>dwMaximumSize</I> to zero.
+
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is a handle to the newly created heap.</P>
+
+<P>If the function fails, the return value is is NULL. To get extended error information, call <A HREF="errors_3uwi.htm">GetLastError</a>.</P>
+
+<H4>Remarks</H4>
+
+<P>The <B>HeapCreate</B> function creates a private heap object from which the title can allocate memory blocks by using the <A HREF="memman_6krn.htm">HeapAlloc</a> function. The initial size determines the number of committed pages that are initially allocated for the heap. The maximum size determines the total number of reserved pages. These pages create a block in the title's virtual address space into which the heap can grow. If requests by <B>HeapAlloc</B> exceed the current size of committed pages, additional pages are automatically committed from this reserved space, assuming that the physical storage is available. </P>
+
+<P>The system uses memory from the private heap to store heap support structures, so not all of the specified heap size is available to the title. For example, if the <A HREF="memman_6krn.htm">HeapAlloc</a> function requests 64 KB from a heap with a maximum size of 64 KB, the request may fail because of system overhead.</P>
+
+<P>If HEAP_NO_SERIALIZE is not specified (the simple default), the heap will serialize access to the heap. Serialization ensures mutual exclusion when two or more threads attempt to simultaneously allocate or free blocks from the same heap. There is a small performance cost to serialization, but it must be used whenever multiple threads allocate and free memory from the same heap.</P>
+
+<P>Setting HEAP_NO_SERIALIZE eliminates mutual exclusion on the heap. Without serialization, two or more threads that use the same heap handle might attempt to allocate or free memory simultaneously, likely causing corruption in the heap. Therefore, HEAP_NO_SERIALIZE can safely be used only in the following situations: 
+
+<UL>
+	<LI>The title has only one thread. </LI>
+
+	<LI>The title has multiple threads, but only one thread calls the heap functions for a specific heap. </LI>
+
+	<LI>The title has multiple threads, and the application provides its own mechanism for mutual exclusion to a specific heap. </LI>
+</UL>
+
+<P class=note><B><I>Note</I></B>&nbsp;&nbsp;To guard against an access violation, you can use structured exception handling to protect code that writes to or reads from a heap. For more information on structured exception handling with memory accesses, <A HREF="unresolved.htm">Structured Exception Handling</a>.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p><H4>See Also</H4>
+<P> 
+
+<a href="xbox_mt_xtl_sll_memory_management_functions.htm">Memory Management Functions</a> | 
+<A HREF="memman_5u7k.htm">GetProcessHeap</a>,  <A HREF="memman_6krn.htm">HeapAlloc</a>,  <A HREF="memman_862h.htm">HeapDestroy</a>,  <A HREF="memman_7b1h.htm">HeapFree</a>,  <A HREF="memman_6ahv.htm">HeapReAlloc</a>,  <A HREF="memman_9l5x.htm">HeapSize</a>,  <A HREF="memman_3elf.htm">VirtualAlloc</a></P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

@@ -1,0 +1,421 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Voice Chat Best Practices</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Voice Chat Best Practices"/>
+<MSHelp:Keyword Index="K" Term="Best Practices, Voice Chat"/>
+<MSHelp:Keyword Index="F" Term="Voice Chat Best Practices"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="voice_chat_bp"></A>Voice Chat Best Practices</h1>
+
+<p><i>By John Harding, Software Design Engineer, Xbox Advanced Technology Group</i></p>
+
+<p><i>"Can you hear me now? Good!"</i></p>
+
+<p>The ability to talk to other players online has become a fundamental component of the Xbox <i>Live</i>&#8482; experience. With only a few Technical Certification Requirements (TCRs) around Voice and Voice Chat, title developers are left with a lot of decisions to make around their voice chat implementation. The following is a set of "best practice" recommendations based on experience gained over the first year of Xbox <i>Live</i>. It is intended to assist developers in implementing a quality voice chat system for their titles.</p>
+
+<h2>General</h2>
+
+<p>This section lists general recommendations related to implementing voice chat in your Xbox title.</p>
+
+<h3>Terminology</h3>
+
+<p><i>Payload/Voice payload </i> &#8211; One 20-ms segment of voice data (usually compressed).</p>
+
+<p><i>Packet/Network packet</i>  &#8211; A collection of data sent over the network as one unit, usually containing game data and several voice payloads.</p>
+
+<p><i>Pulse Code Modulation (PCM)</i>  &#8211; The data format used for storing uncompressed audio data.<i></i></p>
+
+<p><i>Jitter buffer</i>  &#8211; A delay buffer used to hide variations in network latency.</p>
+
+<h3>Understand how voice chat works</h3>
+
+<p>Whether you're using the Xbox High-Level Voice library (XHV) or a custom voice chat engine, it's important to have a basic understanding of how voice chat works on Xbox. A brief overview is presented here; see the <a href="#_References">References</a> section for more in-depth resources.</p>
+
+<img src="images/voice_chat_fig1.jpg">
+
+<p>This diagram shows the basic flow of data through a voice chat system. Data flows through the system in the form of discrete payloads, 20 ms in length. The player's microphone captures a payload of raw PCM audio data, which is encoded and compressed before being transmitted over the network. Upon receipt, the payload is placed into a voice queue (sometimes called a "jitter buffer"), that puts payloads into the proper order and schedules them for playback at the appropriate time. Finally, payloads are decoded, mixed with other voice data, and played back either over the player's headset or through the TV speakers</p>
+
+<h3>Use the Xbox High-Level Voice (XHV) API</h3>
+
+<p>First released in approved form in the April 2003 XDK, XHV greatly simplifies the process of adding voice chat functionality to your title (see the SimpleVoice sample in the XDK). Although the low-level voice chat components are still available for building a custom voice chat engine (see the LowLevelVoiceChat sample in the XDK), XHV is the recommended voice solution for most titles.</p>
+
+<p>Features of XHV:</p>
+
+<ul>
+<li>Simple high-level interface is easy to integrate into game</li>
+<li>Built-in support for playing voice through speakers</li>
+<li>Uses optimized voice codecs to minimize CPU and bandwidth consumption</li>
+<li>Flexible priority system for limiting number of decoded voice streams</li>
+<li>Loopback support for voice mask testing</li>
+<li>Integrated speech recognition support</li>
+<li>Improved stability through guaranteed scheduling and sequencing</li>
+<li>Allows arbitrary DSP processing of voice data</li>
+</ul>
+
+<h3>Plan for voice through speakers</h3>
+
+<p>Now that customers will be able to play games on Xbox <i>Live</i> without having purchased a headset, the TCRs have been updated to include a new requirement that titles support playing voice through the speakers. Since the TCRs are just intended to ensure a baseline level of functionality, they do not specifically address what should happen in more complex multiplayer scenarios. If multiple players on a console have selected voice through speakers, and have conflicting lists of who they should be able to hear, the recommendation is for the title to play the <i>union</i> of all expected voices over the speakers.</p>
+
+<p>Consider the following scenario: Adam, Betty, and Chris are playing on console #1, while Diane, Eugene, and Fred are playing on console #2. The game is set up so players talk only to other players on their team. Adam, Chris, Eugene, and Fred are on team A, and Betty and Diane are on team B. Adam has muted Fred, but Chris has not.</p>
+
+<p>If everyone has a communicator plugged in, the title should behave as it always has. Chris and Eugene can talk to everyone on team A, but Adam and Fred cannot talk to each other because Adam has muted Fred. Betty, Diane, and Fred can talk to and hear each other like normal.</p>
+
+<p>If Adam removes his communicator, he is automatically switched to play voice through speakers. (See the "Voice Without Communicator" TCR.) Since he has muted Fred, only Eugene's voice is played through the speakers. (Chris's voice <i>could</i> be, but it doesn't make sense since he's on the same console.) Note that this means Betty can now overhear some of Team A's conversations.</p>
+
+<p>Now, Chris goes to the UI (See the "Voice Through System Speakers Option" TCR) and selects to have voice intended for him to be played through speakers. With multiple players in "voice through speakers" mode, the title plays the union of everyone that should be heard. So now both Eugene <i>and</i> Fred are played over the speakers, even though Adam has muted Fred.</p> 
+
+<p>Betty decides it's unfair that she can hear all of team A's conversations without Adam and Chris hearing team B's conversations, so she turns on voice through speakers. Everyone on team B is now added to the mix, resulting in Diane, Eugene, and Fred all being played over the speakers. </p> 
+
+<p>The following week, Adam's account gets voice-banned due to negative player feedback. Not only can he not use his voice communicator now, but neither he, nor anyone else playing on his console, can use the "voice through speakers" option, either.</p>
+
+<h3>Indicate during gameplay who's sending/receiving voice</h3>
+
+<p>Although the TCRs only require titles to indicate who is talking while displaying the players list, it's a good idea to indicate this during gameplay, as well. This could be done by some graphical adornment of player characters on screen, overlaying a list of talking players in the Heads-Up Display (HUD), showing a picture of the player in a status area, and so on. The key goal is for players to have a consistent way of quickly identifying who is talking to them.</p>
+
+<p>On the flip side, if it's not obvious to the player who they're currently talking to (for example, everyone, team members, and so on), it's often a good idea to provide a visual indicator of that, as well. This is more of an issue for titles that dynamically change the voice chat group (such as <i>MotoGP</i>) rather than titles with fairly static voice channels.</p>
+
+<h3>Set default voice masking to "off"</h3>
+
+<p>Gamers have spoken loud and clear&#8212;most prefer voice masking to be off by default. In fact, as of the June 2003 Xbox Guide, titles are no longer required to support voice masking at all! If you do choose to support voice masking, be sure to play-test all voice mask settings thoroughly to ensure that players can still be understood clearly. In addition, titles should persist player's voice mask preference so they don't have to set it every time they load the title.</p>
+
+<h3>Prefer voice activation over "push to talk" models</h3>
+
+<p>While using a "push to talk" model may make some aspects of voice chat easier to manage, it is often confusing for players, especially since the majority of Xbox<i> Live</i> games use a voice activation model. It also tends to increase voice latency (due to the need to verify that a player can acquire the voice channel) and make conversations less responsive (since players often hesitate before responding, to ensure no one else is trying to talk at the same time). Starting with the August 2003 XDK release, XHV even allows titles to replace XHV's built-in voice activation algorithm with their own custom algorithm.</p>
+
+<p>If you do decide to use a "push to talk" model, it's a good idea to indicate which player, if any, currently has control of the voice channel, so that players can tell if they will be heard or not. Another approach is to provide audio or visual feedback if a player fails to acquire the voice channel. It's also important to ensure that all players get fair use of the voice channel, so that one player cannot indefinitely block other players from talking. Finally, be careful with the muting TCRs. Seeing that a player has control of the voice channel, but not hearing them talk is a good indicator that you've been muted by that other player.</p>
+
+<h3>Support voice during lobby/loading screens</h3>
+
+<p>A common complaint from gamers is that they can't talk while the game is loading. Fortunately, this is an easy problem to solve. All that's required is for the title to keep pumping the voice engine and handle sending and receiving voice payloads over the network. This does require using asynchronous file I/O routines in order to be able to pump the voice engine once per frame, but using asynchronous I/O is always a good idea. (See the <a href="prog_wp_maxperf.htm">Maximizing Xbox File Performance</a> white paper.) As a last resort, if you can not use asynchronous I/O, it's possible to spin off a worker thread to service the voice engine and network traffic during loading screens.</p>
+
+<p>If your title does not return to a lobby area after the session has ended, it's a good idea to allow players to talk after the game has completed, whether it's to gloat or set up a rematch.</p>
+
+<p>Finally, if there are times where voice chat is not supported or allowed, titles should indicate this to the player via an on-screen indicator or audible notification through the headset. </p>
+
+<h2>Bandwidth</h2>
+
+<p>One of the biggest challenges associated with voice chat is fitting the amount of bandwidth that it requires into your overall bandwidth budget. This section describes how to calculate and optimize your bandwidth usage.</p>
+
+<h3>Calculate your voice bandwidth usage</h3>
+
+<p>To plan your bandwidth budget around voice traffic, you need to be able to calculate the amount of bandwidth that will be used for voice traffic. Voice bandwidth usage is determined by several factors:</p> 
+
+<ul>
+<li>The number of players talking</li>
+<li>Voice engine used (custom or XHV)</li>
+<li>The frequency at which network packets are sent</li>
+<li>The number of consoles to which packets are sent</li>
+</ul>
+
+<p><i>Number of players</i>:<i> </i>The Xbox voice chat codec compresses each raw voice stream down to 3.2 Kbps, but adds a 2-byte header to each compressed payload, resulting in 10 bytes for each 20-ms voice payload for a total of 4 Kbps per compressed voice stream.  </p>
+
+<p><i>Voice engine used</i>: When three or four players are playing on the same console, XHV uses the round-robin encoder to limit the total outgoing voice traffic for the console to 8 Kbps. Because the round-robin encoder requires synchronizing multiple microphones, most custom voice chat engines don't use it, consuming 12 Kbps and 16 Kbps for three and four players, respectively.</p>
+
+<table>
+<tr>
+  <th rowspan=2># of players</th>
+  <th colspan=2>Maximum Voice Bandwidth</th>
+ </tr>
+<tr>
+  <th>Low-Level Voice</th>
+  <th>XHV</th>
+ </tr>
+<tr>
+  <td align="center">1</td>
+  <td align="center">4.0 Kbps</td>
+  <td align="center">4.0 Kbps</td>
+ </tr>
+<tr>
+  <td align="center">2</td>
+  <td align="center">8.0 Kbps</td>
+  <td align="center">8.0 Kbps</td>
+ </tr>
+<tr>
+  <td align="center">3</td>
+  <td align="center">12.0 Kbps</td>
+  <td align="center">8.0 Kbps</td>
+ </tr>
+<tr>
+  <td align="center">4</td>
+  <td align="center">16.0 Kbps</td>
+  <td align="center">8.0 Kbps</td>
+ </tr>
+</table>
+
+<p><i>Frequency of network packets</i>:<i> </i>Because the overhead for Xbox secure packets is larger than the packet overhead of a typical UDP packet, the number of packets sent per second has a significant impact on total bandwidth consumption. See the following table for a comparison of bandwidth loss due to overhead for typical packet rates. To minimize packet overhead, you should send voice data and game data in the same packet whenever possible. </p>
+
+<table>
+<tr>
+  <td rowspan="2">&nbsp;</td>
+  <td align="center" colspan="3"><b>Packet Overhead</b></td>
+ </tr>
+<tr>
+  <td style="align: center"><b>Bytes/sec</b></td>
+  <td style="align: center">&nbsp;<b>Kbps</b>&nbsp;</td>
+  <td style="align: center">&nbsp;<b>Percent of 64 Kbps&nbsp;</b></td>
+ </tr>
+<tr>
+  <td style="border-bottom: 1.5pt solid windowtext;"><b>VDP Packet Header</b></td>
+  <td align="center" style="border-bottom: 1.5pt solid windowtext">44</td>
+  <td align="center" style="border-bottom: 1.5pt solid windowtext">0.352</td>
+  <td style="border-bottom: 1.5pt solid windowtext; background: silver">&nbsp;</td>
+ </tr>
+<tr>
+  <td><b>Packet Frequency</b></td>
+  <td style="background: silver">&nbsp;</td>
+  <td style="background: silver">&nbsp;</td>
+  <td style="background: silver">&nbsp;</td>
+ </tr>
+<tr>
+  <td align="right" style="background: yellow">3 Hz</td>
+  <td align="center" style="background: yellow">132</td>
+  <td align="center" style="background: yellow">1.056</td>
+  <td align="center" style="background: yellow">1.7%</td>
+ </tr>
+<tr>
+  <td align="right" style="background: lime">6 Hz</td>
+  <td align="center" style="background: lime">264</td>
+  <td align="center" style="background: lime">2.112</td>
+  <td align="center" style="background: lime">3.3%</td>
+ </tr>
+<tr>
+  <td align="right" style="background: lime">10 Hz</td>
+  <td align="center" style="background: lime">440</td>
+  <td align="center" style="background: lime">3.520</td>
+  <td align="center" style="background: lime">5.5%</td>
+ </tr>
+<tr>
+  <td align="right" style="background: yellow">15 Hz</td>
+  <td align="center" style="background: yellow">660</td>
+  <td align="center" style="background: yellow">5.280</td>
+  <td align="center" style="background: yellow">8.3%</td>
+ </tr>
+<tr>
+  <td align="right" style="background: yellow">20 Hz</td>
+  <td align="center" style="background: yellow">880</td>
+  <td align="center" style="background: yellow">7.040</td>
+  <td align="center" style="background: yellow">11.0%</td>
+ </tr>
+<tr>
+  <td align="right" style="background: red">30 Hz</td>
+  <td align="center" style="background: red">1320</td>
+  <td align="center" style="background: red">10.560</td>
+  <td align="center" style="background: red">16.5%</td>
+ </tr>
+<tr>
+  <td align="right" style="background: red">60 Hz</td>
+  <td align="center" style="background: red">2640</td>
+  <td align="center" style="background: red">21.120</td>
+  <td align="center" style="background: red">33.0%</td>
+ </tr>
+</table>
+
+<p><i>Number of destinations</i>: This is fairly straightforward to calculate. Multiply the results from the previous questions by the number of consoles to which you're sending voice data. If you're sending voice data client-server, you'll need to calculate separately for clients and the server.</p>
+
+<h3>Plan your bandwidth budget early</h3>
+
+<p>Even a well-optimized voice chat engine will still consume a significant amount of bandwidth, so you'll want to plan your bandwidth budget early as you design your network layer. There are a couple of common approaches for designing a bandwidth budget.</p>
+
+<p>The first approach is to calculate a per-player (or per-console) bandwidth cost, and set the maximum number of players based on the available bandwidth. This could be based on either the minimum 64-Kbps connection, or by using the QoS APIs to determine available bandwidth at run time. The following table shows an example:</p>
+
+<table>
+<tr>
+  <td style="border-bottom: 1.5pt solid windowtext;">Available bandwidth</td>
+  <td align="right" style="border-bottom: 1.5pt solid windowtext;">&nbsp;64.0 Kbps&nbsp;</td>
+ </tr>
+<tr>
+  <td>Game data per player</td>
+  <td align="right">3.0 Kbps&nbsp;</td>
+ </tr>
+<tr>
+  <td>Voice data per player</td>
+  <td align="right">4.0 Kbps&nbsp;</td>
+ </tr>
+<tr>
+  <td>Packet rate</td>
+  <td align="right">6 Hz&nbsp;</td>
+ </tr>
+<tr>
+  <td>Packet overhead</td>
+  <td align="right">2.1 Kbps&nbsp;</td>
+ </tr>
+<tr>
+  <td style="border-bottom: 1.5pt solid windowtext;">Total bandwidth per destination&nbsp;&nbsp;&nbsp;</td>
+  <td align="right" style="border-bottom: 1.5pt solid windowtext;">9.1 Kbps&nbsp;</td>
+ </tr>
+<tr>
+  <td>Number of destinations</td>
+  <td align="right">7&nbsp;</td>
+ </tr>
+<tr>
+  <td>Number of players</td>
+  <td align="right">8&nbsp;</td>
+ </tr>
+</table>
+
+<p>The second approach is to determine how much bandwidth is required for game data in order to support the desired number of players, and calculate how many streams of voice data can fit in the remainder. The following table shows an example:</p>
+
+<table>
+ <tr>
+  <td style="border-bottom: 1.5pt solid windowtext;">Available bandwidth</td>
+  <td align="right" style="border-bottom: 1.5pt solid windowtext;">&nbsp;64.0 Kbps&nbsp;</td>
+ </tr>
+ <tr>
+  <td>Game data per player</td>  
+  <td align="right">3.0 Kbps&nbsp;</td>
+ </tr>
+<tr>
+  <td>Number of players</td>  
+  <td align="right">10&nbsp;</td>
+ </tr>
+<tr>
+  <td>Number of destinations</td>  
+  <td align="right">9&nbsp;</td>
+ </tr>
+ <tr>
+  <td>Game data total bandwidth</td>  
+  <td align="right">27.0 Kbps&nbsp;</td>
+ </tr>
+<tr>
+  <td>Packet rate</td>  
+  <td align="right">6 Hz&nbsp;</td>
+ </tr>
+ <tr>
+  <td>Packet overhead total bandwidth</td>  
+  <td align="right">19.0 Kbps&nbsp;</td>
+ </tr>
+ <tr>
+  <td style="border-bottom: 1.5pt solid windowtext;">Game + overhead total bandwidth&nbsp;&nbsp;&nbsp;</td>
+  <td align="right" style="border-bottom: 1.5pt solid windowtext;">46.0 Kbps&nbsp;</td>
+ </tr>
+ <tr>
+  <td>Bandwidth available for voice</td>
+  <td align="right">18.0 Kbps&nbsp;</td>
+ </tr>
+<tr>
+  <td>Voice data per player</td>  
+  <td align="right">4.0 Kbps&nbsp;</td>
+ </tr>
+<tr>
+  <td>Number of voice destinations</td>  
+  <td align="right">4&nbsp;</td>
+ </tr>
+<tr>
+  <td><b>Size of voice channel</b></td>  
+  <td align="right"><b>5</b>&nbsp;</td>
+ </tr>
+</table>
+
+<h3>Compress the voice codec headers to save bandwidth</h3>
+
+<p>The codec used for voice chat on Xbox compresses voice data down to 3.2 Kbps, and then adds a 2-byte header containing sequencing and synchronization data used by the receiving voice queue. This results in a 10-byte voice payload for every 20 ms of voice data. When combining multiple voice payloads into one network packet, you can delta-compress these headers to save bandwidth.</p>
+
+<p>The header has the following layout:</p>
+
+<pre>typedef struct _XVOICE_CODEC_HEADER
+{
+      WORD bMsgNo :  4;
+      WORD wSeqNo : 12;
+}
+XVOICE_CODEC_HEADER, *LPXVOICE_CODEC_HEADER;</pre>
+
+<p>The message number is used to mark when one sequence of speech has ended and another is begun, and is incremented whenever the player stops speaking for a significant amount of time. The sequence number is the most critical piece of data, and is used by the voice queue to ensure payloads are played back at the correct time, as well as to handle lost and out-of-order payloads. When a player is talking continuously, the message number for each voice payload will be the same, and the sequence number will increment by either one or two for each subsequent payload.</p>
+
+<p>The most straightforward way to take advantage of this behavior is to store the full codec header for the first voice payload in the network packet, and then store a single-byte bitfield that tracks which of the following eight sequence numbers are present in the network packet, and assume that the message number is the same for all voice payloads in the network packet. Note that this assumes you're not trying to send more than 180-ms worth of data in one network packet (a packet rate of 5.5 Hz), but you can always use a larger bitfield if you have a lower packet rate.</p>
+
+<h3>Limit the size of voice "channels"</h3>
+
+<p>While it would be great if every player in the game could talk to every other player in the game, that's not usually an achievable goal due to bandwidth constraints. By limiting the size of groups that are sending and receiving voice data, the bandwidth consumed by voice decreases geometrically. One option is to have the player select between voice channels, either explicitly, or implicitly as part of team formation. Alternately, the game can automatically and/or dynamically assign players to voice channels based on its own criteria. Just make sure it's clear to players who they are talking to.  </p>
+
+<p>Some suggestions for grouping players into voice channels:</p>
+
+<ul>
+<li>Team selection. Players talk to others on their team and can even subdivide by role within the team.</li>
+<li>Locality in game world. Players physically near each other can talk to each other.</li>
+<li>Ranking proximity. Players closest in current ranking can talk to each other.</li>
+<li>Power-Ups. Only players who have picked up a certain power-up can
+talk.</li>
+<li>Game Events. Let players who shared in a game event (such as one
+player shooting another) talk to each other.</li>
+</ul>
+
+<p>Often, it's possible to combine several different methods. For example, players may be able to talk to the three players who are physically close to them, as well as whichever player currently has the walkie-talkie power-up.</p>
+
+<h2>Quality</h2>
+
+<p>While XHV goes a long way towards improving the reliability and quality of voice communication, there are a few things that titles should do to ensure they get the best possibly voice quality.</p>
+
+<h3>Send voice data over the network at regular intervals</h3>
+
+<p>It's important that voice data is sent at fairly regular intervals in order to ensure error-free playback on the receiving side. The receiver uses a jitter buffer to smooth out variations in network latency, but it is designed for small variations (generally not more than 20-ms change over several seconds). If the interval between packets increases significantly (for example, due to a large glitch in frame rate), the payloads will not arrive at their destination before they are scheduled to be played back, and the player's voice will "break up."  </p>
+
+<p>If the receiver gets enough consecutive payloads arriving significantly later than expected, it assumes that it has lost synchronization with the sender and resets itself in order to resynchronize with that sender. This causes noticeable distortion of the sending player's voice stream, but can be easily avoided by ensuring you do not send stale voice payloads over the network.</p>
+
+<p>Once you've determined your desired packet frequency, use a timer to send out packets at that interval, rather than timing based off of a frame count or other frame-rate-dependent means. It's still possible that a frame-rate glitch will happen right before you were scheduled to send a network packet, which will cause you to send it out later than planned. To ensure you don't send stale voice payloads if/when this happens, keep track of the difference between when you send each network packet and when it was scheduled to be sent. If it's more than 250 ms late, discard the stale voice payloads before sending. Finally, if you're using XHV, ensure that the <b>dwOutOfSyncThreshold</b> member in <b>XHV_RUNTIME_PARAMS</b> is larger than the number of voice payloads you typically send in one network packet (the default is 10).</p>
+
+<h3>Call DoWork() at regular intervals</h3>
+
+<p>The voice engine has a limited amount of space to store completed voice payloads before the title retrieves them (configured by the <b>dwMaxCompressedBuffers</b> member in <b>XHV_RUNTIME_PARAMS</b>). If this storage overflows because the title is not calling <b>DoWork</b> frequently enough, the voice engine will have to discard payloads, which will cause the player's voice to break up when the receiver realizes it is missing those payloads.</p>
+
+<h3>Pay attention to debug warnings</h3>
+
+<p>Starting with the June 2003 XDK, XHV will print debug warning messages when it receives payloads that are late and/or out-of-sync. It's important to watch for these warnings and track down their cause. Usually, it is due to the sender transmitting stale voice payloads. It will also print debug warnings when the title is not calling <b>DoWork</b> frequently enough, which can be addressed by increasing the <b>dwMaxCompressedBuffers</b> member when initializing XHV. </p>
+
+<h2>Xbox Live</h2>
+
+<p>This section covers topics specifically related to Xbox <i>Live.</i></p>
+
+<h3>Read and understand the voice-related TCRs</h3>
+
+<p>It's important to read and understand the TCRs before you start implementing voice chat in your title, because they can affect design decisions. For example, the requirement to support voice playback through speakers may impact if you allow players on the same console to be on different teams. Pay particular attention to the muting TCRs, in order to ensure that players can not tell when they've been muted by another player.</p>
+
+<h3>Use a reliable network channel for control messages</h3>
+
+<p>There are certain control messages related to voice chat that need to be sent during a game session, primarily communicator status and mute control. To guarantee that these messages reach their destinations, even with significant packet loss, they must be sent over a reliable network channel, such as TCP or a reliable UDP/VDP scheme. Fortunately, these control messages do not need to be sent frequently, so the extra overhead of sending them over a reliable channel is not significant.</p>
+
+<h2><a name="_References"></a>References</h2>
+
+<h3>White Papers</h3>
+
+<ul>
+<li><a href="https://xds.xbox.com/BPProgInfo.asp?Page=content/prog_wp_customvoicechat.htm" target="blank">Creating a Custom Voice Chat Engine</a> provides in-depth detail on the various components of a voice chat engine, including the underlying implementation of XHV.</li>
+
+<li><a href="prog_wp_maxperf.htm">Maximizing Xbox File Performance</a> explains how to use asynchronous file I/O to avoid blocking the CPU during file loads.</li>
+
+<li><a href="https://xds.xbox.com/BPProgInfo.asp?Page=content/prog_wp_XboxLiveNetworkingBP.htm" target="blank">Xbox <i>Live</i> Networking Best Practices</a> provides general best practices for writing network code on Xbox.</li>
+
+<li><a href="prog_wp_securesock.htm">Xbox Secure Sockets</a> provides detail on the secure packet format used on Xbox, and the impact it has on packet overhead and bandwidth consumption.</li>
+
+<li><a href="cd_aud_wp_authoring.htm">Authoring and Auditioning Effects Programs</a> explains how to create and use DSP effect programs.</li>
+</ul>
+
+<h3>Technical Certification Requirements</h3>
+
+<p>You can find the latest version of the <a href="https://xds.xbox.com/bpproginfo.asp?page=content/cert_req.htm" target="blank">Xbox Guide</a> here on Xbox Central.</p>
+
+<h3>Bandwidth Spreadsheets</h3>
+
+<p>See the companion <a
+href="https://xds.xbox.com/content/download/voice_chat_bp_spreadsheet.xls" target="blank">spreadsheet</a>
+for live, editable versions of the tables in this document.</p>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>
+

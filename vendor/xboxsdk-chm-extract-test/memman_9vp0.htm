@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>HeapCompact</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="HeapCompact">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="HeapCompact"/>
+<MSHelp:Keyword Index="F" Term="HeapCompact"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_heapcompact"></A>HeapCompact</H1>
+
+<P>The <B>HeapCompact</B> function attempts to compact a specified heap. It compacts the heap by coalescing adjacent free blocks of memory and decommitting large free blocks of memory.</P>
+
+<P class=note><B><I>Important</I></B>&nbsp;&nbsp;&nbsp;To use this function, you must link with XapilibD.lib, the debug version of Xapilib.  Retail (shipping) title builds should not call this function.</P>
+
+<PRE class=syntax><B>UINT HeapCompact(
+  HANDLE</B><I> hHeap</I><B>,  </B>// handle to heap
+<B>  DWORD</B><I> dwFlags</I>  // heap access options
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>hHeap</I></DT>
+
+<DD>[in] Handle to the heap that the function will attempt to compact. </DD>
+
+<DT><I>dwFlags</I></DT>
+
+<DD>[in] Specifies heap access during function operation. This parameter can be the following value.
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=35%>Value</TH>
+<TH align=left width=65%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>HEAP_NO_SERIALIZE</TD>
+<TD width=65%>Specifies that mutual exclusion will not be used while the <B>HeapCompact</B> function accesses the heap. </TD>
+</TR>
+</TABLE><BR>
+
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is the size, in bytes, of the largest committed free block in the heap. This is an unsigned integer value.</P>
+
+<P>If the function fails, the return value is zero. To get extended error information, call <a href="errors_3uwi.htm">GetLastError</a>.</P>
+
+<P>In the unlikely case that there is absolutely no space available in the heap, the function return value is zero, and <B>GetLastError</B> returns the value NO_ERROR.</P>
+
+<H4>Remarks</H4>
+
+<P>There is no guarantee that an application can successfully allocate a memory block of the size returned by <B>HeapCompact</B>. Other threads or the commit threshold might prevent such an allocation.</P>
+
+<P>Serialization ensures mutual exclusion when two or more threads attempt to simultaneously allocate or free blocks from the same heap. There is a small performance cost to serialization, but it must be used whenever multiple threads allocate and free memory from the same heap. Setting the HEAP_NO_SERIALIZE value eliminates mutual exclusion on the heap. Without serialization, two or more threads that use the same heap handle might attempt to allocate or free memory simultaneously, likely causing corruption in the heap. The HEAP_NO_SERIALIZE value can, therefore, be safely used only in the following situations: 
+
+<UL>
+	<LI>The title has only one thread.</LI>
+
+	<LI>The title has multiple threads, but only one thread calls the heap functions for a specific heap.</LI>
+
+	<LI>The title has multiple threads, and the application provides its own mechanism for mutual exclusion to a specific heap.</LI>
+</UL>
+
+<P class=note><B><I>Note</I></B>&nbsp;&nbsp;To guard against an access violation, you can use structured exception handling to protect code that writes to or reads from a heap. For more information on structured exception handling with memory accesses, see <a href="unresolved.htm">Reading and Writing</a> and <A HREF="unresolved.htm">Structured Exception Handling</a>.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use XapilibD.lib
+</p>
+
+<H4>See Also</H4>
+<P>
+
+<a href="xbox_mt_xtl_sll_memory_management_functions.htm">Memory Management Functions</a> | 
+<A HREF="memman_5z6t.htm">HeapCreate</a>,
+<A HREF="memman_53z9.htm">HeapValidate</a>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

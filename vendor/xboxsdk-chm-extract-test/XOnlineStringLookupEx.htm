@@ -1,0 +1,124 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineStringLookupEx</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineStringLookupEx"/>
+<MSHelp:Keyword Index="F" Term="XOnlineStringLookupEx"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineStringLookupEx</h1>
+		<p>Retrieves Unicode strings corresponding to an array of IDs for a given language.</p>
+	<pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineStringLookupEx(</b>
+    <b>DWORD</b> <i>dwTitleID</i><b>,</b>
+    <b>WORD</b> <i>wNumStringIDs</i><b>,</b>
+    <b>DWORD</b> *<i>pdwStringIDs</i><b>,</b>
+    <b>DWORD</b> <i>dwLanguage</i><b>,</b>
+    <b>HANDLE</b> <i>hWorkEvent</i><b>,</b>
+    <b>PXONLINETASK_HANDLE</b> <i>phTask</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+		<dt><i>dwTitleID</i></dt>
+<dd>[in]  Identifier of the title to query. This can be the current title ID or one of the valid alternate title IDs. If zero is specified, the current title ID is used.</dd>
+            
+		
+		<dt><i>wNumStringIDs</i></dt>
+<dd>[in]  Number of strings to verify.</dd>
+            
+
+		<dt><i>pdwStringIDs</i></dt>
+<dd>[in]  Array of string identifiers for the strings to verify.</dd>
+            
+
+		<dt><i>dwLanguage</i></dt>
+			<p>
+				<dd>[in]  Value that specifies the language of the text to verify. This parameter must be one of the following values:</dd>
+				<table>
+					<tr>
+						<th>Value</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>XC_LANGUAGE_ENGLISH</td>
+						<td>English</td>
+					</tr>
+					<tr>
+						<td>XC_LANGUAGE_JAPANESE</td>
+						<td>Japanese</td>
+					</tr>
+					<tr>
+						<td>XC_LANGUAGE_GERMAN</td>
+						<td>German</td>
+					</tr>
+					<tr>
+						<td>XC_LANGUAGE_FRENCH</td>
+						<td>French</td>
+					</tr>
+					<tr>
+						<td>XC_LANGUAGE_SPANISH</td>
+						<td>Spanish</td>
+					</tr>
+					<tr>
+						<td>XC_LANGUAGE_ITALIAN</td>
+						<td>Italian</td>
+					</tr>
+					<tr>
+						<td>XC_LANGUAGE_KOREAN</td>
+						<td>Korean</td>
+					</tr>
+					<tr>
+						<td>XC_LANGUAGE_TCHINESE</td>
+						<td>Chinese (Traditional)</td>
+					</tr>
+					<tr>
+						<td>XC_LANGUAGE_PORTUGUESE</td>
+						<td>Portuguese</td>
+					</tr>
+				</table>
+				<p>To specify the language currently in use by the Xbox console (in other words, the language set by the user through the Dashboard), pass the return value of <a href="x_jg_xgetlanguage.htm">XGetLanguage</a> as <i>dwLanguage</i>.</p>
+			</p>
+		
+
+		<dt><i>hWorkEvent</i></dt>
+<dd>[in, optional]  Handle to a caller-created event object. This object will be signaled when there is work to do by calling <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a>. The caller may pass in NULL instead, indicating that the caller will poll <b>XOnlineTaskContinue</b>.</dd>
+            
+
+		<dt><i>phTask</i></dt>
+<dd>[out]  Pointer to a variable of type <b>XONLINETASK_HANDLE</b> that receives a task handle representing the verify task. Pump this task to completion using <b>XOnlineTaskContinue</b>. When the task is complete, call <a href="XOnlineTaskClose.htm">XOnlineTaskClose</a> to close the task.</dd>
+            
+	</dl>
+<h4><a name="return"></a>Return Values</h4>
+		<p>Returns S_OK when the lookup operation has started successfully.</p>
+		<p><b>XOnlineTaskContinue</b> will return XONLINETASK_S_SUCCESS when the lookup operation has completed, at which time titles should call <a href="XOnlineStringLookupGetResults.htm">XOnlineStringLookupGetResults</a> to retrieve the resulting strings.</p>
+	<h4><a name="remarks"></a>Remarks</h4>
+		<p>This function is identical to the <a href="XOnlineStringLookup.htm">XOnlineStringLookup</a> function with the exception that an alternate title identifier may be specified. When looking up a string ID property from a message, pass the <i>dwSenderTitleID</i> from the message so the string lookup operates correctly for family title IDs.</p>
+	<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p><a href="x_mt_xonline_functions.htm">Xbox Live Functions</a> | <a href="XOnlineStringLookupGetResults.htm">XOnlineStringLookupGetResults</a>, <a href="XOnlineStringVerify.htm">XOnlineStringVerify</a></p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

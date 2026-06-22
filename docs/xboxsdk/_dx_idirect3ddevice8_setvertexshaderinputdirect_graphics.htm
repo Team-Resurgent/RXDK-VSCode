@@ -1,0 +1,64 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>IDirect3DDevice8::SetVertexShaderInputDirect</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="F" Term="SetVertexShaderInputDirect"/>
+<MSHelp:Keyword Index="K" Term="SetVertexShaderInputDirect (IDirect3DDevice8)"/>
+<MSHelp:Keyword Index="K" Term="IDirect3DDevice8::SetVertexShaderInputDirect"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>IDirect3DDevice8::SetVertexShaderInputDirect</h1>
+<p>Sets the byte offset from the start of the vertex buffer data. This function can work with push-buffer fix-ups. Unlike <a href="_dx_idirect3ddevice8_setvertexshaderinput_graphics.htm">IDirect3DDevice8::SetVertexShaderInput</a>, this function does not require a vertex shader handle.</p>
+<pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>SetVertexShaderInputDirect(</b>
+    <b>D3DVERTEXATTRIBUTEFORMAT</b> *<i>pVAF</i><b>,</b>
+    <b>UINT</b> <i>StreamCount</i><b>,</b>
+    <b>D3DSTREAM_INPUT</b> *<i>pStreamInputs</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+			<dt><i>pVAF</i></dt>
+<dd>[in]  Pointer to a <a href="_dx_d3dvertexattributeformat_graphics.htm">D3DVERTEXATTRIBUTEFORMAT</a> structure that is used to program the GPU's stream registers.</dd>
+			<dt><i>StreamCount</i></dt>
+<dd>[in]  Number of elements in the array pointed to by <i>pStreamInputs</i>.</dd>
+			<dt><i>pStreamInputs</i></dt>
+<dd>[in]  Pointer to an array of <a href="_dx_d3dstream_input_graphics.htm">D3DSTREAM_INPUT</a> structures used to specify vertex buffers as well as the offsets from the starts of those vertex buffers.</dd>
+		</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>Returns S_OK if successful, an error code otherwise.</p>
+<h4><a name="remarks"></a>Remarks</h4>
+		<p>Calling <b>SetVertexShaderInputDirect</b> does not set a vertex shader, it only sets the format that a vertex shader is expecting. The GPU is not set to use a vertex shader until <a href="_dx_idirect3ddevice8_setvertexshader_graphics.htm">SetVertexShader</a>, <a href="xbox_dxg_IDirect3DDevice8_selectvertexshader.htm">SelectVertexShader</a>, or <a href="_dx_idirect3ddevice8_selectvertexshaderdirect_graphics.htm">SelectVertexShaderDirect</a> is called.</p>
+		
+		<p>When <b>IDirect3DDevice8::SetVertexShaderInputDirect</b> is called with a non-NULL pointer to a <b>D3DVERTEXATTRIBUTEFORMAT</b> structure, <b>IDirect3DDevice8::SetVertexShaderInputDirect</b> takes control of the GPU's stream registers until the function is called with a NULL pointer.  This means that after calling <b>SetVertexShaderInputDirect</b>, any future calls to <b>SelectVertexShader</b> or <b>SelectVertexShaderDirect</b> will not change the vertex attribute format and calls to <a href="_dx_idirect3ddevice8_setstreamsource_graphics.htm">SetStreamSource</a> will not set the stream inputs.  After a call of SetVertexShaderInputDirect(NULL, 0, NULL), those functions will once again take effect.</p>
+
+<p>This method doesn't support the notion of a nonzero IndexBase value.</p>
+
+<p>The D3DTSS_TEXCOORDINDEX mapping for every texture stage must be identity.</p>
+
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in D3d8.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use D3d8.lib.</p>
+    <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

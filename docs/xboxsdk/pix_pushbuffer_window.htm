@@ -1,0 +1,27 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>PIX Pushbuffer Disassembly Window</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="PIX Pushbuffer Disassembly Window"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>PIX Pushbuffer Disassembly Window</h1>
+<p>The <b>Pushbuffer Disassembly</b> window shows a disassembled view of the main system push-buffer. It is displayed as a list of commands sent to the GPU, organized by the events PIX has captured.</p><p><img src="images/pix_pushbuffer.jpg"></p><p>The disassembler works by looking at the GPU instructions recorded in the push-buffer, and grouping them by their functionality. For some instructions, there is a simple one-to-one correspondence between the function and the instruction, such as for the <a href="_dx_d3drenderstatetype_graphics.htm#_dx_d3drs_alphablendenable_graphics">D3DRS_ALPHABLENDENABLE</a> render state. For others, however, there is no straightforward correspondence, and in these cases the disassembler attributes the instructions to the Direct3D routine that sets them. Examples are the point sprite render states, which are evaluated lazily by Direct3D in the <b>LazySetPointParams</b> routine (which may be seen when using the code profiler). The disassembler attributes those instructions to <b>LazySetPointParams</b>. If you see <b>LazySetPointParams</b> in the disassembly, you can infer that one or more point sprite render states were updated, which forced Direct3D to lazily-evaluate all of the point sprite states at that point.</p><p>In many cases, the same GPU instructions are used by more than one Direct3D function. An example is the set of GPU instructions controlling the pixel shader, which can be set by calling <a href="_dx_idirect3ddevice8_setpixelshader_graphics.htm">SetPixelShader</a>, by the fixed-function pipeline using texture stage states, or by the D3DRS_PS<i>xxxx</i> render states. In these cases, the disassembler uses the lowest-level Direct3D form to describe them, so the pixel shader disassembly shows these as D3DRS_PS<i>xxxx</i> render states.</p><p>Because it operates by grouping instructions, the disassembler can't distinguish between successive calls to the same Direct3D function. For example, if a game were to set D3DRS_ALPHABLENDENABLE ten times in a row with no other intervening Direct3D calls, it would show up in the disassembly as a single D3DRS_ALPHABLENDENABLE call. (However, in this case the <b>Size</b> field would be 10 times larger than for a single function call.)</p><p>Some function calls also have to update a range of states. An example of this is <a href="_dx_idirect3ddevice8_setrendertarget_graphics.htm">SetRenderTarget</a>, which has to update the scissors, clip planes, and so on, so those operations will show up in the disassembly even though the game doesn't explicitly set them.</p><p>The <b>Size</b> field shows the length of the push-buffer encoding for the corresponding call, in bytes. This value can fluctuate somewhat depending on the encoding state at the time and adjacent GPU instructions. Its intent is to serve primarily as an indicator of how long it takes the CPU to set the corresponding state. In general, the GPU can accept state changes with little overhead, and because most Xbox games are CPU limited, the game should not waste a lot of CPU time avoiding unnecessary GPU state changes. Keep this in mind when looking at the <b>Attributes</b> field, which indicates if a state change is redundant. </p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

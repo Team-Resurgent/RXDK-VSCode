@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>WinsockPeer Sample</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="WinsockPeer Sample"/>
+<MSHelp:Keyword Index="F" Term="WinsockPeer Sample"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>WinsockPeer Sample</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<!--****Intro paragraph. Should be a three or four sentence summary of the topic.****-->
+<P class="intro">The WinsockPeer sample illustrates Winsock peer-to-peer networking on Xbox.
+   Code is based on the DirectX8 SimplePeer sample. It allows a player to start or host 
+   a new multiplayer game, connect to an existing multiplayer game, and 
+   send simple messages to other players. Full functionality of this sample 
+   requires that it be run on at least two different connected Xbox consoles.</P>
+<!--*********************************************************************************-->
+
+<!--****Stock text. Do not change.****-->
+
+<h3 class="overview">Overview</H3>
+
+<P class="content">This sample uses the secure Xbox network stack and shows the methods
+   by which hosts and clients establish secure network sessions.</P>
+
+<P class="content">This sample properly handles player disconnects but does not include
+   host migration. If the host leaves the game, other players in the
+   game can continue to play, but no new players can join.</P>
+
+<P class="content">This sample shows an example call to <B>XNetStartup</B>. Titles need
+   to call this function directly only if they want to adjust the default network
+   stack parameters. If <B>XNetStartup</B> has not been called, <a href="xbox_wsastartup_winsock.htm">WSAStartup</a>
+   will automatically call <B>XNetStartup</B>.</P>
+
+<h3 class="overview">The Host</H3>
+
+<P class="content">When the host starts a game, he must register a network session using 
+   <B>XNetCreateKey</B> and <B>XNetRegisterKey</B>. When the session is complete (game is
+   done), the host unregisters the session using <B>XNetUnregisterKey</B>.</P>
+
+<P class="content">The host must acquire his <a href="xbox_xnaddr_xsnl.htm">XNADDR</a> using <B>XNetGetTitleXnAddr</B>. The host
+   then waits for clients to find and join his game.</P>
+
+<P class="content">Upon receiving a "find game" message from a potential client,
+   the host cannot reply directly to the client, because no secure session has
+   been established. He or she must instead broadcast a "found game" message.
+   This means that the host must send back a value that the requesting
+   client "knows" about. The method used by the sample is for the client
+   to generate a nonce and send the nonce with the "find game" message.
+   The host then resends the nonce back in its "found game" message.
+   The client with the matching nonce knows that the "found game" message
+   is for him.</P>
+
+<P class="content">When the host sends the "found game" message to the client, the host
+   also sends his <b>XNADDR</b> and the session key information.</P>
+
+<P class="content">When the host receives a "join game" message, he calls
+   <B>XNetInAddrToXnAddr</B> to convert the client's INADDR to an <b>XNADDR</b>. If
+   this call is successful, then a secure session exists between the
+   host and the client. From that moment on, the host can use the
+   client's INADDR with normal Winsock calls to communicate with
+   the client.</P>
+
+<P class="content">In response to the "join game" message, the host issues a list of
+   all the existing players to the new client. The key elements of this
+   list are the <b>XNADDR</b>s of each of the existing players.</P>
+
+
+<h3 class="overview">The Client</H3>
+
+<P class="content">To find a game, a client broadcasts a "find game" message. As noted
+   above, he sends a nonce so that he can verify the responses he receives
+   from any active games.</P>
+
+<P class="content">After compiling a list of available games, the client selects a game.
+   At this point, he must do the following to establish a secure session
+   with the host game: </P>
+
+   <OL>
+     <LI>Call <B>XNetRegisterKey</B> using the host's session key information.
+     <LI>Call <B>XNetXnAddrToInAddr</B> to convert the host's <b>XNADDR</b> to an INADDR. Using the new INADDR, he can send a "join game" message directly to the host.
+   </OL>
+
+<P class="content">When the client receives a "join approved" message, he gets a list
+   of all the other players in the game. He can convert each player's
+   <b>XNADDR</b> to an INADDR using <B>XNetXnAddrToInAddr</B>. From that point on,
+   the client can communicate directly to any of the other players
+   in the game by using their INADDR.</P>
+
+<P class="content">When the client leaves the game, he unregisters the session using
+   <B>XNetUnregisterKey</B>.</P>
+
+<!--
+<H3 class="hdcontrols">Controls</H3>
+<P class="content">For a complete list of controller mappings, press the <B>F</B> button on the hammerhead controller while this sample is running.</P>
+-->
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

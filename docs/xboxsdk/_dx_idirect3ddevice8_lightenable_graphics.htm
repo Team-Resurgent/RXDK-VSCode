@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirect3DDevice8::LightEnable</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="IDirect3DDevice8::LightEnable [C++]">
+<META NAME="MS-HKWD" CONTENT="LightEnable (IDirect3DDevice8) [C++]">
+<META NAME="MS-HKWD" CONTENT="LightEnable [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="LightEnable (IDirect3DDevice8)"/>
+<MSHelp:Keyword Index="K" Term="IDirect3DDevice8::LightEnable"/>
+<MSHelp:Keyword Index="F" Term="LightEnable"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_idirect3ddevice8_lightenable_graphics"></A>IDirect3DDevice8::LightEnable</H1>
+
+<P>Enables or disables a set of lighting parameters within a device.</P>
+
+<PRE class=syntax><B>HRESULT LightEnable(
+  DWORD</B> <I>LightIndex</I><B>,</B>
+<B>  BOOL</B> <I>bEnable</I>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>LightIndex</I></DT>
+
+<DD>[in] Zero-based index of the set of lighting parameters that are the target of this method.  The maximum allowed <i>LightIndex</i> value is 4095.</DD>
+
+<DT><I>bEnable</I></DT>
+
+<DD>[in] Value that indicates whether the set of lighting parameters is being enabled or disabled. Set this parameter to TRUE to enable lighting with the parameters at the specified index, or FALSE to disable it. 
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the method succeeds, the return value is D3D_OK.</P>
+
+<P>If the method fails, the return value can be <A HREF="_dx_return_values_graphics.htm#_dx_d3derr_invalidcall_graphics">D3DERR_INVALIDCALL</A>.</P>
+
+<h4>Known Issues</h4>
+
+<P>The following is a known issue with <B>LightEnable</B>:</P>
+<ul>
+<li>When switching from the fixed-function pipeline to a vertex shader, if a light is enabled then some negative vertex shader constants will be overwritten as the first primitive of each frame is drawn.  If you use both the fixed-function pipeline and vertex shaders, you should disable all lights before using a vertex shader that makes use of negative shader constants.</li>
+</ul>
+
+<H4>Remarks</H4>
+
+<p>Using the fixed-function pipeline, it is possible to have more than eight lights set using <a href="_dx_idirect3ddevice8_setlight_graphics.htm">IDirect3DDevice8::SetLight</a>; however, Direct3D will use only the eight most recently enabled lights.</p>
+
+<P>If a value for <I>LightIndex</I> is outside the range of the light property sets assigned within the device, the <B>LightEnable</B> method creates a light source represented by a <A HREF="_dx_d3dlight8_graphics.htm">D3DLIGHT8</A> structure with the following properties and sets its enabled state to the value specified in <I>bEnable</I>.</P>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=38%>Member</TH>
+<TH align=left width=62%>Default</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=38%><B>Type</B></TD>
+<TD width=62%>D3DLIGHT_DIRECTIONAL</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=38%><B>Diffuse</B></TD>
+<TD width=62%>(R:1, G:1, B:1, A:0)</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=38%><B>Specular</B> </TD>
+<TD width=62%>(R:0, G:0, B:0, A:0)</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=38%><B>Ambient</B> </TD>
+<TD width=62%>(R:0, G:0, B:0, A:0)</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=38%><B>Position</B> </TD>
+<TD width=62%>(0, 0, 0)</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=38%><B>Direction</B> </TD>
+<TD width=62%>(0, 0, 1)</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=38%><B>Range</B> </TD>
+<TD width=62%>0</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=38%><B>Falloff</B> </TD>
+<TD width=62%>0</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=38%><B>Attenuation0</B> </TD>
+<TD width=62%>0</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=38%><B>Attenuation1</B> </TD>
+<TD width=62%>0</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=38%><B>Attenuation2</B> </TD>
+<TD width=62%>0</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=38%><B>Theta</B> </TD>
+<TD width=62%>0</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=38%><B>Phi</B></TD>
+<TD width=62%>0</TD>
+</TR>
+</TABLE><BR>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in D3d8.h.<BR>
+<B>&nbsp;&nbsp;Import Library:</B> Use D3d8.lib.</P>
+
+<H4>See Also</H4>
+
+<P><A HREF="_dx_idirect3ddevice8_getlight_graphics.htm"><B>IDirect3DDevice8::GetLight</B></A>, <A HREF="_dx_idirect3ddevice8_getlightenable_graphics.htm"><B>IDirect3DDevice8::GetLightEnable</B></A>, <A HREF="_dx_idirect3ddevice8_setlight_graphics.htm"><B>IDirect3DDevice8::SetLight</B></A></P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

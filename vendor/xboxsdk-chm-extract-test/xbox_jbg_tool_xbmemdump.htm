@@ -1,0 +1,193 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Memory Dump Tool (XbMemDump)</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Memory Dump Tool (XbMemDump)"/>
+<MSHelp:Keyword Index="K" Term="track memory allocation with XbMemDump"/>
+<MSHelp:Keyword Index="K" Term="memory allocation tracking"/>
+<MSHelp:Keyword Index="K" Term="XbMemDump tool"/>
+<MSHelp:Keyword Index="F" Term="Memory Dump Tool (XbMemDump)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME=""></A>Memory Dump Tool (XbMemDump)</H1>
+
+<p>The Memory Dump tool (XbMemDump) displays the active memory state of an Xbox console while
+it is running a game. This display allows developers to see how memory allocations are
+fragmenting and potentially blocking them from making physical allocations. The
+tool shows the entire 64 or 128 MB memory configuration (by pages), and
+designates each page by its usage. In addition, XbMemDump allows memory
+tracking by allocation type.</p>
+
+<pre>USAGE: xbmemdump [options]</pre>
+
+<table>
+<tr>
+<th width="25%">Option</th>
+<th width="75%">Description</th>
+</tr>
+
+<tr>
+<td><b>-s</b></td>
+<td>Suppresses summary information at the top of the report. By default,
+    XbMemDump generates a summary of its findings and includes the summary at
+    the top of its report.</td>
+</tr>
+
+<tr>
+<td><b>-l</b></td>
+<td>Displays the page frame number layout in a long output format. In this
+    format, memory is broken up by usage, and the size of the memory for
+    each use is displayed.</td>
+</tr>
+
+<tr>
+<td><b>-w</b></td>
+<td>Displays the page frame number layout in a wide format. In this format,
+    memory is broken up in 4K blocks, each block showing its usage. By default,
+    each line shows 64 of these blocks.</td>
+</tr>
+
+<tr>
+<td><b>-n</b> <i>Size</i></td>
+<td>Used with <b>-w</b> option to specify the number of blocks per line.</td>
+</tr>
+
+<tr>
+<td><b>-vad</b></td>
+<td>Displays the virtual address descriptor. All threads are suspended while
+    XbMemDump downloads information.</td>
+</tr>
+
+<tr>
+<td><b>-x</b> <i>XboxName</i></td>
+<td>Xbox name or Xbox IP. Specify a particular target machine.</td>
+</tr>
+
+<tr>
+  <td><b>-e</b> <i>n</i></td>
+  <td>Enables permanent allocation tracking for every title until reset by
+      the <b>-d</b> option. The parameter <i>n</i> specifies the maximum level of
+      stack trace to capture (0&ndash;32). This option only takes effect after the
+      next console reboot.</td>
+</tr>
+
+<tr>
+  <td><b>-d</b></td>
+  <td>Disables memory allocation tracking set by the <b>-e</b> option. This option
+      only takes effect after the next console reboot.</td>
+</tr>
+
+<tr>
+  <td><b>-m</b></td>
+  <td>Displays memory allocation tracking history. Allocation tracking must be
+      enabled (see the <b>-r</b> and <b>-e</b> options); all threads are suspended while
+      downloading history information.</td>
+</tr>
+
+<tr>
+  <td><b>-r</b> <i>xbe n</i></td>
+  <td>Runs a specific XBE with memory allocation tracking enabled. The
+      parameter <i>n</i> (0&ndash;32) specifies the maximum level of stack trace to
+      capture. Specify <i>xbe</i> as the full path and file name of the XBE (for
+      example, <code>xd:\filename.xbe</code>). This option is independent of the <b>-e</b>
+      and <b>-d</b> options.</td>
+</tr>
+
+<tr>
+  <td><b>-p</b> <i>path</i></td>
+  <td>The <i>path</i> parameter specifies the path containing <code>.pdb</code>
+      symbol files for the XBE.</td>
+</tr>
+
+</table>
+
+<h4>Memory Allocation Tracking</h4>
+
+<p class="content">The XbMemDump tool can track different types of memory
+allocation, both internal and custom-defined, for your title. You can register
+your own custom allocation type with the <a
+href="xbox_lrf_debugapi_function_dmregisterallocationtype.htm">DmRegisterAllocationType</a>
+function. Once you have a custom allocation type registered, call <a
+href="xbox_lrf_debugapi_function_dminsertallocationentry.htm">DmInsertAllocationEntry</a>
+to add the custom type to the XbMemDump tool's tracking database. When you are
+finished tracking a custom type, you can remove it from the tracking database
+with the <a
+href="xbox_lrf_debugapi_function_dmremoveallocationentry.htm">DmRemoveAllocationEntry</a>
+function.</p>
+
+<p class="content">If you need to look up the description for a particular
+memory allocation type, use the <a
+href="xbox_lrf_debugapi_function_dmqueryallocationtypename.htm">DmQueryAllocationTypeName</a>
+function.</p>
+
+
+<h4>Memory Type Abbreviations</h4>
+
+<p class="content">The XbMemDump tool uses single-character abbreviations in
+its output to designate different types of memory. The following table
+describes each of these abbreviations:</p>
+
+<table>
+  <tr>
+    <th width="10%">Character</th>
+    <th width="90%">Description</th>
+  </tr>
+  <tr><td>s</td>  <td>Stack &ndash; Pages marked for use as a stack by any of the
+                      running threads on the Xbox console.</td></tr>
+  <tr><td>#</td>  <td>Virtual page table &ndash; A section of memory reserved by the
+                      CPU and the system code to hold the tables that map
+                      physical addresses to virtual addresses.</td></tr>
+  <tr><td>$</td>  <td>System page table &ndash; A section of memory used by the CPU
+                      and the system code to hold the tables that identify
+                      physical pages, and to subsequently map them into the physical address
+                      space.</td></tr>
+  <tr><td>p</td>  <td>Pool &ndash; A section of memory reserved by the system for
+                      system memory allocations.</td></tr>
+  <tr><td>V</td>  <td>Virtual mapped &ndash; Physical pages currently used to store
+                      virtual pages.</td></tr>
+  <tr><td>*</td>  <td>System memory &ndash; Similar to the pool, this is memory
+                      allocated by system-level components.</td></tr>
+  <tr><td>i</td>  <td>Image &ndash; Any physical pages marked "executable." This is
+                      an XBE image loaded into memory.</td></tr>
+  <tr><td>c</td>  <td>File system cache &ndash; Memory reserved by the file system
+                      cache to hold file system metadata, such as directory
+                      entries and the location of file data.</td></tr>
+  <tr><td>@</td>  <td>Contiguous memory &ndash; Physically contiguous memory,
+                      allocated using <a
+                      href="xbox_mt_sll_memman_xphysicalalloc.htm">XPhysicalAlloc</a> or <a
+                      href="xbox_dxg_D3D_AllocContiguousMemory.html">D3D_AllocContiguousMemory</a>.
+                      This type of memory is guaranteed to always be in
+                      sequential physical pages.</td></tr>
+  <tr><td>d</td>  <td>Debugger &ndash; Memory allocated by the XBDM debug manager or by the 
+  					  <a href="xbox_jbh_debugapi_function_dmallocatepool.htm">DmAllocatePool</a> function to allow remote debugging of 
+					  a title over the network.</td></tr>
+</table>
+
+
+
+<h4>See Also</h4>
+
+<p class="content">
+<A href="xbox_jbh_tool_remote_intro.htm">(Remote) Target System Tools</A>
+|
+<a href="xbox_lrf_debugapi_function_dminsertallocationentry.htm">DmInsertAllocationEntry</a>,
+<a href="xbox_lrf_debugapi_function_dmqueryallocationtypename.htm">DmQueryAllocationTypeName</a>,
+<a href="xbox_lrf_debugapi_function_dmregisterallocationtype.htm">DmRegisterAllocationType</a>,
+<a href="xbox_lrf_debugapi_function_dmremoveallocationentry.htm">DmRemoveAllocationEntry</a>
+</p>
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

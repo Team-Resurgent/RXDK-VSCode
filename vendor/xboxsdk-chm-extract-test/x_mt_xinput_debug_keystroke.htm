@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>XINPUT_DEBUG_KEYSTROKE</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="XINPUT_DEBUG_KEYSTROKE">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XINPUT_DEBUG_KEYSTROKE"/>
+<MSHelp:Keyword Index="F" Term="XINPUT_DEBUG_KEYSTROKE"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="xbox_xinput_debug_keystroke"></A>XINPUT_DEBUG_KEYSTROKE</H1>
+
+<P>The <B>XINPUT_DEBUG_KEYSTROKE</B> structure is used in the  <A HREF="x_mt_xinputdebuggetkeystroke.htm">XInputDebugGetKeystroke</a> function to retrieve a keyboard input event.</P>
+
+<PRE class=syntax>typedef struct _XINPUT_DEBUG_KEYSTROKE {
+  BYTE VirtualKey;
+  CHAR Ascii;
+  BYTE Flags;
+} XINPUT_DEBUG_KEYSTROKE, *PXINPUT_DEBUG_KEYSTROKE;
+</PRE>
+
+<H4>Members</H4>
+
+<DL>
+<DT><B>VirtualKey</B></DT>
+
+<DD>The virtual-key code of the key causing the event.  See xkbd.h for a list of the valid virtual-key (VK_<I>xxx</I>) codes.</DD>
+
+<DT><B>Ascii</B></DT>
+
+<DD>The ASCII character that is the result of the input event.  If there is no ASCII character corresponding to the event, <B>Ascii</B> is zero.</DD>
+
+<DT><B>Flags</B></DT>
+<DD>Flags that indicate the type of keyboard event being reported, as well as additional information about the keyboard state at the time of this event.  This member can be any combination of the following values:
+
+<TABLE>
+
+<TR>
+<TH align=left>Flag</TH>
+<TH align=left>Meaning</TH>
+</TR>
+
+<TR>
+<TD>XINPUT_DEBUG_KEYSTROKE_FLAG_KEYUP</TD>
+<TD>The key was released.  If not set, the key was pressed.</TD>
+</TR>
+
+<TR>
+<TD>XINPUT_DEBUG_KEYSTROKE_FLAG_REPEAT</TD>
+<TD>A repeat of key that is held.</TD>
+</TR>
+
+<TR>
+<TD>XINPUT_DEBUG_KEYSTROKE_FLAG_CTRL</TD>
+<TD>The left or right CTRL key is down.</TD>
+</TR>
+
+<TR>
+<TD>XINPUT_DEBUG_KEYSTROKE_FLAG_SHIFT</TD>
+<TD>The left or right SHIFT key is down.</TD>
+</TR>
+
+<TR>
+<TD>XINPUT_DEBUG_KEYSTROKE_FLAG_ALT</TD>
+<TD>The left or right ALT key is down.</TD>
+</TR>
+
+<TR>
+<TD>XINPUT_DEBUG_KEYSTROKE_FLAG_CAPSLOCK</TD>
+<TD>CAPS LOCK is set.</TD>
+</TR>
+
+<TR>
+<TD>XINPUT_DEBUG_KEYSTROKE_FLAG_NUMLOCK</TD>
+<TD>NUM LOCK is set.</TD>
+</TR>
+
+<TR>
+<TD>XINPUT_DEBUG_KEYSTROKE_FLAG_SCROLLLOCK</TD>
+<TD>SCROLL LOCK is set.</TD>
+</TR>
+
+</TABLE>
+
+
+
+</DD>
+
+</DL>
+
+<H4>Remarks</H4>
+
+<P>A <I>virtual-key code</I> is a byte value that represents a particular physical key on the keyboard, not the character or characters (possibly none) that the key can be mapped to based on keyboard state.  The keyboard state at the time a virtual key is pressed modifies the character reported. For example, VK_4 might represent a "4" or a "$", depending on the state of the SHIFT key.</P> 
+
+<P>A reported keyboard event includes the virtual key that caused the event, whether the key was pressed or released (or is repeating), and the state of the keyboard at the time of the event. The keyboard state includes information about whether any CTRL, ALT, or SHIFT keys are down, as well as whether any of the keyboard toggle states (CAPS LOCK, SCROLL LOCK, and NUM LOCK) are currently set.<P>
+
+<P>If the keyboard event represents an ASCII character (for example, pressing the "A" key), the <B>Ascii</B> member will contain that ASCII character. Otherwise, <B>Ascii</B> will contain the value zero.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in xkbd.h, for include use xtl.h.</p>
+
+<H4>See Also</H4>
+<P>
+<A HREF="x_jsk_xid_structures.htm">Input Device Structures</a> |
+<A HREF="x_mt_xinputdebuggetkeystroke.htm">XInputDebugGetKeystroke</a>,
+<A HREF="x_mt_xinputdebuginitkeyboardqueue.htm">XInputDebugInitKeyboardQueue</a>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Accessing Storage Regions</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Accessing Storage Regions"/>
+<MSHelp:Keyword Index="K" Term="storage regions, accessing"/>
+<MSHelp:Keyword Index="F" Term="Accessing Storage Regions"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Accessing Storage Regions</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<P>Titles access the defined data regions through the namespace provided by the system. Because games running on the Xbox have essentially full control of the hardware, theoretically it is not  possible to fully protect regions and portions of regions outside of a particular title's namespace. However, the region organization hierarchy, in combination with certification requirements, ensures that titles will not experience interference or adverse effects from other titles.</P>
+
+<P>The basic method of maintaining title region separation is implemented using logical drives that are mapped to data regions specific to the title. The first time a title is launched on the console, subdirectories dedicated to that title are created within each of the global data regions that the title will eventually access.  At initialization time, logical drives are mapped to the title's specific data region directories, and those drives are made available to the title. The root of the mapped logical drive points to the title's own area within that region. Thus, from the root of the mapped drive downward, the data area is dedicated to the title. Titles cannot see the data of other games, with the exception of those specifically allowed by the <A HREF="x_mt_xmountalternatetitle.htm">XMountAlternateTitle</A> function.</P>
+
+<H3>The Storage Region Namespace</H3>
+
+<P>Each data region of the hard disk, each memory unit location, and the DVD player will be accessible to the title through specific logical drive letters defined by the system. Each drive letter is assigned a specific data region, and these assignments will not be changed. Those drive letters that do not have a region assignment are reserved for future use.</P>
+
+<H4>Drive Letter Region Assignments</H4>
+
+<P>The following table lists the drive letter data region assignments defined by the Xbox storage system.</P>
+ 
+<TABLE>
+<TR>
+<TH>Drive Letter</TH>
+<TH>Data Region</TH>
+</TR>
+
+<TR>
+<TD>D:</TD>
+<TD>The DVD Player.  On the development console only, if the title is launched from the hard disk, D:\ will be mapped to the directory that the title was launched from, rather than being mapped to the DVD player.  Note that if a title launches another title located in a subdirectory of D:\, the mapping of D:\ will remain unchanged.  It will point to the launch directory of the first title, not of the newly launched title.</TD>
+</TR>
+
+<TR>
+<TD>E:</TD>
+<TD>This drive does not actually exist on the console.  It is used solely by the Xbox Development Kit as the drive where development titles are copied to the Xbox development console for execution.  This drive is visible only to the remote tools, not to titles.</TD>
+</TR>
+
+<TR>
+<TD>F: &#8212; R:</TD>
+<TD>Dynamically allocated and/or reserved drives.  Some drives in this region are used to map memory units.</TD>
+</TR>
+
+<TR>
+<TD>S:</TD>
+<TD>On the development console only, the root directory of the persistent data region, under which each title's specific persistent data directory resides.  This drive is visible only to the remote tools, not to titles.</TD>
+</TR>
+
+<TR>
+<TD>T:</TD>
+<TD>The title's persistent data region.</TD>
+</TR>
+
+<TR>
+<TD>U:</TD>
+<TD>The title's user data region on the hard disk.</TD>
+</TR>
+
+<TR>
+<TD>V:</TD>
+<TD>On the development console only, the root directory of the user data region, under which each title's specific user data directory resides.  This drive is visible only to the remote tools, not to titles.</TD>
+</TR>
+
+<TR>
+<TD>W:</TD>
+<TD>Used to map another title's persistent data region.</TD>
+</TR>
+
+<TR>
+<TD>X:</TD>
+<TD>Used to map another title's user data region (from disk or a memory unit).</TD>
+</TR>
+
+<TR>
+<TD>Y:</TD>
+<TD>Unused</TD>
+</TR>
+
+<TR>
+<TD>Z:</TD>
+<TD>The title's utility data region.</TD>
+</TR>
+</TABLE>
+
+
+<!--*******************************************************************************-->
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

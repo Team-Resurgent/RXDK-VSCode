@@ -1,0 +1,65 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Uploading Game Clips</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Uploading Game Clips"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Uploading Game Clips</h1>
+<p>The following outline illustrates how to upload game clips to Xbox <i>Live</i>. The specific example given here is for uploading a ghost race. However, the same sequence of function calls can be applied to the process of uploading any type of game clip.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;If your game clip is stored on the console's hard drive, it must be signed before it is uploaded.</p><ol>
+                    <li>As the user races, create a file of the replay and sign it with the Xbox <i>Live</i> key.</li>
+                    <li><p>When the user finishes the race, write the score to the server, as follows:</p>
+                        <ol>
+                            <li><p>Call <a href="XOnlineStatWrite.htm">XOnlineStatWrite</a>. Store any game-specific information 
+                            about the content as stat attributes, before initiating the upload. Here are some 
+                            examples of the type of information to store:</p>
+                                <ul>
+                                    <li>Game region, if the attachment content does not work across multiple regions in the game.</li>
+                                    <li>Title version, to allow the game to block obsolete content after an auto-update.</li>
+                                    <li>Length of replay. If this is a high-score movie, a user may want to know how 
+                                    long it takes to watch.</li>
+                                    <li>The size of the file (compressed and uncompressed) is stored automatically 
+                                    by <b>XOnlineStatWrite</b>.</li>
+                                </ul>
+                            </li>
+                            <li>Pump the write task handle with <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a>.</li>
+                            <li><p>If you get the return value XONLINE_S_CAN_UPLOAD from <b>XOnlineStatWrite</b>, do the following:</p>
+	                            <ol>
+	                                <li>Call <a href="XOnlineStatWriteGetResult.htm">XOnlineStatWriteGetResult</a> to get a remote file reference.</li>
+	                                <li>Close the task with <a href="XOnlineTaskClose.htm">XOnlineTaskClose</a>.</li>
+	                                <li>Ask the player if he or she wants to upload. Alternatively, your title can begin the upload automatically.</li>
+	                                <li><p>Upload the attachment file, as follows:</p>
+	                                    <ol>
+	                                        <li>Call <a href="XOnlineStorageUpload.htm">XOnlineStorageUpload</a> with the remote file reference 
+	                                        retrieved by the call to <a href="XOnlineStatWriteGetResult.htm">XOnlineStatWriteGetResult</a>.</li>
+	                                        <li>Pump the upload with <a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a>.</li>
+	                                        <li>Optionally call <a href="XOnlineStorageGetProgress.htm">XOnlineStorageGetProgress</a> to find out how the 
+	                                        upload is going and to display a progress bar.</li>
+	                                        <li><a href="XOnlineStorageGetProgress.htm">XOnlineStorageGetProgress</a> indicates that the upload is complete through the output parameters in its parameter list. Even if it is complete, there is no guarantee the content is on the specified leaderboard. The user could have lost his or her standing on the leaderboard during the upload. For example, at the time the upload started, Mary qualified for 9th place; by the time the upload completed, she had fallen to 15th place, but the leaderboard isn't configured to store attachments for that low a ranking.</li>
+		                             	   <li>Close the task with <b>XOnlineTaskClose</b>.</li>
+	                                    </ol>
+                                	</li>
+                            	</ol>
+							</li>
+                        </ol>
+                    </li>
+                </ol>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

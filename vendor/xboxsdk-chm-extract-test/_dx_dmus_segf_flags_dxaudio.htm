@@ -1,0 +1,196 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>DMUS_SEGF_FLAGS</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="DMUS_SEGF_FLAGS  [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="DMUS_SEGF_FLAGS"/>
+<MSHelp:Keyword Index="F" Term="DMUS_SEGF_FLAGS"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_dmus_segf_flags_dxaudio"></A>DMUS_SEGF_FLAGS</H1>
+
+<P>Passed to various methods of <A HREF="_dx_idirectmusicperformance8_dxaudio.htm"><B>IDirectMusicPerformance8</B></A> to control the timing and other aspects of actions on a segment.</P>
+
+<PRE class="syntax">typedef enum enumDMUS_SEGF_FLAGS {
+    DMUS_SEGF_REFTIME             = 1&lt;&lt;6,
+    DMUS_SEGF_SECONDARY           = 1&lt;&lt;7,
+    DMUS_SEGF_QUEUE               = 1&lt;&lt;8,
+    DMUS_SEGF_CONTROL             = 1&lt;&lt;9,
+    DMUS_SEGF_AFTERPREPARETIME    = 1&lt;&lt;10,
+    DMUS_SEGF_GRID                = 1&lt;&lt;11,
+    DMUS_SEGF_BEAT                = 1&lt;&lt;12,
+    DMUS_SEGF_MEASURE             = 1&lt;&lt;13,
+    DMUS_SEGF_DEFAULT             = 1&lt;&lt;14,
+    DMUS_SEGF_NOINVALIDATE        = 1&lt;&lt;15,
+    DMUS_SEGF_ALIGN               = 1&lt;&lt;16,
+    DMUS_SEGF_VALID_START_BEAT    = 1&lt;&lt;17,
+    DMUS_SEGF_VALID_START_GRID    = 1&lt;&lt;18,
+    DMUS_SEGF_VALID_START_TICK    = 1&lt;&lt;19,
+    DMUS_SEGF_AUTOTRANSITION      = 1&lt;&lt;20,
+    DMUS_SEGF_AFTERQUEUETIME      = 1&lt;&lt;21,
+    DMUS_SEGF_AFTERLATENCYTIME    = 1&lt;&lt;22,
+    DMUS_SEGF_SEGMENTEND          = 1&lt;&lt;23,
+    DMUS_SEGF_MARKER              = 1&lt;&lt;24,
+    DMUS_SEGF_TIMESIG_ALWAYS      = 1&lt;&lt;25,
+    DMUS_SEGF_USE_AUDIOPATH       = 1&lt;&lt;26,
+    DMUS_SEGF_VALID_START_MEASURE = 1&lt;&lt;27,
+    DMUS_SEGF_INVALIDATE_PRI = 1&lt;&lt;28
+} DMUS_SEGF_FLAGS;
+</PRE>
+
+<H4>Constants</H4>
+
+<DL>
+<DT>DMUS_SEGF_REFTIME</DT>
+
+<DD>Time parameter is in reference time.</DD>
+
+<DT>DMUS_SEGF_SECONDARY</DT>
+
+<DD>Secondary segment.</DD>
+
+<DT>DMUS_SEGF_QUEUE</DT>
+
+<dd>For a primary segment, play at the end of the primary segment queue. For a secondary segment, play at the end of the secondary segment specified in the <i>pFrom</i> parameter of <a href="_dx_idirectmusicperformance8_playsegmentex_dxaudio.htm">IDirectMusicPerformance8::PlaySegmentEx</a>.</dd>
+
+<DT>DMUS_SEGF_CONTROL</DT>
+
+<DD>Play as a <A HREF="c.htm#_dx_control_segment_glos"><B>control segment</B></A>. Valid for secondary segments only. See Remarks.</DD>
+
+<DT>DMUS_SEGF_AFTERPREPARETIME</DT>
+
+<DD>Play after the prepare time.</DD>
+
+<DT>DMUS_SEGF_GRID</DT>
+
+<DD>Play on a <A HREF="g.htm#_dx_grid_glos" CLASS="POPUP"><B>grid</B></A> boundary.</DD>
+
+<DT>DMUS_SEGF_BEAT</DT>
+
+<DD>Play on a beat boundary.</DD>
+
+<DT>DMUS_SEGF_MEASURE</DT>
+
+<DD>Play on a measure boundary.</DD>
+
+<DT>DMUS_SEGF_DEFAULT</DT>
+
+<DD>Use the segment's default boundary.</DD>
+
+<DT>DMUS_SEGF_NOINVALIDATE</DT>
+
+<DD>Setting this flag in <A HREF="_dx_idirectmusicperformance8_playsegmentex_dxaudio.htm"><B>IDirectMusicPerformance8::PlaySegmentEx</B></A> for a primary or control segment causes the new segment not to cause an invalidation. Without this flag, an invalidation occurs, cutting off and resetting any currently playing curve or note. This flag should be combined with DMUS_SEGF_AFTERPREPARETIME so that notes in the new segment do not play over notes played by the old segment.</DD>
+
+<DT>DMUS_SEGF_ALIGN</DT>
+
+<DD>The beginning of the segment can be aligned with a boundary, such as measure or beat, that has already passed. For this to happen, the segment must have a valid start point that falls before the next boundary. Start points can be defined in the segment, or one of the DMUS_SEGF_VALID_START_* flags can be used to define the granularity of valid start points. Any DMUS_SEGF_VALID_START_* flag takes effect only if a valid start point is not defined in the segment.</DD>
+
+<DT>DMUS_SEGF_VALID_START_BEAT</DT>
+
+<DD>Allow the start to occur on any beat. Used in combination with DMUS_SEGF_ALIGN.</DD>
+
+<DT>DMUS_SEGF_VALID_START_GRID</DT>
+
+<DD>Allow the start to occur on any grid. Used in combination with DMUS_SEGF_ALIGN.</DD>
+
+<DT>DMUS_SEGF_VALID_START_TICK</DT>
+
+<DD>Allow the start to occur at any time. Used in combination with DMUS_SEGF_ALIGN.</DD>
+
+<DT>DMUS_SEGF_AUTOTRANSITION</DT>
+
+<DD>Compose and play a transition segment, using the transition template.</DD>
+
+<DT>DMUS_SEGF_AFTERQUEUETIME</DT>
+
+<DD>Play after the queue time. This is the default for primary segments. Ignored if DMUS_SEGF_AFTERPREPARETIME is also set.</DD>
+
+<DT>DMUS_SEGF_AFTERLATENCYTIME</DT>
+
+<DD>Play after the latency time. This is true for all segments, so this flag currently has no effect. </DD>
+
+<DT>DMUS_SEGF_SEGMENTEND</DT>
+
+<dd>Play at the end of the primary segment that is playing at the start time. If the new segment is being played as a primary segment, any primary segments already queued after the currently playing primary segment are flushed. If no primary segment is playing, use other resolution flags. When combined with DMUS_SEGF_ALIGN, this flag causes the beginning of the cued segment to be aligned with the beginning of the current primary segment.</dd>
+
+<DT>DMUS_SEGF_MARKER</DT>
+
+<DD>Play at next marker in the primary segment. If there are no markers, use other resolution flags.</DD>
+
+<DT>DMUS_SEGF_TIMESIG_ALWAYS</DT>
+
+<DD>Align start time with current time signature, even if there is no primary segment.</DD>
+
+<DT>DMUS_SEGF_USE_AUDIOPATH</DT>
+
+<DD>Use the audiopath embedded in the segment.</DD>
+
+<DT>DMUS_SEGF_VALID_START_MEASURE</DT>
+
+<DD>Allow the start to occur at the beginning of a measure. Used in combination with DMUS_SEGF_ALIGN.
+
+<DT>DMUS_SEGF_INVALIDATE_PRI</DT>
+
+<DD>Invalidate only the primary segment when transitioning to a new segment.</DD>
+</DL>
+
+<H4>Remarks</H4>
+
+<P>The primary segment is the default control segment. The DMUS_SEGF_CONTROL flag can be used to make a secondary segment the control segment. If the DMUS_SEGF_CONTROL flag is set, DMUS_SEGF_SECONDARY is assumed. For more information, see <A HREF="_dx_control_segments_dxaudio.htm"><B>Control Segments</B></A>.</P>
+
+<P>No more than one flag from each of the following groups should be specified.
+
+<DL>
+<DT><B>Boundary</B></DT>
+
+<DD>This flag controls the point in the currently playing primary segment at which the start point of the cued segment falls. It can be combined with DMUS_SEGF_MARKER, in which case the boundary flag will be used only if no marker exists in the primary segment.
+
+<DL>
+<DT>DMUS_SEGF_BEAT</DT>
+<DT>DMUS_SEGF_DEFAULT</DT>
+<DT>DMUS_SEGF_GRID</DT>
+<DT>DMUS_SEGF_MEASURE</DT>
+<DT>DMUS_SEGF_QUEUE</DT>
+<DT>DMUS_SEGF_SEGMENTEND</DT>
+</DL>
+
+</DD>
+
+<DT><B>Alignment</B> </DT>
+
+<DD>This flag controls the segment start time of the cued segment, when its play time falls in the past. It must be combined with DMUS_SEGF_ALIGN. 
+
+<P>DMUS_SEGF_VALID_START_BEAT<BR>
+DMUS_SEGF_VALID_START_GRID<BR>
+DMUS_SEGF_VALID_START_MEASURE<BR>
+DMUS_SEGF_VALID_START_TICK
+
+</DD>
+</DL>
+
+<P>It is possible to combine one flag from each group. For example, combining DMUS_SEGF_MEASURE with DMUS_SEGF_ALIGN and DMUS_SEGF_VALID_START_BEAT causes the start point of the cued segment to fall at a measure boundary in the current primary segment. If this boundary has already passed, the cued segment starts playing at the next beat boundary within itself that is not aligned to a past time. For more information, see <A HREF="_dx_segment_timing_dxaudio.htm"><B>Segment Timing</B></A>.</P>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in DMusici.h.</P>
+
+<H4>See Also</H4>
+
+<P><A HREF="_dx_idirectmusicperformance8_playsegmentex_dxaudio.htm"><B>IDirectMusicPerformance8::PlaySegmentEx</B></A>, <A HREF="_dx_dmus_time_resolve_flags_dxaudio.htm"><B>DMUS_TIME_RESOLVE_FLAGS</B></A></P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

@@ -1,0 +1,118 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineMutelistRemove</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineMutelistRemove"/>
+<MSHelp:Keyword Index="F" Term="XOnlineMutelistRemove"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineMutelistRemove</h1>
+<p>Adds a player to the specified player's mutelist.</p>
+<pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineMutelistRemove(</b>
+    <b>DWORD</b> <i>dwUserIndex</i><b>,</b>
+    <b>XUID</b> <i>xUserID</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+<dt><i>dwUserIndex</i></dt>
+<dd>[in]  Controller index (zero-based) of the player whose mutelist will be 
+modified.  The player must have been successfully logged on with a previous call 
+to<a href="XOnlineLogon.htm">XOnlineLogon</a>.</dd>
+            
+
+<dt><i>xUserID</i></dt>
+<dd>[in]  Unique identifier of the player specified to be removed from the mutelist.</dd>
+            
+
+</dl>
+<h4><a name="return"></a>Return Values</h4>
+    
+    <p>If <b>XOnlineMutelistRemove</b> succeeds, the return value is S_OK.</p>
+<p>If <b>XOnlineMutelistRemove</b> fails, the return value is one of the following error codes.</p>
+
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>XONLINE_E_NOTIFICATION_NO_TASK</td>
+<td>The mutelist startup task is not active. Call <a href="XOnlineMutelistStartup.htm">XOnlineMutelistStartup</a> first in order to create the mutelist startup task.</td>
+</tr>
+<tr>
+<td>XONLINE_E_NOTIFICATION_SELF</td>
+<td>A player should not be able to mute themselves, so they should never have the option to unmute themselves.   A player should be able only to remove other muted players from their mutelist.  If you haven't caught this in advance, then use an error sound to indicate that they cannot do this.
+</td>
+</tr>
+<tr>
+<td>E_OUTOFMEMORY</td>
+<td>Insufficient memory. Free some memory.</td>
+</tr>
+<tr>
+<td>Other</td>
+<td>See <a href="xbox_online_errors.htm">Online Errors</a> for information about other possible errors.</td>     
+</tr>
+</table>
+
+
+    <h4><a name="remarks"></a>Remarks</h4>
+<p>This function removes the player specified in <i>xUserID</i> from the 
+permanent mutelist of the player specified in <i>dwUserIndex</i>.</p>
+<p>The title must call <b>XOnlineMutelistStartup</b> once successfully before 
+making any calls to <a href="XOnlineMutelistAdd.htm">XOnlineMutelistAdd</a> or 
+<b>XOnlineMutelistRemove</b>. The <b>XOnlineMutelistStartup</b> function creates an 
+asynchronous task that must be pumped in order to add or remove players from 
+the mutelist. To remove a player from the mutelist, call 
+<b>XOnlineMutelistRemove</b>, then pump this asynchronous task by calling 
+<a href="XOnlineTaskContinue.htm">XOnlineTaskContinue</a> with the handle returned by 
+<b>XOnlineMutelistStartup</b>.</p>
+
+<p>The task created by <b>XOnlineMutelistStartup</b> never completes.  That 
+is, <b>XOnlineTaskContinue</b> never returns XONLINETASK_S_SUCCESS.  To 
+determine if the specified player was removed from the mutelist, check 
+whether the <i>hEvent</i> parameter specified in the call to 
+<b>XOnlineMutelistStartup</b> is signaled.  If this event is unsignaled, 
+then no work needs to be done on the asynchronous task, and the player was 
+removed successfully.  If no event object was specified in the call to 
+<b>XOnlineMutelistStartup</b> (the <i>hEvent</i> parameter is 
+optional), the title should check <b>XOnlineTaskContinue</b> for the 
+XONLINETASK_S_RUNNING_IDLE return code.  This return code indicates that 
+the user was removed successfully.  Alternatively, the title can determine 
+if the player was removed by enumerating the mutelist with 
+<a href="XOnlineMutelistGet.htm">XOnlineMutelistGet</a>.</p>
+
+<p><a href="XONLINE_REQUEST_ANSWER_TYPE.htm">Blocking</a> a player from making friend requests does not automatically add that player to the <a href="XOnlineMutelistAdd.htm">mutelist</a>.</p>
+
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="x_mt_xonline_functions.htm">Xbox Live Functions</a> | <a href="XOnlineMutelistAdd.htm">XOnlineMutelistAdd</a>,
+<a href="XOnlineMutelistStartup.htm">XOnlineMutelistStartup</a>
+</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

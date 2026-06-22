@@ -1,0 +1,134 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Palettes and Push, Vertex, and Index Buffers</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Palettes and Push%2c Vertex%2c and Index Buffers"/>
+<MSHelp:Keyword Index="F" Term="Palettes and Push%2c Vertex%2c and Index Buffers"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Palettes and Push, Vertex, and Index Buffers</H1>
+<!--***********************************************************-->
+
+<!--****Intro paragraph. Should be a three or four sentence summary of the topic.****-->
+<p>The resource headers for <a href="xbox_dxg_IDirect3DPalette8_graphics.htm">IDirect3DPalette8</a>, <a href="_dx_idirect3dpushbuffer8_graphics.htm">IDirect3DPushBuffer8</a>, <a href="_dx_idirect3dindexbuffer8_graphics.htm">IDirect3DIndexBuffer8</a>, and <a href="_dx_idirect3dvertexbuffer8_graphics.htm">IDirect3DVertexBuffer8</a> are all very similar and are defined as below:</p>
+
+<pre class=syntax>struct <i>_ResourceName</i> {
+  // Resource-specific declarations
+  // ...
+  
+  DWORD Common;
+  DWORD Data;
+  DWORD Lock;
+};</pre>
+
+<h4>Members</h4>
+
+<dl>
+<dt><b>Common</b></dt>
+
+<dd>Holds all of the information common to all resources inheriting from <a href="_dx_idirect3dresource8_graphics.htm">IDirect3DResource8</a>. Information is stored in the following bit fields.
+
+<table>
+<tr>
+<th>Field</th>
+<th>Bits</th>
+<th>Description</th>
+</tr>
+
+<tr>
+<td>REFCOUNT</td>
+<td>16</td>
+<td>Reference count for the resource, which will be destroyed if this value ever goes to zero.</td>
+</tr>
+
+<tr>
+<td>TYPE</td>
+<td>3</td>
+<td>Holds the type of the resource. Depending on the resource, this will be one of the following:
+<ul>
+<li>D3DCOMMON_TYPE_INDEXBUFFER</li>
+<li>D3DCOMMON_TYPE_PALETTE</li>
+<li>D3DCOMMON_TYPE_PUSHBUFFER</li>
+<li>D3DCOMMON_TYPE_VERTEXBUFFER</li>
+</ul></td>
+</tr>
+
+<tr>
+<td>INTREFCOUNT</td>
+<td>4</td>
+<td>Internal reference count that is used to determine whether <a href="_dx_idirect3ddevice8_graphics.htm">IDirect3DDevice8</a> is using this resource.</td>
+</tr>
+
+<tr>
+<td>VIDEOMEMORY</td>
+<td>1</td>
+<td>This bit is not used.</td>
+</tr>
+
+<tr>
+<td>D3DCREATED</td>
+<td>1</td>
+<td>Flag to indicate that the resource was created using one of the <b>Create</b> methods of <b>IDirect3DDevice8</b>. This flag should not be set for manually created resources.</td>
+</tr>
+
+</table>
+
+<p>Palettes use the upper nibble of the <b>Common</b> field to store the size of the palette. If <i>Size</i> is the <a href="xbox_graphics_D3DPALETTESIZE.htm">D3DPALETTESIZE</a> of the palette, this may be set using code similar to the following:</p>
+
+<blockquote><pre>Common |= Size &lt;&lt; D3DPALETTE_COMMON_PALETTESIZE_SHIFT;</pre></blockquote>
+
+<p>Push-buffers have an additional flag that can be set on the <b>Common</b> field: D3DPUSHBUFFER_RUN_USING_CPU_COPY. This flag indicates that the data stored in the push-buffer resource should get copied into the graphics processor's push-buffer instead of going through a jump.</p>
+
+</dd>
+
+<dt><b>Data</b></dt>
+
+<dd>The offset of the data for this resource in physical memory. The memory for the data of a resource must be stored in contiguous, write-combined memory, except for index buffers and some push-buffers. The data allocation for each resource must be aligned on a specific boundary depending on the resource type. 
+
+<p>All palettes must be aligned using D3DPALETTE_ALIGNMENT. Palettes store their data as an array of 32-bit ARGB colors that is at least as long as the size indicated in the header's <b>D3DPALETTESIZE</b> field.</p>
+
+<p>All push-buffers must be aligned using D3DPUSHBUFFER_ALIGNMENT. The data for a push-buffer consists of recorded push-buffer commands.  The data for a push-buffer can be allocated two different ways.  If D3DPUSHBUFFER_RUN_USING_CPU_COPY is set, the data needs to be allocated in noncontiguous cached memory so that it can be efficiently copied into the graphics processor's push-buffer.  If that flag is not set, the push-buffer data must be stored in write-combined mapped contiguous memory so it can be executed in place.</p>
+
+<p>All vertex buffers must be aligned using D3DVERTEXBUFFER_ALIGNMENT. The data allocation for a vertex buffer just contains an array of vertex information.</p>
+
+<p>All index buffers must be aligned using D3DINDEXBUFFER_ALIGNMENT. The graphics processor has no direct support for a separate index buffer, so its contents must be copied into the push-buffer by the graphics driver, thus the memory used to store the indices should be noncontiguous cached memory.  The data field in an index buffer contains a pointer to the virtual memory that contains the index buffer data instead of the normal offset in physical memory. The data for an index buffer contains an array of 16-bit indices.</p>
+
+<p>The contiguous memory allocation ensures that the consecutive virtual pages of the allocation will use consecutive physical pages, because the graphics processor does not have any support for virtual memory. The memory must be write combined to ensure coherency between the graphics processor and the CPU. The write-combined mapping inhibits the CPU's normal caching behavior but will combine writes in short-term buffers to improve write speeds. Direct3D automatically flushes these buffers whenever any new commands are sent to the graphics processor.</p>
+</dd>
+
+<dt><b>Lock</b></dt>
+
+<dd>Contains the fence that must be crossed before this resource is no longer used by the graphics processor. It will contain zero if there is no possibility of this resource being in use or if it is currently set on the device. This field should always start out as zero and should never be modified by the title.</dd>
+
+</dl>
+
+
+<!--*******************************************************************************-->
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

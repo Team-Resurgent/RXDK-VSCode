@@ -1,0 +1,296 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Xbox Live Lessons and Best Practices</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Xbox Live Lessons and Best Practices"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Xbox Live Lessons and Best Practices</h1>
+<p><i>By Andre Vrignaud, Technical Evangelist, Xbox Online</i></p><p>So you want to make a better Xbox <i>Live</i><sup style="font-size:smaller">TM</sup> title. Excellent...we'd love to help!</p><p>In the months since launch, the Xbox <i>Live</i> team has learned a number of lessons worth passing along. We've noticed some consistency in things that titles do well and areas that
+could be improved. This document is intended to communicate some of what we
+learned.</p><p>Below, you'll find a variety of high-level points that provide guidance as you design
+your Xbox <i>Live</i> title. In general, we don't go into too much depth
+because we want this document to be usable by everybody, from producers,
+testers, and developers all the way up to the publisher. If you have more
+in-depth questions on how to implement a suggestion or feature, please contact
+your account manager or your TGM. If you have comments or suggestions to add to
+this document, please email <a href="mailto:andre@xbox.com">andre@xbox.com</a>.</p><ul>
+<li><a href="#IDA1QEV">Overall Xbox Live Implementation</a></li><li><a href="#IDAWSEV">Downloadable Content</a></li><li><a href="#IDAVTEV">User Interface (UI)</a></li><li><a href="#IDAVUEV">Voice</a></li><li><a href="#IDAJVEV">Statistics</a></li><li><a href="#IDA4VEV">Matchmaking/OptiMatch</a></li><li><a href="#IDAOWEV">Community Tools</a></li><li><a href="#IDAHXEV">Testing</a></li></ul>
+<h2><a name="IDA1QEV"></a>Overall Xbox Live Implementation</h2>
+<ul>
+<li>Start by looking at titles that have implemented Xbox <i>Live</i> particularly
+     well&#8212;for example, <i>Moto GP</i>, <i>Whacked!</i>, and <i>Midtown Madness
+     3</i>. Also, see this excellent <a href="https://xds.xbox.com/BPProgInfo.asp?page=Content/XboxLiveUIFlow1.htm" target="blank">example</a> of Xbox <i>Live</i> UI flow.</li>
+<li>Make your title Xbox <i>Live</i> Aware&#8212;even your offline, single-player titles.
+     Xbox <i>Live</i> Aware simply means the ability to sign in with your
+     Gamertag at the beginning of the game so you can have access to your
+     Friends list and game invitations while playing offline or single-player
+     games. This feature helps keep Xbox <i>Live</i> gamers playing your game, and
+     it enables them to stay connected to the community, see when people come
+     online to play, and send and accept invites. With Xbox <i>Live</i> Aware
+     titles, gamers don't have to be in a fully Xbox <i>Live</i> title if they
+     want to play and keep an eye on who might be on the service.
+	 
+	 <p>You can easily implement Xbox <i>Live</i> Aware in your title by using
+     Drop-in UI (UIX). The recommended implementation is to silently sign in
+     the last used Gamertag at game launch (if an Internet connection is available).
+     Gamers can then set whether they want to enable this feature in the Xbox
+     Dashboard. Note that if aren't using UIX, there is an API available to
+     help you implement this silent sign-in.</p><p>In sum, with the advent of UIX, no upcoming Xbox <i>Live</i> title should
+     be released without the ability to be "Always <i>Live</i>." We also
+     recommend Always <i>Live</i> for system link titles.</p></li>
+<li>Don't forget to enable the Voice over Speakers option. (This is a TCR as of June
+     2003.) You want gamers to hear the action in your title. Headsets will be
+     sold separately from Xbox <i>Live</i> kits as of Fall 2003.</li>
+<li>Get a gamer who has accepted a cross-game invite into the
+     game as quickly as possible. There's no reason for the gamer to have to
+     watch through all of the start-up screens and cinematics if they're trying
+     to get into a specific game session as quickly as possible. <i>Whacked!</i>
+     is a great example of how to implement joining a game with a cross-game
+     invite.</li>
+<li>Consider your options for hosting larger-scale games.
+  <ul>
+<li>Some games have created a Dedicated Host Mode (DHM) to enable larger-scale
+      games. Games have been able to support hosting 16 players on a single
+      Xbox when in DHM. Two good examples of DHM titles are <i>Unreal
+      Championship</i> and <i>Return to Castle Wolfenstein</i>.</li>
+<li>With DHM, the host doesn't play or render the game on screen, but acts as a 
+	  dedicated host, with limited functionality available to users (scores, text 
+	  description of action, ability to change game parameters, and so on). To enable 
+	  the host to verbally inform users of imminent shutdown or game parameter changes, 
+	  consider adding voice support for DHM.</li>
+<li>Larger-scale games can use a PC server in a data center. PC servers can enable 
+  	  larger-scale games(more players) and must be certified along with the game. You 
+      can host with Microsoft or with your own ISP/data center. If using your own, be
+      aware that the hosting provider must meet certain requirements. Talk to
+      your account manager or TGM for details.</li>
+</ul>
+</li>
+</ul>
+<h2><a name="IDAWSEV"></a>Downloadable Content</h2>
+<ul>
+<li>Downloadable content is the #1 requested feature of Xbox <i>Live</i> titles. As of July
+     2003, two out of three Xbox <i>Live</i> titles support downloadable content.</li>
+<li>The XDK provides a simple API for enumerating and downloading content within the game.</li>
+<li>You can also use the Xbox Content Download Manager (Downloader.xbe), a stand-alone 
+	 executable that you can call to enable downloadable content in your game. To use
+	 Downloader.xbe
+	 
+ <ul>
+<li>Place a <b>Download Content</b> entry on your main menu. When the user selects
+      this entry, you leave your game XBE and load Downloader.xbe, which takes
+      care of all the hard work&#8212;signing in, TCRs, enumerating content, handling
+      premium content, and so on.</li>
+<li>Return to the same point you left your game XBE from afterward. There's no reason for 
+  	  the gamer to have to watch through all of the start-up screens and cinematics if 
+	  they're returning from downloading content.</li>
+<li>Your game should be architected to enumerate available content at launch. It
+      must also verify downloaded content before loading it.</li>
+<li>Think about skinning Downloader.xbe. <i>Mech Assault</i> did a great job of
+      this, and the result looks much better than the default Downloader skin.
+      Implementing this is easy and takes just a couple of hours.
+      
+      <p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp; Downloader.xbe now supports
+	  premium content&#8212;that is, the ability to charge users for downloadable content that
+	  you offer.</p></li>
+<li>Use <a href="XOnlineOfferingIsNewContentAvailable.htm">XOnlineOfferingIsNewContentAvailable</a> to check whether new content is 
+  	  available for download, If new content is available, highlight the <b>Download Content</b>
+	  item in the menu in some fashion to call it out to the user. Also, note that this API 
+	  does not require a user to log in! This lets you silently check for new content in the
+	  background and only highlight the <b>Download Content</b> entry if there is something
+	  new.</li>
+</ul>
+</li>
+</ul>
+<h2><a name="IDAVTEV"></a>User Interface (UI)</h2>
+<ul>
+<li>Consistent UI is key to game experience. Use <b>A</b> to advance in menus, <b>B</b>
+     to go back&#8212;these are the defaults for most games; it's frustrating when
+     games don't support them.</li>
+<li>Make it easy to get to a Friends List. We recommend using an always-available
+     single button (<b>Y</b> is common).</li>
+<li>Allow the use of D-pad left/right to scroll through list boxes a page at a time.</li>
+<li>Consider using the Xbox Drop-in UI (UIX), which can greatly ease Xbox <i>Live</i>
+     development. UIX currently includes support for sign-in (one-player or four-player)
+     and Friends List. Players List, Matchmaking, and two-player sign-in are
+     coming soon. As additional features are enabled on Xbox <i>Live</i>, such
+     as Teams and Tournaments, UIX will evolve to support them.</li>
+<li>Take advantage of the Friends List&#8212;for example:
+ <ul>
+<li>Use the default sorting provided by the Xbox <i>Live</i> client libraries.
+      This automatically alphabetizes and sorts by priority/relevance. (Also, think
+      about adding a divider between the "priority/relevance" items
+      and just general Friends.)</li>
+<li>Gamers appreciate an information-rich Friends List that includes data such as
+      player on, playing what game, accepted invite&#8212;you get this information by
+      default from presence queries.</li>
+<li><a href="XOnlineNotificationSetState.htm">XOnlineNotificationSetState</a> gives you 32 bytes of data you
+      can define to allow viewing time in game, laps left, game type, health,
+      frags, and so on (not real-time, but a ~30 second delay). If you plan,
+      this data can be visible in all of your titles. Also, if you version your
+      schema, you can add information types in the future.</li>
+</ul>
+</li>
+</ul>
+<h2><a name="IDAVUEV"></a>Voice</h2>
+<ul>
+<li>Always allow gamers to talk when they first enter the game. Enable a Voice
+     channel by default.</li>
+<li>"Push to talk" is not recommended. Several game press reviews have dinged
+     this approach. It is okay to consider as an option&#8212;that is, push-to-talk
+     to address all people in the game (taunts), while the default behavior
+     (button not pushed) is just talking to your team.</li>
+<li>Enable Voice during level-loads, transitions, and so on. Players should always be
+     able to talk. It's frustrating to have a conversation cut off just because
+     of a level-load.</li>
+<li>"Voice over Speakers" is a TCR as of June 2003. The reason is free trials of
+     Xbox <i>Live</i> will be available as of Fall 2003, and many trial users
+     won't have headsets initially. Voice over Speakers enables them to hear
+     what they're missing.</li>
+<li>The simplest way to implement Voice over Speakers is to have the game check
+     whether a Voice puck is inserted; if not, pump Voice through the speakers.
+     <i>Star Wars: The Clone Wars</i> does this well (and adds a Voice over
+     Speakers volume control option).</li>
+<li>For more information, see the white paper <a href="https://xds.xbox.com/BPProgInfo.asp?Page=content/prog_wp_customvoicechat.htm" target="blank">Creating a Custom Voice Chat Engine</a>.</li>
+</ul>
+<h2><a name="IDAJVEV"></a>Statistics</h2>
+<ul>
+<li>Show stats for your friends separately. Gamers want to gauge their progress
+     against friends and the rest of the world. This is one of the most popular
+     features of Xbox <i>Live</i>. <i>Moto GP</i> shows a great example.</li>
+<li>Show gamer positions on the leaderboard by default, centered on their Gamertag
+     with a few entries above and below for context.</li>
+<li>Provide the ability to quick-jump to the top and bottom of the leaderboard. This
+     saves network resources because many gamers want to see their position
+     relative to the entire leaderboard.</li>
+<li>List on-screen the total number of entries on the leaderboard. (This
+     information can be returned with your stats query; you just need to
+     display it.)</li>
+<li>Use D-pad left/right to enable users to jump a screen at a time.</li>
+<li>Enable gamers to quick-jump to their position on any leaderboard.</li>
+<li>Punish griefers! Report stats often, or store the number of games started and
+     number of games finished. The difference between these reveals the number
+     of dropouts.</li>
+<li>Try to create leaderboards such that any player could find something relevant
+     to him or her.</li>
+<li>Leaderboards should provide easy access to:
+ <ul>
+<li>Top 10</li>
+<li>My Ranking</li>
+<li>My Friends Ranking</li>
+<li>Total number of entries in leaderboard</li>
+</ul>
+</li>
+</ul>
+<h2><a name="IDA4VEV"></a>Matchmaking/OptiMatch</h2>
+<ul>
+<li>One common complaint of gamers is finding themselves in a game where they
+     aren't matched in skill with other players. This experience can be
+     frustrating and intimidating. To address this, consider adding Matchmaking
+     based on skill. <i>Moto GP</i> has a good implementation that allows you
+     to consider leaderboard information when matching, and to race only
+     against opponents close to you in lap times.</li>
+<li>Consider only allowing players to use game objects that they've earned by unlocking
+     in the single-player game. For example, add an OptiMatch<sup style="font-size:smaller">TM</sup> option that
+     filters against people who have played to a certain level, or who have
+     access to a certain vehicle.</li>
+<li>Consider adding a Matchmaking option based on whether gamers have Voice. Remember,
+     as of Fall 2003, free Xbox <i>Live</i> trial offers will be available with
+     millions of Xbox <i>Live</i> titles. Many gamers will not have Voice
+     initially, and you want people to be able to filter on that aspect.
+     Headsets will be available as stand-alone SKUs at retail.</li>
+<li>Use QoS (Quality of Service) to refine Matchmaking results. Don't query and
+     QoS large numbers of sessions (think 100) at a time. In such cases, the
+     gamer has to wait too long and thinks something might be broken. Instead,
+     query smaller sets and do QoS on those (10 at a time, for example). If you
+     are QoS-probing a large set of hosts, set the maximum bandwidth up to 64Kbps
+     (default is 32Kbps). When you are done, set it back to 32Kbps.</li>
+<li>Use Proximity to find matches that are physically close to you. This is simply
+     turned on in your Matchmaking definition file (also known as the .xms file).</li>
+</ul>
+<h2><a name="IDAOWEV"></a>Community Tools</h2>
+<ul>
+<li>Build a game lobby where gamers can meet, plan, break into teams, configure,
+     launch, return to, and re-launch from. Implementing this can be very
+     different depending on the type of game (team-based, one-on-one, join
+     in-progress games, and so on). The key is to think about ways to allow
+     gamers to continue playing the game easily with people they're already
+     having fun with.</li>
+<li>Nothing is more frustrating to gamers than having a great session and not being
+     able to talk trash afterward. So think about scenarios where teams can
+     talk to each other, then to everyone in the game (good for post-game
+     banter).</li>
+<li>Make sure gamers have the ability to change game options from the lobby and to re-launch
+     games easily with the same players.</li>
+<li>Think about enabling players to join lobbies while a game is in session, so they
+     can wait for the next game (<i>Moto GP</i> does this nicely). Allowing
+     players to watch a game in session is a nice bonus.</li>
+<li>Introduce community control options where players can vote to kick out problem users,
+     mute them, ban them from a server, and so on. <i>Return to Castle
+     Wolfenstein</i> offers a great example of this.</li>
+<li>Take advantage of Xbox <i>Live</i> Web services. We enable you to take Xbox <i>Live</i>
+     service data such as leaderboards, Friends Lists, presence, and so on, and
+     use these features on your own Web site to build community. We expect to
+     allow you to write arbitrary data to a leaderboard via Web services that
+     you can then display in-game (this is currently read-only).
+	 
+ <ul>
+<li>We give you a binary block of data (BLOB); you crack it and display it on your own site
+      that you build.</li>
+<li>The Microsoft XSN Sports Web portal will be built using exactly these same
+      Web services that are available to you.</li>
+<li>See the white paper <a href="https://xds.xbox.com/BPProgInfo.asp?Page=content/prog_wp_webservices.htm">Xbox Live 2003 Web Services</a> for more details. </li>
+</ul>
+</li>
+</ul>
+<h2><a name="IDAHXEV"></a>Testing</h2>
+<ul>
+<li>Understand the <a href="https://xds.xbox.com/BPProgInfo.asp?Page=Content/prog_wp_TCRTopIssues.htm">Xbox Core TCR Top Issues</a>.</li>
+<li>Play across the Internet. This sounds obvious, but a lot of issues can be
+     exposed when using home routers, home broadband connections (which are
+     often limited in upstream bandwidth), and so on. If you can, send your
+     testers home for at least some testing. We always see issues that are
+     exposed by real-world testing.</li>
+<li>Test with NetSim to simulate Internet conditions. NetSim will generally give
+     better results than "real-world" testing. Use NetSim to roughly
+     determine the best possible network conditions for your title.</li>
+<li>Make sure your testers are using voice headsets to communicate, even if they
+     are in the same room. We found issues where bandwidth wasn't stressed
+     enough during testing because testers didn't use voice headsets to
+     communicate.</li>
+<li>Be aware that not all routers are equal. Some have firmware issues that cause
+     a variety of issues in online titles. (You can find a <a href="http://www.xbox.com/LIVE/Connect/routercompatibility.htm" target="blank">list of
+     approved routers</a> on xbox.com.) Common symptoms include:
+	 
+ <ul>
+<li>Some players see game movement while others don't.</li>
+<li>Voice drop-outs: A can talk to B and C, while B and C can only talk to A and
+      not to each other.</li>
+</ul>
+</li>
+<li>Encourage your development teams to play the game nightly, from home, for the last
+     six to eight weeks of the development cycle. Teams have successfully found and
+     characterized critical bugs this way.</li>
+<li>Some test Gamertags should have pass codes, some shouldn't; some should have
+     spaces, some shouldn't. Some test Gamertags should be the maximum length
+     of 15 characters.</li>
+</ul>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

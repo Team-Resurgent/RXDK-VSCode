@@ -1,0 +1,366 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>CreateFile</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="CreateFile">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="CreateFile"/>
+<MSHelp:Keyword Index="F" Term="CreateFile"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_win32_createfile"></A>CreateFile</H1>
+
+<P>The <b>CreateFile</b> function creates or opens an object representing a directory, disk device, or file.  The function returns a handle that can be used to access the object.</p>
+
+<PRE class=syntax><B>HANDLE CreateFile(
+  LPCSTR</B><I> lpFileName</I><B>,                         </B> // file name
+<B>  DWORD</B><I> dwDesiredAccess</I><B>,                      </B>// access mode
+  <B>DWORD</B> <I>dwShareMode</I><B>,</B>          <B>              </B>  // share mode
+<B>  LPSECURITY_ATTRIBUTES</B><I> lpSecurityAttributes</I><B>,</B> // SD
+<B>  DWORD</B><I> dwCreationDisposition</I><B>,                </B>// how to create
+<B>  DWORD</B><I> dwFlagsAndAttributes</I><B>,                 </B>// file attributes
+<B>  HANDLE</B><I> hTemplateFile</I>         <B>              </B> // handle to template file
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>lpFileName</I></DT>
+
+<DD>[in] Pointer to a null-terminated string that specifies the name of the object to create or open.</DD>
+
+<DT><I>dwDesiredAccess</I></DT>
+
+<DD>[in] Specifies the type of access to the object. An application can obtain read access, write access, read/write access, or device query access. This parameter can be any combination of the following values. 
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=31%>Value</TH>
+<TH align=left width=69%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>0</TD>
+<TD width=69%>Specifies device query access to the object. An application can query device attributes without accessing the device.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>GENERIC_READ</TD>
+<TD width=69%>Specifies read access to the object. Data can be read from the file and the file pointer can be moved. Combine with GENERIC_WRITE for read/write access. </TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=31%>GENERIC_WRITE</TD>
+<TD width=69%>Specifies write access to the object. Data can be written to the file and the file pointer can be moved. Combine with GENERIC_READ for read/write access. </TD>
+</TR>
+</TABLE><BR>
+
+
+
+<P>In addition, you can specify the following access flags.  These are rarely used or needed.
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=46%>Value</TH>
+<TH align=left width=54%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=46%>GENERIC_EXECUTE</TD>
+<TD width=54%>The right to execute the object.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=46%>GENERIC_ALL</TD>
+<TD width=54%>All access rights.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=46%>DELETE</TD>
+<TD width=54%>The right to delete the object.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=46%>SYNCHRONIZE</TD>
+<TD width=54%>The right to use the object for synchronization. This enables a thread to wait until the object is in the signaled state. Some object types do not support this access right.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=46%>STANDARD_RIGHTS_REQUIRED</TD>
+<TD width=54%>Equivalent to DELETE access.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=46%>STANDARD_RIGHTS_ALL</TD>
+<TD width=54%>Combines DELETE and SYNCHRONIZE access.</TD>
+</TR>
+
+</TABLE><BR>
+
+</DD>
+
+<DT><I>dwShareMode</I></DT>
+
+<DD>[in] Specifies how the object can be shared. If <I>dwShareMode</I> is 0, the object cannot be shared. Subsequent open operations on the object will fail, until the handle is closed. 
+
+<P>To share the object, use a combination of one or more of the following values. 
+
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=35%>Value</TH>
+<TH align=left width=65%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>FILE_SHARE_DELETE</TD>
+<TD width=65%>Subsequent open operations on the object will succeed only if delete access is requested. </TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>FILE_SHARE_READ</TD>
+<TD width=65%>Subsequent open operations on the object will succeed only if read access is requested. </TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=35%>FILE_SHARE_WRITE</TD>
+<TD width=65%>Subsequent open operations on the object will succeed only if write access is requested. </TD>
+</TR>
+</TABLE><BR>
+
+</DD>
+
+<DT><I>lpSecurityAttributes</I></DT>
+
+<DD>[in] Ignored; use NULL.
+</DD>
+
+<DT><I>dwCreationDisposition</I></DT>
+
+<DD>[in] Specifies which action to take on files that exist, and which action to take when files do not exist. For more information about this parameter, see the Remarks section. This parameter must be one of the following values. 
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=38%>Value</TH>
+<TH align=left width=62%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=38%>CREATE_NEW</TD>
+<TD width=62%>Creates a new file. The function fails if the specified file already exists.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=38%>CREATE_ALWAYS</TD>
+<TD width=62%>Creates a new file. If the file exists, the function overwrites the file and clears the existing attributes.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=38%>OPEN_EXISTING</TD>
+<TD width=62%>Opens the file. The function fails if the file does not exist.
+<P>For a discussion of why you should use the OPEN_EXISTING flag if you are using the <B>CreateFile</B> function for devices, see Remarks.</P>
+</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=38%>OPEN_ALWAYS</TD>
+<TD width=62%>Opens the file, if it exists. If the file does not exist, the function creates the file as if <I>dwCreationDisposition</I> were CREATE_NEW.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=38%>TRUNCATE_EXISTING</TD>
+<TD width=62%>Opens the file. Once opened, the file is truncated so that its size is zero bytes. The calling process must open the file with at least GENERIC_WRITE access. The function fails if the file does not exist.</TD>
+</TR>
+</TABLE><BR>
+
+</DD>
+
+<DT><I>dwFlagsAndAttributes</I></DT>
+
+<DD>[in] Specifies the file attributes and flags for the file. 
+
+<P>Any combination of the following attributes is acceptable for the <I>dwFlagsAndAttributes</I> parameter, except all other file attributes override FILE_ATTRIBUTE_NORMAL. 
+
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=44%>Attribute</TH>
+<TH align=left width=56%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=44%>FILE_ATTRIBUTE_ARCHIVE</TD>
+<TD width=56%>The file should be archived. Applications use this attribute to mark files for backup or removal.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=44%>FILE_ATTRIBUTE_HIDDEN</TD>
+<TD width=56%>The file is hidden. It is not to be included in an ordinary directory listing.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=44%>FILE_ATTRIBUTE_NORMAL</TD>
+<TD width=56%>The file has no other attributes set. This attribute is valid only if used alone.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=44%>FILE_ATTRIBUTE_READONLY</TD>
+<TD width=56%>The file is read only. Applications can read the file but cannot write to it or delete it.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=44%>FILE_ATTRIBUTE_SYSTEM</TD>
+<TD width=56%>The file is part of or is used exclusively by the system software.</TD>
+</TR>
+
+</TABLE><BR>
+
+
+
+<P>Any combination of the following flags is acceptable for the <I>dwFlagsAndAttributes</I> parameter. 
+
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=48%>Flag</TH>
+<TH align=left width=52%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=48%>FILE_FLAG_OVERLAPPED</TD>
+<TD width=52%>This flag instructs the system to initialize the object so that operations that take a significant amount of time to process return ERROR_IO_PENDING. When the operation is finished, the specified event is set to the signaled state.  The Xbox does not support cached asynchronous I/O operations, so the FILE_FLAG_NO_BUFFERING flag must also be specified for true asynchronous file operation.</P>
+<P>When you specify FILE_FLAG_OVERLAPPED, the file read and write functions <I>must</I> specify an <A HREF="synchro_8tf6.htm">OVERLAPPED</A> structure. That is, when FILE_FLAG_OVERLAPPED is specified, an application <I>must</I> perform overlapped reading and writing.</P>
+
+<P>When FILE_FLAG_OVERLAPPED is specified, the system does not maintain the file pointer. The file position must be passed as part of the <I>lpOverlapped</I> parameter (pointing to an <B>OVERLAPPED</B> structure) to the file read and write functions.</P>
+
+<P>This flag also enables more than one operation to be performed simultaneously with the handle (a simultaneous read and write operation, for example).</P>
+</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=48%>FILE_FLAG_NO_BUFFERING</TD>
+<TD width=52%>Instructs the system to open the file with no intermediate buffering or caching. When combined with FILE_FLAG_OVERLAPPED, the flag allows asynchronous file operations because the I/O does not rely on the synchronous operations of the memory manager. However, some I/O operations will take longer, because data is not being held in the cache. 
+<P>An application must meet certain requirements when working with files opened with FILE_FLAG_NO_BUFFERING:
+
+<UL>
+	<LI>File access must begin at byte offsets within the file that are integer multiples of the volume's sector size.  The sector size of the hard disk is 512 bytes.  The sector size of the DVD ROM is two kilobytes (2 KB).  You can call <B>XGetDiskSectorSize</B> to determine the sector size of a given disk.</LI>
+
+	<LI>File access must be for numbers of bytes that are integer multiples of the volume's sector size. For example, if the sector size is 512 bytes, an application can request reads and writes of 512, 1024, or 2048 bytes, but not of 335, 981, or 7171 bytes. </LI>
+
+	<LI>Buffer addresses for read and write operations should be DWORD aligned.</LI>
+</UL>
+</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=48%>FILE_FLAG_RANDOM_ACCESS</TD>
+<TD width=52%>Indicates that the file is accessed randomly. The system can use this as a hint to optimize file caching.  This flag has no affect on files opened for asynchronous I/O.  This flag is ignored if FILE_FLAG_NO_BUFFERING is specified.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=48%>FILE_FLAG_SEQUENTIAL_SCAN</TD>
+<TD width=52%>Indicates that the file is to be accessed sequentially from beginning to end. The system can use this as a hint to optimize file caching. If an application moves the file pointer for random access, optimum caching may not occur; however, correct operation is still guaranteed.
+<P>Specifying this flag can increase performance for applications that read large files using sequential access. Performance gains can be even more noticeable for applications that read large files mostly sequentially, but occasionally skip over small ranges of bytes.</P>
+
+<P>This flag has no affect on files opened for asynchronous I/O.</P>
+</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=48%>FILE_FLAG_DELETE_ON_CLOSE</TD>
+<TD width=52%>Indicates that the system software is to delete the file immediately after all of its handles have been closed, not just the handle for which you specified FILE_FLAG_DELETE_ON_CLOSE. 
+<P>Subsequent open requests for the file will fail, unless FILE_SHARE_DELETE is used. </P>
+</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=48%>FILE_FLAG_BACKUP_SEMANTICS</TD>
+<TD width=52%>Indicates that the file being opened is a handle to a directory. A directory handle can be passed to some XTL functions in place of a file handle.</P>
+</TD>
+</TR>
+</TABLE><BR>
+</DD>
+
+<DT><I>hTemplateFile</I></DT>
+
+<DD>[in] Unsupported; must be NULL.</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is an open handle to the specified file. If the specified file exists before the function call and <I>dwCreationDisposition</I> is CREATE_ALWAYS or OPEN_ALWAYS, a call to <A HREF="errors_3uwi.htm">GetLastError</A> returns ERROR_ALREADY_EXISTS (even though the function has succeeded). If the file does not exist before the call, <B>GetLastError</B> returns zero. </P>
+
+<P>If the function fails, the return value is INVALID_HANDLE_VALUE. To get extended error information, call <B>GetLastError</B>. </P>
+
+<H4>Remarks</H4>
+
+<P>Use the <A HREF="handobj_289x.htm">CloseHandle</A> function to close an object handle returned by <B>CreateFile</B>.</P>
+
+<H4>Files</H4>
+
+
+
+<P>When creating a new file, the <B>CreateFile</B> function performs the following actions: 
+
+<UL>
+	<LI>Combines the file attributes and flags specified by <I>dwFlagsAndAttributes</I> with FILE_ATTRIBUTE_ARCHIVE. </LI>
+	<LI>Sets the file length to zero. </LI>
+</UL>
+
+<P>When opening an existing file, <B>CreateFile</B> performs the following actions: 
+
+<UL>
+	<LI>Combines the file flags specified by <I>dwFlagsAndAttributes</I> with existing file attributes. <B>CreateFile</B> ignores the file attributes specified by <I>dwFlagsAndAttributes</I>. </LI>
+	<LI>Sets the file length according to the value of <I>dwCreationDisposition</I>. </LI>
+</UL>
+
+<H4>Directories</H4>
+
+<P>An application cannot create a directory with <B>CreateFile</B>; it must call <A HREF="filesio_4sft.htm">CreateDirectory</A> to create a directory.</P>
+
+<P>You can obtain a handle to a directory by setting the FILE_FLAG_BACKUP_SEMANTICS flag. A directory handle can be passed to some functions in place of a file handle.</P>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Winbase.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib
+</p>
+
+<H4>See Also</H4>
+<P>
+
+<A HREF="xbox_mt_xtl_sll_file_io_functions.htm">File I/O Functions</A> | 
+<A HREF="handobj_289x.htm">CloseHandle</A>,
+<A HREF="filesio_4sft.htm">CreateDirectory</A>,
+<A HREF="filesio_8bso.htm">GetDiskFreeSpaceEx</A>,
+<A HREF="synchro_75v8.htm">GetOverlappedResult</A>,
+<A HREF="synchro_8tf6.htm">OVERLAPPED</A>,
+<A HREF="filesio_39id.htm">ReadFile</A>,
+<A HREF="memman_3elf.htm">VirtualAlloc</A>,
+<A HREF="filesio_3kkl.htm">WriteFile</A>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

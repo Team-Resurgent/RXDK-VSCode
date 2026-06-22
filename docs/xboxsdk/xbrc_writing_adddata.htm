@@ -1,0 +1,33 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Writing an AddData Function (XbRC)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Writing an AddData Function (XbRC)"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Writing an AddData Function (XbRC)</h1>
+<p>After writing the constructor, the next step to extend XbRC is to write the <b>addData</b> function for the class derived from <b>XBRCRawData</b> and call it from the <a href="xbrc_content_handler.htm#char">CXBParser::characters</a> member function. It is possible to have element data inside of the element in the XML file. For example, the XDX specification defines an index buffer element as follows: </p>
+<pre class="clsCode">
+&lt;IndexBuffer id="IndexBuffer1"&gt;0 1 2 2 1 3&lt;/IndexBuffer&gt;
+</pre>
+    <p>The data "0 1 2 2 1 3" is not set up during the constructor because it is not an attribute but actual element data. When the parser encounters element data, it calls the <b>CXBParser::characters</b> function. This function is also nothing more then a switch statement. It checks the current context's resource type and jumps to the case for that type. If the type has no case statement, it is not an error and the function returns. (Again, by default right now. It would be trivial to make this an error.) If the type does have a case statement, it calls the <b>addData</b> function of the container for that resource type. The reason it's a switch statement and doesn't just call <b>addData</b> automatically (which would work because <b>addData</b> is a virtual function) is to allow for some special handling of the data, if it's needed before calling <b>addData</b>. The <b>addData</b> function for the container parses the data out of the character string handed in. In the case of a cube map, there is no element data and, as such, this function just returns S_OK. In fact, it is never called, because there is no case defined in <b>CXBParser::characters</b>. For something such as index buffers, the <b>addData</b> function would be passed the wide-character string "0 1 2 2 1 3", and it would be up to the code at that point to parse out the indices and store them for the index buffer. The SAX parser can also call the <b>CXBParser::characters</b> function more than once for a given block of data. It is free to break data up into as many chunks as it wants to. Thus, <b>addData</b> must be written to handle being called more than once to handle multiple chunks of data.</p><h4><a name="seealso"></a>See Also</h4>
+<p><a href="xbrc_writing_constructor.htm">Previous Step</a>, <a href="xbrc_writing_needscompiling.htm">Next Step</a></p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

@@ -1,0 +1,230 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Antialiasing, Multisampling, and Supersampling</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Antialiasing%2c Multisampling%2c and Supersampling"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+  <MSHelp:Keyword Index="K" Term="antialiasing"/>
+  <MSHelp:Keyword Index="K" Term="multisampling"/>
+  <MSHelp:Keyword Index="K" Term="supersampling"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Antialiasing, Multisampling, and Supersampling</h1>
+<p><i>By Frank Savage, Development Lead, Xbox Advanced Technology Group</i></p>
+
+<p>This white paper describes the various ways the Xbox&reg; GPU custom-designed 
+by NVIDIA&reg; can antialias a scene.</p>
+<ul>
+<li><a href="#IDAUZM2">Multisample Modes</a></li><li><a href="#IDA41N2">Edge Antialiasing</a></li><li><a href="#IDAX4N2">Recommendations</a></li></ul>
+<h2><a name="IDAUZM2"></a>Multisample Modes</h2>
+<p>The first method for antialiasing a scene is to turn on one of the various multisample
+modes. These can produce very good results. Unfortunately, this method requires
+increasing the size of the back buffer, rendering the scene to the larger back buffer,
+and scaling it back down using one of the multisample or supersample filters
+when it is copied to the front buffer. This can be a big performance hit
+because the size increase of the back buffer requires much more fill processing
+by the Xbox GPU. Here are the multisample modes and the back buffer sizes each
+of them require.</p><table>
+ <tr>
+  <th>Multisample Mode</th>
+  <th>Back Buffer Size</th>
+  <th>Scalable Back Buffer</th>
+ </tr>
+ <tr>
+  <td>None</td>
+  <td>640&#0215;480</td>
+  <td>Yes</td>
+ </tr>
+ <tr>
+  <td>2x Multisample Linear Filter</td>
+  <td>1280&#0215;480</td>
+  <td>Yes</td>
+ </tr>
+ <tr>
+  <td>2x Multisample Quincunx Filter</td>
+  <td>1280&#0215;480</td>
+  <td>No</td>
+ </tr>
+ <tr>
+  <td>2x Supersample Linear Horizontal Filter</td>
+  <td>1280&#0215;480</td>
+  <td>Yes</td>
+ </tr>
+ <tr>
+  <td>2x Supersample Linear Vertical Filter</td>
+  <td>640&#0215;960</td>
+  <td>Yes</td>
+ </tr>
+ <tr>
+  <td>4x Multisample Linear Filter</td>
+  <td>1280&#0215;960</td>
+  <td>Yes</td>
+ </tr>
+ <tr>
+  <td>4x Multisample Gaussian Filter</td>
+  <td>1280&#0215;960</td>
+  <td>No</td>
+ </tr>
+ <tr>
+  <td>4x Supersample Linear Filter</td>
+  <td>1280&#0215;960</td>
+  <td>Yes</td>
+ </tr>
+ <tr>
+  <td>4x Supersample Gaussian Filter</td>
+  <td>1280&#0215;960</td>
+  <td>No</td>
+ </tr>
+ <tr>
+  <td>9x Multisample Gaussian Filter</td>
+  <td>1920&#0215;1440</td>
+  <td>No</td>
+ </tr>
+ <tr>
+  <td>9x Supersample Gaussian Filter</td>
+  <td>1920&#0215;1440</td>
+  <td>No</td>
+ </tr>
+</table>
+<h3><a name="IDAR3M2"></a>Supersample vs. Multisample</h3>
+<p>In multisample mode, each fragment is rendered once and copied to the extra
+fragments. In supersample mode, each fragment is rendered separately. The
+Xbox GPU needs to calculate four fragments for each resulting pixel on the
+front buffer in 4x mode (two fragments by two fragments). In multisample mode,
+one fragment is rendered and copied to the other three fragments.  In
+supersample mode, each of fragments would be rendered separately. The
+supersample mode will require more Xbox GPU cycles because it needs to render
+each fragment separately. Note that correct depth-buffer values and coverage
+information are generated for all fragments in both modes. Also, alpha blending
+occurs separately for each fragment in both modes.</p><h3><a name="IDAX3M2"></a>2x Modes</h3>
+<p>The 2x antialias modes can be useful if there is sufficient fill bandwidth available
+in the game. </p><p>The Horizontal and Vertical filter modes double the resolution along one axis of
+the screen. These modes can be useful if the scene has a lot of vertical or
+horizontal aliasing. </p><p>The Horizontal filter works by rendering each scan line at twice the resolution. It then averages the two pixels to get the final value. So, if the first pixel
+in the scan line is <i>a</i>, and the second pixel is <i>b</i>, the result
+written to the first pixel in the front buffer is (<i>a</i> + <i>b</i>)/2. </p><img src="images/antialias001.gif"><p>The Horizontal filter mode really cleans up the edges on vertical and diagonal
+edges that are close to being vertical. In the following figure, the closer
+the edges are to being horizontal, the less effective the filter is. This is a
+supersample mode, so each fragment is rendered by the Xbox GPU.</p><img src="images/antialias002.jpg"><p><i><b>Illustration</b>&nbsp;&nbsp;No Antialias 2x Supersample Linear Horizontal Filter</i></p>
+<p>The Vertical filter mode works by doubling the resolution in the vertical
+direction. Thus, there are actually two scan lines for each final scan line in
+the front buffer. The corresponding pixels on the two scan lines are averaged,
+and the result is written to the front buffer. So, if the first pixel in the
+first scan line is <i>a</i>, and the first pixel in the second scan line is <i>b</i>,
+the result written to the first pixel in the first scan line of the front
+buffer is (<i>a</i> + <i>b</i>)/2.</p><img src="images/antialias003.gif"><p>The Vertical filter mode really cleans up the edges on horizontal and diagonal
+edges that are close to being horizontal. In the next figure, the closer the
+edges are to being vertical, the less effective the filter is. This is a
+supersample mode, so each fragment is rendered by the Xbox GPU.</p><img src="images/antialias004.jpg"><p><i><b>Illustration</b>&nbsp;&nbsp;No Antialias 2x Supersample Linear Vertical Filter</i></p>
+<p>The Multisample Linear Filter works by drawing two lines per scan line, with the second line
+offset by half a pixel. It then averages the colors of the two lines at each pixel.</p><img src="images/antialias005.gif"><p>So, if the first pixel on the first of the two lines is <i>a</i>, and the first pixel of
+the second line is <i>b</i>, the resulting color copied to the front buffer is
+(<i>a</i> + <i>b</i>)/2. It gives good results, as
+illustrated below. The resolution of the back buffer is doubled in the
+vertical direction with this mode. Since this is a multisample mode, the
+fragments are rendered for fragment <i>a</i> and copied into fragment <i>b</i>.</p><img src="images/antialias006.jpg"><p><i><b>Illustration</b>&nbsp;&nbsp;No Antialias 2x Multisample Linear Filter</i></p>
+<p>The multisample Quincunx Filter also works by drawing two lines per scan line, with the second offset by half a pixel.  The resolution of the back buffer is doubled in the vertical direction.  The difference is in the way that the filter operates when it copies the back buffer to the front buffer.</p><img src="images/antialias007.gif"><p>The filter looks at five fragments in an X pattern and averages them according to the
+formula (<i>a</i> + <i>b</i> + 4*<i>c</i> + <i>d</i> + <i>e</i>)/8. This gives much better results then the straight linear filter at the cost of a much more complex mathematical operation per front buffer pixel. You can see the results in the following example.</p><img src="images/antialias008.jpg"><p><i><b>Illustration</b>&nbsp;&nbsp;No Antialias 2x Multisample Quincunx Filter</i></p>
+<p>This mode and the 2x multisample linear mode also dramatically impact z-buffer compression.  The reason is the fragments in every other scan line are offset by 0.7 pixels diagonally. As a result, the z-buffer cannot be compressed very well because the number of bits it stores for compression cannot cover the new gradients. To quote from Mike Abrash's white paper <a href="whitepaper_depth_buffer_compression_graphics.htm">Depth-Buffer Compression and Performance Implications</a>, "When we drew a full-screen quad in non-antialiased mode, we didn't lose compression until the z gradient from top to bottom went from 0 to 0.62. When we did the same in the two-sample multisampled mode, we lost compression when the z gradient went from 0 to 0.0005." This is very significant for pixel fill performance because the Xbox GPU reads the depth-buffer for occlusion culling at the start of the per-pixel pipeline and at the end of the pipeline if no occlusion occurred. The depth-buffer reads are 75 percent faster if the depth-buffer is compressed. The depth-buffer almost certainly won't be compressed in the 2x multisample modes, however, so we pay an additional penalty for every non-occluded pixel.  We also lose the early z reject with an uncompressed depth-buffer. The Performance Investigator for Xbox (PIX) shows the current compression levels in the depth-buffer; it also shows how badly this is hurting performance.</p><h3><a name="IDAHYN2"></a>4x Modes</h3>
+<p>The back buffer size for 4x modes is quite large (1280&#0215;960). Unless the game is underutilizing the fill capability of the Xbox GPU, these modes will probably not be useful. The frame rate hit will be large and almost certainly unacceptable. They do
+produce nice antialiased images, however.</p><p>All of the 4x modes increase the back buffer by two times in both the horizontal and
+vertical directions. The differences are in the filters used to copy the back
+buffer to the front buffer and in whether the fragments are created using the
+multisample or the supersample technique.</p><p>In 4x multisample linear mode, the filter simply averages the four fragments together
+(<i>a</i> + <i>b</i> + <i>c</i> + <i>d</i>)/4. Since it is a multisample mode,
+fragment <i>a</i> is rendered and then copied to fragments <i>b</i>, <i>c</i>, and
+<i>d</i>.</p><img src="images/antialias009.gif"><p>The result is shown in the following example.</p><img src="images/antialias010.jpg"><p><i><b>Illustration</b>&nbsp;&nbsp;No Antialias 4x Multisample Linear Filter</i></p>
+<p>In 4x multisample Gaussian mode, the filter is much more complex. Instead of
+averaging the results together, it uses this formula: </p><p>(<i>a</i> + 2*<i>b</i> + <i>c</i> + 2*<i>d</i> + 4*<i>e</i> + 2*<i>f</i> + <i>g</i> + 2*<i>h</i> + <i>i</i>)/16</p><img src="images/antialias011.gif"><p>The result is shown in the following example.</p><img src="images/antialias012.jpg"><p><i><b>Illustration</b>&nbsp;&nbsp;No Antialias 4x Multisample Gaussian Filter</i></p>
+<p>The 4x supersample linear mode simply averages the fragments together, as follows:</p><p>(<i>a</i> + <i>b</i> + <i>c</i> + <i>d</i>)/4.</p><p>Each fragment is rendered separately.</p><img src="images/antialias009.gif"><p>The result is shown in the following example. </p><img src="images/antialias013.jpg"><p><i><b>Illustration</b>&nbsp;&nbsp;No Antialias 4x Supersample Linear Filter</i></p>
+<p>This is the most bandwidth-intensive of the 4x modes. It uses a Gaussian filter and
+renders each fragment separately.</p><img src="images/antialias011.gif"><p>It also produces a nice antialiased image.</p><img src="images/antialias014.jpg"><p><i><b>Illustration</b>&nbsp;&nbsp;No Antialias 4x Supersample Gaussian Filter</i></p>
+<h3><a name="IDAN1N2"></a>9x Modes</h3>
+<p>The 9x antialias modes have no utility. The fill rate required is beyond the
+capabilities of the Xbox GPU. The memory requirements are interesting as
+well. A 9x back buffer using 32-bit color with a 32-bit depth/stencil buffer
+would require 1920 * 1440 * 8 bytes at 640&#0215;480 resolution. This is 22,118,400
+bytes. Since the Xbox has 64 MB of RAM, this consumes more then one third of
+the available memory for the back buffer alone! The 9x modes are included here
+for completeness.</p><img src="images/antialias015.jpg"><p><i><b>Illustration</b>&nbsp;&nbsp;No Antialias 9x Multisample Gaussian Filter</i></p><img src="images/antialias016.jpg"><p><i><b>Illustration</b>&nbsp;&nbsp;No Antialias 9x Supersample Gaussian Filter</i></p>
+<h2><a name="IDA41N2"></a>Edge Antialiasing</h2>
+<p></p>
+<h3><a name="IDAD2N2"></a>How it works</h3>
+<p>The Xbox GPU also has an edge antialiasing mode. When this mode is active, each polygon
+gets an alpha-blended edge.</p><img src="images/antialias017.jpg"><p>The above diagram shows how the edge is calculated.  The black is the polygon edge.  The grey fragments are partially covered by the polygon edge.  The Xbox GPU stores six bits of information about the amount the grey fragment is covered by the polygon edge.  It then converts this information into an alpha value for the fragment.  Thus, the grey fragments are drawn with alpha blending and 64 levels of alpha transparency, as determined by how much of the polygon edge covered the fragment.</p><p>This helps blend the edges into the background. Edges come out antialiased but without as
+much of the blur as in the multisample or supersample modes.</p><img src="images/antialias018.jpg"><p><i><b>Illustration</b>&nbsp;&nbsp;No Antialias Edge Antialias</i></p>
+<p>There are a number of important things to know about edge antialiasing. The following render
+states must be set for the polygons to be edge antialiased.</p><ul>
+ <li>D3DRS_ALPHABLENDENABLE must be TRUE.</li>
+ <li>D3DRS_MULTISAMPLEANTIALIAS must be FALSE.</li>
+ <li>D3DRS_EDGEANTIALIAS must be TRUE.</li>
+</ul>
+<p>Edge antialiasing works by adding an alpha edge to each polygon, which means there will
+be a wire frame set of artifacts if the objects are not rendered solid first. This happens because the alpha edges write to the depth-buffer just as the
+solid polygons do. The alpha edges take on the color behind them in the back buffer,
+so the color in the back buffer must be correct for that location. This is usually
+a win over the normal antialiasing modes because a larger back buffer is not
+needed to get antialiasing. Also, only the desired objects can be antialiased. Cars, for example, would not benefit from having this on for their windows because
+they are already alpha-blended (in theory!) and won't look any better with an
+alpha edge. </p><p>You would think a useful optimization would be to draw the edge-antialiased polygons in
+wire frame mode because we care only about the edges of the polygons. This should
+cut down significantly on the polygon fill requirement for the second pass. However, for reasons that are unclear, this runs about half as fast as drawing
+the entire polygon.</p><p>The ideal solution to this problem would be to draw only the edge polygons with edge
+antialiasing on after rendering the object un-aliased because only the edges will
+benefit from this. Determining the edges of an object is beyond the scope of
+this paper, but there are many interesting solutions to this problem on the Web.</p><h3><a name="IDAE3N2"></a>Caveat</h3>
+<p>Unfortunately, this method requires some advanced scene management because the scene behind
+the object to draw edge antialiased must be present in the back buffer. If it
+is not, the alpha edges will look very wrong when the scene does draw. Again,
+this is because the alpha edges also write to the depth buffer. Thus, if this
+method is used on the cars in a racing game, the track and any cars in front of
+the rendering car must already be in the back buffer or there will be edge
+artifacts. Most games need some kind of alpha sort anyway, so such scene
+management is generally straightforward to do. It can be difficult to add this
+at the last minute. Planning to use edge antialiasing and planning what
+objects will be edge antialiased will make edge antialiasing much easier to use
+and the game much better looking.</p><p>Also, note that only the edges will be antialiased. Textures with sharp lines in them that
+are not along a polygon edge, like decals on a car, will not benefit from using
+this mode.</p><h3><a name="IDAM3N2"></a>SetBackBufferScale</h3>
+<p>Another potential method of achieving some antialiasing in a scene is to shrink the back buffer slightly. The subsequent copy to the front buffer will put in some
+antialiasing when if filters the back buffer as it scales it up. See the below
+example screenshot. This is the result when the back buffer is scaled by 0.9
+in both the horizontal and vertical directions.</p><img src="images/antialias019.jpg"><p><i><b>Illustration</b>&nbsp;&nbsp;No Antialias Back Buffer Scale 0.9</i></p>
+<p>This has the added advantage of reducing the amount of fill bandwidth the scene is using. It is not free, since the scaled down back buffer must be filtered and expanded
+to the front buffer. The performance hit is smaller than even the simplest
+multisample or supersample mode.</p><p>It does look at bit blurry in the screenshot, but it's easy to test in-game to see if
+it's a win at all.</p><p>When calling <a href="_dx_idirect3d8_createdevice_graphics.htm">IDirect3D8::CreateDevice</a>, set the <b>BackBufferCount</b> member 
+of the <a href="_dx_d3dpresent_parameters_graphics.htm">D3DPRESENT_PARAMETERS</a> structure to 2 instead of 1. Right before clearing the 
+screen and the start of rendering, call <a href="_dx_idirect3ddevice8_setbackbufferscale_graphics.htm">IDirect3DDevice8::SetBackBufferScale</a> with the scale size of the buffer desired. Blurring out the HUD images (gauges, text, status displays, etc.) is undesirable, so call</p>
+<pre class="clsCode">
+    IDirect3DDevice8::Swap( D3DSWAP_COPY );
+</pre>
+    <p>first to copy and scale the current back buffer to the next back buffer in line. Then draw the HUD elements (gauges, text, status displays, and so on) and call</p>
+<pre class="clsCode">
+    IDirect3DDevice8::Swap( D3DSWAP_FINISH );
+</pre>
+    <p>This will do the final copy from the second back buffer to the front buffer. Call these instead of the usual call:</p>
+<pre class="clsCode">
+    IDirect3DDevice8::Present( NULL, NULL, NULL, NULL );
+</pre>
+    <p>See the Antialias sample for the exact source code used.</p><h2><a name="IDAX4N2"></a>Recommendations</h2>
+<p>If the game is a port from a different console and if there isn't a lot of time to change content to take advantage of the extra processing and graphics horsepower of the Xbox, try turning on the 4x modes. We've found that most games when ported to the Xbox with no content changes can use this mode and still run at their target frame rate. If the 4x modes don't run at the target frame rate, try the 2x Quincunx mode.</p><p>If you want antialiasing in the game, plan for its use up front. There is a performance cost paid for using the full screen antialias modes on the Xbox and many implementation issues related to using the edge antialias modes. Antialiasing, in any of its many modes, will be difficult to implement when the game is nearly complete.
+</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

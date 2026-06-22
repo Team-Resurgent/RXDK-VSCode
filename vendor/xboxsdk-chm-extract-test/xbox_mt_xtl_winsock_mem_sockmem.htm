@@ -1,0 +1,56 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<TITLE>Sockets and Memory</TITLE>
+
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Sockets and Memory"/>
+<MSHelp:Keyword Index="F" Term="Sockets and Memory"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR></TR>
+</TABLE>
+
+<H1 class="heading"><A NAME="xbox_mt_xtl_winsock_mem_sockmem"></A>Sockets and Memory</H1>
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<P>Because of the differences in how the Xbox network subsystem handles asynchronous memory allocations, there are a few considerations to keep in mind when planning how to initialize the network stack.  Based on how a game will use the network, it may need to change the way it calls <A HREF="xbox_xnetstartup_xsnl.htm"><B>XNetStartup</B></A> to insure that it has enough memory or isn't needlessly wasting memory.</P>
+
+<H2>Private Pool Memory and Number of Sockets Outstanding</H2>
+
+<P>By default, the Xbox network subsystem allocates a private pool of 48 KB and sets the receive buffer of all sockets to 16 KB.  In most circumstances, in which there are a relatively small number of open sockets and the game is making frequent calls to <B>recv</B> functions, the amount of memory used by the receive buffer of each socket will be substantially less than the 16-KB maximum.  This is because the Xbox network subsystem will only have to buffer a relatively small number of packets before the data in those packets is freed up by a call to a <B>recv</B> function.</P>
+
+<P>However, if there are several sockets receiving a large amount of incoming traffic in a relatively short amount of time and a game doesn't make calls to <B>recv</B> functions frequently enough, it is possibly that some incoming packets will have to be discarded because of a lack of memory in the Xbox network subsystem's private pool.</P>
+
+<H4>Private pool over-allocation example</H4>
+
+<P>Imagine a game that calls <B>XNetStartup</B> with the default parameters.  Now suppose this game creates four sockets (UDP or TCP) and begins receiving data on those sockets.  If those sockets receive a burst of incoming traffic and the game doesn't call any <B>recv</B> functions within a fairly short amount of time, it is possible that the total amount of memory taken up by the receive buffers of these sockets will grow to take up all the available private pool memory.  This is because, by default, each of these four sockets is being allowed to use 16 KB for its receive buffer.  If each of these sockets completely fills its receive buffer, that adds up to 64 KB, which is greater than the total 48 KB that is allocated by default by the Xbox network subsystem private pool.  So if this situation were to occur, a game might notice that a significant number of incoming packets were being dropped.
+</P>
+
+<P class="note"><B><I>Note</I></B>&nbsp;&nbsp;&nbsp;In debug builds, when an Xbox network subsystem memory allocation fails, the following will be output to the debugger:
+<PRE>     [XNET] PoolWarn: Pool allocation failed: X blocks</PRE>
+where X is the number of 32-byte blocks requested in the allocation that failed.</P></P>
+
+<H2>Additional Issues with TCP Sockets</H2>
+
+One note to keep in mind is that TCP connections will always advertise a receive window based on the receive buffer that they have been configured with, regardless of whether there is enough free memory in the private pool to satisfy the maximum amount of incoming data allowed by that window.  For example, say that we are using the default Xbox network subsystem parameters so that we have 48 KB of private pool memory.  Then suppose a game connects four TCP sockets and begins receiving data on them.  Each of these sockets will advertise a window based on the default receive buffer size.  So the sum of the receive windows advertised will add up to a little over 64 KB.  However, if each socket begins to reach its receive buffer limit, the Xbox network subsystem private pool will be depleted before all of the sockets begin advertising a zero window.  Hence, some sockets may still be telling the remote side of the connection that they can accept more data, when in fact they cannot.  Of course, given the fact that TCP is a reliable protocol, any packets that are dropped by the network subsystem due to lack of memory should be retransmitted by the remote side of the connection when no ACK is received.
+
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

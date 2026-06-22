@@ -1,0 +1,193 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XNetQosLookup</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XNetQosLookup"/>
+<MSHelp:Keyword Index="F" Term="XNetQosLookup"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XNetQosLookup</h1>
+<p>
+            The <b>XNetQosLookup</b> function is called by a title to probe the quality of 
+            service (QoS) between itself and specified remote hosts. The remote hosts can be 
+            Xbox consoles, security gateways, or both.
+        </p>
+<pre class="syntax" xml:space="preserve"><b>INT</b> <b>XNetQosLookup(</b>
+    <b>UINT</b> <i>cxna</i><b>,</b>
+    <b>XNADDR *</b> <i>apxna[]</i><b>,</b>
+    <b>XNKID *</b> <i>apxnkid[]</i><b>,</b>
+    <b>XNKEY *</b> <i>apxnkey[]</i><b>,</b>
+    <b>UINT</b> <i>cina</i><b>,</b>
+    <b>IN_ADDR</b> <i>aina[]</i><b>,</b>
+    <b>DWORD</b> <i>adwServiceId[]</i><b>,</b>
+    <b>UINT</b> <i>cProbes</i><b>,</b>
+    <b>DWORD</b> <i>dwBitsPerSec</i><b>,</b>
+    <b>DWORD</b> <i>dwFlags</i><b>,</b>
+    <b>WSAEVENT</b> <i>hEvent</i><b>,</b>
+    <b>XNQOS * *</b> <i>ppxnqos</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+
+            <dt><i>cxna</i></dt>
+
+                <dd>
+Number of remote Xbox consoles to probe.
+                </dd>
+
+            
+            <dt><i>apxna[]</i></dt>
+
+                <dd>
+Array of pointers to <a href="xbox_xnaddr_xsnl.htm">XNADDR</a> structures that contain Xbox
+network addresses for the remote Xbox consoles.
+                </dd>
+
+            
+            <dt><i>apxnkid[]</i></dt>
+
+                <dd>
+Array of pointers to <a href="xbox_xnkid_xsnl.htm">XNKID</a> structures that contain session IDs for
+the remote Xbox consoles. The title on the local Xbox console need not register
+these session IDs with <a href="xbox_xnetregisterkey_xsnl.htm">XNetRegisterKey</a>.
+                </dd>
+
+            
+            <dt><i>apxnkey[]</i></dt>
+
+                <dd>
+Array of pointers to <a href="xbox_xnkey_xsnl.htm">XNKEY</a> structures that contain key-exchange
+keys for the remote Xbox consoles.
+                </dd>
+
+            
+            <dt><i>cina</i></dt>
+
+                <dd>
+Number of security gateways to probe.
+                </dd>
+
+            
+            <dt><i>aina[]</i></dt>
+
+                <dd>
+Pointer to an array of <a href="xbox_in_addr_winsock.htm">IN_ADDR</a> structures
+that contain the IP addresses of the security gateways.
+                </dd>
+
+            
+            <dt><i>adwServiceId[]</i></dt>
+
+                <dd>
+Pointer to an array of service IDs for the security gateways. The title on the
+local Xbox console need not call <a href="xbox_xnetservertoinaddr_xsnl.htm">XNetServerToInAddr</a> with these
+service IDs.
+                </dd>
+
+            
+            <dt><i>cProbes</i></dt>
+
+                <dd>
+Number of desired probe replies to be received. Each probe
+involves sending two 100-byte packets to the host and receiving two 100-byte
+packets in return.  If the desired number of probe replies has not been received,
+the QoS client sends more probes. The larger the number specified by <i>cProbes</i>, the longer the QoS lookup takes.  The recommended value for <i>cProbes</i> is eight. To test only for connectivity&#8212;that is, to find out whether
+the remote host is active&#8212;the title can set <i>cProbes</i> to zero.
+                </dd>
+
+            
+            <dt><i>dwBitsPerSec</i></dt>
+
+                <dd>
+Maximum upstream bandwidth that the outgoing QoS probe packets can
+consume. Specifying zero will use the default of 16,384 bps (16 Kbps).
+Decreasing the value of <i>dwBitsPerSec</i> extends the time it takes
+to complete all of the probes. Increasing this value speeds up the process. A
+title should limit this value to a maximum of 65,536 (64 Kbps) to prevent
+consuming all the upstream bandwidth on a cable modem or DSL line.
+                </dd>
+
+            
+            <dt><i>dwFlags</i></dt>
+
+                <dd>
+The title should set this parameter to zero; no flags are currently supported.
+                </dd>
+
+            
+            <dt><i>hEvent</i></dt>
+
+                <dd>
+Handle to an event that is signaled whenever any of the <a href="xbox_XNQOSINFO_xsnl.htm">XNQOSINFO</a>
+structures in the result set has the XNET_XNQOSINFO_COMPLETE flag set in its 
+<b>bFlags</b> member. This parameter is optional and may be NULL.
+                </dd>
+
+            
+            <dt><i>ppxnqos</i></dt>
+
+                <dd>
+Pointer to a pointer to an <a href="xbox_XNQOS_xsnl.htm">XNQOS</a> structure that receives the
+results from the QoS probes. The value of the <b>cxnqos</b> member of
+this structure is equal to the sum of the <i>cxna</i> and <i>cina</i>
+parameters. The <b>axnqosinfo</b> member of the <b>XNQOS</b> structure
+points to an array of <b>XNQOSINFO</b> structures. Each <b>XNQOSINFO</b> structure
+contains the results for a single remote host. In the array, the structures for
+the remote Xbox consoles come before the structures for the security gateways.
+The structures are in the same order as that specified in the <i>apxna</i>
+and <i>apina</i> parameters. The title must call <a href="xbox_XNetQosRelease_xsnl.htm">XNetQosRelease</a> 
+to free the memory associated with these structures.
+                </dd>
+
+            
+
+        </dl>
+<h4><a name="return"></a>Return Values</h4>Returns zero if successful, an error code otherwise.<h4><a name="remarks"></a>Remarks</h4>
+            <p>
+                The <b>XNetQosLookup</b> function is asynchronous. The function returns 
+                immediately even though the QoS probes are still in progress. For each of the <b>XNQOSINFO</b> 
+                structures pointed to by the <b>XNQOS</b> structure, the calling application 
+                must check the value of the <b>bFlags</b> member to determine whether the 
+                results for that remote host have been received.
+            </p>
+            <p>
+                To cancel the lookup before it is complete, your program can call <b>XNetQosRelease</b>. 
+                This terminates the lookup immediately without waiting for any further network 
+                traffic, and there are no side effects. However, your program cannot dereference 
+                the <b>XNQOS</b> structure returned through the <b>XNetQosLookup</b> function's <i>ppxnqos</i> 
+                parameter after calling <b>XNetQosRelease</b>.
+            </p>
+        <h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Winsockx.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib or xnets.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+            <p>
+                <a href="xbox_secure_network_library_functions_xsnl.htm">Xbox Secure Network Library Functions</a> | <a href="xbox_XNetQosListen_xsnl.htm">XNetQosListen</a>,
+                <a href="xbox_XNetQosRelease_xsnl.htm">XNetQosRelease</a>
+            </p>
+
+        <div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

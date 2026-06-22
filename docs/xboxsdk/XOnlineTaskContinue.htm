@@ -1,0 +1,110 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineTaskContinue</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineTaskContinue"/>
+<MSHelp:Keyword Index="F" Term="XOnlineTaskContinue"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineTaskContinue</h1>
+<p>Performs a single time slice of work on a pending asynchronous task.</p>
+<pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineTaskContinue(</b>
+    <b>XONLINETASK_HANDLE</b> <i>hTask</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+<dt><i>hTask</i></dt>
+<p><dd>[in]  Task handle of the task for which work is to be done. This handle
+must have been returned by a previous call to a function that creates
+asynchronous tasks.</dd>
+<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;A task handle that was created on a different thread should not be passed to <b>XOnlineTaskContinue</b>.</p>
+</p>
+
+</dl>
+<h4><a name="return"></a>Return Values</h4>
+<p>The function returns either a general code indicating the status of the task, or
+a task-specific result code when the task has completed or when an error has
+occurred. The general result codes are:</p>
+<table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>XONLINETASK_S_RESULTS_AVAIL</td>
+<td>The task is still running, but results
+are available.</td>
+</tr>
+<tr>
+<td>XONLINETASK_S_RUNNING</td>
+<td>The task is still running.</td>
+</tr>
+<tr>
+<td>XONLINETASK_S_SUCCESS</td>
+<td>The task has completed successfully.</td>
+</tr>
+</table>
+<p>For tasks that have completed or that have encountered an error, task-specific codes can be returned. See specific functions that create tasks for other possible return codes.</p>
+
+<h4><a name="remarks"></a>Remarks</h4>
+	<p>All Xbox online functions that have a parameter that returns an <b>XONLINETASK_HANDLE</b> handle create asynchronous tasks to perform work rather than blocking and performing the work synchronously. Once created, the task handle is then passed to <b>XOnlineTaskContinue</b> when the title has some spare cycles and needs to perform some online work&#8212;for example, when the title is waiting for the next flip or while the title is stalled waiting for the graphics push buffer to clear.</p> 
+
+	<p>Additionally, the title can use multiple calls to <b>XOnlineTaskContinue</b> to spread a burst of network activity across several video frames to help stabilize the frame rate. Multiple pending asynchronous tasks can also be processed by a single section of code that calls <b>XOnlineTaskContinue</b> for each task in turn.</p>
+
+	<p>When the work required for the task has been completed, <b>XOnlineTaskContinue</b> returns XONLINETASK_S_SUCCESS, indicating that the task is finished and no further calls to <b>XOnlineTaskContinue</b> should be made for that task. Depending on the specific online task involved, additional task-specific functions may need to be called at that point to retrieve the results of the task.</p>
+
+<p>For some tasks, <b>XOnlineTaskContinue</b> returns XONLINETASK_S_RESULTS_AVAIL to indicate that the task is not complete but that partial results are available. At this point, a task-specific function (for example, 
+<a href="XOnlineOfferingEnumerateGetResults.htm">XOnlineOfferingEnumerateGetResults</a>) is called to retrieve the results. The title then continues processing the task with further calls to <b>XOnlineTaskContinue</b>.</p>
+
+<p>If the task is still running, <b>XOnlineTaskContinue</b> returns XONLINETASK_S_RUNNING. In this case, as time permits, the title should continue calling <b>XOnlineTaskContinue</b> to continue processing the task.</p>
+
+<p>Some tasks provide other return codes to indicate success or progress states. These return codes are discussed in the documentation for the functions that create those specific tasks.</p>
+
+<p>If an error occurs while a task is being processed, the error is returned by <b>XOnlineTaskContinue</b> when <b>XOnlineTaskContinue</b> is called by the title to
+work on the task. Specific error codes vary from task to task and are found in
+the Xonline.h header file in the list of online error codes (the list begins with
+XONLINE_E).</p>
+
+<p>By design, some tasks never run to completion and are instead called regularly
+to perform updates or other processing. Typically, <b>XOnlineTaskContinue</b>
+should be called once per frame for those tasks. In this case, it continues to return XONLINETASK_S_RUNNING.</p>
+ 
+<p>The exact amount of time and work performed for each call to <b>XOnlineTaskContinue</b> varies by task. The time allotment is designed to be sufficient to make some progress on the task without causing undue delays.</p>
+
+<p>After a task has completed, and when the data resulting from completion of that
+task (if the data was applicable) is no longer needed, call the <a href="XOnlineTaskClose.htm">XOnlineTaskClose</a> function to close the task handle and free all associated resources.</p>
+
+<p>Periodically calling <b>XOnlineTaskContinue</b> is often referred to as <i>pumping</i> a task, and the asynchronous task architecture as the <i>online task pump</i>.</p>
+
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p>
+<a href="x_mt_xonline_functions.htm">Xbox Live Functions</a> | <a href="XOnlineTaskClose.htm">XOnlineTaskClose</a>, <a href="XOnlineOfferingEnumerateGetResults.htm">XOnlineOfferingEnumerateGetResults</a>
+</p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

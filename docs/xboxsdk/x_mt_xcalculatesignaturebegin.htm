@@ -1,0 +1,163 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>XCalculateSignatureBegin</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="XCalculateSignatureBegin">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XCalculateSignatureBegin"/>
+<MSHelp:Keyword Index="F" Term="XCalculateSignatureBegin"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="_xbox_xcalculatesignaturebegin"></A>XCalculateSignatureBegin</H1>
+
+<P>Begins the process of calculating a signature over a save game or other data set.  Use <B>XCalculateSignatureBegin</B> to calculate a signature for data saved to the hard disk or memory units.</P>
+
+<PRE class=syntax><B>HANDLE XCalculateSignatureBegin(</B>
+  <B>DWORD</B> <I>dwFlags</I>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>dwFlags</I></DT>
+<DD>[in] Value indicating how the signature should be calculated.  Must be one of the following:
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=31%>Value</TH>
+<TH align=left width=69%>Meaning</TH>
+</TR>
+
+<tr><td>XCALCSIG_FLAG_SAVE_GAME</td><td>Use the title-specific key to calculate a signature over a save game or other data set.</td></tr>
+
+<TR VALIGN="top">
+<TD width=31%>XCALCSIG_FLAG_NON_ROAMABLE</TD>
+<TD width=69%>Use the title-specific key to calculate a signature over a save game or other data set, in such a way that the data is non-roamable&#8212;that is, the data/signature pair is valid only on the current Xbox console.</TD>
+</TR>
+
+<tr><td>XCALCSIG_FLAG_CONTENT</td><td>Calculate a content signature for verification of downloaded content.  Matches signatures created by the <a href="xbox_mt_tool_xbldsigs.htm">XBldSigs</a> and <a href="xbox_jbh_tool_online_buildcontent.htm">BuildOffer</a> tools, and by the <a href="XCalculateContentSignature.htm">XCalculateContentSignature</a> function.</td></tr>
+<tr><td>XCALCSIG_FLAG_DIGEST</td><td>Calculate a digest over a data set.  The digest, along with the Xbox <i>Live</i> signature of the digest, can be submitted to the Xbox <i>Live</i> signature service for verification.</td></tr>
+<tr><td>XCALCSIG_FLAG_ONLINE</td><td>Use the Xbox <i>Live</i> key to calculate a signature over a data set (usually a digest).  This signature is written to storage along with the data, and can be submitted to the Xbox <i>Live</i> signature service for verification.</td></tr>
+</TABLE>
+
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If the function succeeds, the return value is a signature handle that can be used in subsequent calls to <A HREF="x_mt_xcalculatesignatureupdate.htm">XCalculateSignatureUpdate</A> and <A HREF="x_mt_xcalculatesignatureend.htm">XCalculateSignatureEnd</A>.</P>
+
+<P>If the function fails, the return value is INVALID_HANDLE_VALUE.  To get extended error information, call <A HREF="errors_3uwi.htm">GetLastError</A>.</P>
+
+<H4>Remarks</H4>
+
+<p>This function opens a signature calculation handle in preparation for calculating a signature over a data set.  Data is added to the running hash with calls to <B>XCalculateSignatureUpdate</B>.  Multiple calls to add data can be made if desired, and then the hash is completed (and in some cases signed) with a call to <B>XCalculateSignatureEnd</B>.</p>
+
+<P>After calling <B>XCalculateSignatureBegin</B>, use the returned handle in calls to <B>XCalculateSignatureUpdate</B> to add the data for which the signature will be calculated, and then finally call <B>XCalculateSignatureEnd</B> to complete signature calculation and to free the signature handle and other resources associated with the signature.</P>
+
+<P>The size of the calculated signature varies depending on the signature type.  Call <a href="XCalculateSignatureGetSize.htm">XCalculateSignatureGetSize</a> to determine the signature size, allocate an appropriately sized buffer, and pass that buffer to <B>XCalculateSignatureEnd</B> to retrieve the calculated signature.</P>
+
+<p><B>XCalculateSignatureBegin</B> calculates signatures over data using various keys and digest methods.  The <i>dwFlags</i> parameter specifies the type of signature or calculated digest.  The three signature types are save game signatures, content signatures, and Xbox <i>Live</i> signatures.</p>
+
+<H4>Save Game Signatures</H4>
+
+<P>Use save game signatures to sign and verify data (a save game, for example) that is written to Xbox storage and later used in offline or system-link play (in other words, while not connected to the Xbox Live service).</p>
+
+<p>When calculating a save game signature, a hash is computed over the data and the hash is signed using a per-title key.  Only data that has not been tampered with and that is signed by the current title will compute to the same signature.  A title can save a game along with the calculated signature for that game, and then, while later loading the game, recalculate a signature for the loaded data and verify that the signatures match.</P>
+
+<P>If XCALCSIG_FLAG_NON_ROAMABLE is specified, the hash is additionally signed by a key unique to the current Xbox console.  The data will compute to a different signature on any other console, thus will only be valid on the initial console that first performs the calculation and writes the data.  For example, if a save game was signed and the game and its signature written to an MU, and that MU taken to another Xbox console, and a player attempted to load the save game on the new console, the signature would <I>not</I> match and the game title should fail the load of that save game.</P>
+
+<!-- omit 
+<P>Note that the content signing key is identical on all development and 'debug' consoles (as opposed to retail consoles).  Content can be copied between all development and debug consoles without failure, even if the XCALCSIG_FLAG_NON_ROAMABLE flag is specified.</P> -->
+
+<P>For more information about save games and save game signing, See the <b>Save Game Signing</b> section of <A HREF="x_mt_softarch_xtl_services.htm">XTL Services</A>, the <A HREF="xbox_jbh_samp_refui_loadsave.htm">LoadSave Sample</A>, the <A HREF="xbox_jbh_samp_techcertgame.htm">Xbox Technical Certification Game</A>, and <A HREF="x_mt_input_ov_savegame.htm">Save Games</A>.</p>
+
+<H4>Content Signatures</H4>
+
+<p>To verify content downloaded through the Xbox <i>Live</i> service or from a game disc, use content signatures.</p>
+<ul>
+<li>Specify XCALCSIG_FLAG_CONTENT in <I>dwFlags</I> to compute a content signature over the content,</li>
+<li>Use <a href="XLoadContentSignatures.htm">XLoadContentSignatures</a> to retrieve a signature from the content's signed metadata file, and then</li>
+<li>Compare the computed signature with the retrieved signature.</li>
+</ul>
+
+<p>The <b>XCalculateContentSignature</b> function computes the same signature that is computed when XCALCSIG_FLAG_CONTENT is used.  <b>XCalculateContentSignature</b> computes the signature over an in-memory data set with a single call.By contrast, <B>XCalculateSignatureBegin</B> permits repeated calls to <B>XCalculateSignatureUpdate</B>, over smaller portions of the data set, so that the entire data set does not have to be in memory at one time.  Signatures can thus be computed over files that are larger than the amount of available physical memory.</p>
+
+<p>For more information, see <a href="x_mt_storage_ov_signatures.htm">Content Signatures</a> and <a href="xbox_Live_Downloading.htm">Downloading Content from Xbox Live</a>.</p>
+
+<H4>Xbox Live Signatures</H4>
+
+<p>Content or data that will ever be uploaded to the Xbox <i>Live</i> service after first being written to the hard disk requires an extra level of security beyond that used for save game signing.  Xbox <i>Live</i> signatures are similar to save game signatures in that they are used to sign data that will be written to storage, but differ in that the signature is stronger and contains additional information.  Xbox <i>Live</i> signatures:</p>
+
+<ul>
+<li>Use an Xbox <i>Live</i> key that is available only to titles while they are connected to Xbox <i>Live</i>.</li>
+<li>Contain information about the title, Xbox, users, and the time at which the data was signed.</li>
+<li>Can be expired or denied by the signature service at some time after the signature was issued (in response to a security issue, for example).</li>
+</ul>
+
+<p>To sign data that will be written to the hard disk:</p>
+<ul>
+<li>Use XCALCSIG_FLAG_ONLINE to calculate a signature over the data.</li>
+<li>Save the calculated signature to the hard disk along with the data.
+</ul>
+
+<p><b>XCalculateSignatureBegin</b> begins the calculation process, <a href="x_mt_xcalculatesignatureupdate.htm">XCalculateSignatureUpdate</a> updates the running digest, and <a href="x_mt_xcalculatesignatureend.htm">XCalculateSignatureEnd</a> computes the signature over the digest.  A running digest can be computed in memory as the data is being  written to the hard disk, and, when the data is complete, the digest signed and written to disk alongside the data.</p>
+
+<p>Using XCALCSIG_FLAG_ONLINE requires that:</p>
+<ul>
+<li>The title is currently logged onto the Xbox <i>Live</i> service.</li>
+<li>The XONLINE_SIGNATURE_SERVICE service ID was specified when the title called <a href="XOnlineLogon.htm">XOnlineLogon</a>, and a connection was successfully made to the signature service.</li>
+<li>The title linked with xonlines.lib.</li>
+</ul>
+
+<p>Before using previously stored data or uploading that data to the Xbox <i>Live</i> service, verify the data:</p>
+<ul>
+<li>Load the data and the Xbox <i>Live</i> signature saved with the data.
+<li>Use XCALCSIG_FLAG_DIGEST to calculate a digest over the data.</li>
+<li>Verify that the signature and data are valid by calling <a href="XOnlineSignatureVerify.htm">XOnlineSignatureVerify</a> with the Xbox <i>Live</i> signature and the calculated digest.</li>
+</ul>
+
+<p>Data read from volatile storage (the hard disk or memory units) may be uploaded to the Xbox <i>Live</i> service or used online only if that data was initially stored with an Xbox <i>Live</i> signature, and then verified as valid, at the time of use or upload, with <b>XOnlineSignatureVerify</b>.</p>
+
+<p>Note that it may be desirable to sign data using both a save game signature and an Xbox <i>Live</i> signature, so that the data could be used both offline and online.  Data signed only with an Xbox <i>Live</i> signature would be usable only while online, because the signature service is required in order to verify the signature with <b>XOnlineSignatureVerify</b>.</p>
+
+<p>For more information, see <a href="x_mt_storage_ov_live_signatures.htm">Xbox Live Signatures</a>.</p>
+
+<h4>Requirements</h4>
+<p>
+<b>Header: </b>Declared in Xbox.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xapilib.lib</p>
+
+<H4>See Also</H4>
+<P>
+<A HREF="x_mt_storage_oview.htm">Storage Overview</A>,
+<A HREF="x_jsk_storage_functions.htm">Storage Functions</A>,
+<a href="x_mt_storage_ov_live_signatures.htm">Xbox Live Signatures</a> |
+<a href="XCalculateSignatureGetSize.htm">XCalculateSignatureGetSize</a>,
+<A HREF="x_mt_xcalculatesignatureupdate.htm">XCalculateSignatureUpdate</A>,
+<A HREF="x_mt_xcalculatesignatureend.htm">XCalculateSignatureEnd</A>,
+<a href="XOnlineSignatureVerify.htm">XOnlineSignatureVerify</a>
+</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

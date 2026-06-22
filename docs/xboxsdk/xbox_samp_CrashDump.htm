@@ -1,0 +1,73 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>CrashDump Sample</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="CrashDump Sample"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>CrashDump Sample</h1>
+<p>The CrashDump sample demonstrates how the Xbox crash dump system works.</p>
+
+<h2><a name="IDAQAYK"></a>Overview</h2>
+<p>Like Win32, the Xbox provides crash dump information that you can use to debug 
+applications.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;Crash dump information from the Xbox is not compatible with WinDBG.</p><h2><a name="IDAYAYK"></a>Path</h2>
+<p>Source: (XDK Root)\Samples\Xbox\Misc\CrashDump</p><h2><a name="IDA4AYK"></a>Remarks</h2>
+<p>You must copy the contents of the Media directory to the target Xbox before 
+running this sample.</p><p>For proper generation of crash dump information, ensure that your Xbox is 
+using the August 2002 or later version of XbDM. If you aren't sure what version 
+you're using, run the August 2002 or later XDKRecovery application to update 
+your Xbox.</p><p>Make sure you don't have a kernel debugger (such as KD or WinDBG) connected 
+to your Xbox. (If you do, the bug check will be caught by that debugger, rather 
+than generate a crash dump.)</p><p>Note that when you build and run the CrashDump sample, the 
+<b>Vertical Blank Count</b> field on the Xbox screen  
+increments continuously. Press the <b>A</b> button on your Xbox game controller to 
+cause the application to perform a bug check by dereferencing a null pointer 
+during a vertical blank interrupt callback. After you do this, the 
+<b>Vertical Blank Count</b> field no longer increments.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;If you have a kernel debugger (such as KD or WinDBG) connected to your 
+Xbox when you press the <b>A</b> button, you get a breakpoint in that debugger that 
+allows you to debug the bug check. If you don't have a kernel debugger connected 
+to your Xbox, XbDM writes out a crash dump that you can use to debug the 
+problem using Visual Studio .NET.</p><p>It takes about two minutes for the Xbox to write a crash dump and return to the
+XDK Launcher. During that time the Xbox's LEDs flash various red and green 
+patterns.</p><p>If you have the Visual Studio .NET debugger attached when the crash occurs, 
+the VS.NET debugger eventually notices that the Xbox has crashed and ends the 
+debugging session.</p><p>After the Xbox finishes writing the crash dump, it return to XDK Launcher. 
+When this happens, copy the crash dump file from the Xbox
+to the development PC. The crash dump file is located at</p>
+<pre class="clsCode">
+xe:\crashdump.xdmp
+</pre>
+    <p>To make it easier for Visual Studio .NET to find the symbols for the 
+application, copy the crash dump to the same directory as your 
+application's PDB file. For the CrashDump sample, the path is similar to the 
+following.</p>
+<pre class="clsCode">
+C:\Program Files\Microsoft Xbox SDK\Samples\Xbox\Misc\CrashDump\Debug
+</pre>
+    <p>To debug the crash dump:</p><ol>
+	<li>Start Visual Studio .NET.</li>
+	<li>Choose <b>File:Open Project</b> from the Visual Studio .NET menus.</li>
+	<li>Open the crashdump.xdmp file.</li>
+	<li>Press <b>F5</b> to begin debugging the crash dump.</li>
+</ol>
+<p>When the sample starts, it displays a dialog box describing what caused the 
+crash dump. You can then use the standard debugger features (such as the stack 
+crawl window) to determine what caused the crash.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

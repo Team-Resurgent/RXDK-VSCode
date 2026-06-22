@@ -1,0 +1,237 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>Dealing with Media Defects and
+Errors</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Dealing with Media Defects and Errors"/>
+<MSHelp:Keyword Index="F" Term="Dealing with Media Defects and Errors"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>Dealing with Media Defects and
+Errors</H1>
+
+<!--***********************************************************-->
+
+<!--****Intro paragraph. Should be a three or four sentence summary of the topic.****-->
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Verdana'>This
+white paper describes the behavior of the Xbox&#174; video game system from Microsoft&#174;
+when media defects are present on an Xbox Game Disc, as well as recommendations
+for minimizing the impacts of these errors within your game.</span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal><b><span style='font-size:10.0pt;font-family:Verdana'>The
+Issue</span></b></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Verdana'>Disc
+media in any consumer electronics device is often subject to a wide variety of
+real-world handling issues that produce defects not present on a pristine
+manufactured disc. Fingerprints, smudges, scratches, and worse can all reduce
+the readability of data on the media. On the Xbox, this can be exacerbated
+both by the dual-layer nature of the Xbox Game Disc and by the high speed of
+the drive&#8212;especially on the outer edge. </span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Verdana'>The Xbox,
+through both hardware and software, attempts to compensate for media defects
+(described in detail below). It is important to understand how this affects
+your game and what you can do to compensate.</span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal><b><span style='font-size:10.0pt;font-family:Verdana'>System
+Error Handling</span></b></p>
+
+<p class=MsoNormal><b><span style='font-size:10.0pt;font-family:Verdana'>&nbsp;</span></b></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Verdana'>The Xbox
+contains a constant angular velocity (CAV) disc drive. In this type of a drive,
+data is read at the highest rate on the outside edge, and the speed decreases
+linearly as you move toward the inner circumference. On the Xbox, this speed
+will range from approximately 3 MB/sec on the interior of the disc to 6 MB/sec
+on the outer edge.<br>
+<br>
+</span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Verdana'>Because
+of this, it makes a lot of sense to place data on the outer edge of the disc in
+order to get the highest transfer rate. However, because of the higher transfer
+rate, this also means that the system has the least amount of time to react to
+and correct errors. Therefore, this area of the drive is the most likely to be
+susceptible to media errors. </span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Verdana'>Internally,
+the driver has three settings for spindle speed: minimum, maximum, and medium.
+The default spindle speed is always maximum. In the case of certain media
+defects, the drive returns various errors that cause the IDE driver to slow the
+spindle speed down (first to medium, and then to minimum speed). Once the speed
+is lowered, a certain number of sectors must be successfully read before the
+driver advances the spindle speed. If the drive is operating at minimum speed,
+a read of 4,096 sectors is required. At medium speed, 8,192 sectors are
+required. If the drive is ratcheted down to minimum spindle speed, it must
+travel through medium speed before returning to maximum speed. At minimum
+speed, the throughput is approximately 33 percent of maximum spindle speed. Medium
+speed is approximately 66 percent of maximum speed.</span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal><b><span style='font-size:10.0pt;font-family:Verdana'>Testing
+Your Title</span></b></p>
+
+<p class=MsoNormal><b><span style='font-size:10.0pt;font-family:Verdana'>&nbsp;</span></b></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Verdana'>Although
+defects (especially those related to handling) are a normal aspect of optical
+media such as CDs, DVDs, and Xbox Game Discs, the errors can result in
+degradation of performance. The speed can be reduced up to 66 percent in the
+case of a severe enough scratch or fingerprint. While it is not required that
+your title gracefully handle such a drop in throughput transparently to the
+user, it is important to ensure that the game is able to recover and does not
+hang or crash the system. Unfortunately, the current version of the Xbox DVD Emulator
+does not allow for robust fault injection (this will be addressed in a future
+release). There are some steps to take, however, to test your game under more
+adverse conditions:</span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Verdana'>&nbsp;</span></p>
+
+<ul style='margin-top:0in' type=disc>
+ <li class=MsoNormal><b><span style='font-size:10.0pt;font-family:Verdana'>Move
+     away from using the Xbox hard disk as a test platform as soon in the
+     development process as possible.</span></b><span style='font-size:10.0pt;     font-family:Verdana'> If you wait until near-final bits before testing on
+     real media, it is much more likely that you will have difficulty
+     addressing these types of performance issues. The hard disk is much faster
+     than the disc drive even in the best of circumstances.<br>
+     <br>
+     </span></li>
+ <li class=MsoNormal><b><span style='font-size:10.0pt;font-family:Verdana'>Use
+     the Xbox DVD Emulator or burn DVD-R media to perform more realistic tests.</span></b><span
+     style='font-size:10.0pt;font-family:Verdana'> CD-RW is a bad choice. It
+     has much different characteristics than DVD media and does not work well
+     with the Xbox disc drive. The DVD emulator, however, once set up, is a simple
+     interim development tool</span><span style='font-size:10.0pt;font-family:Verdana'> </span><span style='font-size:10.0pt;font-family:Verdana'>that
+     can achieve real-world performance while in game. DVD-R is a good backup,
+     although you do not have the same ability to carefully lay out files that
+     you do on Xbox Game Discs, and the media is not dual-layer. It should also
+     be noted that DVD-R media do not have the same performance characteristics
+     as an Xbox Game Disc. DVD-R media burn content from the inside (the slowest
+     part of the disc) outward. For Xbox Game Discs, the Game Disc Layout Tool
+     pushes all game content toward the fastest portion of the disc. Even if
+     you were able to pad out your DVD-R media to place game data in the faster
+     part of the disc, it still would not be an Xbox Game Disc, because the
+     volume descriptor, file system, and other important data cannot be placed
+     in the same locations as on the Xbox-specific media. Only the DVD emulator
+     can give you real-world performance behavior.<br><br></span></li>
+ <li class=MsoNormal><b><span style='font-size:10.0pt;font-family:Verdana'>Consider
+     placing less bandwidth-intensive data away from the outer edge. </span></b><span
+     style='font-size:10.0pt;font-family:Verdana'>While your first impulse
+     might be to load all data at the outer tracks, in some cases it may not be
+     necessary. As mentioned above, on the outer edge of an Xbox Game Disc, the
+     system has less time to try to compensate for any defects. Placing data 20
+     percent from the outside edge gives the system 20 percent more time to
+     deal with issues. A good example of when to use this strategy might be
+     when streaming an FMV from the DVD. Given an encoding rate of 2&#8211;3 Mb/sec,
+     you could easily place the FMV anywhere on the disc without impacting your
+     ability to feed the decoder.</span></li>
+</ul>
+
+<p class=MsoNormal style='margin-left:.25in'><span style='font-size:10.0pt;font-family:Verdana'>&nbsp;</span></p>
+
+<p class=MsoNormal><b><span style='font-size:10.0pt;font-family:Verdana'>TCR
+Ramifications</span></b></p>
+
+<p class=MsoNormal><b><span style='font-size:10.0pt;font-family:Verdana'>&nbsp;</span></b></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Verdana'>Since
+several of the TCR requirements have fairly specific performance requirements
+based on disc throughput, this section details how those requirements are
+affected by media issues. For complete details on certification requirements
+see the <a href="https://xds.xbox.com/BPProgInfo.asp?Page=content/cert_req.htm">Xbox
+Guide</a>.</span></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Verdana'>&nbsp;</span></p>
+
+<ul style='margin-top:0in' type=disc>
+ <li class=MsoNormal><b><span style='font-size:10.0pt;font-family:Verdana'>*2-9
+     Dynamic Update of Memory Units. </span></b><span style='font-size:10.0pt;     font-family:Verdana'>Games will not fail certification if media defects
+     cause the dynamic update of memory units to take more than one second. <br>
+     <br>
+     </span></li>
+ <li class=MsoNormal><b><span style='font-size:10.0pt;font-family:Verdana'>*2-12
+     Audio Fidelity. </span></b><span style='font-size:10.0pt;font-family:Verdana'>Games will not fail certification if audio glitches are caused by
+     media defects on the game disc.<br>
+     <br>
+     </span></li>
+ <li class=MsoNormal><b><span style='font-size:10.0pt;font-family:Verdana'>*2-</span></b><b><span
+     style='font-size:10.0pt;font-family:Verdana'>15 Game Stability. </span></b><span
+     style='font-size:10.0pt;font-family:Verdana'>Games are still required to
+     meet this requirement, even in the presence of media defects on the game
+     disc. Note, however, that non-catastrophic pauses of a short duration
+     related to these defects will not cause the game to fail.<br>
+     <br>
+     </span></li>
+ <li class=MsoNormal><b><span style='font-size:10.0pt;font-family:Verdana'>*2-</span></b><b><span
+     style='font-size:10.0pt;font-family:Verdana'>20 Error Handling. </span></b><span
+     style='font-size:10.0pt;font-family:Verdana'>Games are still required to
+     meet this requirement. The game should not bubble-up media defect errors
+     to the gamer, if game play can be continued.<br>
+     <br>
+     </span></li>
+ <li class=MsoNormal><b><span style='font-size:10.0pt;font-family:Verdana'>*3-30</span></b><b><span
+     style='font-size:10.0pt;font-family:Verdana'> Initial Interactive State. </span></b><span
+     style='font-size:10.0pt;font-family:Verdana'>A game will not fail
+     certification if a media defect causes the game to take longer than 20
+     seconds to reach the initial interactive screen.<br>
+     <br>
+     </span></li>
+ <li class=MsoNormal><b><span style='font-size:10.0pt;font-family:Verdana'>*3-31
+     Non-Interactive Pause. </span></b><span style='font-size:10.0pt;font-family:Verdana'>A game will not fail certification if a media defect
+     causes the game to pause for more than five seconds. The game must respond
+     within a reasonable period of time, however, to ensure that the gamer does
+     not perceive the title as hung or crashed.<br>
+     <br>
+     </span></li>
+ <li class=MsoNormal><b><span style='font-size:10.0pt;font-family:Verdana'>*3-</span></b><b><span
+     style='font-size:10.0pt;font-family:Verdana'>38 Attract Mode Cycle. </span></b><span
+     style='font-size:10.0pt;font-family:Verdana'>A game will not fail
+     certification if a media defect causes the game to remain at the initial
+     interactive screen for more than 75 seconds. The game must still be
+     capable of entering attract mode.</span></li>
+</ul>
+
+<p class=MsoNormal><b><span style='font-size:10.0pt;font-family:Verdana'>&nbsp;</span></b></p>
+
+<p class=MsoNormal><span style='font-size:10.0pt;font-family:Verdana'>&nbsp;</span></p>
+
+<!--*******************************************************************************-->
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

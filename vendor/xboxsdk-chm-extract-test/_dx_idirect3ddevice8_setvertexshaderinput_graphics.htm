@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>IDirect3DDevice8::SetVertexShaderInput</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="IDirect3DDevice8::SetVertexShaderInput [C++]">
+<META NAME="MS-HKWD" CONTENT="SetVertexShaderInput (IDirect3DDevice8) [C++]">
+<META NAME="MS-HKWD" CONTENT="SetVertexShaderInput [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="SetVertexShaderInput (IDirect3DDevice8)"/>
+<MSHelp:Keyword Index="K" Term="IDirect3DDevice8::SetVertexShaderInput"/>
+<MSHelp:Keyword Index="F" Term="SetVertexShaderInput"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_idirect3ddevice8_SetVertexShaderInput_graphics"></A>IDirect3DDevice8::SetVertexShaderInput</H1>
+
+<P>Sets the byte offset from the start of the vertex buffer data. This function can work with push-buffer fix-ups.</P>
+
+<PRE class=syntax><B>HRESULT SetVertexShaderInput(
+  DWORD</b> <i>Handle</i>,
+  <b>UINT</b> <i>StreamCount</i>,
+  <b>CONST D3DSTREAM_INPUT</b> <i>*pStreamInputs</i>
+<B>);</B>
+</PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>Handle</I></DT>
+
+<DD>[in] Valid handle to a vertex shader whose input declaration is used to program the GPU's stream registers. In this case, any vertex shader constant values declared in the declaration are ignored. The handle cannot be a flexible vertex format (FVF).</DD>
+
+<DT><I>StreamCount</I></DT>
+
+<DD>[in] Number of elements in the array pointed to by <i>pStreamInputs</i>.</DD>
+
+<dt><i>pStreamInputs</i></dt>
+
+<dd>[in] Pointer to an array of <a href="_dx_d3dstream_input_graphics.htm"><b>D3DSTREAM_INPUT</b></a> structures used to specify vertex buffers and the offsets from the starts of those vertex buffers.</DD>
+
+</DL>
+
+<h4>Return Values</h4>
+
+<p>If the method succeeds, the return value is S_OK.</p>
+
+<H4>Remarks</H4>
+<p>Calling <b>SetVertexShaderInput</b> does not set a vertex shader, it only sets the format that a vertex shader is expecting. The GPU is not set to use a vertex shader until <a href="_dx_idirect3ddevice8_setvertexshader_graphics.htm">SetVertexShader</a>, <a href="xbox_dxg_IDirect3DDevice8_selectvertexshader.htm">SelectVertexShader</a>, or <a href="_dx_idirect3ddevice8_selectvertexshaderdirect_graphics.htm">SelectVertexShaderDirect</a> is called.</p>
+
+<p>When <b>IDirect3DDevice8::SetVertexShaderInput</b> is called with a non-NULL <i>Handle</i>, <b>IDirect3DDevice8::SetVertexShaderInput</b> takes control of the GPU's stream registers until <b>IDirect3DDevice8::SetVertexShaderInput</b> is called with a NULL <i>Handle</i>.  This means that after calling <b>SetVertexShaderInput</b>, any future calls to <b>SelectVertexShader</b> or <b>SelectVertexShaderDirect</b> will not change the vertex attribute format and calls to <a href="_dx_idirect3ddevice8_setstreamsource_graphics.htm">SetStreamSource</a> will not set the stream inputs.  After a call of SetVertexShaderInput(NULL, 0, NULL), those functions will once again take effect.</p>
+
+<p>This method doesn't support the notion of a non-zero IndexBase value.</p>
+
+<p>The D3DTSS_TEXCOORDINDEX mapping for every texture stage must be identity.</p>
+
+<p>The function <a href="_dx_idirect3ddevice8_getvertexshaderinput_graphics.htm"><b>IDirect3DDevice8::GetVertexShaderInput</b></a> may be use used to query the set value.</p>
+
+<H4>Requirements </H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in D3d8.h.<BR>
+<B>&nbsp;&nbsp;Import Library:</B> Use D3d8.lib.</P>
+
+<H4>See Also</H4>
+
+<P><a href="_dx_idirect3ddevice8_getvertexshaderinput_graphics.htm"><b>IDirect3DDevice8::GetVertexShaderInput</b></a></P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

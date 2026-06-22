@@ -1,0 +1,206 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Content Download Manager</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Content Download Manager"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+  <MSHelp:Keyword Index="K" Term="download new content with Downloader"/>
+  <MSHelp:Keyword Index="K" Term="Downloader.xbe"/>
+  <MSHelp:Keyword Index="K" Term="preview content in Downloader"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Content Download Manager</h1>
+
+            <p>
+                The Xbox Content Download Manager is an XBE that can be added to a game title to 
+                enable users to download new content through the Xbox <i>Live</i> 
+                service. The executable, called Downloader.xbe, handles all the details of 
+                connecting to the Xbox <i>Live</i> service, including account 
+                creation, authentication, content enumeration, purchases, and content download. 
+                Downloader.xbe supports both free and premium (for fee) content. Downloader.xbe 
+                is pre-certified, so including Downloader with a game does not require that the 
+                game itself support online gameplay or the Technical Certification Requirements 
+                (TCR) of an Xbox <i>Live</i> game.
+            </p>
+
+        <ul>
+<li><a href="#IDABBIV">Downloader User Interface</a></li><li><a href="#IDAYDIV">Using Downloader</a></li><li><a href="#IDAAHIV">Previewing Content</a></li></ul>
+<h2><a name="IDABBIV"></a>Downloader User Interface</h2>
+<p>The Content Download Manager user interface appears as follows:</p><img src="images/xbox_downloader_ui_mainscreen.jpg"><p><b>Main screen</b></p><img src="images/xbox_downloader_ui_signin.jpg"><p><b>Sign-in screen</b></p><img src="images/xbox_downloader_ui_purchase.jpg"><p><b>Purchase screen</b></p><img src="images/xbox_downloader_ui_downloading.jpg"><p><b>Download screen</b></p><h3><a name="IDA4BIV"></a>Skinning Downloader</h3>
+<p>
+                    The Downloader interface is skinnable, enabling you to replace the 
+                    background images with your own custom graphics that better match the visual 
+                    style of your game title.
+                </p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;You cannot change the font or color of the text displayed by Downloader.</p><p>
+                    The Xbox SDK comes with sample bitmaps for Downloader's default content 
+                    selection (dlback_content.bmp), message (dlback_main.bmp), and download (dlback_down.bmp) 
+                    screens. These files are located in the 
+					\Program Files\Microsoft Xbox SDK\source\downloader\srcmedia 
+                    directory. You can use these bitmaps as templates for your own background images. 
+                    The three bitmaps are shown below:
+                </p><img src="images/xbox_downloader_content2.jpg"><p><b>Content selection screen</b> (dlback_content.bmp)</p><img src="images/xbox_downloader_main.jpg"><p><b>Message screen</b> (dlback_main.bmp)</p><img src="images/xbox_downloader_down.jpg"><p><b>Download screen</b> (dlback_down.bmp)</p><p>
+                    Once you create your own custom bitmap files, use the 
+					<a href="xbox_jbh_tool_bundler.htm">Bundler tool</a> to compile them into an 
+					.xpr file. To do this, first create a resource definition file (a text 
+					file called dlcustom.rdf) with the following contents:
+                </p>
+<pre class="clsCode">
+Texture TEX_MAIN_BACKGROUND
+{
+    Source srcmedia\dlback_main.bmp
+    Format D3DFMT_DXT3
+    Levels 1
+}
+
+Texture TEX_CONTENT_BACKGROUND
+{
+    Source srcmedia\dlback_content.bmp
+    Format D3DFMT_DXT3
+    Levels 1
+}
+
+Texture TEX_USER_BACKGROUND
+{
+    Source srcmedia\dlback_user.bmp
+    Format D3DFMT_DXT3
+    Levels 1
+}
+</pre>
+    <p>
+                    The Source lines in the .rdf file should specify both the path and file name of 
+                    the custom bitmaps you have created. To compile the bitmaps into an .xpr file, 
+                    use the following command line:
+                </p>
+<pre class="clsCode">
+bundler dlcustom.rdf -o dlcustom.xpr
+</pre>
+    <p>
+                    Put the dlcustom.xpr file into a top-level directory on your game disc called <i>media</i>. 
+					(See the next section for more details about the files that Downloader requires.)
+                </p><p>You can skin additional screens by providing your own dlres.xpr file, which is then placed in the downloader media directory. To create dlres.xpr, use the resources included in the directory  &lt;XDKDIR&gt;\source\downloader\srcmedia folder, where &lt;XDKDIR&gt; stands for the XDK's root directory.</p><h2><a name="IDAYDIV"></a>Using Downloader</h2>
+<p>
+                To use Downloader, your game must do the following.
+            </p><ol>
+                <li>When the user selects a content download menu item, call <a href="x_jsk_xlaunchnewtitle.htm">XLaunchNewImage</a> to launch Downloader.xbe. Pass an <a href="LD_DOWNLOADER.htm">LD_DOWNLOADER</a> structure as the <i>pLaunchData</i> parameter to <b>XLaunchNewImage</b>.</li>
+                <li>Enumerate and use extra content that the user has downloaded to the Xbox 
+                console's hard drive.</li>
+                <li>Stamp DOWNLOADER.XBE with your game's title ID using the <a href="xbox_tool_xbecert.htm">XBECERT</a> utility. The XBECERT utility is located in Program Files\Microsoft Xbox SDK\xbox\bin.</li>
+            </ol>
+<p>
+                The game disc containing your game and Downloader must also contain certain other specific files in order for Downloader to work. These files are supplied in the XDK in the c:\Program  Files\Microsoft Xbox SDK\redist directory.
+            </p><ul>
+                <li><p>The root directory must contain the following files:</p>
+                <ul>
+                    <li>DashUpdate.xbe</li>
+                    <li>Downloader.xbe</li>
+                    <li>Update.xbe</li>
+                </ul>
+</li>
+                <li><p>In a directory called media, located in the root directory of the disc, place the following files:</p>
+                <ul>
+                    <li>ArialUni.ttf</li>
+                    <li>dlcustom.xpr (either the default version that comes with the Xbox SDK, or your own customized version)</li>
+                    <li>Sound.xsb</li>
+                    <li>Wave.xwb</li>
+                </ul>
+</li>
+            </ul>
+<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;You must restamp the Downloader.xbe file with your game's Title ID.</p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;The Xbox file system can store no more than 4096 files per directory. If the directory receiving packages 
+			is already full when Downloader attempts to download a new package, Downloader informs the user that installation 
+			of the package failed. If your game title offers more than 4096 content packages, store the extra packages in their 
+			own subdiretory.</p><p>
+                If a user has already logged onto Xbox <i>Live</i> while your game title is running, Downloader 
+				can keep that user logged in. This prevents the user from having to wait to log in again when Downloader starts. 
+				To enable this feature, call <a href="XOnlineSaveLogonState.htm">XOnlineSaveLogonState</a> to retrieve an 
+				<a href="XONLINE_LOGON_STATE.htm">XONLINE_LOGON_STATE</a> structure. Your game must then pass the structure 
+				to Downloader as the <b>LogonState</b> member of an <b>LD_DOWNLOADER</b> structure. The 
+				<b>LD_DOWNLOADER</b> structure is passed to Downloader as the <i>pLaunchData</i> parameter to 
+				<b>XLaunchNewImage</b>. The following code sample shows how this is done:
+            </p>
+<pre class="clsCode">
+XONLINE_LOGON_STATE LogonState;
+
+HRESULT hr;
+
+LD_DOWNLOADER LaunchData;
+
+ZeroMemory(&amp;LaunchData, sizeof(LD_DOWNLOADER));
+
+LaunchData.dwID = LAUNCH_DATA_DOWNLOADER_ID;
+
+//
+// Set bit flags
+//
+LaunchData.dwBitFilter = 0xFFFFFFFF;
+
+//
+// Copy logon state
+//
+hr = XOnlineSaveLogonState(&amp;LogonState);
+
+if (SUCCEEDED(hr)) {
+
+    memcpy(&amp;(LaunchData.LogonState), &amp;LogonState, sizeof(XONLINE_LOGON_STATE));
+
+    //
+    // Specify the logon user index into the saved logon state for
+    // the user we want to automatically log on in Downloader. This 
+    // value can be 0 through 3 and must have valid logon state at it.
+    //
+    LaunchData.bPremiumLogonPort = DesiredUserIndex;
+}
+
+//
+// Copy any game state into the user defined area.  This can be
+// as big as sizeof(LaunchData.UserDefined)
+//
+memcpy(&amp;(LaunchData.UserDefined), &amp;GameState, sizeof(GameState));
+
+//
+// Launch Downloader
+//
+XLaunchNewImage("d:\\downloader.xbe", (LAUNCH_DATA*)&amp;LaunchData);
+</pre>
+    <p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;The number of users logged in could change while Downloader is running. As 
+            a result, be sure your game deals with this situation properly once Downloader 
+            returns control to your game's code.</p><h2><a name="IDAAHIV"></a>Previewing Content</h2>
+<p>
+                You can preview the display name, description, and image associated with a 
+                content package without needing to submit the content to the Xbox <i>Live</i> 
+                team for posting to an Xbox <i>Live</i> server. However, 
+            </p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;You cannot simulate the downloading of content; this preview technique 
+            allows you to view only the Downloader information attached to a piece of 
+            content.</p><p>
+                To preview content in Downloader, create a dlpreview directory on your Xbox 
+                Development Kit, located at the same directory level as Downloader.xbe. When 
+                Downloader starts, it enumerates subdirectories of the dlpreview directory, 
+                looking for enum.bin and details.xpr files in each subdirectory. Downloader 
+                displays the image, display name, and description for each pair of content files 
+                that it finds.
+            </p><p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;It is the developer's responsibility to ensure that package 
+            names and descriptions fit within the allocated space in the Content Download 
+            Manager. If a name or description is too long, it is truncated.</p><p>
+                To refresh Downloader's display of packages, press <b>A</b> on the 
+                game controller. Downloader searches through the dlpreview directory and updates 
+                its display according to the contents in the directory at the time that the player presses 
+				the <b>A</b> button. You can use this technique to quickly try out new images 
+				and text without restarting Downloader each time you copy new content to the Xbox console.
+            </p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

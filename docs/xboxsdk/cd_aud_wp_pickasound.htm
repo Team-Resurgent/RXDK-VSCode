@@ -1,0 +1,154 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Pick a Sound, Any Sound: Programmatically Controlling Sound and Wave Selection in XACT</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Pick a Sound%2c Any Sound: Programmatically Controlling Sound and Wave Selection in XACT"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+  <MSHelp:Keyword Index="K" Term="XACT, controlling sound selection"/>
+  <MSHelp:Keyword Index="K" Term="XACT, controlling wave selection"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Pick a Sound, Any Sound: Programmatically Controlling Sound and Wave Selection in XACT</h1>
+<p><i>By Scott Selfon, Audio Content Consultant, Content and Design Team, Xbox Advanced Technology Group</i></p><p>The Audio Creation Tool for the Microsoft&reg; Xbox&reg; (XACT) provides numerous opportunities for composers and sound designers ("content creators") to add variation to their audio content. For instance, waves can be played with randomized pitch and volume, or a cue can choose among multiple sounds using weighted variation while keeping track of which variations have not yet been played. These styles of nonrepetitive playback are typically handled by the XACT engine and do not require any programmer implementation. However, there are many scenarios where variation needs to be more directly controlled based on game state or programmatic requirements. This paper details several techniques that allow a programmer to control, at run time, how variations are selected:</p><ul>
+<li>Variation selection by index: This technique allows a programmer to specify the specific sound or wave within a list of variations to play.</li>
+<li>Variation selection by weight: This technique allows a programmer to request a sound or wave of a specific weight. In this case, the content creator defines which weight ranges particular sounds or waves fall into.</li>
+<li>Variation selection by run-time parameter control (RPC): This technique is similar to selection by weight but can be used to change the selected wave over time (for example, if the sound loops, this technique can pick a new wave on the loop).</li>
+<li>Variation selection by global variable (interactive audio cue): This technique chooses an appropriate sound from an interactive audio cue's list of sounds based on an appropriate weight.</li>
+</ul>
+<h2><a name="IDAXKN2"></a>Creating Content for Programmer Variation Selection</h2>
+<p>Depending on how programmer-selectable content is intended to be, the content creator may need to author it with selectability in mind. This approach reflects the overall XACT philosophy of division of responsibilities and also its philosophy of avoiding multiple avenues for performing the same function. For the general case where a programmer simply wants to play a cue, the content creator can specify whether variations should be shuffled, played without repeats, and so on.</p><img src="images/pickasoundfig1.jpg"><p><i><b>Illustration</b>&nbsp;&nbsp;A play event with six wave variations. The content creator has specified that one variation has its selection probability weighted twice as heavy as the others. The play event is also set to never pick the same wave twice.</i></p>
+<p>Remember that XACT provides selection-style variation on two levels:</p><ol>
+<li>A cue can have a list of sounds to choose from.</li>
+<li>A play event within a sound can have a list of waves to choose from. (Incidentally, a sound may have multiple tracks, each with its own play event, each potentially with multiple variations. However, programmer-driven variation selection is performed on the sound&#8212;so all play event variations within that sound are chosen in lockstep with each other.)</li>
+</ol>
+<p>In situations where a particular sound or wave to be played needs to react to game state data, the content creator sets up the cue to allow the programmer to control variation selection. In this case, the content creator gives up some or all of the control as to how variations are chosen.</p><img src="images/pickasoundfig2.jpg"><p><i><b>Illustration</b>&nbsp;&nbsp;When the Variation playlist type is set to Parameter-controlled, the programmer specifies a weight to use when playing this sound. The sound then looks through its list of waves to find a random wave that falls within that weight range. In the above example, if the parameter passed in is between 0 and 50, one of the waves glass_small1 through glass_small5 is chosen. If the parameter passed in is between 50.01 and 100, glass_small6 is always chosen.</i></p>
+<p>Several common scenarios where parameter-controlled variation selection might reflect game state data include:</p><ul>
+<li>Situations where audio depends on physics: how hard a collision is in a football title, how fast a character is walking in a first person title, and so on.</li>
+<p class="note"><b><i>Note</i></b>&nbsp;&nbsp;&nbsp;&nbsp;A single RPC cannot control both variation selection and the kinds of pitch, volume, and filter curves discussed in the white paper <a href="cd_aud_wp_interactiveaudio.htm">An Introduction to XACT Interactive Audio Features</a>. However, multiple RPCs can be specified on a single sound.</p> 
+<li>Situations involving other game-state-driven sound issues: picking up a specific power-up, sounds that should be more dramatic based on player health, and so on.</li>
+<li>Situations involving basic interactive audio issues: See the white paper <b>An Introduction to XACT Interactive Audio Features</b> for more details.</li>
+
+</ul>
+<p>Lastly, in some cases, the programmer will want to avoid weighting entirely and select a specific sound or wave to play. In these cases, the programmer can simply ignore the variation options (parameter-controlled or otherwise) and specifically tell the XACT engine to choose a particular variation by index. As we will see, determining how sounds or waves are indexed presents some challenges.</p><h2><a name="IDALMN2"></a>Variation Selection by Index (IXACTSoundBank::SelectVariation)</h2>
+<p>The <a href="xbox_ixactsoundbank_selectvariation_dxaudio.htm">IXACTSoundBank::SelectVariation</a> method can be used to choose which sound or wave to play based on index or weight. We first discuss choosing a variation by index. The index in this case is relative to the list of variations, not the global list of sounds or waves. That is, the index is a value in the range from zero to the number of variations for this cue or play event minus one.</p><img src="images/pickasoundfig3.jpg"><p><i><b>Illustration</b>&nbsp;&nbsp;Even though these waves may be at various indices in the source wave bank, the indices for variation selection are going to be 0-5. The programmer uses the XACT_FLAG_SELECT_VARIATION_WAVE_INDEX flag and fills the Wave.dwIndex member of the XACT_SOUNDBANK_SELECT_VARIATION structure with the requested index.</i></p><img src="images/pickasoundfig4.jpg"><p><i><b>Illustration</b>&nbsp;&nbsp;A cue with sound variations (rather than a single sound with wave variations). Here, the programmer uses the XACT_FLAG_SELECT_VARIATION_SOUND_INDEX flag and the Sound.dwIndex member, with a value of 0-2.</i></p>
+<p>The natural question is: "What's the indexed order for my sounds or waves?" The XACT user interface can sort the values based on name, weight, and so on, which is not an accurate representation of the values' indices. To determine the order in which sounds or waves are indexed, the programmer should use the header file that can be generated when building an XACT project.</p><img src="images/pickasoundfig5.jpg"><p><i><b>Illustration</b>&nbsp;&nbsp;
+Building a project header file.</i></p>
+<p>Opening the header file reveals information about the wave bank and sound bank structures, and more important for us, the indexed listings of all variations. For the two examples above, we find entries similar to this:</p>
+<pre class="clsCode">
+typedef enum
+{
+    XACT_SOUNDBANK_VARSELECTDEMO_CUE_VARSELECT_SOUND_GLASS_BIG = 0,
+    XACT_SOUNDBANK_VARSELECTDEMO_CUE_VARSELECT_SOUND_GLASS_MED = 1,
+    XACT_SOUNDBANK_VARSELECTDEMO_CUE_VARSELECT_SOUND_GLASS_SMALL = 2,
+} XACT_SOUNDBANK_VARSELECTDEMO_CUE_VARSELECT_SOUND;
+#define XACT_SOUNDBANK_VARSELECTDEMO_CUE_VARSELECT_SOUND_COUNT 3 
+ 
+typedef enum
+{
+    XACT_SOUNDBANK_VARSELECTDEMO_SOUND_GLASS_SMALL_TRACK_0_WAVE_GLASS_SMALL6 = 0,
+    XACT_SOUNDBANK_VARSELECTDEMO_SOUND_GLASS_SMALL_TRACK_0_WAVE_GLASS_SMALL1 = 1,
+    XACT_SOUNDBANK_VARSELECTDEMO_SOUND_GLASS_SMALL_TRACK_0_WAVE_GLASS_SMALL2 = 2,
+    XACT_SOUNDBANK_VARSELECTDEMO_SOUND_GLASS_SMALL_TRACK_0_WAVE_GLASS_SMALL3 = 3,
+    XACT_SOUNDBANK_VARSELECTDEMO_SOUND_GLASS_SMALL_TRACK_0_WAVE_GLASS_SMALL4 = 4,
+    XACT_SOUNDBANK_VARSELECTDEMO_SOUND_GLASS_SMALL_TRACK_0_WAVE_GLASS_SMALL5 = 5,
+} XACT_SOUNDBANK_VARSELECTDEMO_SOUND_GLASS_SMALL_TRACK_0_WAVE;
+#define XACT_SOUNDBANK_VARSELECTDEMO_SOUND_GLASS_SMALL_TRACK_0_WAVE_COUNT 6
+
+</pre>
+    <p>Notice that the order isn't necessarily what we expected (in this case, I had created the sound initially to use only Glass_Small6, and only later added Glass_Small1 through Glass_Small5). Nonetheless, we can now accurately map our source waves to indices in the cue and select the specific one we want to use.</p><h2><a name="IDANNN2"></a>Variation Selection by Weight (IXACTSoundBank::SelectVariation)</h2>
+<p>In addition to selection by index, <a href="xbox_ixactsoundbank_selectvariation_dxaudio.htm">IXACTSoundBank::SelectVariation</a> can be used to select a wave by weight. Here, the content creator defines weight ranges for wave or sound variations (or both), the programmer calls for a particular weight, and a random sound whose weight range matches that weight is selected.</p><p>Although the functionality here is nearly identical to that for the <a href="xbox_ixactengine_setparametercontrol_dxaudio.htm">IXACTEngine::SetParameterControl</a> method, the use of <b>IXACTSoundBank::SelectVariation</b> gives the programmer the advantage of being able to query a cue (using the <a href="xbox_ixactsoundbank_getsoundcueproperties_dxaudio.htm">IXACTSoundBank::GetSoundCueProperties</a> method) to discover which variation has actually been chosen before the cue has started playing. When using <b>IXACTEngine::SetParameterControl</b>, querying for the chosen variation cannot be done until the cue instance has started playing.</p><p>The valid weight value range is somewhat confusing because it is exposed differently to the content creator than to the programmer, as shown below.</p><table>
+<tr>
+ <th> </th>
+ <th>Content Creator</th>  
+ <th>Programmer</th>  
+</tr>
+<tr>  
+ <td>Minimum wave weight value</td>
+ <td>0.00</td>
+ <td>0.00</td>
+</tr>
+<tr>  
+ <td>Maximum wave weight value</td>
+ <td>100.00</td>
+ <td>1.00</td>
+</tr>
+</table>
+<p>Typically, the specific information about which sound or wave variation maps to which weight range does not need to be communicated; the programmer simply requests a variation at the appropriate weight, and the content creator provides variations covering the entire weight range. Conversely, if the content creator decides to go back and add additional variations, or adjust the weight ranges, the programmer does not typically have to change code. However, if you do need to communicate weight ranges, just make sure the programmer effectively divides the content creator's numbers by 100 to match the coded weight range of 0&#8211;1.0.</p><p>One warning&#8212;if any portion of a weight range is not covered by any variations, XACT throws an error here (unlike in variation selection through run-time parameter control or interactive audio cues, where silence is a legitimate variation to play):</p>
+<pre class="clsCode">
+XACTENG: XACT::CSoundBank::SelectVariation: Error: No sound variation was selected or the cue has no sound
+</pre>
+    <p>When using <b>SelectVariation</b> to control variation choice, make sure that either the entire range (0.00&#8211;100.00) is covered by content or the programmer is instructed to not use values outside of the valid range.</p><img src="images/pickasoundfig6.jpg"><p><i><b>Illustration</b>&nbsp;&nbsp;In this case, the programmer should not call SelectVariation with a value of less than .25 (remember, the programmer divides 25.00 by 100 for conversion).</i></p>
+<p>For the example above, the programmer uses XACT_FLAG_SELECT_VARIATION_WAVE_VALUE in the call to <b>SelectVariation</b>, and then fills <b>Wave.flValue</b> as shown below.</p><table>
+<tr>
+ <th>Wave.flValue</th>  
+ <th>Behavior</th>  
+</tr>
+<tr>  
+ <td>0.00&lt;=flValue&lt;0.25</td>
+ <td>Error&#8212;XACT halts</td>
+</tr>
+<tr>  
+ <td>0.25&lt;=flValue&lt;=0.50</td>
+ <td>Randomly choose among glass_small1&#8211;glass_small5</td>
+</tr>
+<tr>  
+ <td>0.50&lt;=flValue&lt;0.75</td>
+ <td>Randomly choose among glass_small3&#8211;glass_small5</td>
+</tr>
+<tr>  
+ <td>0.75&lt;=flValue&lt;=1.0</td>
+ <td>Always play glass_small6</td>
+</tr>
+</table>
+<p>Again, rather than subject the game to XACT halting, typically the content creator should make sure to provide variations covering the entire range of weight values.</p><h2><a name="IDAGYN2"></a>Controlling Variations Using Run-Time Parameter Controls (IXACTSoundBank::PlayEx or PrepareEx, or IXACTEngine::SetParameterControl)</h2>
+<p>Using run-time parameter controls (RPCs, also known as "sliders") to control variation selection has already been covered in a separate white paper, <a href="cd_aud_wp_interactiveaudio.htm">An Introduction to XACT Interactive Audio Features</a>. Here, we will briefly touch on how the programmer works with this functionality. The XDK sample XACTParamControl provides a sample code demonstration of how a programmer might interact with one specific RPC control.</p><p>As with <a href="xbox_ixactsoundbank_selectvariation_dxaudio.htm">IXACTSoundBank::SelectVariation</a>, the weight range for <a href="xbox_ixactengine_setparametercontrol_dxaudio.htm">IXACTEngine::SetParameterControl</a> is 0&#8211;1.0, corresponding to 0.00&#8211;100.00 for the content creator. Again, remember that the content creator needs to author sound or wave variations such that the Parameter-controlled option is selected for Variation playlist type.</p><p>Variation selection through RPCs uses special predefined sliders attached to all cues that have sound variation, or all play events that have wave variation:</p>
+<pre class="clsCode">
+
+#define XACT_PARAMETER_CONTROL_SOUND_VARIATION  "=SoundVariation"
+#define XACT_PARAMETER_CONTROL_WAVE_VARIATION   "=WaveVariation"
+
+</pre>
+    <p>There are two primary differences between <b>IXACTSoundBank::SelectVariation</b> and <b>IXACTEngine::SetParameterControl</b>:</p><ul>
+<li>Unlike <b>IXACTSoundBank::SelectVariation</b>, <b>IXACTEngine::SetParameterControl</b> acts on a cue instance (<b>wScope</b> must be eXACTParameterControlScope_SoundCueInstance). This functionality means that a cue has to be prepared (using the <a href="xbox_ixactsoundbank_prepare_dxaudio.htm">IXACTSoundBank::Prepare</a> method), creating a cue instance, prior to setting a parameter control on that cue instance.</li>
+<li>Unlike <b>IXACTSoundBank::SelectVariation</b>, <b>IXACTEngine::SetParameterControl</b> allows silent variations&#8212;that is, if no sound or wave variation falls in the accepted range, the cue just plays silence rather than returning an error.</li>
+</ul>
+<p>A much more straightforward method for choosing variations for run-time parameter controlled cues than that provided by <b>SetParameterControl</b> is embedded in the extended versions of the <b>Play</b> and <b>Prepare</b> methods, the <a href="xbox_ixactsoundbank_playex_dxaudio.htm">IXACTSoundBank::PlayEx</a> and <a href="xbox_ixactsoundbank_prepareex_dxaudio.htm">IXACTSoundBank::PrepareEx</a> methods. Here, you can choose variations without having to manage cue instances. The <b>IXACTSoundBank::PlayEx</b> process is as follows:</p><ol>
+<li>Fill the <b>PrepareData</b> structure with the run-time parameter controls and desired values. (Because the <b>PlayEx</b> call itself is going to manage the sound cue instance, you can leave the pointer in the <a href="xbox_xactparameterentry_dxaudio.htm">XACT_PARAMETER_ENTRY</a> structure as NULL.)</li>
+<li>Call <b>IXACTSoundBank::PlayEx</b>.</li>
+</ol>
+<h2><a name="IDA10N2"></a>Controlling Variations Using Interactive Audio Cues (IXACTEngine::SetVariable)</h2>
+<p>Interactive audio cues have been covered in great detail in a separate white paper, <a href="cd_aud_wp_interactiveaudio.htm">An Introduction to XACT Interactive Audio Features</a>. While not generally used for programmer-determined variation selection of foreground sound effects, interactive audio cues can certainly be used for choosing among more ambient or musical sounds. Here, we touch briefly on programmers' interaction with interactive audio cues. The XDK sample XACTInteractiveAudio provides a more complete sample code demonstration of how a programmer might interact with one specific interactive audio cue.</p><p>Unlike run-time parameter controls, interactive audio cues are driven by global trigger variables set by the programmer. Although this approach means that many cues can respond to a single variable change, a very attractive feature for making large numbers of sounds controllable with a single call, interactive audio cues typically should not have multiple playing instances. However, multiple independent interactive audio cues are perfectly acceptable (so long as they do not interfere with each other's sound layers, in which case they would interrupt and stop each other).</p><p>Each interactive audio cue can respond to one of the 32 predefined global trigger variables that can be adjusted using the <a href="xbox_ixactengine_setvariable_dxaudio.htm">IXACTEngine::SetVariable</a> method. The content creator sets which variable a particular cue responds to.</p><img src="images/pickasoundfig7.jpg"><p><i><b>Illustration</b>&nbsp;&nbsp;This cue will respond to the global trigger variable 5. The sound designer can simulate changes to this variable by moving the slider at the bottom of the window.</i></p>
+<p>There are several key differences between global trigger variables and typical run-time parameter controls:</p><ul>
+<li>The range for global trigger variables is not 0&#8211;1.0, but rather 0&#8211;10,000. The <b>Audition value</b> entry falls in the latter range, but the shared weighting user interface retains its 0.00&#8211;100.00 range. The programmer should be sure to convert global trigger variables by multiplying the composer's desired value by 100.</li>
+<li>Again, RPC values are manipulated per cue instance. Global trigger variables are, well, global&#8212;every interactive audio cue set to use a specific trigger variable responds to that trigger, even if the variable has already started playing another variation.</li>
+<li>An interactive audio cue selects an appropriate sound to play based on the global trigger variable&#8212;so <b>IXACTEngine::SetVariable</b> is used to choose a sound, not necessarily a particular wave (unless each sound has only one wave).</li>
+</ul>
+<h2><a name="IDAK2N2"></a>Priming and Variation Selection</h2>
+<p>Once an appropriate variation is chosen, the programmer can go ahead and trigger the cue as with any other cue. If you want the cue instance to play with zero latency (that is, to start playing as soon as the cue is triggered), you can call <a href="xbox_ixactsoundbank_prepare_dxaudio.htm">IXACTSoundBank::Prepare</a> on it. For a cue whose variation has been selected using <a href="xbox_ixactsoundbank_selectvariation_dxaudio.htm">IXACTSoundBank::SelectVariation</a>, a subsequent call to <b>Prepare</b> using the XACT_FLAG_SOUNDCUE_PRIME flag primes the proper variation. Incidentally, the next call to <b>Prepare</b> returns to the default variation selection behavior (typically, choosing a new variation) unless <b>SelectVariation</b> is called again.</p><p>This functionality becomes somewhat more confusing when using <a href="xbox_ixactengine_setparametercontrol_dxaudio.htm">IXACTEngine::SetParameterControl</a>, since before triggering the cue you need to call <b>Prepare</b> in order to set the parameter control on the cue instance. The preferred method for proper variation selection and priming is demonstrated in the XACTParamControl sample in the Xbox Development Kit. Specifically, the steps to take are:</p><ol>
+<li>Call <b>IXACTSoundBank::Prepare</b> on the cue, which returns a cue instance (ppSoundCue).</li> 
+<li>Call <b>IXACTEngine::SetParameterControl</b> on this cue instance.</li>  
+<li>Call the <a href="xbox_xactenginedowork_dxaudio.htm">XACTEngineDoWork</a> function. This function performs the priming on the selected variation.</li> 
+<li>Wait for the notification that the cue is prepared (eXACTNotification_StreamDataAvailable).</li> 
+<li>Call the <a href="xbox_ixactsoundbank_play_dxaudio.htm">IXACTSoundBank::Play</a> method with the XACT_FLAG_SOUNDCUE_PREPARED flag to play the cue with the proper variation applied.</li> 
+</ol>
+<p>Again, for sounds that you don't worry about priming prior to playing, use <b>IXACTSoundBank::PlayEx</b> to make the process much simpler.</p><h2><a name="IDAG4N2"></a>Wrap-Up</h2>
+<p>While purely random or content-driven variation selection is very effective, many game scenarios remain where the game state needs to intervene to help select the most effective sound effect to play. Variation selection allows the programmer to force the playback of a particular wave or sound by index, or to perform a more abstracted selection of an appropriate wave or sound by weight. Global trigger variables can also be used, in somewhat more restricted cases, to choose an appropriate sound to play based solely on weight.</p><p>For more information about topics presented here, please consult the 
+<a href="cd_aud_wp_bp.htm">Xbox Audio Best Practices Guide</a>, the XDK documentation, and the <a href="whitepaper_audio.htm">white papers in the Audio Designer's Corner</a>, or send an e-mail message to <a href="mailto:xboxds@xbox.com">xboxds@xbox.com</a>.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

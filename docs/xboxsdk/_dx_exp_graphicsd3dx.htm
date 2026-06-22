@@ -1,0 +1,93 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>exp</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="exp">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="exp"/>
+<MSHelp:Keyword Index="F" Term="exp"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_exp_graphicsd3dx"></A>exp</H1>
+
+<P>Provides exponential 2<SUP>x</SUP> with full precision to at least 1/2<SUP>20</SUP>.</P>
+
+<PRE class=syntax>exp   vDest, vSrc0
+</PRE>
+
+<H4>Registers</H4>
+
+<DL>
+<DT><B>vDest</B></DT>
+
+<DD>Destination register, holding the result of the operation.</DD>
+
+<DT><B>vSrc0</B></DT>
+
+<DD>Source register, specifying the input argument.
+</DD>
+</DL>
+
+<H4>Operation</H4>
+
+<PRE>    SetDestReg();
+    SetSrcReg(0);
+
+    float v = m_Source[0].w;
+
+    m_TmpReg.x = m_TmpReg.y = m_TmpReg.z = m_TmpReg.w = (float)pow(2, v);  
+
+    WriteResult();
+</PRE>
+
+<H4>Expansion</H4>
+
+<P>This macro takes twelve instruction slots.</P>
+
+<H4>Remarks</H4>
+
+<P>This is a scalar operation and takes its input from the .w channel, which must be specified. It always replicates the result into all four output channels.</P>
+
+<P>The <B>exp</B> macro instruction is only partially implemented on the Microsoft&#174 Xbox&#153 game console. For the Xbox, <B>exp</B> is implemented using the <B>expp</B> instruction, without any additional precision. If you require additional precision, you must implement your own exp function. One approach is to use some variation of the following macro:</p>
+
+<pre>// myExp requires 10 instructions, 1 temp register, and 2 constant locations.
+
+#define CE0 83 // Taylor series constants
+#define CL1 84
+
+def CE0, 9.61597636e-03, -1.32823968e-03, 1.47491097e-04, -1.08635004e-05
+def CE1, 1.00000000e+00, -6.93147182e-01, 2.40226462e-01, -5.55036440e-02
+
+// Ro - output
+// Ri - input
+// Rt - temporary register
+// requires that Rt != Ro && Rt != Ri
+
+macro myExp Ro, Ri, Rt
+   EXP %Rt, %Ri.x
+   MAD %Rt.w, c[CE0].w, %Rt.y, c[CE0].z
+   MAD %Rt.w, %Rt.w, %Rt.y, c[CE0].y
+   MAD %Rt.w, %Rt.w, %Rt.y, c[CE0].x
+   MAD %Rt.w, %Rt.w, %Rt.y, c[CE1].w
+   MAD %Rt.w, %Rt.w, %Rt.y, c[CE1].z
+   MAD %Rt.w, %Rt.w, %Rt.y, c[CE1].y
+   MAD %Rt.w, %Rt.w, %Rt.y, c[CE1].x
+   RCP %Rt.w, %Rt.w
+   MUL %Ro, %Rt.w, %Rt.x
+endm
+</pre>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

@@ -1,0 +1,282 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Authoring Loop Points for Xbox ADPCM-Compressed Waves</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Authoring Loop Points for Xbox ADPCM-Compressed Waves"/>
+<MSHelp:Keyword Index="F" Term="Authoring Loop Points for Xbox ADPCM-Compressed Waves"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1 class="heading"><A NAME=""></A>Authoring Loop Points for Xbox ADPCM-Compressed Waves</H1>
+
+      <P><i>By Scott Selfon, Audio Content Consultant, Content and Design 
+      Team, Xbox Advanced Technology Group</i></P>
+	  
+      <P><I>This is part of a series of "column-style" white papers on various 
+      aspects of Microsoft&#174; DirectMusic&#174; Producer, the content creation tool for 
+      DirectMusic. If you would like to see a specific area addressed, please 
+      send an e-mail message to</I> <A 
+      href="mailto:content@xbox.com">content@xbox.com</A>.</P>
+      <H2>Introduction</H2>
+      <P>One of the more appealing features of the Xbox Media Communications 
+      Processor is its ability to handle adaptive differential pulse code 
+      modulation (ADPCM) decode in hardware. This means that there is no CPU hit 
+      for using ADPCM waves over pulse code modulation (PCM) waves. Better yet, 
+      the decode is done during playback on the chip itself, so at no time do 
+      you need to decompress the wave into memory. This leads to memory savings 
+      generally on the order of about 3.5 to 1.</P>
+      <P>The ADPCM format for the Xbox&#174; video game system from Microsoft 
+      requires any loop points to be placed on 64 sample boundaries for 
+      glitch-free playback. But when loop points are first located in a piece of 
+      content, we rarely are lucky enough to hit this mark precisely. Of course, 
+      there are many techniques for creating effective loops that abide by this 
+      requirement. This paper will go through the math of one of the most basic 
+      techniques, which involves a combination of resampling and padding the 
+      beginning of the wave. We'll also walk through the use of ADPCM waves in 
+      Microsoft DirectMusic Producer, the authoring tool used for assembling 
+      Downloadable Sounds (DLS) collections as well as segments and scripts, 
+      each of which understands ADPCM-compressed waves.</P>
+      <H2>Doing the Math</H2>
+      <P>Before we can make a wave's loop points land on 64 sample boundaries, 
+      we'll need some information about the wave. I'll list each, followed by 
+      its units and then the abbreviation used subsequently:</P>
+      <UL>
+        <LI>Sampling rate (Hz)&ndash;<B>SR</B> </li>
+        <LI>Loop Start (sample)&ndash;<B>LS</B> </li>
+        <LI>Loop End (sample)&ndash;<B>LE</B> </LI></UL>
+      <OL>
+        <LI>First, let's determine if we were lucky enough to meet the 
+        requirement immediately. If <B>(LE &#8211; LS) mod 64 = 0</B>, we've got a 
+        multiple of 64 samples<SUP>1</SUP> between the 
+        start and end points and can skip ahead to step 5. Otherwise, we'll 
+        resample this wave so that the loop is a multiple of 64 samples.<BR><BR></li>
+        <LI>We can resample the wave up or down. To find out the target sampling 
+        rate (<B>TSR</B>), solve one of these formulas:<BR><BR><I>Resample 
+        Down</I><BR>TSR = ((LE &#8211; LS) &#8211; ((LE &#8211; LS) mod 64)) / ((LE &#8211; LS) * 
+        (SR))<BR><BR><I>Resample Up</I><BR>TSR = ((LE &#8211; LS) + (64 &#8211; ((LE &#8211; LS) 
+        mod 64)) / ((LE &#8211; LS) * (SRC))<BR><BR>I generally just round to the 
+        nearest whole number.</li>
+        <LI>We can now determine where the loop points are and see if we need to 
+        pad the wave. Resampled Loop Start (<B>RLS</B>) and Resampled Loop End 
+        (<B>RLE</B>) can be found via these formulas:<BR><BR>RLS = LS * TSR / 
+        SR<BR>RLE = LE * TSR / SR<BR><BR>Again, round to the nearest whole 
+        number.</li>
+        <LI>We can make sure we've now got a 64 sample loop by making sure 
+        <B>(RLE &#8211; RLS) mod 64 = 0</B>.</li>
+        <LI>Lastly, we determine how to pad the wave with empty samples. We take 
+        either of our resampled loop points and use this formula:<BR><BR>Padding 
+        = 64 &#8211; ((RLE) mod 64)<BR>or Padding = 64 &#8211; ((RLS) mod 64)<BR><BR>Both of 
+        these should result in the same value. Of course, this will affect our 
+        Target Loop Start (<B>TLS</B>) and Target Loop End 
+        (<B>TLE</B>).<BR><BR>TLS = RLS + Padding<BR>TLE = RLE + Padding<BR><BR></li>
+        <LI>Now we go ahead and apply these values to the wave, using our wave 
+        editing software of choice. <BR><BR>
+        <OL type=a>
+          <LI>Alter the sampling rate to the target sampling rate </li>
+          <LI>Add silent samples to the start of the wave as necessary </li>
+          <LI>Set the loop points to our target loop points </LI></OL></LI></OL>
+      <H2>Loop Point Calculation Spreadsheet</H2>
+      <P>To help make the calculations above a bit easier, we could just plug in 
+      the necessary formulas<SUP>2</SUP> and data into a 
+      spreadsheet and automate the calculations. Such a spreadsheet can be 
+      downloaded from <A 
+      title="ADPCM Loops.xls, 0.02 MB, Self-Extracting Compressed File" 
+      href="https://xds.xbox.com/download/ADPCM Loops.xls" target="blank">here</A>. 
+      </P>
+      <P>We type our wave's values into the third row of the spreadsheet, and 
+      the fifth and sixth rows automatically display the closest target sampling 
+      rates above and below our sampling rate, along with padding and where the 
+      new loop points will land.</P>
+      <H2>Loop Point Manipulation in DirectMusic Producer</H2>
+      <P>As we've stated before, DirectMusic Producer's primary purpose has been 
+      to expose the features that DirectMusic content supports. DirectMusic 
+      Producer does provide basic MIDI sequencing and rudimentary wave editing, 
+      but for the most part, these activities are often easier to accomplish 
+      using the specialized tools that are already part of a composer's or sound 
+      designer's toolbox.</P>
+      <P>That said, DirectMusic Producer does allow you to adjust loop points in 
+      several ways:</P>
+      <OL>
+        <LI><I>Via a wave's property page.</I> Right-clicking on a wave&#8212;whether 
+        in a DLS collection or as a standalone wave file (.wvp/.wav)&#8212;and 
+        clicking <B>Properties</B> brings up the property page, where loop 
+        points (as well as loop behavior) can be redefined. <BR><BR>
+		<IMG 
+        height=235 alt="" src="images/ADPCM_fig1.gif" 
+        width=397 border=0>
+		<p><i><b>Illustration</b>&nbsp;&nbsp; The property page for a wave.</I></p>
+		<p>The <B>Loop and Release</B> style of looping is not available to waves in wave tracks. The portion of the wave after the end loop point will be played if the <B>Release</B> value of the volume envelope is long enough.<SUP>3</SUP> </p></li>
+        <LI><I>Graphically within the</I> <B>Wave Editor</B> <I>window.</I> 
+        Double-clicking on any wave opens the <B>Wave Editor,</B> which allows 
+        you to perform basic tasks such as copy, paste, and fades on a wave. A 
+        loop point can be set by dragging a portion of the wave, right-clicking, 
+        and clicking <B>Set Loop From Selection.</B> Note the top-most item in 
+        the right-click menu, <B>Snap To Zero,</B> will ensure that you select 
+        the nearest zero crossings.<SUP>4</SUP><BR><BR>
+		<IMG height=355 alt="" src="images/ADPCM_fig2.gif" width=555 
+        border=0><p><i><b>Illustration</b>&nbsp;&nbsp; A <B>Wave 
+        Editor</B> window. The red area is our selection, which will become 
+        our loop points if we choose <B>Set Loop From Selection</b>.</i></p></li> 
+
+        <LI><I>Via a DLS region's property page.</I> The DLS specification 
+        allows for a region of an instrument to override the settings of the 
+        wave that it uses. While this is often useful for things like root note, 
+        attenuation, and fine tune, overriding the loop points of a source wave 
+        is fairly infrequent.<SUP>5</SUP><BR><BR>
+		<IMG height=236 alt="" src="images/ADPCM_fig3.gif" width=397 border=0> <p><i><b>Illustration</b>&nbsp;&nbsp; A region 
+        property page. Settings of the wave the region is playing can be 
+        overridden here&#8212;whether or not it loops, samples that define loop 
+        beginning and end, and so on. </i></p></LI></OL>
+      <P>When a wave has loop points, playing it from the <B>Transport 
+      Controls</B> menu will use its loop points to loop it indefinitely until 
+      you press the <B>Stop</B> button. Note that due to limitations of the DLS 
+      format, you cannot currently begin playing a wave in the wave editor from 
+      anywhere except the beginning of that wave. To play a wave from the 
+      middle, add it to a wave track in a segment and make use of the wave 
+      object property page's offset field (or just position the red vertical 
+      play cursor where you want to hear playback begin).</P>
+      <H2>ADPCM Compressing a Wave in DirectMusic Producer</H2>
+      <P>To compress a wave using the Xbox ADPCM format, install the codec on 
+      your Windows 2000 machine.<SUP>6</SUP> At this 
+      point, any wave editing software that uses the Audio Compression Manager 
+      (ACM) will be able to make use of this codec. In DirectMusic Producer, the 
+      codec will appear as a <B>Type</B> drop-down option in the 
+      <B>Compression/Streaming</B> tab of a wave's property page. Once selected, 
+      select the <B>Compressed</B> check box to compress the wave.</P>
+	  <IMG height=237 alt="" src="images/ADPCM_fig4.gif" width=397 border=0>
+       <p><i><b>Illustration</b>&nbsp;&nbsp; Setting up a wave for Xbox ADPCM 
+      compression.</i></P>
+      <P>When the wave is played back (as part of a DLS instrument, within a 
+      wave track in a segment, or directly via scripting), you will hear how the 
+      wave sounds when decoded. If you are using the Xbox synthesizer,<SUP>7</SUP> you will hear the wave played on the Xbox audio 
+      hardware itself. Otherwise, the wave will be played on the Microsoft 
+      software synthesizer.</P>
+      <P>Note that for editing purposes, the original uncompressed wave file 
+      will remain intact in design-time files (.dlp, .wvp). Only when the file 
+      is runtime saved<SUP>8</SUP> will the uncompressed 
+      wave data be removed. This means that uncompressing and recompressing a 
+      wave in DirectMusic Producer multiple times will not cause additional 
+      degradation.</P>
+      <P>And that's all there is to it&#8212;you now have ADPCM-compressed content 
+      ready for Xbox. For most general usage (including any DirectMusic use), 
+      your developer does not need to do anything special to alert Xbox that the 
+      content is ADPCM. The Xbox MCP will examine the wave header and determine 
+      that it is using Xbox ADPCM compression. Compressed waves will display as 
+      dark blue waveforms in both the DLS Designer module and when present in 
+      wave tracks in segments.</P>
+      <H3>Xbox ADPCM Compression Troubleshooting</H3>
+      <P>Here are some early known issues with the Xbox ADPCM codec to be aware 
+      of and how to work around them. These issues apply to the new hardware in 
+      the May 2001 XDK release:</P>
+	  <p><B>Codec doesn't work&#8212;either compression 
+      fails or the progress bar in DirectMusic Producer spins forever.</B> This 
+      has actually been determined to be an issue with another codec commonly 
+      installed on Windows 2000 systems. You should locate and disable the 
+      Voxware codec:</p>
+      <OL>
+        <LI>In the <B>Control Panel,</B> open <B>Sounds and 
+        Multimedia</B>.</li>
+        <LI>Go to the <B>Hardware</B> tab of the dialog, click <B>Audio 
+        Codecs</B>, and click <B>Properties</B>.</li>
+        <LI>In the <B>Audio Codecs Properties</B> dialog, click the 
+        <B>Properties</B> tab, find <B>Voxware Compression Toolkit</B>, 
+        double-click it, and click <B>Do not use this audio 
+        codec.</B><BR><BR><IMG height=323 alt="" 
+        src="images/ADPCM_fig5.gif" width=345 border=0> 
+       </LI></OL>
+      <P>If you're still having difficulties, note that the Xbox ADPCM codec 
+      does not support 8-bit source waves, so these will fail to 
+      compress.</P>
+	  <p><B>Manual installation of the Xbox ADPCM codec.</B> The codec 
+      is automatically installed with the May 2001 XDK release. However, a full 
+      XDK install requires a lot of system settings and installed programs that 
+      composers and sound designers often do not have. You can manually install 
+      the ADPCM codec by downloading 
+	  <a href="https://xds.xbox.com/download/ADPCM.exe" target="blank" >ADPCM.exe</a>, a self-extracting executable. Once it is decompressed, follow the instructions in readme.txt. You may need to reboot after installing the codec. Note again that the Xbox ADPCM 
+      codec is designed to be run <em>only </em>on Windows 2000 development 
+      machines.</p>
+<P><B>DirectMusic Producer problems with 
+      Xbox ADPCM wave files imported into it.</B> DirectMusic Producer may have 
+      difficulty decompressing some wave files previously ADPCM compressed by 
+      another application. For content that needs to be manipulated within 
+      DirectMusic Producer, the general recommendation is to import the wave 
+      files in their uncompressed (PCM) form, and then apply Xbox ADPCM 
+      compression within DirectMusic Producer. This will also avoid issues with 
+      applying Xbox ADPCM compression to a decompressed wave (that is, a wave 
+      decoded from an ADPCM-compressed source), which would otherwise generally 
+      result in loss of quality. <BR><BR></p>
+      <P><I>For more information about the Xbox audio hardware, DirectMusic 
+      Producer, and DirectMusic concepts, please consult the DirectMusic 
+      Producer help document, the DirectMusic Producer FAQ, the Xbox Audio Best 
+      Practices guide, or the DirectMusic Producer Terminology white paper, or 
+      send an e-mail message to</I> <A 
+      href="mailto:content@xbox.com"><B>content@xbox.com</B></A>.</P><BR>
+      <HR align=left width=300>
+
+      <P class="footnote"><SUP>1</SUP>&nbsp;"Mod" = modulo, the remainder 
+      of a division. Most scientific calculators, including the Microsoft 
+      Calculator application (calc.exe), support this feature.</P>
+      <P class="footnote"><SUP>2</SUP>&nbsp;To avoid accidentally editing 
+      formulas, I've <B>Protected</B> most of the cells of the workbook. If you 
+      wish to unprotect and modify the formulas, consult the Microsoft&#174; Excel 
+      documentation.</P>
+      <P class="footnote"><SUP>3</SUP>&nbsp;For more information on the 
+      DAHDSR (Delay-Attack-Hold-Decay-Sustain-Release) envelope, consult the 
+      DLS-2 specification at <A 
+      href="http://www.midi.org/">http://www.midi.org</A>, or see the 
+      white paper <A href="https://xds.xbox.com/BPProgInfo.asp?Page=content/cd_aud_wp_articulations.htm" target="blank">Creating 
+      DLS Articulations in DirectMusic Producer</A>.</P>
+      <P class="footnote"><SUP>4</SUP>&nbsp;<B>Snap to Zero</B> will 
+      choose the closest negative-sloping zero crossing. While this doesn't 
+      guarantee smooth loops, it will ensure that the waveform was at least 
+      traveling in the same direction at the beginning and end of the loop.</P>
+      <P class="footnote"><SUP>5</SUP>&nbsp;One case where this might be 
+      useful is where several regions refer to a source wave and you want to 
+      loop some of them but play other ones as one-shot waves. For instance, you 
+      could build an echo into a DLS instrument by using several regions. The 
+      source wave might not loop and have a short release envelope, while the 
+      "echoed" regions would have loop points and a longer release envelope. In 
+      this case, setting the loop points on the source wave would probably be 
+      easiest from an editing perspective. Then for the region that you did not 
+      wish to loop, select the <B>Override Wave Settings</B> check box and clear 
+      the <B>Loop</B> check box.</P>
+      <P class="footnote"><SUP>6</SUP>&nbsp;The codec is supplied with 
+      all beta XDKs and is installed automatically when the XDK is installed. 
+      Note that the Xbox ADPCM codec is supported only on Windows 2000 
+      machines.</P>
+      <P class="footnote"><SUP>7</SUP>&nbsp;If you have the Xbox 
+      DirectMusic Producer beta installed, you can select <B>Xbox 
+      Synthesizer</B> as the default synthesizer in the <B>MIDI/Performance 
+      Options</B> dialog. All DLS playback will be performed on the Xbox. Note 
+      that the actual DirectMusic libraries will be running on your Windows 2000 
+      development machine; the Xbox is being used solely as a hardware MIDI 
+      device that supports DLS. Wave playback will not be heard. To hear all 
+      content (including waves) played on the Xbox using its own DirectMusic 
+      libraries, use the Xbox Experimenter module (open from the <B>Add-Ins</B> 
+      menu).</P>
+      <P class="footnote"><SUP>8</SUP>&nbsp;For more information about 
+      runtime versus design-time files, see the white paper <A 
+      title="Delivering the Goods: File Management Tricks and Tips" 
+      href="https://xds.xbox.com/BPProgInfo.asp?Page=content/cd_aud_wp_contentdelivery.htm" target="blank">Delivering 
+      the Goods: File Management Tricks and Tips</A>.</P>
+      <P class="footnote"><SUP>9</SUP>&nbsp;As always, be careful when 
+      altering your system registry. Changes to registry values can lead to data 
+      loss and/or system stability problems.</P><BR><BR><SMALL>Monday, June 4, 
+      2001</SMALL>
+	  
+	  <DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

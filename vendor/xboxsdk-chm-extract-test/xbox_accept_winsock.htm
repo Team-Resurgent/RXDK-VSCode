@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>accept</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="accept">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="accept"/>
+<MSHelp:Keyword Index="F" Term="accept"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0">
+<TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+
+<H1><A NAME="xbox_accept_winsock"></A>accept</H1>
+
+<P>Permits an incoming connection attempt on a socket.</P>
+
+<PRE class=syntax><B>SOCKET accept(
+  SOCKET</B><I> s</I>,<B> </B>
+<B>  struct sockaddr FAR </B><I>*addr</I>,<B>  </B>
+<B>  int FAR </B><I>*addrlen  </I>
+<B>);</B></PRE>
+
+<H4>Parameters</H4>
+
+<DL>
+<DT><I>s</I></DT>
+
+<DD>[in] Descriptor identifying a socket that has been placed in a listening state with the <A HREF="xbox_listen_winsock.htm">listen</A> function. The connection is actually made with the socket that is returned by <B>accept</B>.</DD>
+
+<DT><I>addr</I></DT>
+
+<DD>[out] Optional pointer to a <A HREF="xbox_sockaddr_winsock.htm">SOCKADDR_IN</A> structure that receives the address of the connecting entity.</DD>
+
+<DT><I>addrlen</I></DT>
+
+<DD>[in, out] Optional pointer to an integer that specifies the size, in bytes, of the buffer pointed to by <I>addr</I>.  When the function returns, <I>addrlen</I> will contain the size of the data copied to <I>addr</I>.  If <I>addr</I> is not null, then <I>addrlen</I> must not be NULL.
+</DD>
+</DL>
+
+<H4>Return Values</H4>
+
+<P>If no error occurs, <B>accept</B> returns a value of type <B>SOCKET</B> that is a descriptor for the new socket. This returned value is a handle for the socket on which the actual connection is made.</P>
+
+<P>Otherwise, a value of INVALID_SOCKET is returned, and a specific error code can be retrieved by calling <A HREF="xbox_wsagetlasterror_winsock.htm">WSAGetLastError</A>.</P>
+
+<P>The integer referred to by <I>addrlen</I> initially contains the amount of space pointed to by <I>addr</I>. On return it will contain the actual length in bytes of the address returned.</P>
+
+<H4>Remarks</H4>
+
+<P>The <B>accept</B> function extracts the first connection on the queue of pending connections on socket <I>s. </I>It then creates a new socket and returns a handle to the new socket. The newly created socket is the socket that will handle the actual connection and has the same properties as socket <I>s</I>.</P>
+
+<P>The <B>accept</B> function can block the caller until a connection is present if no pending connections are present on the queue, and the socket is marked as blocking. If the socket is marked as nonblocking and no pending connections are present on the queue, <B>accept</B> returns INVALID_SOCKET with specific error code WSAEWOULDBLOCK. After the successful completion of <B>accept</B> returns a new socket handle, the accepted socket cannot be used to accept more connections. The original socket remains open and listens for new connection requests.</P>
+
+<P>The parameter <I>addr</I> is a result parameter that is filled in with the address of the connecting entity. <I>addrlen</I> is a value-result parameter; it should initially contain the amount of space pointed to by <I>addr</I>; on return it will contain the actual length (in bytes) of the address returned.</P>
+
+<P>The <B>accept</B> function is used with the connection-oriented socket type <B>SOCK_STREAM</B>. </P>
+
+<P>If <I>addr</I> is equal to NULL, then no information about the remote address of the accepted socket is returned.  If <I>addr</I> is not equal to NULL, then <I>addrlen</I> must not be NULL, and the integer pointed to by <I>addrlen</I> must be greater than or equal to the size of the SOCKADDR_IN structure.</P>
+
+<H4>Error Codes</H4>
+
+<TABLE>
+
+<TR VALIGN="top">
+<TH align=left width=34%>Error code</TH>
+<TH align=left width=66%>Meaning</TH>
+</TR>
+
+<TR VALIGN="top">
+<TD width=34%>WSANOTINITIALISED</TD>
+<TD width=66%>A successful <A HREF="xbox_wsastartup_winsock.htm">WSAStartup</A> call must occur before using this function.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=34%>WSAEINPROGRESS</TD>
+<TD width=66%>A blocking call is in progress.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=34%>WSAEINVAL</TD>
+<TD width=66%>The <A HREF="xbox_listen_winsock.htm">listen</A> function was not invoked prior to <B>accept</B>.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=34%>WSAENOBUFS</TD>
+<TD width=66%>No buffer space is available.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=34%>WSAENOTSOCK</TD>
+<TD width=66%>The descriptor is not a socket.</TD>
+</TR>
+
+<TR VALIGN="top">
+<TD width=34%>WSAEWOULDBLOCK</TD>
+<TD width=66%>The socket is marked as nonblocking and no connections are present to be accepted.</TD>
+</TR>
+</TABLE><BR>
+
+<H4>Requirements</H4>
+<p>
+<b>Header: </b>Declared in winsockx.h, for include use Xtl.h.<br><b>Import Library: </b>Use Xnet.lib for titles that only support system link play, XOnline.lib for titles that support online play. Use the secure versions of the library file (Xnets.lib or XOnlines.lib) for final testing.
+</p>
+
+
+<H4>See Also</H4>
+
+<P>
+<a href="xbox_winsock_overview_winsock.htm">Winsock Overview</A>,
+<a href="xbox_winsock_functions_winsock.htm">Winsock Functions</A> |
+  <A HREF="xbox_bind_winsock.htm">bind</A>, <A HREF="xbox_connect_winsock.htm">connect</A>, <A HREF="xbox_listen_winsock.htm">listen</A>, <A HREF="xbox_select_winsock.htm">select</A>, <A HREF="xbox_socket_winsock.htm">socket</A> </P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+
+</BODY>
+</HTML>

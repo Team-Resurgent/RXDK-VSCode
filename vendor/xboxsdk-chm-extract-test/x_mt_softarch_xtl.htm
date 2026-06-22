@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>XTL Overview</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XTL Overview"/>
+<MSHelp:Keyword Index="F" Term="XTL Overview"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>XTL Overview</H1>
+<!--***********************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<P>The XTL, or Xbox Title Libraries, is a collection of static libraries containing a wide variety of functions used by game titles to fully utilize the power of the Xbox hardware.  The XTL contains the code that titles use to interface with the Xbox console to perform graphics, audio, networking, and system tasks.</P>
+
+<P>Because the XTL is linked to and ships with a game title, the Xbox team can continue to update and improve the XTL libraries and tools over time, allowing future games to use new features without affecting games that have launched already.</P>
+
+<H3>XTL Programming Basics</H3>
+
+<P>A game program has a single entry point, the initial function in the title that is called by the Xbox kernel.  This entry point has this simple signature:</P>
+
+<PRE>void _cdecl main( void );</PRE>
+
+<P>This is the starting point for the initial, main thread of the title.  The title should never return from main, because the title itself is the only program running on the Xbox.  If the game returns from main, the Xbox has nothing to do and will hang.</P>
+
+<P>The general architecture of a game title is envisioned as a typical game loop, with one iteration of the loop for each displayed graphics frame.  Within that loop, the game controls allocation of space and time by performing game functions as desired, demanding that the CPU or GPU perform work for the title as needed.</P>
+
+<P>The model is strongly polling-based rather than event-based.  A game typically performs many polling operations within the game loop, rather than blocking and waiting for an event to occur or for a callback function to be called.  Input from the controllers, for example, is polled rather than queued for serial retrieval.  Each time through the game loop, the game polls the current state of the controllers and performs decisions based on that state. The same is true for other forms of input, output, and rendering operations.</P>  
+
+<P>The model is not thread-based, where multiple threads are performing miscellaneous tasks, passing messages back and forth, waiting for other threads to complete, or signaling completion of tasks to other threads.  In general, it is recommended that the game have as few threads as possible.  Rather than create background threads to do work for the title, XTL routines are designed to be called to perform discrete amounts of work, or polled to determine completion or status information.</P>
+
+<P>An exception to the general rule of having as few threads a possible is that of having a separate thread perform all rendering operations, so that when a graphics call is blocked waiting for the GPU, another thread can still execute.  This takes advantage of the Xbox optimization in which threads blocked waiting for the GPU's push-buffer are put in a true scheduled wait state, rather than a busy-wait, thus allowing other threads CPU time.  Having a separate rendering thread provides a simple way of serializing all graphics calls (which in some cases are not multi-thread safe), and can provide performance benefits if the title would otherwise spend a lot of time waiting on the push-buffer.</P>
+
+<P>As mentioned previously, the Xbox was designed by game developers in strong cooperation with the game developer community. The resulting design favors polling for input, rendering on the title's own time and under its control, calling functions to push streaming audio, and so on.  The title is in control of the CPU, the GPU, and the Xbox console hardware. It is up to the title to maximize its own use of the hardware.  Unless the title specifically asks for it and relinquishes some control, processing does not happen automatically without the title's "knowledge."</P>
+
+<H3>Xbox Executables</H3>
+
+<P>An Xbox executable, or XBE, is a single executable program that can be executed by the kernel and run on the Xbox.  Only one XBE will be running at a time, but a game title will likely consist of multiple XBEs that reside on the same game disc.  The separate XBEs will run at different times and launch each other using the XTL routines that support quick-booting between XBEs.</P>
+
+<P>The initial introduction animation, for example, as well as the configuration portion of a game, might be separate XBEs, because those portions of the game are sufficiently isolated from each other.  For games with large or discrete enough levels, it may even be beneficial to have a separate XBE for each level within the game.  As a new level or section of the game is begun, the title starts with a clean console in a known state.  An additional advantage is that making multiple, smaller XBEs helps to avoid the constraints caused by limited RAM.  Although XBE sections, discussed <a href="#xbe_sect">below</a>, are also an excellent tool to reduce the memory requirements for a game's code and data, first splitting the title into separate XBEs is a simple and significant initial step.</P>
+
+<P>Titles don't really ever exit, as there is only one title running at a time on the Xbox.  Another title executes only when a reboot happens.  For this reason, it is not necessary for titles to perform cleanup of resources such as memory, handles, and so on.  A title can rely on the reboot to perform the necessary cleanup and to put the console in a known, clean state.  For debugging purposes, a title may want to do cleanup in debug builds in order to track resources and make sure that no leaks are occurring. For more details about what steps to take when launching another title, see the <a href="#quick_booting">Quick-Booting</a> section later in this topic.</P>
+
+<P>An XBE consists of the normal code and data required for an executable program, but it may also contain graphics resources (including geometry and textures) and other files and resources bundled together into the final XBE image.  Additionally, when building an XBE with the ImageBld tool, you can specify several flags and switches that provide the Xbox kernel and XTL with additional information about the XBE.</P>
+
+<P>Linked into the XBE along with the game's own code and data are the code and data of any XTL routines the title uses.  Thus, the XBE represents a discrete executable image with no external requirements other than the Xbox itself and any files or resources that the title chooses to read from the game disc rather than include directly in the XBE.</P>
+
+<H3><a name="xbe_sect">XBE Sections</a></H3>
+
+<P>A XBE section is a portion of an XBE image containing functions and data that can be loaded when needed and freed when no longer needed.  Using sections enables a title's image to have more code and data than can fit into memory on the Xbox at one time.  Titles use XBE sections to dynamically manage the title's code footprint.  The kernel does not demand-load code sections.  Before code can be executed or jumped to, it must be loaded into memory.  <a href="x_jsk_xloadsection.htm">XLoadSection</a> can be used to load a specified section into memory, and <a href="x_jsk_xfreesection.htm">XFreeSection</a> can be used to free that section.  The title can make normal function calls to functions contained in these sections, with the only requirement being that the section be loaded sometime prior to the function call being made.</P>
+
+<P>By default, all sections in an XBE are loaded when the title is launched. Sections can be marked as delayed-load so that they will not be loaded when the image is launched; they must be explicitly loaded by the title before they can be used. Many of the functions available in the Xbox Title Libraries have been organized into sections so that functions that are rarely used or used in tandem can be left unloaded, then loaded only when needed.</P>
+
+<P>For more in-depth information about XBE sections, see <a href="x_mt_sects_ov.htm">XBE Sections</a>.</P>
+
+<H3><a name="quick_booting">Quick-Booting</a></H3>
+
+<P>A title's game disc can contain multiple executable images called XBEs.  Only one XBE can be running at a time on the Xbox, but it is possible for the running image to launch a new image by using the <a href="x_jsk_xlaunchnewtitle.htm">XLaunchNewImage</a> XTL function.  Doing so is also called <i>quick-booting</i>, as the console is quickly rebooted and the new image executed.  This is a fast method of resetting the console to a clean state and moving to a new portion of a game title, such as a new level or episode, or transitioning from a UI or management section to the gameplay itself.</P>
+
+<P>Quick-booting takes less than one second.  After a reboot, all memory is cleared except for a 4 KB portion of data passed from the old image to the new image.  The kernel itself reboots and starts fresh, but hardware is not reset (which is part of the reason why the reboot can happen so quickly).</P>
+
+<P>The title has the option of preserving the frame buffer across the quick-boot, so it can present a splash screen or preserve the last frame of the level while performing the reboot.  In either case, the Xbox startup animation is not played. (It is shown only on a cold power-on.)</P>
+
+<P>Note that even though the reboot happens in less than a second and the new image will begin executing in that time, parts of the new image's startup may require longer processing to come online.  For example, the peripherals drivers in the XTL will have to reinitialize and re-enumerate the controllers, which will take additional time (but generally less than two seconds).  Also note that any existing network connections are not persisted across the reboot, so will need to be reestablished.</P>
+
+<P>If a title is preparing to call <b>XLaunchNewImage</b> to reboot and launch a new XBE, the title should be performing as little activity as possible.  It should not be performing activity in other threads or have other asynchronous tasks pending, because the reboot will stop all threads at whatever location in the code they are executing.  For example, if a thread is writing to the hard disk when another thread causes a reboot, the amount and state of data written to the hard disk will be indeterminate.  Specifically, some activities to avoid while calling <b>XLaunchNewImage</b> are: audio or graphics in another thread, submixing, and I/O to the DVD, hard disk, or MU (including pending asynchronous I/O).  So in this sense, a title does need to take some measures when preparing to "exit," but does not need to perform cleanup in the traditional sense.</P>
+
+<P>Xbox <i>Live</i> titles should prepare for a call to <a href="XOnlineTitleUpdate.htm">XOnlineTitleUpdate</a> exactly as for a call to <b>XLaunchNewImage</b>, because <b>XOnlineTitleUpdate</b> internally uses <b>XLaunchNewImage</b> to launch an update executable.</P>
+
+<H3>XTL Routines</H3>
+
+<P>Game titles do not need to call into the kernel directly because the XTL wraps the services provided by the kernel and exposes them to the title; thus, necessarily, some XTL functions call into the Xbox kernel to access the kernel's services.  However, the kernel is not used for much of the hardware access on the Xbox. All sound, graphics, and peripheral access are done entirely in the XTL, so the routines that perform those types of hardware access are linked directly in with the game title itself.</P>
+
+<P>In many cases, the XTL provides the title with a choice of routines to use that range from more abstract down to programming the hardware almost directly.  For example, there are graphics calls available that essentially directly feed the graphics card; these routines can be used to program the GPU at a very low level if the title is so inclined.  However, most titles will find that using more sophisticated routines, such as <a href="_dx_idirect3ddevice8_drawprimitive_graphics.htm">DrawPrimitive</a>, is much simpler, more manageable, and generally more efficient as well.  The graphics routines in the XTL are already optimized for the Xbox hardware architecture and therefore difficult to outperform.  In some cases, a title seeking performance gains in very specific areas might find, after careful research, that tweaking certain portions of its graphics engine using lower-level routines produces a benefit.  It is for this reason that the low-level routines are provided, but they are by no means necessary for the title to use.</P>
+
+<P>In general, using the simplest XTL routines, with their default values, will be sufficient for most portions of the game title.  In areas that the title seems to be experiencing some performance issues, or in other critical areas where the title absolutely needs to push the hardware, finer control of the processes involved might gain the title some performance or bandwidth improvement, so routines and capabilities are provided to exercise this control when needed.  As an example, the XTL peripheral input and output routines are already very efficient, thin layers over the peripheral bus itself.  Using these routines with the provided defaults is easy and typically results in quite satisfactory performance.  Due to the title's specific use of the peripherals, however, bandwidth or timing issues might arise that can be addressed by tweaking the operational characteristics of the device interaction.  Thus, the XTL routines offer titles the ability to control the specific timing of input and output polling on the bus.</P>
+
+<P>Some of the services provided by the XTL are discussed further in <a href="x_mt_softarch_xtl_services.htm">XTL Services</a>.</p>
+
+<H3>All Kernel, All the Time</H3>
+
+<P>Not only are XTL routines already close to the hardware, but game titles and XTL routines run in kernel mode at all times.  Since there is only one process (the game title) running at a time on the Xbox, there is no need to partition and protect virtual memory to prevent a process from potentially overwriting the code and data of another process, or from accessing a hardware resource in use by another process.  A running title can have complete, sole control of the Xbox console.  This enables an architecture in which titles on the Xbox run at Ring 0 (kernel mode) at all times.</P>
+
+<P>By running in kernel mode, titles avoid making transitions between kernel mode and user mode.  These transitions require ring transitions in the CPU that are costly in terms of CPU cycles (on the order of 1,000 cycles). Avoiding these transitions greatly improves the performance of Xbox game titles.</P>
+
+<P>Performance improvement work in applications often concentrates on limiting the number of user-mode to kernel-mode transitions that occur.  For example, the I/O Completion Ports available in Win32 were created for this purpose, and in Windows NT, part of the graphics subsystem was eventually moved into the kernel to improve graphics performance. (Note that the XTL still provides I/O completion ports. Performance gains can be realized by batching notifications even when those notifications do not involve a ring transition.)  By eliminating ring transitions, Xbox titles get these performance gains for free.</P>
+
+<!--*******************************************************************************-->
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

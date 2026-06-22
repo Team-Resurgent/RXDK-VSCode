@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+
+<!--****Insert Title. This should match the Title section below.****-->
+<TITLE>XTL Services</TITLE>
+<!--****************************************************************-->
+
+<!--****Stock Text. Do not change.****-->
+<SCRIPT SRC="linkcss.js"></SCRIPT>
+<SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="XTL Services"/>
+<MSHelp:Keyword Index="F" Term="XTL Services"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+	<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<!--**********************************-->
+
+<!--****Insert same Title as above after the closing A tag.****-->
+<H1 class="heading"><A NAME=""></A>XTL Services</H1>
+<!--***********************************************************-->
+
+<P>The XTL provides many different services and sets of functions to perform specific tasks common to game titles.  Here is a brief survey of some of the services provided by the XTL.</P>
+
+<H3>Graphics</H3>
+
+<P>The XTL graphics support starts with a streamlined DirectX 8.0 architecture optimized specifically for the Xbox hardware, then adds many new features and functions to leverage the power of the Xbox.  Titles can obtain direct access to the GPU's push-buffer for finer control of the flow of geometry and commands to the GPU.  Other major functionality includes an optimized math library and the XFont font library.  Titles can use pixel and vertex shaders and their assemblers to place graphics code directly on the GPU itself for even faster computation (and bandwidth savings).  The graphics functionality is topped off with the graphics performance monitoring library D3DPerf and the pixel shader debugger, tools that help titles optimize performance even further.</P>
+
+<P>The XTL <a href="graphics_roadmap.htm">Graphics</a> reference details XTL graphics support.</P>
+
+<H3>Audio</H3>
+
+<P>The XTL enables low-level audio programming with libraries based on DirectSound, and for higher-level music and audio manipulation, a library based on DirectMusic.  Additionally, titles can use programmable 3D sound for positional effects within games, and DSP effects processing for sound manipulation directly on the programmable DSP (digital signal processor).  Xbox Media Objects (XMOs) provide a standard interface for media transforms on the Xbox, including ADPCM, WMA, and XMV formats.</P>
+
+<P>The XTL <a href="_dx_directx_audio_dxaudio.htm">Audio</a> reference details XTL audio support.</P>
+
+<H3>Networking</H3>
+
+<P>Titles have two primary options for supporting networked multiplayer games: System Link Play and Xbox <I>Live</I>.  System Link Play is used for Xbox consoles communicating with each other locally via an Ethernet connection.  Xbox <I>Live</I> is the solution for broadband online multiplayer networking, including matchmaking, friends lists, content download, authentication, billing, and voice chat.</P>
+
+<P>The Xbox Secure Network Library (SNL) is the core of Xbox network communications, providing a secure implementation of the traditional sockets-based networking paradigm.  Using the Xbox SNL, game titles can communicate with each other securely through either System Link Play or Xbox <I>Live</I>.  Xbox SNL provides authenticating hashes on every network packet in order to reject spoofing, tampering, and replay attacks.  Full packet encryption is also available, operating transparently to the game titles involved but preventing any monitoring of communications content.</P>
+
+<P>The XTL <a href="xbox_online_libraries_xonline.htm">Networking</a> reference details XTL networking support.</P>
+
+<H3>Peripherals</H3>
+
+<P>The peripheral I/O XTL functions provide a simple, thin layer for interfacing with Xbox peripherals such as controllers, memory units, and voice units.  Titles can call these functions to detect connected devices and well as device insertions and removals, and to read input from and write output to the various peripheral devices.  See <a href="x_mt_input_oview.htm">Using Xbox Peripherals
+</a> and <a href="x_jsk_input_devices_ov.htm">Input Devices</a> for more information.</P>
+
+<H3>Storage</H3>
+
+<H4>Save Games</H4>
+
+<P>Players save game progress, results, replays, screenshots, characters, and so on in <i>save games</i>.  The XTL provides an architecture and set of functions for organizing and storing save games on the hard disk as well as the memory units.  The organization of save games permits titles to enumerate and save games without interfering with other titles, and also allows inter-operation with the Xbox Dashboard for moving and deleting save games.</P>
+
+<H4>Save Game Signing</H4>
+
+<P>The XTL provides a set of simple routines that allow computing a hash on a data set and then cryptographically signing that hash.  A typical use of this functionality is to sign a save game that is stored to a memory unit or the hard disk.  Along with the save game data that is written to the storage device, the signature for the save game is written as well.  The signature matches the data contained in the save game.  If the save game data is tampered with or altered in any way, the signature will no longer match the data.</P>
+
+<P>When the game title loads the save game data back in, it again computes the signature for the data and compares it to the signature saved along with the data.  If the stored signature and the newly calculated signature for the data do not match, the title will refuse to load the save game.  Changing as little as one byte of the save game data will cause the signatures to not match.</P>
+
+<P>There are basically two steps involved in calculating the signature for a data set.  First, hash the data.  This produces a representation of the data that is smaller than the data itself. In this case, the hash algorithm produces a 20-byte message digest.  This message digest is a representation of the source data that (1) is extremely unlikely to be equal to the computed message digest for any other data source, and (2) makes it extremely difficult to determine the source data that produced the message digest or any other data that will produce the same message digest (without, of course, having access to the source data in the first place).</P>
+
+<P>The second step in calculating the signature is to cryptographically sign the computed message digest.  The digest is encrypted using a secure key known only to the game title itself.  This means that another game title or rogue code cannot encrypt or decrypt the message digest without somehow obtaining the game title's unique key.</P>
+
+<P>Together, these operations ensure that only the same data, saved by the same game title, will produce the same signature.  For a save game file, the benefit is the title's confidence that the information in the save game (for example, the game score, progress, character statistics, items, and so on) have not been altered or tampered with.</P>
+
+<P>These signature routines in the XTL can be used for other data that the title wishes to cryptographically sign; their use is not limited to save game signing.  See <a href="x_mt_xcalculatesignaturebegin.htm">XCalculateSignatureBegin</a> for information on using the XTL signature routines.</P>
+
+
+<H4>Soundtracks</H4>
+
+<P>From within the Xbox Dashboard users can save music from their favorite CDs, and then later play that music back as soundtracks from within Xbox games.  Music they have selected is stored on the hard disk in Microsoft&#174; Windows Media&#174; Audio (WMA) format.  The XTL provides a set of functions to enumerate, select, and play music from these custom soundtracks created by the user.  A song in a soundtrack can be opened and then accessed through an XMO that can decode and play the song.</P>
+
+<H4>Nicknames</H4>
+
+<P>Players are often asked to enter their name or initials in certain game situations, such as getting a new a high score, creating game saves, or naming a character.  Often players will use a single nickname (like "Groundh0g"), or a small set of names.</P>
+
+<P>These player nicknames can be cached on the Xbox and later enumerated by the same or another game title.  This provides a simple way to quickly list a selection of nicknames that will likely contain the nickname the player wishes to use.  The player avoids the task of repeatedly entering the same nickname using a letter scroller or virtual keyboard.  It's nice to see your preferred nickname offered as an option when prompted to enter a name!</P>
+
+<P>Save games, save game signing, soundtracks, and nicknames are just some of the Xbox storage features.  The XTL <a href="x_mt_storage_oview.htm">Storage Overview</a> contains further information.</P>
+
+<H3>CRT</H3>
+
+<P>The XTL includes an implementation of the Microsoft C run-time libraries that is customized for the Xbox.  In general, you'll find the CRT behaves the same as other Microsoft CRTs you've used.  There are cases in which, due to the underlying system support, the behavior of some CRT routines has necessarily been changed.  Some CRT functions or groups of functions have been removed as they are no longer applicable or would have little use on the Xbox.  For example, the entire <b>spawn</b> and <b>exec</b> series of CRT functions are not implemented, as the Xbox runs only one process at a time.</P>
+
+<P>In most cases, the CRT functions are implemented on top of other XTL routines that provide closer access to the hardware and the kernel.  For example, the <b>printf</b> function and other stream-based CRT file I/O routines are helper routines that wrap and eventually call the <a href="filesio_39id.htm">ReadFile</a>, <a href="filesio_3kkl.htm">WriteFile</a>, and <a href="filesio_7wmd.htm">CreateFile</a> XTL file I/O routines.  For optimal performance, use the XTL routines directly and avoid the CRT wrappers.</P>
+
+<H3>Display and Other Drivers</H3>
+
+<P>The bulk of the display driver for the GPU is contained in the XTL rather than the kernel.  The kernel contains the minimum amount of display driver code necessary to play the startup animation sequence; the rest of the display driver code is actually contained in the XTL and linked in with the game title.  The audio drivers are similarly organized, while the drivers to support peripheral access routines, such as those for reading input from the controllers, reside entirely in the XTL.</P>
+
+<!--****Stock Text. Do not change.****-->
+
+<!--**********************************-->
+
+<!--*******************************************************************************-->
+<!--****Stock Text. Do not change.****-->
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+<!--**********************************-->
+
+</BODY>
+</HTML>

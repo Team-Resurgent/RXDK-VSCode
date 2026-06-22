@@ -1,0 +1,207 @@
+# Assemble out/sdk/ for the extension: scripts from scripts/sdk, include+lib from RXDK-Libs, tools from RXDK-Tools + vendor.
+param(
+    [string]$RxdkLibsRoot = (Join-Path $PSScriptRoot '..\external\RXDK-Libs'),
+    [string]$RxdkToolsRoot = (Join-Path $PSScriptRoot '..\external\RXDK-Tools'),
+    [string]$ExtensionRoot = (Join-Path $PSScriptRoot '..'),
+    [switch]$BuildTools,
+    [switch]$CrossPlatformTools
+)
+$ErrorActionPreference = 'Stop'
+$RxdkLibsRoot = [IO.Path]::GetFullPath($RxdkLibsRoot)
+$RxdkToolsRoot = [IO.Path]::GetFullPath($RxdkToolsRoot)
+$ExtensionRoot = [IO.Path]::GetFullPath($ExtensionRoot)
+$sdkRoot = Join-Path $ExtensionRoot 'out\sdk'
+$sdkScriptsSrc = Join-Path $PSScriptRoot 'sdk'
+$requiredToolsFile = Join-Path $PSScriptRoot 'required-tools.txt'
+
+$ManagedTools = @(
+    @{ Project = 'src\Rxdk.XbCp\Rxdk.XbCp.csproj'; Name = 'xbcp' }
+    @{ Project = 'src\Rxdk.ImageBld\Rxdk.ImageBld.csproj'; Name = 'imagebld' }
+    @{ Project = 'src\Rxdk.XboxLaunch.Cli\Rxdk.XboxLaunch.Cli.csproj'; Name = 'xbox-launch' }
+    @{ Project = 'src\Rxdk.XboxDbgBridge.Cli\Rxdk.XboxDbgBridge.Cli.csproj'; Name = 'xboxdbg-bridge' }
+)
+
+function Get-RequiredToolNames {
+    Get-Content -LiteralPath $requiredToolsFile | ForEach-Object {
+        $line = $_.Trim()
+        if (-not $line -or $line.StartsWith('#')) { return }
+        $line
+    }
+}
+
+function Test-RequiredTools([string]$ToolsRoot) {
+    $missing = @()
+    Get-RequiredToolNames | ForEach-Object {
+        $full = Join-Path $ToolsRoot $_
+        if (-not (Test-Path -LiteralPath $full)) {
+            $missing += $_
+        }
+    }
+    if ($missing.Count -gt 0) {
+        throw "Missing required tools under ${ToolsRoot}: $($missing -join ', ')"
+    }
+}
+
+function Stage-Tree([string]$Src, [string]$Dest) {
+    if (Test-Path -LiteralPath $Dest) {
+        Remove-Item -LiteralPath $Dest -Recurse -Force
+    }
+    Copy-Item -LiteralPath $Src -Destination $Dest -Recurse -Force
+}
+
+function Get-RxdkToolsPublishDir([string]$Root) {
+    Join-Path $Root 'out\publish\rxdk-vscode-win-x64'
+}
+
+function Find-ManagedTool([string]$Root, [string]$Name) {
+    $file = "$Name.exe"
+    @(
+        (Join-Path (Get-RxdkToolsPublishDir $Root) $file)
+        (Join-Path $Root "out\publish\managed-cli-tools-win-x64\$file")
+        (Join-Path $Root "out\bin\x64\Release\$file")
+    ) | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+}
+
+function Publish-ManagedTool([string]$Root, [hashtable]$Tool) {
+    $project = Join-Path $Root $Tool.Project
+    if (-not (Test-Path -LiteralPath $project)) {
+        throw "Project not found: $project"
+    }
+    $outDir = Get-RxdkToolsPublishDir $Root
+    New-Item -ItemType Directory -Force -Path $outDir | Out-Null
+    dotnet publish $project -c Release -r win-x64 -o $outDir | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        throw "dotnet publish failed for $($Tool.Name)"
+    }
+    $built = Join-Path $outDir "$($Tool.Name).exe"
+    if (-not (Test-Path -LiteralPath $built)) {
+        throw "Expected publish output missing: $built"
+    }
+    return $built
+}
+
+function Resolve-ToolSource {
+    param(
+        [string]$Name,
+        [string]$RxdkToolsRoot,
+        [string]$ExtensionRoot
+    )
+    if ($Name -eq 'xdvdfs') {
+        $vendored = Join-Path $ExtensionRoot 'vendor\tools\xdvdfs.exe'
+        if (-not (Test-Path -LiteralPath $vendored)) {
+            throw "Missing vendored xdvdfs.exe at $vendored"
+        }
+        return $vendored
+    }
+    $managed = $ManagedTools | Where-Object { $_.Name -eq $Name } | Select-Object -First 1
+    if (-not $managed) {
+        throw "No source mapping for tool: $Name"
+    }
+    if ($BuildTools) {
+        Write-Host "Publishing $Name from RXDK-Tools..." -ForegroundColor Cyan
+        return Publish-ManagedTool $RxdkToolsRoot $managed
+    }
+    $source = Find-ManagedTool $RxdkToolsRoot $Name
+    if (-not $source) {
+        throw "$Name.exe not found under $RxdkToolsRoot (run with -BuildTools)"
+    }
+    return $source
+}
+
+if (-not (Test-Path -LiteralPath $requiredToolsFile)) {
+    throw "Missing $requiredToolsFile"
+}
+if (-not (Test-Path -LiteralPath $RxdkLibsRoot)) {
+    throw @"
+RXDK-Libs submodule not found at $RxdkLibsRoot
+Run: git submodule update --init external/RXDK-Libs
+"@
+}
+if (-not (Test-Path -LiteralPath $RxdkToolsRoot)) {
+    throw @"
+RXDK-Tools submodule not found at $RxdkToolsRoot
+Run: git submodule update --init external/RXDK-Tools
+"@
+}
+
+$includeHdr = Join-Path $RxdkLibsRoot 'out\include\d3d8.h'
+$requiredLibs = @('libcmt.lib', 'libcpmt.lib')
+foreach ($lib in $requiredLibs) {
+    $libPath = Join-Path $RxdkLibsRoot "out\lib\$lib"
+    if (-not (Test-Path -LiteralPath $libPath)) {
+        throw @"
+Missing $lib under $RxdkLibsRoot\out\lib
+Commit prebuilt libs in the RXDK-Libs submodule (out/lib), then bump the submodule pointer in RXDK-VSCode.
+Maintainer rebuild: .\scripts\sync-all.ps1 -Build
+"@
+    }
+}
+if (-not (Test-Path -LiteralPath $includeHdr)) {
+    throw @"
+RXDK-Libs consumer out/include not ready under $RxdkLibsRoot
+Commit prebuilt headers in the RXDK-Libs submodule (out/include), then bump the submodule pointer in RXDK-VSCode.
+Maintainer rebuild: .\scripts\sync-all.ps1 -Build
+"@
+}
+
+Stage-Tree (Join-Path $RxdkLibsRoot 'out\include') (Join-Path $sdkRoot 'include')
+Stage-Tree (Join-Path $RxdkLibsRoot 'out\lib') (Join-Path $sdkRoot 'lib')
+
+$scriptsDest = Join-Path $sdkRoot 'scripts'
+if (Test-Path -LiteralPath $scriptsDest) {
+    Remove-Item -LiteralPath $scriptsDest -Recurse -Force
+}
+if (-not (Test-Path -LiteralPath $sdkScriptsSrc)) {
+    throw "Missing SDK build scripts at $sdkScriptsSrc"
+}
+Copy-Item -LiteralPath $sdkScriptsSrc -Destination $scriptsDest -Recurse -Force
+
+$toolsDest = Join-Path $sdkRoot 'tools'
+if (Test-Path -LiteralPath $toolsDest) {
+    Remove-Item -LiteralPath $toolsDest -Recurse -Force
+}
+New-Item -ItemType Directory -Force -Path $toolsDest | Out-Null
+
+if ($CrossPlatformTools) {
+    $crossArgs = @{
+        RxdkToolsRoot  = $RxdkToolsRoot
+        ToolsDest      = $toolsDest
+        ExtensionRoot  = $ExtensionRoot
+    }
+    if ($BuildTools) { $crossArgs['BuildTools'] = $true }
+    & (Join-Path $PSScriptRoot 'stage-cross-platform-tools.ps1') @crossArgs
+    if ($LASTEXITCODE -ne 0) { throw 'stage-cross-platform-tools.ps1 failed' }
+    Test-RequiredTools $toolsDest
+} else {
+$tempTools = Join-Path ([IO.Path]::GetTempPath()) "rxdk-vscode-tools-$([Guid]::NewGuid().ToString('n'))"
+New-Item -ItemType Directory -Force -Path $tempTools | Out-Null
+try {
+    Get-RequiredToolNames | ForEach-Object {
+        $base = [IO.Path]::GetFileNameWithoutExtension($_)
+        $source = Resolve-ToolSource -Name $base -RxdkToolsRoot $RxdkToolsRoot -ExtensionRoot $ExtensionRoot
+        Copy-Item -LiteralPath $source -Destination (Join-Path $tempTools $_) -Force
+        Write-Host "OK: $($_) <= $source" -ForegroundColor Green
+    }
+    Get-ChildItem -LiteralPath $tempTools -File | ForEach-Object {
+        Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $toolsDest $_.Name) -Force
+    }
+    Test-RequiredTools $toolsDest
+}
+finally {
+    if (Test-Path -LiteralPath $tempTools) {
+        Remove-Item -LiteralPath $tempTools -Recurse -Force -ErrorAction SilentlyContinue
+    }
+}
+}
+
+$libsSha = 'unknown'
+$toolsSha = 'unknown'
+try { $libsSha = (git -C $RxdkLibsRoot rev-parse --short HEAD 2>$null) } catch { }
+try { $toolsSha = (git -C $RxdkToolsRoot rev-parse --short HEAD 2>$null) } catch { }
+@"
+rxdk-libs=$libsSha
+rxdk-tools=$toolsSha
+staged=$(Get-Date -Format 'yyyy-MM-ddTHH:mm:ss')
+"@ | Set-Content -LiteralPath (Join-Path $sdkRoot 'VERSION.txt') -Encoding ASCII
+
+Write-Host "OK: assembled out/sdk/ (scripts from scripts/sdk; include+lib from RXDK-Libs; tools from RXDK-Tools + vendor/tools)" -ForegroundColor Green

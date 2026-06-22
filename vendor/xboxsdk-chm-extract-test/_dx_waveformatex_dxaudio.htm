@@ -1,0 +1,82 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>WAVEFORMATEX</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><META NAME="MS-HKWD" CONTENT="WAVEFORMATEX [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="WAVEFORMATEX"/>
+<MSHelp:Keyword Index="F" Term="WAVEFORMATEX"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="_dx_waveformatex_dxaudio"></A>WAVEFORMATEX</H1>
+
+<P>Defines the format of waveform-audio data. Only format information common to all waveform-audio data formats is included in this structure. For formats that require additional information, this structure is included as the first member in another structure, along with the additional information.</P>
+
+<PRE class=syntax>typedef struct tWAVEFORMATEX
+{
+    WORD    wFormatTag;  
+    WORD    nChannels;  
+    DWORD   nSamplesPerSec;  
+    DWORD   nAvgBytesPerSec;   
+    WORD    nBlockAlign;   
+    WORD    wBitsPerSample;   
+    WORD    cbSize;     
+} WAVEFORMATEX, *PWAVEFORMATEX, *LPWAVEFORMATEX;
+
+ </PRE>
+
+<H4>Members</H4>
+
+<DL>
+<DT><B>wFormatTag</B> </DT>
+
+<DD>Waveform-audio format type. Format tags are registered with Microsoft Corporation for many compression algorithms. A complete list of format tags can be found in the DSound.h header file. For one- or two-channel <A HREF="P.htm#_dx_pcm_glos"><B>PCM</B></A> data, this value should be WAVE_FORMAT_PCM.</DD>
+
+<DT><B>nChannels</B> </DT>
+
+<DD>Number of channels in the waveform-audio data. Can be one, two, four, or six channels. Monaural data uses one channel, and stereo data uses two channels. For four channels, the expected order of interleaved PCM streams is left, right, left surround, and right surround. For six channels, the expected order is left, right, center, low frequency effects, left surround, and right surround.</DD>
+
+<DT><B>nSamplesPerSec</B> </DT>
+
+<DD>Sample rate, in samples per second (hertz). If <B>wFormatTag</B> is WAVE_FORMAT_PCM, then common values for <B>nSamplesPerSec</B> are 8.0 kHz, 11.025 kHz, 22.05 kHz, and 44.1 kHz. For non-PCM formats, this member must be computed according to the manufacturer's specification of the format tag. Valid sampling rates range from DSBFREQUENCY_MIN to DSBFREQUENCY_MAX.</DD>
+
+<DT><B>nAvgBytesPerSec</B> </DT>
+
+<DD>Required average data-transfer rate, in bytes per second, for the format tag. If <B>wFormatTag </B>is WAVE_FORMAT_PCM, <B>nAvgBytesPerSec</B> should be equal to the product of <B>nSamplesPerSec</B> and <B>nBlockAlign</B>. For non-PCM formats, this member must be computed according to the manufacturer's specification of the format tag. </DD>
+
+<DT><B>nBlockAlign</B> </DT>
+
+<DD>Block alignment, in bytes. The block alignment is the minimum atomic unit of data for the <B>wFormatTag</B> format type. If <B>wFormatTag</B> is WAVE_FORMAT_PCM or WAVE_FORMAT_EXTENSIBLE, <B>nBlockAlign</B> must be equal to the product of <B>nChannels</B> and <B>wBitsPerSample</B> divided by 8 (bits per byte). For non-PCM formats, this member must be computed according to the manufacturer's specification of the format tag. 
+
+<P>Software must process a multiple of <B>nBlockAlign</B> bytes of data at a time. Data written and read from a device must always start at the beginning of a block. For example, it is illegal to start playback of PCM data in the middle of a sample (that is, on a non-block-aligned boundary). 
+</DD>
+
+<DT><B>wBitsPerSample</B> </DT>
+
+<DD>Bits per sample for the <B>wFormatTag</B> format type. If <B>wFormatTag</B> is WAVE_FORMAT_PCM, then <B>wBitsPerSample</B> should be equal to 8 or 16. If <B>wFormatTag</B> is WAVE_FORMAT_EXTENSIBLE, this value can be any integer multiple of 8.</DD>
+
+<DT><B>cbSize</B> </DT>
+
+<DD>Size, in bytes, of extra format information appended to the end of the <B>WAVEFORMATEX</B> structure. This information can be used by non-PCM formats to store extra attributes for the <B>wFormatTag</B>. If no extra information is required by the <B>wFormatTag</B>, this member must be set to zero. For WAVE_FORMAT_PCM formats, this member is ignored. </DD>
+</DL>
+
+<H4>Requirements</H4>
+
+<P><B>&nbsp;&nbsp;Header: </B>Declared in DSound.h.</P>
+
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

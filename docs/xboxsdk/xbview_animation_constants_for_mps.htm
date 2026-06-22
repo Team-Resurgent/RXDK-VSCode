@@ -1,0 +1,42 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Animation Data and Shader Constants for Matrix Palette Skinning</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Animation Data and Shader Constants for Matrix Palette Skinning"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+  <MSHelp:Keyword Index="K" Term="matrix palette skinning, animation data and shader constants"/>
+</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Animation Data and Shader Constants for Matrix Palette Skinning</h1>
+<p>The animation data is stored in a resource block in the XBR file. The <a href="xbview_skeleton.htm">Skeleton::UpdateTransformations</a> function traverses the bone hierarchy and applies the animation data to each frame node, if there is any animation data for that node. <b>Skeleton::UpdateTransformations</b> also concatenates this node with all of the previous nodes to get the local transformation matrix. The animation data output by Deep Exploration requires that the animation data be concatenated in according to the following formula:</p>
+<pre class="clsCode">
+mRotation * mScale * pFrame-&gt;m_Matrix * mTranslation
+</pre>
+    <p>where mRotation is the rotation data matrix, mScale is the scale data matrix, pFrame-&gt;m_Matrix is the local transformation matrix, and mTranslation is the translation data matrix. Because matrix multiplication is not commutative, you cannot create a simple animation matrix by multiplying the rotation, scale, and translation together and then multiplying that by the frame.</p>
+<pre class="clsCode">
+( mRotation * mScale * mTranslation ) * pFrame-&gt;m_Matrix !=
+	mRotation * mScale * pFrame-&gt;m_Matrix * mTranslation)
+</pre>
+    <p>This is the reason why the <a href="xbview_xbr_getanimationdata.htm">XBR::GetAnimationData</a> function doesn't return a single matrix for the animation data and instead takes three matrices as parameters. </p><p>When <b>Skeleton::UpdateTransformations</b> has finished traversing the hierarchy, the result is that the bones are concatenated and have the animation data applied to them. You still need two other matrices to construct the matrix needed for the vertex shader constant used in the shader. The first is the inverse bone rest matrix. This matrix is written out, already inverted, by the XDX file export plug-in in Deep Exploration. It is the inverse of the rest matrix for the bone, already concatenated for that position in the hierarchy. The other matrix you will need (potentially) is the matrix to convert the skin vertices from object to world space, if they are not already in world space. Thus, the final formula to compute the vertex shader constants is:</p>
+<pre class="clsCode">
+mObjectToWorldSpace * mInverseBoneRest * mBone * mWorldToObjectSpace
+</pre>
+    <p>If the skin vertices are already in world space, mObjectToWorldSpace and its inverse, mWorldToObjectSpace will be identity, and we can save two matrix multiplies per vertex shader constant. It's usually pretty easy to ensure that the skins are in world space by having the artist do a ResetXForm in MAX or the equivalent in Maya, Lightwave, or XSI.</p><div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

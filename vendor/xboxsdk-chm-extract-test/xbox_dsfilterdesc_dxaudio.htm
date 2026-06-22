@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>DSFILTERDESC</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT>
+<META NAME="MS-HKWD" CONTENT="DSFILTERDESC [C++]">
+<xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="DSFILTERDESC"/>
+<MSHelp:Keyword Index="F" Term="DSFILTERDESC"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H1><A NAME="xbox_dsfilterdesc_dxaudio"></A>DSFILTERDESC</H1>
+
+<P>Describes the characteristics of a filter.</P>
+
+<PRE class="syntax">typedef struct _DSFILTERDESC{
+    DWORD dwMode;
+    DWORD dwQCoefficient;
+    DWORD adwCoefficients[4];
+} DSFILTERDESC, *LPDSFILTERDESC;
+</PRE>
+
+<H4>Members</H4>
+
+<DL>
+<DT><B>dwMode</B></DT>
+    <DD>Value that specifies the filter mode. Can be one of the following values:</DD>
+    
+    <DL>
+        <DT>DSFILTER_MODE_BYPASS</DT>
+            <DD>Bypass all filtering. Not valid for 3D buffers.</DD>
+        <DT>DSFILTER_MODE_DLS2</DT>
+            <DD>Perform DLS2 filtering. On 3D buffers, it should also perform I3DL2 filtering.</DD>
+        <DT>DSFILTER_MODE_PARAMEQ</DT>
+            <DD>Perform parametric EQ processing. On 3D buffers, it should also perform I3DL2 filtering.</DD>
+        <DT>DSFILTER_MODE_MULTI</DT>
+            <DD>Perform DLS2 and parametric EQ filtering on mono 2D buffers. Perform only I3DL2 filtering on mono 3D buffers.</DD>
+    </DL>
+    
+<DT><B>dwQCoefficient</B></DT>
+    <dd>Value that corresponds to how wide a range of frequencies are affected. Can be a value from zero (narrowest) to seven (widest).</dd>
+
+<DT><B>adwCoefficients</B></DT>
+    <DD>Array of values that contains the filter coefficients.</DD>
+</DL>
+
+<H4>Remarks</H4>
+<P>For stereo buffers: 1) the first and second coefficients specified in <B>adwCoefficients</B> handle the left channel, and 2) the third and fourth coefficients handle the right channel.</P>
+
+<p>For 3D buffers, you must have at least the I3DL2 filtering enabled.</p>
+
+<p>Mathematically, the Q coefficient is the peaking curve of the filter, defined as a ratio of the center frequency to the bandwidth (as defined by the +/- 3dB point). Thus, using the same Q coefficient, doubling the center frequency will also double the width in Hz. The math used for determining these coefficients can be found in the <b>SetFilter</b> XDK sample.</p>
+
+<p>The following table shows how the <b>dwQCoefficient</b> value corresponds to the Q coefficient.</p>
+
+<table>
+    <tr>
+		<th>dwQCoefficient</th>
+        <th>Q</th>
+	</tr>
+    <tr>
+		<td>0</td>
+        <td>1</td>
+	</tr>    
+    <tr>
+		<td>1</td>
+        <td>.5</td>
+	</tr>
+    <tr>
+		<td>2</td>
+        <td>.25</td>
+	</tr>
+    <tr>
+		<td>3</td>
+        <td>.125</td>
+	</tr>
+    <tr>
+		<td>4</td>
+        <td>.0625</td>
+	</tr>
+    <tr>
+		<td>5</td>
+        <td>.03125</td>
+	</tr>         
+    <tr>
+		<td>6</td>
+        <td>.015625</td>
+	</tr>          
+    <tr>
+		<td>7</td>
+        <td>.007813</td>
+	</tr>
+</table>
+
+<H4>Requirements </H4>
+<P><B>&nbsp;&nbsp;Header: </B>Declared in Dsound.h.</P>
+
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

@@ -1,0 +1,99 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>XOnlineNotificationSetState</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Attr Name="DevLang" Value="C"/>
+<MSHelp:Attr Name="DevLang" Value="C++"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangCPP"/>
+<MSHelp:Attr Name="DevLangVers" Value="kbLangC"/>
+<MSHelp:Keyword Index="K" Term="XOnlineNotificationSetState"/>
+<MSHelp:Keyword Index="F" Term="XOnlineNotificationSetState"/>
+<MSHelp:Attr Name="TopicType" Value="kbSyntax"/></xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>XOnlineNotificationSetState</h1>
+<p>Sets the current online state information for the specified player.</p><pre class="syntax" xml:space="preserve"><b>HRESULT</b> <b>XOnlineNotificationSetState(</b>
+    <b>DWORD</b> <i>dwUserIndex</i><b>,</b>
+    <b>DWORD</b> <i>dwStateFlags</i><b>,</b>
+    <b>XNKID</b> <i>sessionID</i><b>,</b>
+    <b>DWORD</b> <i>dwStateData</i><b>,</b>
+    <b>const BYTE</b> *<i>pbStateData</i>
+<b>);</b>
+</pre>
+<h4><a name="parameters"></a>Parameters</h4>
+<dl>
+<dt><i>dwUserIndex</i></dt>
+    <dd>[in]  Controller index (zero-based) of the player whose state information is being set.  The player must have been successfully logged on with a previous call to <a href="XOnlineLogon.htm">XOnlineLogon</a>.</dd>
+            
+
+<dt><i>dwStateFlags</i></dt>
+    <dd>[in]  Online state flags to set.  This parameter can be a combination of the values in the following table:</dd>
+    <table>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+        <tr>
+<td>XONLINE_FRIENDSTATE_FLAG_JOINABLE</td>
+<td>The player is in a session that other players can join.</td>
+</tr>
+        <tr>
+<td>XONLINE_FRIENDSTATE_FLAG_ONLINE</td>
+<td>The player is online.</td>
+</tr>
+        <tr>
+<td>XONLINE_FRIENDSTATE_FLAG_PLAYING</td>
+<td>The player is playing a game.</td>
+</tr>
+        <tr>
+<td>XONLINE_FRIENDSTATE_FLAG_VOICE</td>
+<td>The player has voice capability.</td>
+</tr>
+    </table>
+    <p>To have a player appear to be offline&#8212;that is, "cloaked"&#8212;clear the XONLINE_FRIENDSTATE_FLAG_ONLINE flag; even though the player is online, he or she will not appear on the friends lists of other players. However, if the cloaked player sends an invitation to a player on their friends list, he or she will appear online to that player until the invitation is resolved.</p>
+
+<dt><i>sessionID</i></dt>
+    <dd>[in]  <a href="xbox_xnkid_xsnl.htm">XNKID</a> structure that identifies the player's current session. Setting this structure to all zeroes expires any previously sent game invitations.</dd>
+            
+
+<dt><i>dwStateData</i></dt>
+    <dd>[in]  Size, in bytes, of the buffer pointed to by <i>pStateData</i>.  This value can range from zero to MAX_STATEDATA_SIZE. If the value is zero, <i>pStateData</i> must be NULL.</dd>
+            
+
+<dt><i>pbStateData</i></dt>
+    <dd>[in]  Pointer to a buffer containing title-specific state information. This parameter can be NULL if no such information is provided.</dd>
+            
+
+</dl>
+<h4><a name="return"></a>Return Values</h4>
+    <p>Returns S_OK if successful, an error code otherwise.</p>
+<h4><a name="remarks"></a>Remarks</h4>
+<p>The data specified in <i>pStateData</i> is included in the <a href="XONLINE_FRIEND.htm">XONLINE_FRIEND</a> structure returned by other online functions (such as <a href="XOnlineFriendsGetLatest.htm">XOnlineFriendsGetLatest</a>).</p>
+
+<p>State changes are sent via the <b>XOnlineLogon</b> task handle. Titles must
+pump this handle in order for state changes to be sent to the online service.</p>
+
+<h4><a name="requirements"></a>Requirements</h4>
+        <p class="clsInfo"><b>  Header: </b>Declared in Xonline.h.</p>
+            
+        <p class="clsInfo"><b>  Import Library: </b>Use Xonline.lib.</p>
+    <h4><a name="seealso"></a>See Also</h4>
+<p><a href="x_mt_xonline_functions.htm">Xbox Live Functions</a></p>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>

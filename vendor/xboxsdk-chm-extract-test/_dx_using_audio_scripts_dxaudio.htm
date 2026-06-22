@@ -1,0 +1,53 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp"><HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=Windows-1252">
+<TITLE>Using Audio Scripts</TITLE>
+<SCRIPT SRC="linkcss.js"></SCRIPT><SCRIPT SRC="langref.js"></SCRIPT><xml>
+<MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Using Audio Scripts"/>
+<MSHelp:Keyword Index="F" Term="Using Audio Scripts"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+</xml>
+</HEAD>
+<BODY TOPMARGIN="0"><TABLE CLASS="buttonbarshade" CELLSPACING=0><TR><TD>&nbsp;</TD></TR></TABLE>
+<TABLE CLASS="buttonbartable" CELLSPACING=0>
+<TR ID="hdr"><TD CLASS="runninghead" NOWRAP><IMG SRC="XDK_CHM_BANNER.jpg" WIDTH="323" HEIGHT="40" ALT="" BORDER="0"></TD></TR>
+</TABLE>
+<H2><A NAME="_dx_using_audio_scripts_dxaudio"></A>Using Audio Scripts</H2>
+
+<P>Scripts are objects authored in an application that contains a script editor, such as DirectMusic Producer. Although they consist mainly of text, script objects also contain a few binary parameters.</P>
+
+<P>For a conceptual overview, see <A HREF="_dx_audio_scripts_dxaudio.htm"><B>Audio Scripts</B></A>.</P>
+
+<P>Load a script by using the <A HREF="_dx_idirectmusicloader8_loadobjectfromfile_dxaudio.htm"><B>IDirectMusicLoader8::LoadObjectFromFile</B></A> method. Obtain the <A HREF="_dx_idirectmusicscript8_dxaudio.htm"><B>IDirectMusicScript8</B></A> interface, then call <A HREF="_dx_idirectmusicscript8_init_dxaudio.htm"><B>IDirectMusicScript8::Init</B></A> to associate the script with a performance.</P>
+
+<P>The following code loads and initializes a script. Assume that <I>m_pLoader</I> is an <A HREF="_dx_idirectmusicloader8_dxaudio.htm"><B>IDirectMusicLoader8</B></A> interface, <I>m_PPerformance</I> is an <A HREF="_dx_idirectmusicperformance8_dxaudio.htm"><B>IDirectMusicPerformance8</B></A> interface, and <I>strFileName</I> contains the name of the file.</P>
+
+<PRE>IDirectMusicScript8*  pScript = NULL;
+DMUS_SCRIPT_ERRORINFO errInfo;
+HRESULT               hr;
+ 
+if (SUCCEEDED(hr = m_pLoader-&gt;LoadObjectFromFile( 
+        CLSID_DirectMusicScript, IID_IDirectMusicScript8,
+        strFileName, (LPVOID*) &amp;pScript)))
+{
+    hr = pScript-&gt;Init( m_pPerformance, &amp;errInfo);
+}
+</PRE>
+
+<P>Apart from <B>Init</B>, the methods of <B>IDirectMusicScript8</B> have two main purposes:
+
+<UL>
+	<LI>Set and retrieve the value of variables declared in the script. Because script routines do not accept parameters, variables are the only way for the script and the application to exchange information.</LI>
+
+	<LI>Call routines. A routine must finish executing before the application thread can continue.</LI>
+</UL>
+
+<P>All the methods of <B>IDirectMusicScript8</B> retrieve error information in a <A HREF="_dx_dmus_script_errorinfo_dxaudio.htm"><B>DMUS_SCRIPT_ERRORINFO</B></A> structure. An error can occur if a variable is not found or code within a routine fails to execute.</P>
+
+<P>Scripts can also be used without being directly loaded or called by the application. A segment authored in DirectMusic Producer can contain a script track that triggers calls to routines in one or more scripts.</P>
+<DIV CLASS="footer" ID="footer">Unpublished work.  &#169 2000 Microsoft Corporation.  All rights reserved.</DIV>
+</BODY>
+</HTML>

@@ -1,0 +1,96 @@
+<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=Windows-1252">
+<title>Graphics Libraries</title>
+<meta http-equiv="Content-Type" content="text/html; charset=Windows-1252"><script src="linkcss.js"></script><script src="langref.js"></script><style>
+            p.clsInfo {margin-bottom:0px;margin-top:2px}
+            
+            span.clsWarning {display:none}
+                
+                
+            span.clsPreliminary {color:#C1C0C0}
+            span.clsLink{color:blue;cursor:pointer;}    
+        </style><xml><MSHelp:Attr Name="DocSet" Value="Xbox"/>
+<MSHelp:Attr Name="Locale" Value="kbEnglish"/>
+<MSHelp:Attr Name="projtype" Value="XboxProj"/>
+<MSHelp:Keyword Index="K" Term="Graphics Libraries"/>
+<MSHelp:Attr Name="TopicType" Value="kbOrient"/>
+	<MSHelp:Keyword Index="K" Term="DirectX graphics libraries"/>
+	<MSHelp:Keyword Index="K" Term="Direct3D graphics libraries"/>
+	<MSHelp:Keyword Index="K" Term="Xgraphics libraries"/>
+	<MSHelp:Keyword Index="K" Term="graphics libraries, Direct3D"/>
+	<MSHelp:Keyword Index="K" Term="graphics libraries, Direct3DX"/>
+	<MSHelp:Keyword Index="K" Term="graphics libraries, Xgraphics"/>
+	<MSHelp:Keyword Index="K" Term="release builds, approved libraries for"/>
+	<MSHelp:Keyword Index="K" Term="performance tuning, libraries for"/>
+	<MSHelp:Keyword Index="K" Term="import libraries, Direct3D graphics"/>
+	<MSHelp:Keyword Index="K" Term="math library, Xgraphics"/>
+	<MSHelp:Keyword Index="K" Term="game prototyping with Direct3DX"/>
+	<MSHelp:Keyword Index="K" Term="libraries, graphics"/>
+	<MSHelp:Keyword Index="K" Term="prototyping games with Direct3DX"/>
+	</xml></head>
+<body topmargin="0">
+<table class="buttonbarshade" cellspacing="0"><tr><td>
+</td></tr></table>
+<table class="buttonbartable" cellspacing="0">
+<tr id="hdr"><td class="runninghead" nowrap="1"><img src="XDK_CHM_BANNER.jpg" width="323" height="40" alt="" border="0"></td></tr>
+</table>
+<h1>Graphics Libraries</h1>
+<p>This section provides information about the libraries used for DirectX graphics on Xbox. This section also provides a roadmap describing how to best use those libraries.</p>
+<ul>
+<li><a href="#libraries">Libraries</a></li><li><a href="#IDA32M2">Graphics Roadmap</a></li></ul>
+<h2><a name="libraries"></a>Libraries</h2>
+<p>Xbox has three types of libraries that can be linked to:</p>
+<ul>
+<li><a href="#IDAWZM2">Direct3D</a></li><li><a href="#IDAR1M2">Direct3DX</a></li><li><a href="#IDAD2M2">Xgraphics</a></li></ul>
+<h3><a name="IDAWZM2"></a>Direct3D</h3>
+					<p>Direct3D is the workhorse of DirectX graphics. It provides functions for drawing, manipulating textures, surfaces, push-buffers, lights, resource management, and much more.</p>
+					<p>There are five import libraries that your title can link to:</p>
+					<ul>
+						<li>D3d8.lib</li>
+						<li>D3d8ltcg.lib</li>
+						<li>D3d8d.lib</li>
+						<li>D3d8i.lib</li>
+						<li>D3d8-xbox.lib</li>
+					</ul>
+					<p>For release builds, the only approved libraries are D3d8.lib and D3d8ltcg.lib. To take advantage of <a href="xbox_tool_vc7_cmdline.htm#link_time_code_generation">Link Time Code Generation</a>, titles need to link to D3d8ltcg.lib.</p> 
+					<p>D3d8d.lib is a debug version of the Direct3D library.</p>
+					<p>D3d8i.lib provides a version of the Direct3D library that can be used for performance tuning. Software-based performance counters are enabled when you link to this library. For more information about Direct3D performance counters, see <a href="_dx_d3dperf_reference_graphics.htm">Direct3D Performance Counters</a>.</p>
+					<p>D3d8-xbox.lib is a version of Xbox's Direct3D library that, in conjunction with d3d8-xbox.h, can be used on the PC to create push-buffers at game author time. It functions as the Xbox's Direct3D implementation does when <a href="_dx_d3d_nullhardware_graphics.htm">D3D__NullHardware</a> is set to TRUE. This library behaves identically to the D3d8d.lib, except that nothing shows up on the screen and no GPU event callbacks are done. In particular, <a href="_dx_direct3dcreate8_graphics.htm">Direct3DCreate8</a> and <a href="_dx_idirect3d8_createdevice_graphics.htm">CreateDevice</a> are called as they are on the PC, and push-buffers may be recorded using <a href="_dx_idirect3ddevice8_beginpushbuffer_graphics.htm">BeginPushBuffer</a>/<a href="_dx_idirect3ddevice8_endpushbuffer_graphics.htm">EndPushbuffer</a>.</p>
+
+				<h3><a name="IDAR1M2"></a>Direct3DX</h3>
+					<p>Direct3DX provides utility functions that allow rapid prototyping of your game. It has functions to load resources from files, manipulate meshes, use fonts, and do many other useful things. Many functions in Direct3DX can cause performance problems. As a result, use of this library in a retail game is not recommended.</p>
+					<p>There are two import libraries that your title can link to:</p>
+					<ul>
+						<li>D3dx8.lib</li>
+						<li>D3dx8d.lib</li>
+					</ul>
+					<p>D3dx8.lib is the only approved version of the library that release versions of your title can link to. D3d8xd.lib is the debug version of the library.</p>
+				<h3><a name="IDAD2M2"></a>Xgraphics</h3>
+					<p>The Xgraphics library provides you with functions for assembling, splicing, and comparing shader programs, setting resource headers, swizzling and unswizzling textures, and performing many other tasks. It also provides a math library that is optimized for use on the Xbox. In many instances (matrix mulitplying, for example), the Xgraphics math library performs the comparable operation three times faster than Direct3DX.</p>
+					<ul>
+						<li>Xgraphics.lib</li>
+						<li>Xgraphicsltcg.lib</li>
+						<li>Xgraphicsd.lib</li>
+					</ul>
+					<p>For release builds, the only approved libraries are Xgraphics.lib and Xgraphicsltcg.lib. To take advantage of <b>Link Time Code Generation</b>, titles need to link to Xgraphicsltcg.lib.</p>  
+					<p>Xgraphicsd.lib is is the debug version of the library.</p>
+				<h2><a name="IDA32M2"></a>Graphics Roadmap</h2>
+<p>Information on DirectX graphics is presented in the following sections:</p><ul>
+			
+			<li><a href="graphics_overviews.htm">Graphics Overviews</a> 
+				<p>This section contains overviews related to DirectX graphics for Xbox.</p>
+			</li>
+			<li><a href="graphics_tutorials.htm">Graphics Tutorials</a>
+				<p>This section contains tutorials showing how to use DirectX graphics.</p>
+			</li>
+			<li><a href="graphics_reference.htm">Graphics Reference</a>
+				<p>This section contains the reference pages for DirectX graphics, including syntax for methods, functions, enumerations, and structures. It includes an explanation of how each method works and often includes code snippets.</p>
+			</li>
+			<li><a href="_dx_iunknown_interface_dxintro.htm">IUnknown Interface Methods</a>
+				<p>This section discusses the <a href="_dx_iunknown_addref_dxintro.htm">AddRef</a> and <a href="_dx_iunknown_release_dxintro.htm">Release</a> methods.</p>
+			</li>
+		</ul>
+<div class="footer" id="footer">Unpublished work.  © 2000 Microsoft Corporation.  All rights reserved.</div>
+</body>
+</html>
