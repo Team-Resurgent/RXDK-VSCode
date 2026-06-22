@@ -83,7 +83,7 @@ GitHub Actions workflow [`.github/workflows/build-vsix.yml`](../.github/workflow
 | Job | Runner | Purpose |
 |-----|--------|---------|
 | `build` | `windows-latest` | checkout (with submodules), `setup-node`, `setup-dotnet`, `npm ci`, package VSIX, `upload-artifact` |
-| `release` | `ubuntu-latest` | On `v*` tags (or manual **Publish release**), `download-artifact` + `gh release create` |
+| `release` | `ubuntu-latest` | After a successful build on `master`/`main` (pre-release `vsix-<run>`), on `v*` tags (stable release), or manual **Publish release** |
 
 **No MSVC on CI.** Xbox headers and `.lib` files come from committed `RXDK-Libs/out/`. After changing RXDK-Libs source, rebuild locally, commit `out/include` + `out/lib` in that repo, push, then bump the submodule pointer in RXDK-VSCode.
 
