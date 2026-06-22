@@ -5,7 +5,10 @@ REM   install-extension.cmd -Build       Build cross-platform VSIX first, then i
 REM   install-extension.cmd -Target vscode|cursor|both
 
 set "ROOT=%~dp0"
-set "ARGS=-ExtensionRoot \"%ROOT%\" -Target auto"
+set "EXTROOT=%ROOT%"
+if "%EXTROOT:~-1%"=="\" set "EXTROOT=%EXTROOT:~0,-1%"
+set "TARGET=auto"
+set "BUILD="
 
 if exist "%ROOT%scripts\install-extension.ps1" (
     set "PS1=%ROOT%scripts\install-extension.ps1"
@@ -14,14 +17,14 @@ if exist "%ROOT%scripts\install-extension.ps1" (
 )
 
 if /i "%~1"=="-Build" (
-    set "ARGS=%ARGS% -Build"
+    set "BUILD=-Build"
     shift
 )
 
 :parse
 if "%~1"=="" goto run
 if /i "%~1"=="-Target" (
-    set "ARGS=%ARGS% -Target %~2"
+    set "TARGET=%~2"
     shift
     shift
     goto parse
@@ -30,7 +33,11 @@ shift
 goto parse
 
 :run
-powershell -NoProfile -ExecutionPolicy Bypass -File "%PS1%" %ARGS%
+if defined BUILD (
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%PS1%" -ExtensionRoot "%EXTROOT%" -Target %TARGET% %BUILD%
+) else (
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%PS1%" -ExtensionRoot "%EXTROOT%" -Target %TARGET%
+)
 set "EXITCODE=%ERRORLEVEL%"
 echo.
 set /p "DONE=Press Enter to close... "

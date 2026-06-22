@@ -12,6 +12,7 @@ $ErrorActionPreference = 'Stop'
 function Resolve-ExtensionRootPath {
     param([string]$ScriptRoot, [string]$Explicit)
     if ($Explicit) {
+        $Explicit = $Explicit.Trim().Trim('"')
         return [IO.Path]::GetFullPath($Explicit)
     }
     foreach ($dir in @($ScriptRoot, (Split-Path -Parent $ScriptRoot))) {
@@ -30,6 +31,7 @@ $ExtensionRoot = Resolve-ExtensionRootPath -ScriptRoot $PSScriptRoot -Explicit $
 function Resolve-VsixPath {
     param([string]$Root, [string]$Explicit)
     if ($Explicit) {
+        $Explicit = $Explicit.Trim().Trim('"')
         $full = [IO.Path]::GetFullPath($Explicit)
         if (-not (Test-Path -LiteralPath $full)) {
             throw "VSIX not found: $full"
