@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { isPrebuiltManifest, manifestUsesCpp, RxdkProjectManifest } from './projectTypes';
+import { getBundledSdkRoot, getSdkIncludeDir, getSdkLibDir } from './sdkPath';
 
 const EXTENSION_ID = 'rxdk-libs.rxdk-vscode';
 const EXTENSION_ROOT = `\${extensionInstallFolder:${EXTENSION_ID}}`;
@@ -36,10 +37,31 @@ export async function generateVscodeFolder(
     fs.mkdirSync(vscodeDir, { recursive: true });
 
     const sdkRoot = SDK_ROOT;
+    const bundledRoot = getBundledSdkRoot(_context);
+    const includeDir = getSdkIncludeDir(_context).replace(/\\/g, '/');
+    const libDir = getSdkLibDir(_context).replace(/\\/g, '/');
     const buildScript = `${SDK_ROOT}/scripts/Build-XboxProject.ps1`;
     const deployScript = `${SDK_ROOT}/scripts/Invoke-XboxDeploy.ps1`;
     const launchScript = `${SDK_ROOT}/scripts/Invoke-XboxLaunch.ps1`;
     const bridgePath = `${SDK_ROOT}/tools/xboxdbg-bridge.exe`;
+
+    const buildTaskArgs = [
+        '-NoProfile',
+        '-ExecutionPolicy',
+        'Bypass',
+        '-File',
+        buildScript,
+        '-SdkRoot',
+        sdkRoot,
+        '-ProjectRoot',
+        '${workspaceFolder}',
+    ];
+    if (includeDir !== path.join(bundledRoot, 'include').replace(/\\/g, '/')) {
+        buildTaskArgs.push('-IncludeDir', includeDir);
+    }
+    if (libDir !== path.join(bundledRoot, 'lib').replace(/\\/g, '/')) {
+        buildTaskArgs.push('-LibDir', libDir);
+    }
 
     const tasks = {
         version: '2.0.0',
@@ -48,17 +70,7 @@ export async function generateVscodeFolder(
                 label: 'rxdk: build',
                 type: 'shell',
                 command: 'powershell',
-                args: [
-                    '-NoProfile',
-                    '-ExecutionPolicy',
-                    'Bypass',
-                    '-File',
-                    buildScript,
-                    '-SdkRoot',
-                    sdkRoot,
-                    '-ProjectRoot',
-                    '${workspaceFolder}',
-                ],
+                args: buildTaskArgs,
                 group: { kind: 'build', isDefault: true },
                 problemMatcher: ['$msCompile'],
             },
@@ -133,7 +145,7 @@ export async function generateVscodeFolder(
     };
 
     if (manifestUsesCpp(manifest)) {
-        const includePath = [`${sdkRoot}/include`];
+        const includePath = [includeDir];
         for (const rel of manifest.includePaths ?? []) {
             if (!rel.trim()) {
                 continue;

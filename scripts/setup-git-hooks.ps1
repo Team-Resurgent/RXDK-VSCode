@@ -21,6 +21,5 @@ function Enable-Hooks([string]$RepoRoot) {
 
 Enable-Hooks $root
 if ($Submodules) {
-    Enable-Hooks (Join-Path $root 'external\RXDK-Libs')
     Enable-Hooks (Join-Path $root 'external\RXDK-Tools')
 }

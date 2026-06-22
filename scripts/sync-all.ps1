@@ -1,16 +1,14 @@
-# Populate out/sdk and compile extension into out/. Requires external/ submodules. Templates live in templates/.
+# Populate out/sdk and compile extension into out/. Requires external/RXDK-Tools submodule.
+# Headers/libs are cloned from RXDK-SDK on extension activate (not bundled in the VSIX).
 param(
-    [string]$RxdkLibsRoot = (Join-Path $PSScriptRoot '..\external\RXDK-Libs'),
     [string]$RxdkToolsRoot = (Join-Path $PSScriptRoot '..\external\RXDK-Tools'),
     [string]$ExtensionRoot = (Join-Path $PSScriptRoot '..'),
-    [switch]$Build,
     [switch]$BuildTools,
     [switch]$Package,
     [switch]$CrossPlatformTools,
     [switch]$InstallExtension
 )
 $ErrorActionPreference = 'Stop'
-$RxdkLibsRoot = [IO.Path]::GetFullPath($RxdkLibsRoot)
 $RxdkToolsRoot = [IO.Path]::GetFullPath($RxdkToolsRoot)
 $ExtensionRoot = [IO.Path]::GetFullPath($ExtensionRoot)
 
@@ -21,7 +19,6 @@ function Test-StepExitCode {
         [switch]$RobocopyAware
     )
     if ($RobocopyAware) {
-        # robocopy uses 0-7 for success (files copied/extra dirs); only >= 8 is failure.
         if ($LASTEXITCODE -ge 8) {
             throw "$StepName failed (exit $LASTEXITCODE)"
         }
@@ -32,51 +29,15 @@ function Test-StepExitCode {
     }
 }
 
-function Test-PrebuiltRxdkLibs {
-    param([Parameter(Mandatory)][string]$Root)
-    $required = @(
-        (Join-Path $Root 'out\include\d3d8.h'),
-        (Join-Path $Root 'out\lib\libcmt.lib'),
-        (Join-Path $Root 'out\lib\libcpmt.lib')
-    )
-    $missing = @($required | Where-Object { -not (Test-Path -LiteralPath $_) })
-    if ($missing.Count -eq 0) {
-        return
-    }
-    throw @"
-Missing prebuilt RXDK-Libs consumer output:
-$($missing -join [Environment]::NewLine)
-
-Build and commit libs in the RXDK-Libs submodule (out/include + out/lib), then bump the submodule pointer here.
-Maintainer full rebuild from this repo: .\scripts\sync-all.ps1 -Build
-"@
+if (-not (Test-Path -LiteralPath $RxdkToolsRoot)) {
+    throw "RXDK-Tools submodule not found at $RxdkToolsRoot. Run: git submodule update --init external/RXDK-Tools"
 }
 
-foreach ($sub in @(
-        @{ Name = 'RXDK-Libs'; Path = $RxdkLibsRoot; Init = 'external/RXDK-Libs' }
-        @{ Name = 'RXDK-Tools'; Path = $RxdkToolsRoot; Init = 'external/RXDK-Tools' }
-    )) {
-    if (-not (Test-Path -LiteralPath $sub.Path)) {
-        throw "$($sub.Name) submodule not found at $($sub.Path). Run: git submodule update --init $($sub.Init)"
-    }
-}
-
-Write-Host '=== RXDK-Libs ===' -ForegroundColor Cyan
-if ($Build) {
-    Write-Host '=== RXDK-Libs: sync-modern-stl ===' -ForegroundColor Cyan
-    & (Join-Path $RxdkLibsRoot 'scripts\sync-modern-stl.ps1')
-    Test-StepExitCode -StepName 'sync-modern-stl.ps1' -RobocopyAware
-    $consumerArgs = @{ XdkLibsRoot = $RxdkLibsRoot; Build = $true }
-    & (Join-Path $RxdkLibsRoot 'scripts\install-consumer-out.ps1') @consumerArgs
-    Test-StepExitCode -StepName 'install-consumer-out.ps1'
-} else {
-    Test-PrebuiltRxdkLibs -Root $RxdkLibsRoot
-    Write-Host 'Using prebuilt RXDK-Libs out/include + out/lib (committed in submodule)' -ForegroundColor Green
-}
+Write-Host '=== RXDK-SDK ===' -ForegroundColor Cyan
+Write-Host 'Headers/libs: cloned from https://github.com/Team-Resurgent/RXDK-SDK on extension activate' -ForegroundColor Green
 
 Write-Host '=== Assemble out/sdk ===' -ForegroundColor Cyan
 $assembleArgs = @{
-    RxdkLibsRoot  = $RxdkLibsRoot
     RxdkToolsRoot = $RxdkToolsRoot
     ExtensionRoot = $ExtensionRoot
 }
@@ -98,7 +59,7 @@ try {
     Pop-Location
 }
 
-$toolCount = (Get-ChildItem -LiteralPath (Join-Path $ExtensionRoot 'out\sdk\tools') -File -ErrorAction SilentlyContinue).Count
+$toolCount = (Get-ChildItem -LiteralPath (Join-Path $ExtensionRoot 'out\sdk\tools') -Recurse -File -ErrorAction SilentlyContinue).Count
 $version = Get-Content -LiteralPath (Join-Path $ExtensionRoot 'out\sdk\VERSION.txt') -ErrorAction SilentlyContinue
 Write-Host @"
 

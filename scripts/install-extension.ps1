@@ -76,7 +76,7 @@ function Get-EditorClis {
 }
 
 if ($Build) {
-    & (Join-Path $ExtensionRoot 'scripts\build-vsix.ps1') -ExtensionRoot $ExtensionRoot -Build
+    & (Join-Path $ExtensionRoot 'scripts\build-vsix.ps1') -ExtensionRoot $ExtensionRoot
 }
 
 $vsix = Resolve-VsixPath -Root $ExtensionRoot -Explicit $VsixPath

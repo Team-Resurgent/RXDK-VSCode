@@ -4,6 +4,8 @@ param(
     [string]$SdkRoot,
     [Parameter(Mandatory)]
     [string]$ProjectRoot,
+    [string]$IncludeDir,
+    [string]$LibDir,
     [string]$MsvcVersion,
     [switch]$CompileOnly
 )
@@ -34,7 +36,7 @@ function Get-MsvcToolsetVersion {
     return $latest.Name
 }
 
-$paths = Get-XboxSdkPaths -SdkRoot $SdkRoot
+$paths = Get-XboxSdkPaths -SdkRoot $SdkRoot -IncludeDir $IncludeDir -LibDir $LibDir
 $ProjectRoot = [IO.Path]::GetFullPath($ProjectRoot)
 $manifest = Get-XboxProjectManifest -ProjectRoot $ProjectRoot
 $projectName = $manifest.name

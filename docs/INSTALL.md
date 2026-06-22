@@ -8,7 +8,7 @@
 - Original Xbox devkit on the network
 - PowerShell 5.1+ (Windows) or PowerShell 7+ (macOS/Linux install script)
 
-The extension bundles RXDK headers, libraries, and host tools. You do **not** need to clone RXDK-Libs.
+The extension clones [RXDK-SDK](https://github.com/Team-Resurgent/RXDK-SDK) headers and libraries on first launch (see **RXDK: Open SDK Folder**). Host tools ship in the VSIX.
 
 ## Install the extension
 
@@ -82,6 +82,7 @@ Install a newer VSIX the same way as above, then reload.
 | Extension in Cursor, not VS Code | Use VS Code’s `code.cmd` path (see above) |
 | RXDK icon missing | Command Palette → **RXDK: Show RXDK Sidebar**; right-click Activity Bar → enable RXDK |
 | Deploy fails, empty ConsoleName | **Windows:** set IP via XBSetIP / Neighborhood, or **RXDK: Set Xbox IP**. **macOS/Linux:** set `rxdk.defaultConsole` in workspace/user settings JSON |
+| Build fails: missing sdk/include | Reload VS Code to trigger RXDK-SDK clone, or **RXDK: Open SDK Folder** → Clone now |
 | Build fails: `cl.exe not found` | Install VS2022 C++ workload; restart VS Code |
 | F5 hangs / LNK1201 | Shift+F5 to stop debug session (PDB locked) |
 | F5 deploys but debug never starts | Reinstall extension (`install-extension.cmd`); DAP needs `@vscode/debugadapter` bundled in VSIX. Check **Debug Console** for `xbox-dap:` lines |

@@ -1,13 +1,12 @@
-# Assemble out/sdk/ for the extension: scripts from scripts/sdk, include+lib from RXDK-Libs, tools from RXDK-Tools + vendor.
+# Assemble out/sdk/ for the extension: scripts from scripts/sdk, tools from RXDK-Tools + vendor.
+# Headers/libs are cloned from RXDK-SDK on extension activate (not bundled in the VSIX).
 param(
-    [string]$RxdkLibsRoot = (Join-Path $PSScriptRoot '..\external\RXDK-Libs'),
     [string]$RxdkToolsRoot = (Join-Path $PSScriptRoot '..\external\RXDK-Tools'),
     [string]$ExtensionRoot = (Join-Path $PSScriptRoot '..'),
     [switch]$BuildTools,
     [switch]$CrossPlatformTools
 )
 $ErrorActionPreference = 'Stop'
-$RxdkLibsRoot = [IO.Path]::GetFullPath($RxdkLibsRoot)
 $RxdkToolsRoot = [IO.Path]::GetFullPath($RxdkToolsRoot)
 $ExtensionRoot = [IO.Path]::GetFullPath($ExtensionRoot)
 $sdkRoot = Join-Path $ExtensionRoot 'out\sdk'
@@ -111,41 +110,12 @@ function Resolve-ToolSource {
 if (-not (Test-Path -LiteralPath $requiredToolsFile)) {
     throw "Missing $requiredToolsFile"
 }
-if (-not (Test-Path -LiteralPath $RxdkLibsRoot)) {
-    throw @"
-RXDK-Libs submodule not found at $RxdkLibsRoot
-Run: git submodule update --init external/RXDK-Libs
-"@
-}
 if (-not (Test-Path -LiteralPath $RxdkToolsRoot)) {
     throw @"
 RXDK-Tools submodule not found at $RxdkToolsRoot
 Run: git submodule update --init external/RXDK-Tools
 "@
 }
-
-$includeHdr = Join-Path $RxdkLibsRoot 'out\include\d3d8.h'
-$requiredLibs = @('libcmt.lib', 'libcpmt.lib')
-foreach ($lib in $requiredLibs) {
-    $libPath = Join-Path $RxdkLibsRoot "out\lib\$lib"
-    if (-not (Test-Path -LiteralPath $libPath)) {
-        throw @"
-Missing $lib under $RxdkLibsRoot\out\lib
-Commit prebuilt libs in the RXDK-Libs submodule (out/lib), then bump the submodule pointer in RXDK-VSCode.
-Maintainer rebuild: .\scripts\sync-all.ps1 -Build
-"@
-    }
-}
-if (-not (Test-Path -LiteralPath $includeHdr)) {
-    throw @"
-RXDK-Libs consumer out/include not ready under $RxdkLibsRoot
-Commit prebuilt headers in the RXDK-Libs submodule (out/include), then bump the submodule pointer in RXDK-VSCode.
-Maintainer rebuild: .\scripts\sync-all.ps1 -Build
-"@
-}
-
-Stage-Tree (Join-Path $RxdkLibsRoot 'out\include') (Join-Path $sdkRoot 'include')
-Stage-Tree (Join-Path $RxdkLibsRoot 'out\lib') (Join-Path $sdkRoot 'lib')
 
 $scriptsDest = Join-Path $sdkRoot 'scripts'
 if (Test-Path -LiteralPath $scriptsDest) {
@@ -194,14 +164,13 @@ finally {
 }
 }
 
-$libsSha = 'unknown'
+$libsSha = 'n/a'
 $toolsSha = 'unknown'
-try { $libsSha = (git -C $RxdkLibsRoot rev-parse --short HEAD 2>$null) } catch { }
 try { $toolsSha = (git -C $RxdkToolsRoot rev-parse --short HEAD 2>$null) } catch { }
 @"
-rxdk-libs=$libsSha
+rxdk-sdk=cloned-on-activate
 rxdk-tools=$toolsSha
 staged=$(Get-Date -Format 'yyyy-MM-ddTHH:mm:ss')
 "@ | Set-Content -LiteralPath (Join-Path $sdkRoot 'VERSION.txt') -Encoding ASCII
 
-Write-Host "OK: assembled out/sdk/ (scripts from scripts/sdk; include+lib from RXDK-Libs; tools from RXDK-Tools + vendor/tools)" -ForegroundColor Green
+Write-Host "OK: assembled out/sdk/ (scripts + tools; include/lib from RXDK-SDK git clone on activate)" -ForegroundColor Green

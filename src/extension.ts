@@ -5,6 +5,7 @@ import { RxdkSidebarProvider } from './sidebarProvider';
 import { createProject, findProjectManifest } from './projectManager';
 import { runRxdkTask } from './buildRunner';
 import { getBridgePath } from './sdkPath';
+import { ensureSdkStaging, openStagedSdkFolder } from './sdkStaging';
 import { ensureVscodeForWorkspace, generateVscodeFolder } from './vscodeGenerator';
 import { RxdkTemplateId } from './projectTypes';
 import { getActiveXboxAddress, promptSetXboxIp } from './xboxConsole';
@@ -21,6 +22,7 @@ export function activate(context: vscode.ExtensionContext): void {
     context.subscriptions.push(rxdkOutput);
 
     sidebarProvider = new RxdkSidebarProvider(context);
+    void ensureSdkStaging(context, rxdkOutput).then(() => sidebarProvider.refresh());
     const treeView = vscode.window.createTreeView('rxdk.explorer', {
         treeDataProvider: sidebarProvider,
         showCollapseAll: false,
@@ -98,6 +100,7 @@ export function activate(context: vscode.ExtensionContext): void {
             vscode.window.showInformationMessage('RXDK workspace tasks and launch config refreshed.');
         }),
         vscode.commands.registerCommand('rxdk.openSdkDocs', () => openSdkDocs(context)),
+        vscode.commands.registerCommand('rxdk.openSdkFolder', () => openStagedSdkFolder(context)),
         vscode.commands.registerCommand('xbox.pickConsole', () => promptSetXboxIp())
     );
 

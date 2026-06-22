@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { getSdkRoot, getSdkScriptsDir } from './sdkPath';
+import { getSdkRoot, getSdkScriptsDir, getSdkIncludeDir, getSdkLibDir } from './sdkPath';
+import { isStagedSdkPresent, getStagedSdkRoot } from './sdkStaging';
 import { findProjectManifest } from './projectManager';
 import { getActiveXboxAddress } from './xboxConsole';
 import { isPrebuiltManifest } from './projectTypes';
@@ -18,8 +19,17 @@ export async function runRxdkTask(
         return false;
     }
 
+    if (!isPrebuiltManifest(found.manifest) && !isStagedSdkPresent(context)) {
+        const sdkPath = getStagedSdkRoot(context);
+        vscode.window.showErrorMessage(
+            `RXDK SDK not installed. Reload the window to trigger clone, or: git clone --depth 1 https://github.com/Team-Resurgent/RXDK-SDK.git "${sdkPath}"`
+        );
+        return false;
+    }
+
     const scripts = getSdkScriptsDir(context);
     const sdkRoot = getSdkRoot(context);
+    const sdkPathArgs = buildSdkPathArgs(context);
     const projectRoot = found.folder.uri.fsPath;
     const name = found.manifest.name;
 
@@ -38,7 +48,7 @@ export async function runRxdkTask(
     if (kind === 'build+deploy') {
         const buildOk = await runPowerShell(
             path.join(scripts, scriptMap.build),
-            ['-SdkRoot', sdkRoot, '-ProjectRoot', projectRoot, ...msvcArgsFromConfig()],
+            ['-SdkRoot', sdkRoot, '-ProjectRoot', projectRoot, ...sdkPathArgs, ...msvcArgsFromConfig()],
             output,
             'RXDK Build'
         );
@@ -56,7 +66,7 @@ export async function runRxdkTask(
     const script = path.join(scripts, scriptMap[kind]);
     const args =
         kind === 'build'
-            ? ['-SdkRoot', sdkRoot, '-ProjectRoot', projectRoot, ...msvcArgsFromConfig()]
+            ? ['-SdkRoot', sdkRoot, '-ProjectRoot', projectRoot, ...sdkPathArgs, ...msvcArgsFromConfig()]
             : ['-SdkRoot', sdkRoot, '-ProjectRoot', projectRoot, '-ProjectName', name, ...consoleArgs];
 
     return runPowerShell(script, args, output, `RXDK ${kind}`);
@@ -99,6 +109,20 @@ async function deployConsoleArgs(): Promise<string[]> {
 function msvcArgsFromConfig(): string[] {
     const msvc = vscode.workspace.getConfiguration('rxdk').get<string>('msvcVersion')?.trim();
     return msvc ? ['-MsvcVersion', msvc] : [];
+}
+
+function buildSdkPathArgs(context: vscode.ExtensionContext): string[] {
+    const bundled = path.join(context.extensionPath, 'out', 'sdk');
+    const includeDir = getSdkIncludeDir(context);
+    const libDir = getSdkLibDir(context);
+    const args: string[] = [];
+    if (includeDir !== path.join(bundled, 'include')) {
+        args.push('-IncludeDir', includeDir);
+    }
+    if (libDir !== path.join(bundled, 'lib')) {
+        args.push('-LibDir', libDir);
+    }
+    return args;
 }
 
 function runPowerShell(

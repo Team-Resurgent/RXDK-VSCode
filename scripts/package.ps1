@@ -39,8 +39,6 @@ try {
     $required = @(
         'out\extension\extension.js'
         'out\debug\adapter.js'
-        'out\sdk\include\d3d8.h'
-        'out\sdk\lib\libcmt.lib'
         'out\sdk\tools\xbcp.exe'
         'out\sdk\tools\xboxdbg-bridge.exe'
         'out\sdk\scripts\Build-XboxProject.ps1'

@@ -1,6 +1,6 @@
 # RXDK VS Code Extension
 
-All-in-one extension for original Xbox development in **VS Code** or **Cursor**. Bundles RXDK headers, libraries, and host tools so you can create projects, build, deploy, run, and debug without separate SDK checkouts.
+All-in-one extension for original Xbox development in **VS Code** or **Cursor**. Host tools and build scripts ship in the VSIX; headers and libraries are cloned from [RXDK-SDK](https://github.com/Team-Resurgent/RXDK-SDK) on first launch.
 
 ## Quick start
 
@@ -68,30 +68,25 @@ Each project uses `rxdk.project.json` at the workspace root. New projects get `.
 | **Create project** | Templates, **New Prebuilt XBE Project** |
 | **Build / run** | Build, Deploy, Run, Debug (when a project is open) |
 | **Documentation** | In-editor Xbox SDK reference (`docs/xboxsdk/`) |
+| **SDK** | Version, **Open SDK folder** (cloned include/lib) |
 
 ## Maintainers
 
-Clone with submodules:
+Clone with submodule:
 
 ```powershell
-git submodule update --init --recursive external/RXDK-Libs external/RXDK-Tools
+git submodule update --init external/RXDK-Tools
 ```
 
-Build a cross-platform VSIX (uses prebuilt `RXDK-Libs/out/`; publishes managed tools via .NET):
+Build a cross-platform VSIX:
 
 ```powershell
 .\scripts\build-vsix.ps1
 ```
 
-To rebuild Xbox `.lib` files from source first (maintainers, requires MSVC):
+CI builds on push/PR via [`.github/workflows/build-vsix.yml`](.github/workflows/build-vsix.yml). Private `RXDK-Tools` needs a `SUBMODULES_TOKEN` repo secret (see **[docs/BUILD.md](docs/BUILD.md)**).
 
-```powershell
-.\scripts\build-vsix.ps1 -Build
-```
-
-CI builds on push/PR via [`.github/workflows/build-vsix.yml`](.github/workflows/build-vsix.yml). It does **not** compile RXDK-Libs — commit `out/include` and `out/lib` in that submodule after local builds. Private submodules need a `SUBMODULES_TOKEN` repo secret (see **[docs/BUILD.md](docs/BUILD.md)**).
-
-**Submodule workflow:** push commits in `RXDK-Libs` / `RXDK-Tools` first, then push RXDK-VSCode (updates the submodule pointer).
+**Submodule workflow:** push commits in `RXDK-Tools` first, then push RXDK-VSCode (updates the submodule pointer).
 
 ## What you provide
 

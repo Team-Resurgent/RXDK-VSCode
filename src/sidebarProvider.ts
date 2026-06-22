@@ -68,9 +68,7 @@ export class RxdkSidebarProvider implements vscode.TreeDataProvider<RxdkTreeItem
                 root.push(
                     new RxdkTreeItem(
                         `SDK: ${version}`,
-                        vscode.TreeItemCollapsibleState.None,
-                        undefined,
-                        ''
+                        vscode.TreeItemCollapsibleState.Collapsed
                     )
                 );
             }
@@ -141,6 +139,19 @@ export class RxdkSidebarProvider implements vscode.TreeDataProvider<RxdkTreeItem
                 new RxdkTreeItem('Deploy', vscode.TreeItemCollapsibleState.None, 'rxdk.deploy'),
                 new RxdkTreeItem('Run', vscode.TreeItemCollapsibleState.None, 'rxdk.run'),
                 new RxdkTreeItem('Debug', vscode.TreeItemCollapsibleState.None, 'rxdk.debug'),
+            ];
+        }
+
+        const label = typeof element.label === 'string' ? element.label : element.label?.label ?? '';
+        if (label.startsWith('SDK:')) {
+            return [
+                new RxdkTreeItem(
+                    'Open SDK folder',
+                    vscode.TreeItemCollapsibleState.None,
+                    'rxdk.openSdkFolder',
+                    'include + lib',
+                    'folder-opened'
+                ),
             ];
         }
 

@@ -1,7 +1,6 @@
-# Build a cross-platform RXDK VSIX (Windows host tools for all RIDs + bundled SDK).
+# Build a cross-platform RXDK VSIX (host tools + SDK scripts; headers/libs from RXDK-SDK clone on activate).
 param(
     [string]$ExtensionRoot = (Join-Path $PSScriptRoot '..'),
-    [switch]$Build,
     [switch]$SkipToolsBuild,
     [switch]$Install
 )
@@ -12,9 +11,6 @@ $syncArgs = @{
     ExtensionRoot      = $ExtensionRoot
     Package            = $true
     CrossPlatformTools = $true
-}
-if ($Build) {
-    $syncArgs['Build'] = $true
 }
 if (-not $SkipToolsBuild) {
     $syncArgs['BuildTools'] = $true
