@@ -180,10 +180,10 @@ $libsSha = 'n/a'
 $toolsSha = 'unknown'
 $xdvdfsTag = 'unknown'
 try { $toolsSha = (git -C $RxdkToolsRoot rev-parse --short HEAD 2>$null) } catch { }
-try {
-    $headers = @{ Accept = 'application/vnd.github+json'; 'X-GitHub-Api-Version' = '2022-11-28' }
-    $xdvdfsTag = (Invoke-RestMethod -Uri 'https://api.github.com/repos/Team-Resurgent/xdvdfs/releases/latest' -Headers $headers).tag_name
-} catch { }
+$xdvdfsTagFile = Join-Path $PSScriptRoot 'xdvdfs-release.txt'
+if (Test-Path -LiteralPath $xdvdfsTagFile) {
+    $xdvdfsTag = (Get-Content -LiteralPath $xdvdfsTagFile -Raw).Trim()
+}
 @"
 rxdk-sdk=cloned-on-activate
 rxdk-tools=$toolsSha

@@ -20,7 +20,7 @@ git submodule update --init external/RXDK-Tools
 |------------|----------|
 | [RXDK-SDK](https://github.com/Team-Resurgent/RXDK-SDK) | Consumer headers/libs — **git-cloned on extension activate** to `%ProgramData%\RXDK\sdk` (Windows) or XDG equivalent |
 | [RXDK-Tools](https://github.com/Team-Resurgent/RXDK-Tools) | Managed host tools (`xbcp`, `imagebld`, `xbox-launch`, `xboxdbg-bridge`) — published on CI via `dotnet` |
-| [xdvdfs](https://github.com/Team-Resurgent/xdvdfs/releases/latest) | XISO packer — **downloaded** at build time for `win-x64`, `linux-x64`, `osx-x64`, `osx-arm64` (no submodule, no Rust/Zig) |
+| [xdvdfs](https://github.com/Team-Resurgent/xdvdfs/releases/latest) | XISO packer — **downloaded** at build time for `win-x64`, `linux-x64`, `osx-x64`, `osx-arm64` (tag pinned in `scripts/xdvdfs-release.txt`; no submodule, no Rust/Zig) |
 
 ## Build output (repo root)
 
@@ -79,6 +79,8 @@ Fetch xdvdfs only:
 ```powershell
 .\scripts\fetch-xdvdfs.ps1
 ```
+
+Pin or bump the release in `scripts/xdvdfs-release.txt` (default `v0.8.3-TR`). CI uses `GITHUB_TOKEN`/`GH_TOKEN` for GitHub API calls (unauthenticated API is limited to **60 requests/hour per IP**, which shared Actions runners exceed quickly).
 
 ### CI
 

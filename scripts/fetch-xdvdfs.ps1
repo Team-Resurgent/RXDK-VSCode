@@ -3,7 +3,7 @@ param(
     [string]$ExtensionRoot = (Join-Path $PSScriptRoot '..'),
     [string]$PublishRoot = '',
     [string]$Repo = 'Team-Resurgent/xdvdfs',
-    [string]$Tag = 'latest',
+    [string]$Tag = '',
     [switch]$Force
 )
 $ErrorActionPreference = 'Stop'
@@ -13,6 +13,16 @@ if (-not $PublishRoot) {
 }
 $PublishRoot = [IO.Path]::GetFullPath($PublishRoot)
 
+$PinnedTagFile = Join-Path $PSScriptRoot 'xdvdfs-release.txt'
+if (-not $Tag) {
+    if (Test-Path -LiteralPath $PinnedTagFile) {
+        $Tag = (Get-Content -LiteralPath $PinnedTagFile -Raw).Trim()
+    }
+    if (-not $Tag) {
+        $Tag = 'latest'
+    }
+}
+
 $RidSpecs = @(
     @{ Rid = 'win-x64';   AssetPrefix = 'xdvdfs-windows-';     Ext = '.exe' }
     @{ Rid = 'linux-x64'; AssetPrefix = 'xdvdfs-linux-';      Ext = '' }
@@ -20,16 +30,48 @@ $RidSpecs = @(
     @{ Rid = 'osx-arm64'; AssetPrefix = 'xdvdfs-macos-arm64-'; Ext = '' }
 )
 
+function Get-GitHubApiHeaders {
+    $headers = @{
+        Accept               = 'application/vnd.github+json'
+        'X-GitHub-Api-Version' = '2022-11-28'
+    }
+    $token = $env:GITHUB_TOKEN
+    if (-not $token) {
+        $token = $env:GH_TOKEN
+    }
+    if ($token) {
+        $headers['Authorization'] = "Bearer $token"
+    }
+    return $headers
+}
+
 function Get-ReleaseJson {
     param([string]$Repository, [string]$ReleaseTag)
-    $headers = @{ Accept = 'application/vnd.github+json'; 'X-GitHub-Api-Version' = '2022-11-28' }
+    $headers = Get-GitHubApiHeaders
     $uri = if ($ReleaseTag -eq 'latest') {
         "https://api.github.com/repos/$Repository/releases/latest"
     } else {
         "https://api.github.com/repos/$Repository/releases/tags/$ReleaseTag"
     }
     Write-Host "Fetching release metadata: $uri" -ForegroundColor DarkGray
-    return Invoke-RestMethod -Uri $uri -Headers $headers
+    if ($headers.ContainsKey('Authorization')) {
+        Write-Host 'Using authenticated GitHub API request (GITHUB_TOKEN/GH_TOKEN).' -ForegroundColor DarkGray
+    } else {
+        Write-Host 'Unauthenticated GitHub API (60 requests/hour per IP). Set GITHUB_TOKEN or GH_TOKEN in CI.' -ForegroundColor DarkYellow
+    }
+    try {
+        return Invoke-RestMethod -Uri $uri -Headers $headers
+    } catch {
+        $message = $_.Exception.Message
+        if ($message -match 'rate limit|403') {
+            throw @"
+GitHub API rate limit exceeded fetching xdvdfs release metadata.
+Use a GITHUB_TOKEN (GitHub Actions sets this automatically) or pin scripts/xdvdfs-release.txt and retry later.
+Docs: https://docs.github.com/rest/overview/resources-in-the-rest-api#rate-limiting
+"@
+        }
+        throw
+    }
 }
 
 function Find-ReleaseAsset {
