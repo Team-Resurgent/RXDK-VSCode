@@ -104,6 +104,52 @@ async function gitClone(repoUrl: string, dest: string, gitRef?: string): Promise
     await execFileAsync('git', args, { timeout: 600_000, windowsHide: true });
 }
 
+function isGitRepo(dir: string): boolean {
+    return fs.existsSync(path.join(dir, '.git'));
+}
+
+async function gitCurrentBranch(repoDir: string): Promise<string | undefined> {
+    try {
+        const { stdout } = await execFileAsync(
+            'git',
+            ['-C', repoDir, 'rev-parse', '--abbrev-ref', 'HEAD'],
+            { windowsHide: true }
+        );
+        const branch = stdout.trim();
+        return branch && branch !== 'HEAD' ? branch : undefined;
+    } catch {
+        return undefined;
+    }
+}
+
+async function gitPullLatest(repoDir: string, gitRef?: string): Promise<void> {
+    const branch = gitRef || (await gitCurrentBranch(repoDir)) || 'main';
+    await execFileAsync(
+        'git',
+        ['-C', repoDir, 'fetch', '--depth', '1', 'origin', branch],
+        { timeout: 600_000, windowsHide: true }
+    );
+    await execFileAsync(
+        'git',
+        ['-C', repoDir, 'reset', '--hard', `origin/${branch}`],
+        { timeout: 60_000, windowsHide: true }
+    );
+}
+
+async function runWithProgress<T>(message: string, task: () => Promise<T>): Promise<T> {
+    return vscode.window.withProgress(
+        {
+            location: vscode.ProgressLocation.Notification,
+            title: 'RXDK',
+            cancellable: false,
+        },
+        async (progress) => {
+            progress.report({ message });
+            return task();
+        }
+    );
+}
+
 /**
  * On first install, clone [RXDK-SDK](https://github.com/Team-Resurgent/RXDK-SDK) into the staged directory.
  * If the folder already exists it is never overwritten (replace files manually or delete the folder to re-clone).
@@ -134,16 +180,8 @@ export async function ensureSdkStaging(
     output?.appendLine(`RXDK: cloning ${repoUrl}${gitRef ? ` (${gitRef})` : ''} → ${staged}`);
 
     try {
-        await vscode.window.withProgress(
-            {
-                location: vscode.ProgressLocation.Notification,
-                title: 'RXDK',
-                cancellable: false,
-            },
-            async (progress) => {
-                progress.report({ message: 'Cloning RXDK-SDK (headers + libraries)...' });
-                await gitClone(repoUrl, staged, gitRef);
-            }
+        await runWithProgress('Cloning RXDK-SDK (headers + libraries)...', () =>
+            gitClone(repoUrl, staged, gitRef)
         );
         output?.appendLine(`RXDK: SDK cloned to ${staged}`);
         vscode.window.showInformationMessage(`RXDK SDK ready at ${staged}`);
@@ -157,6 +195,61 @@ export async function ensureSdkStaging(
     }
 }
 
+/** Clone or pull the latest RXDK-SDK into the staged directory. */
+export async function fetchLatestSdk(
+    context: vscode.ExtensionContext,
+    output?: vscode.OutputChannel
+): Promise<boolean> {
+    const staged = getStagedSdkRoot(context);
+    const repoUrl = getSdkGitUrl(context);
+    const gitRef = getSdkGitRef(context);
+
+    if (isGitRepo(staged)) {
+        output?.appendLine(`RXDK: fetching latest RXDK-SDK → ${staged}`);
+        try {
+            await runWithProgress('Fetching latest RXDK-SDK...', () => gitPullLatest(staged, gitRef));
+            output?.appendLine(`RXDK: SDK updated at ${staged}`);
+            vscode.window.showInformationMessage('RXDK SDK updated to the latest release.');
+            return true;
+        } catch (err) {
+            const message = err instanceof Error ? err.message : String(err);
+            output?.appendLine(`RXDK: SDK update failed: ${message}`);
+            vscode.window.showErrorMessage(`RXDK SDK update failed: ${message}`);
+            return false;
+        }
+    }
+
+    if (fs.existsSync(staged)) {
+        const pick = await vscode.window.showWarningMessage(
+            'The SDK folder was not installed via git. Replace it with the latest RXDK-SDK from GitHub?',
+            'Replace',
+            'Cancel'
+        );
+        if (pick !== 'Replace') {
+            return false;
+        }
+        fs.rmSync(staged, { recursive: true, force: true });
+    }
+
+    output?.appendLine(`RXDK: cloning ${repoUrl}${gitRef ? ` (${gitRef})` : ''} → ${staged}`);
+    try {
+        await runWithProgress('Cloning RXDK-SDK (headers + libraries)...', () =>
+            gitClone(repoUrl, staged, gitRef)
+        );
+        output?.appendLine(`RXDK: SDK cloned to ${staged}`);
+        vscode.window.showInformationMessage('RXDK SDK installed from GitHub.');
+        return true;
+    } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        output?.appendLine(`RXDK: SDK clone failed: ${message}`);
+        vscode.window.showErrorMessage(
+            `RXDK SDK clone failed. Install Git and ensure network access, or clone manually:\n` +
+                `git clone --depth 1 ${repoUrl} "${staged}"`
+        );
+        return false;
+    }
+}
+
 /** Reveal the persistent SDK folder (include/lib) in the system file manager. */
 export async function openStagedSdkFolder(context: vscode.ExtensionContext): Promise<void> {
     const staged = getStagedSdkRoot(context);
@@ -167,7 +260,7 @@ export async function openStagedSdkFolder(context: vscode.ExtensionContext): Pro
             'Show path'
         );
         if (pick === 'Clone now') {
-            await ensureSdkStaging(context);
+            await fetchLatestSdk(context);
         } else if (pick !== 'Show path') {
             return;
         }

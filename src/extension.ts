@@ -5,7 +5,7 @@ import { RxdkSidebarProvider } from './sidebarProvider';
 import { createProject, findProjectManifest } from './projectManager';
 import { runRxdkTask } from './buildRunner';
 import { getBridgePath } from './sdkPath';
-import { ensureSdkStaging, openStagedSdkFolder } from './sdkStaging';
+import { ensureSdkStaging, openStagedSdkFolder, fetchLatestSdk } from './sdkStaging';
 import { ensureSdkDocsStaging } from './sdkDocsStaging';
 import { ensureVscodeForWorkspace, generateVscodeFolder } from './vscodeGenerator';
 import { RxdkTemplateId } from './projectTypes';
@@ -103,6 +103,12 @@ export function activate(context: vscode.ExtensionContext): void {
         }),
         vscode.commands.registerCommand('rxdk.openSdkDocs', () => openSdkDocs(context)),
         vscode.commands.registerCommand('rxdk.openSdkFolder', () => openStagedSdkFolder(context)),
+        vscode.commands.registerCommand('rxdk.fetchLatestSdk', async () => {
+            const ok = await fetchLatestSdk(context, rxdkOutput);
+            if (ok) {
+                sidebarProvider.refresh();
+            }
+        }),
         vscode.commands.registerCommand('xbox.pickConsole', () => promptSetXboxIp())
     );
 

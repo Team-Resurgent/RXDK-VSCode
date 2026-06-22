@@ -146,6 +146,13 @@ export class RxdkSidebarProvider implements vscode.TreeDataProvider<RxdkTreeItem
         if (label.startsWith('SDK:')) {
             return [
                 new RxdkTreeItem(
+                    'Fetch latest SDK',
+                    vscode.TreeItemCollapsibleState.None,
+                    'rxdk.fetchLatestSdk',
+                    'RXDK-SDK from GitHub',
+                    'cloud-download'
+                ),
+                new RxdkTreeItem(
                     'Open SDK folder',
                     vscode.TreeItemCollapsibleState.None,
                     'rxdk.openSdkFolder',
