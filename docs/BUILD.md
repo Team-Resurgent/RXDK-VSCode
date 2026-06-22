@@ -89,7 +89,7 @@ GitHub Actions workflow [`.github/workflows/build-vsix.yml`](../.github/workflow
 | Job | Runner | Purpose |
 |-----|--------|---------|
 | `build` | `windows-latest` | Fetch xdvdfs release, publish managed tools, package VSIX + release zip |
-| `release` | `ubuntu-latest` | Attach `rxdk-vscode-*.zip` and `.vsix` to GitHub Release when applicable |
+| `release` | `ubuntu-latest` | Attach `rxdk-vscode-*.zip` only (VSIX + install scripts inside the zip) |
 
 **No Rust/Zig on CI.** xdvdfs comes from [Team-Resurgent/xdvdfs releases](https://github.com/Team-Resurgent/xdvdfs/releases/latest).
 

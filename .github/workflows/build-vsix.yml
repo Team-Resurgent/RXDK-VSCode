@@ -133,12 +133,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Download VSIX artifact
-        uses: actions/download-artifact@v5
-        with:
-          name: rxdk-vscode-vsix
-          path: dist
-
       - name: Download release zip artifact
         uses: actions/download-artifact@v5
         with:
@@ -168,9 +162,9 @@ jobs:
         run: |
           set -euo pipefail
           shopt -s nullglob
-          files=(dist/*.zip dist/*.vsix)
+          files=(dist/*.zip)
           if [[ ${#files[@]} -eq 0 ]]; then
-            echo "No release files in dist/" >&2
+            echo "No release zip in dist/" >&2
             exit 1
           fi
           args=(
@@ -191,5 +185,5 @@ jobs:
             echo ""
             echo "- Tag: \`${{ steps.meta.outputs.tag }}\`"
             echo "- Pre-release: \`${{ steps.meta.outputs.prerelease }}\`"
-            echo "- Artifacts: \`rxdk-vscode-*.zip\` (recommended), \`rxdk-vscode-*.vsix\`"
+            echo "- Artifact: \`rxdk-vscode-*.zip\` (VSIX + install scripts; VSIX is not attached separately)"
           } >> "$GITHUB_STEP_SUMMARY"
