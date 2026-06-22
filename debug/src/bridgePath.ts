@@ -23,6 +23,8 @@ export function defaultBridgeCandidates(extensionPath: string, workspaceRoot: st
     const name = bridgeExecutableName();
     const rid = platformToolRid();
     return [
+        path.join(extensionPath, 'sdk', 'tools', rid, name),
+        path.join(extensionPath, 'sdk', 'tools', name),
         path.join(extensionPath, 'out', 'sdk', 'tools', rid, name),
         path.join(extensionPath, 'out', 'sdk', 'tools', name),
         path.join(workspaceRoot, 'external', 'RXDK-Tools', 'out', 'publish', 'rxdk-vscode-win-x64', name),

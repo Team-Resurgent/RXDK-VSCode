@@ -13,37 +13,40 @@ Not shipped in the VSIX. End-user docs: [INSTALL.md](INSTALL.md).
 Host tools live under `external/`:
 
 ```powershell
-git submodule update --init external/RXDK-Tools
+git submodule update --init external/RXDK-Tools external/xdvdfs
 ```
 
 | Dependency | Provides |
 |------------|----------|
 | [RXDK-SDK](https://github.com/Team-Resurgent/RXDK-SDK) | Consumer headers/libs — **git-cloned on extension activate** to `%ProgramData%\RXDK\sdk` (Windows) or XDG equivalent |
 | [RXDK-Tools](https://github.com/Team-Resurgent/RXDK-Tools) | Managed host tools (`xbcp`, `imagebld`, `xbox-launch`, `xboxdbg-bridge`) — published on CI via `dotnet` |
+| [xdvdfs](https://github.com/antangelo/xdvdfs) | XISO packer — built with Rust + Zig for `win-x64`, `linux-x64`, `osx-x64`, `osx-arm64` |
 
-Vendored in-repo: `vendor/tools/xdvdfs.exe` (ISO pack; not in RXDK-Tools yet).
+## Build output (repo root)
 
-## Build output (`out/`)
-
-All generated artifacts live under `out/` (gitignored):
+Generated artifacts (gitignored):
 
 | Path | Contents |
 |------|----------|
-| `out/extension/` | Compiled extension host (`tsc` from `src/`) |
-| `out/debug/` | Compiled debug adapter (`tsc` from `debug/src/`) |
-| `out/sdk/` | Assembled SDK scripts + host tools for the VSIX |
+| `dist/extension/` | Compiled extension host (`tsc` from `src/`) |
+| `dist/debug/` | Compiled Xbox debug adapter (`tsc` from `debug/src/`) — entry point `./dist/debug/adapter.js` in `package.json` |
+| `sdk/` | Assembled SDK scripts + host tools for the VSIX (including `xboxdbg-bridge`) |
 
-SDK build scripts are **source** under `scripts/sdk/` (tracked). `assemble-sdk.ps1` copies them into `out/sdk/scripts/` along with tools from RXDK-Tools.
+Source for the debug adapter is under `debug/src/` (dev only; not included in the VSIX).
+
+User Xbox projects still use their own `out/` folder for `.exe`/`.pdb` build output — that is unrelated to the extension install layout.
+
+SDK build scripts are **source** under `scripts/sdk/` (tracked). `assemble-sdk.ps1` copies them into `sdk/scripts/` along with tools from RXDK-Tools.
 
 ## Assembly
 
-`scripts/assemble-sdk.ps1` stages `out/sdk/`:
+`scripts/assemble-sdk.ps1` stages `sdk/`:
 
-1. Copy `scripts/sdk/` → `out/sdk/scripts/`
-2. Gather host tools into `out/sdk/tools/`:
+1. Copy `scripts/sdk/` → `sdk/scripts/`
+2. Gather host tools into `sdk/tools/`:
    - `dotnet publish` from RXDK-Tools (default on CI and `build-vsix.ps1`)
-   - `vendor/tools/xdvdfs.exe`
-3. Write `out/sdk/VERSION.txt` with tool submodule SHA
+   - `cargo build` from [antangelo/xdvdfs](https://github.com/antangelo/xdvdfs) (`scripts/build-xdvdfs.ps1`; requires Rust + Zig)
+3. Write `sdk/VERSION.txt` with tool submodule SHA
 
 Headers/libs are **not** bundled — the extension clones [RXDK-SDK](https://github.com/Team-Resurgent/RXDK-SDK) on first launch.
 
@@ -74,8 +77,11 @@ GitHub Actions workflow [`.github/workflows/build-vsix.yml`](../.github/workflow
 
 | Job | Runner | Purpose |
 |-----|--------|---------|
-| `build` | `windows-latest` | checkout (RXDK-Tools submodule), `setup-node`, `setup-dotnet`, `npm ci`, package VSIX, `upload-artifact` |
-| `release` | `ubuntu-latest` | After a successful build on `master`/`main` (pre-release `vsix-<run>`), on `v*` tags (stable release), or manual **Publish release** |
+| `build-xdvdfs-macos` | `macos-latest` | Build `xdvdfs` for `osx-x64` and `osx-arm64` (Xcode SDK) |
+| `build` | `windows-latest` | Download macOS xdvdfs artifact, build win/linux xdvdfs (Zig), publish managed tools, package VSIX |
+| `release` | `ubuntu-latest` | Attach VSIX to GitHub Release when applicable |
+
+**macOS xdvdfs on CI:** the Windows job passes `-SkipXdvdfsMac` and uses the artifact from `build-xdvdfs-macos`. Local Windows/Linux builds can still cross-compile macOS xdvdfs with Zig (omit `-SkipXdvdfsMac`), or run `scripts/build-xdvdfs-macos.sh` on a Mac.
 
 **No MSVC on CI.** Xbox headers and `.lib` files are installed from [RXDK-SDK](https://github.com/Team-Resurgent/RXDK-SDK) when the user activates the extension.
 

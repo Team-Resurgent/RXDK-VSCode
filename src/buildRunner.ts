@@ -112,7 +112,7 @@ function msvcArgsFromConfig(): string[] {
 }
 
 function buildSdkPathArgs(context: vscode.ExtensionContext): string[] {
-    const bundled = path.join(context.extensionPath, 'out', 'sdk');
+    const bundled = path.join(context.extensionPath, 'sdk');
     const includeDir = getSdkIncludeDir(context);
     const libDir = getSdkLibDir(context);
     const args: string[] = [];

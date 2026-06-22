@@ -6,7 +6,7 @@ import { getBundledSdkRoot, getSdkIncludeDir, getSdkLibDir } from './sdkPath';
 
 const EXTENSION_ID = 'rxdk-libs.rxdk-vscode';
 const EXTENSION_ROOT = `\${extensionInstallFolder:${EXTENSION_ID}}`;
-const SDK_ROOT = `${EXTENSION_ROOT}/out/sdk`;
+const SDK_ROOT = `${EXTENSION_ROOT}/sdk`;
 
 function vscodeConfigIsStale(projectRoot: string): boolean {
     const tasksPath = path.join(projectRoot, '.vscode', 'tasks.json');
@@ -18,7 +18,8 @@ function vscodeConfigIsStale(projectRoot: string): boolean {
         content.includes('.vscode/extensions/rxdk-libs.rxdk-vscode-') ||
         content.includes('.cursor/extensions/rxdk-libs.rxdk-vscode-') ||
         !content.includes('extensionInstallFolder:rxdk-libs.rxdk-vscode') ||
-        (content.includes('rxdk-vscode}/sdk') && !content.includes('rxdk-vscode}/out/sdk'))
+        content.includes('rxdk-vscode}/out/sdk') ||
+        (content.includes('rxdk-vscode}/sdk') && !content.includes('extensionInstallFolder:rxdk-libs.rxdk-vscode'))
     );
 }
 

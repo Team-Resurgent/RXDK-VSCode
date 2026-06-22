@@ -1,4 +1,4 @@
-# Resolve bundled SDK layout under SdkRoot (extension out/sdk/).
+# Resolve bundled SDK layout under SdkRoot (extension sdk/).
 function Get-PlatformToolRid {
     if ($PSVersionTable.PSVersion.Major -ge 6) {
         if ($IsWindows) { return 'win-x64' }

@@ -150,7 +150,8 @@ async function resolveXboxLaunchConfig(
         !bridge ||
         bridge.includes('.vscode/extensions/rxdk-libs.') ||
         bridge.includes('.cursor/extensions/rxdk-libs.') ||
-        (bridge.includes('/sdk/tools/') && !bridge.includes('/out/sdk/tools/'))
+        bridge.includes('/out/sdk/tools/') ||
+        (bridge.includes('/sdk/tools/') && !bridge.includes('extensionInstallFolder'))
     ) {
         config.bridgePath =
             vscode.workspace.getConfiguration('xbox').get<string>('bridgePath') || getBridgePath(context);

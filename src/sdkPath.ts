@@ -9,7 +9,7 @@ export function getExtensionRoot(context: vscode.ExtensionContext): string {
 }
 
 export function getBundledSdkRoot(context: vscode.ExtensionContext): string {
-    return path.join(context.extensionPath, 'out', 'sdk');
+    return path.join(context.extensionPath, 'sdk');
 }
 
 function sdkPathOverride(context: vscode.ExtensionContext): string | undefined {

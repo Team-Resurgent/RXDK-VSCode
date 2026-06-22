@@ -1,8 +1,9 @@
-# Package VSIX (assembles out/sdk/ first).
+# Package VSIX (assembles sdk/ first).
 param(
     [string]$ExtensionRoot = (Join-Path $PSScriptRoot '..'),
     [switch]$BuildTools,
-    [switch]$CrossPlatformTools
+    [switch]$CrossPlatformTools,
+    [switch]$SkipXdvdfsMac
 )
 $ErrorActionPreference = 'Stop'
 $ExtensionRoot = [IO.Path]::GetFullPath($ExtensionRoot)
@@ -11,6 +12,7 @@ try {
     $assembleArgs = @{ ExtensionRoot = $ExtensionRoot }
     if ($BuildTools) { $assembleArgs['BuildTools'] = $true }
     if ($CrossPlatformTools) { $assembleArgs['CrossPlatformTools'] = $true }
+    if ($SkipXdvdfsMac) { $assembleArgs['SkipXdvdfsMac'] = $true }
     & (Join-Path $PSScriptRoot 'assemble-sdk.ps1') @assembleArgs
     if ($LASTEXITCODE -ne 0) { throw 'assemble-sdk.ps1 failed' }
 
@@ -32,28 +34,31 @@ try {
     Get-Content -LiteralPath $requiredTools | ForEach-Object {
         $rel = $_.Trim()
         if (-not $rel -or $rel.StartsWith('#')) { return }
-        $full = Join-Path $ExtensionRoot "out\sdk\tools\$($rel -replace '/', '\')"
+        $full = Join-Path $ExtensionRoot "sdk\tools\$($rel -replace '/', '\')"
         if (-not (Test-Path -LiteralPath $full)) {
             $missing += $rel
         }
     }
     if ($missing.Count -gt 0) {
-        throw "VSIX preflight failed; missing out/sdk/tools: $($missing -join ', ')"
+        throw "VSIX preflight failed; missing sdk/tools: $($missing -join ', ')"
     }
 
     $required = @(
-        'out\extension\extension.js'
-        'out\debug\adapter.js'
-        'out\sdk\tools\xbcp.exe'
-        'out\sdk\tools\xboxdbg-bridge.exe'
-        'out\sdk\scripts\Build-XboxProject.ps1'
+        'dist\extension\extension.js'
+        'dist\debug\adapter.js'
+        'sdk\tools\xbcp.exe'
+        'sdk\tools\xboxdbg-bridge.exe'
+        'sdk\scripts\Build-XboxProject.ps1'
         'docs\xboxsdk.tar.gz'
     )
     if ($CrossPlatformTools) {
         $required += @(
-            'out\sdk\tools\win-x64\xbcp.exe'
-            'out\sdk\tools\linux-x64\xbcp'
-            'out\sdk\tools\osx-arm64\xboxdbg-bridge'
+            'sdk\tools\win-x64\xbcp.exe'
+            'sdk\tools\linux-x64\xbcp'
+            'sdk\tools\linux-x64\xdvdfs'
+            'sdk\tools\osx-x64\xdvdfs'
+            'sdk\tools\osx-arm64\xdvdfs'
+            'sdk\tools\osx-arm64\xboxdbg-bridge'
         )
     }
     foreach ($rel in $required) {

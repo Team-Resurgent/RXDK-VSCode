@@ -22,6 +22,8 @@ export function defaultBridgeCandidates(extensionPath: string, workspaceRoot?: s
     const name = bridgeExecutableName();
     const rid = platformToolRid();
     const candidates = [
+        path.join(extensionPath, 'sdk', 'tools', rid, name),
+        path.join(extensionPath, 'sdk', 'tools', name),
         path.join(extensionPath, 'out', 'sdk', 'tools', rid, name),
         path.join(extensionPath, 'out', 'sdk', 'tools', name),
     ];
@@ -45,5 +47,5 @@ export function resolveBundledBridgePath(extensionPath: string, workspaceRoot?: 
             return candidate;
         }
     }
-    return path.join(extensionPath, 'out', 'sdk', 'tools', bridgeExecutableName());
+    return path.join(extensionPath, 'sdk', 'tools', bridgeExecutableName());
 }

@@ -1,4 +1,4 @@
-# Publish managed host tools for every VSIX-supported RID into out/sdk/tools/<rid>/.
+# Publish managed host tools for every VSIX-supported RID into sdk/tools/<rid>/.
 param(
     [Parameter(Mandatory)]
     [string]$RxdkToolsRoot,
@@ -16,6 +16,25 @@ $ExtensionRoot = [IO.Path]::GetFullPath($ExtensionRoot)
 $ManagedTools = @('xbcp', 'imagebld', 'xbox-launch', 'xboxdbg-bridge')
 $WindowsOnlyTools = @('xdvdfs')
 $Rids = @('win-x64', 'linux-x64', 'osx-x64', 'osx-arm64')
+
+function Get-XdvdfsPublishDir {
+    param([Parameter(Mandatory)][string]$ExtensionRoot)
+    Join-Path $ExtensionRoot 'external\xdvdfs\out\publish'
+}
+
+function Find-XdvdfsTool {
+    param(
+        [Parameter(Mandatory)][string]$ExtensionRoot,
+        [Parameter(Mandatory)][string]$Rid
+    )
+    $ext = if ($Rid -eq 'win-x64') { '.exe' } else { '' }
+    $publish = Get-XdvdfsPublishDir $ExtensionRoot
+    $candidate = Join-Path (Join-Path $publish $Rid) "xdvdfs$ext"
+    if (Test-Path -LiteralPath $candidate) {
+        return $candidate
+    }
+    return $null
+}
 
 function Get-ToolExtension([string]$Rid) {
     if ($Rid -eq 'win-x64') { return '.exe' }
@@ -55,6 +74,18 @@ function Publish-RidTools([string]$Root, [string]$Rid, [string]$OutDir) {
         Copy-Item -LiteralPath $source -Destination $dest -Force
         Write-Host "OK: $Rid/$name$ext <= $source" -ForegroundColor Green
     }
+    $xdvdfsExt = Get-ToolExtension $Rid
+    $xdvdfsDest = Join-Path $OutDir "xdvdfs$xdvdfsExt"
+    if (Test-Path -LiteralPath $xdvdfsDest) {
+        Write-Host "OK: $Rid/xdvdfs$xdvdfsExt" -ForegroundColor Green
+    } else {
+        $xdvdfsSource = Find-XdvdfsTool -ExtensionRoot $ExtensionRoot -Rid $Rid
+        if (-not $xdvdfsSource) {
+            throw "xdvdfs$xdvdfsExt not found for $Rid (run scripts/build-xdvdfs.ps1)"
+        }
+        Copy-Item -LiteralPath $xdvdfsSource -Destination $xdvdfsDest -Force
+        Write-Host "OK: $Rid/xdvdfs$xdvdfsExt <= $xdvdfsSource" -ForegroundColor Green
+    }
 }
 
 New-Item -ItemType Directory -Force -Path $ToolsDest | Out-Null
@@ -78,11 +109,6 @@ try {
         if (Test-Path -LiteralPath $src) {
             Copy-Item -LiteralPath $src -Destination (Join-Path $ToolsDest "$name.exe") -Force
         }
-    }
-    $vendoredXdvdfs = Join-Path $ExtensionRoot 'vendor\tools\xdvdfs.exe'
-    if (Test-Path -LiteralPath $vendoredXdvdfs) {
-        Copy-Item -LiteralPath $vendoredXdvdfs -Destination (Join-Path $ToolsDest 'xdvdfs.exe') -Force
-        Copy-Item -LiteralPath $vendoredXdvdfs -Destination (Join-Path $winFlat 'xdvdfs.exe') -Force
     }
 }
 finally {

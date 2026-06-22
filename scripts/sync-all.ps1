@@ -1,4 +1,4 @@
-# Populate out/sdk and compile extension into out/. Requires external/RXDK-Tools submodule.
+# Populate sdk/ and compile extension into dist/. Requires external/RXDK-Tools submodule.
 # Headers/libs are cloned from RXDK-SDK on extension activate (not bundled in the VSIX).
 param(
     [string]$RxdkToolsRoot = (Join-Path $PSScriptRoot '..\external\RXDK-Tools'),
@@ -6,7 +6,8 @@ param(
     [switch]$BuildTools,
     [switch]$Package,
     [switch]$CrossPlatformTools,
-    [switch]$InstallExtension
+    [switch]$InstallExtension,
+    [switch]$SkipXdvdfsMac
 )
 $ErrorActionPreference = 'Stop'
 $RxdkToolsRoot = [IO.Path]::GetFullPath($RxdkToolsRoot)
@@ -36,13 +37,14 @@ if (-not (Test-Path -LiteralPath $RxdkToolsRoot)) {
 Write-Host '=== RXDK-SDK ===' -ForegroundColor Cyan
 Write-Host 'Headers/libs: cloned from https://github.com/Team-Resurgent/RXDK-SDK on extension activate' -ForegroundColor Green
 
-Write-Host '=== Assemble out/sdk ===' -ForegroundColor Cyan
+Write-Host '=== Assemble sdk/ ===' -ForegroundColor Cyan
 $assembleArgs = @{
     RxdkToolsRoot = $RxdkToolsRoot
     ExtensionRoot = $ExtensionRoot
 }
 if ($BuildTools) { $assembleArgs['BuildTools'] = $true }
 if ($CrossPlatformTools) { $assembleArgs['CrossPlatformTools'] = $true }
+if ($SkipXdvdfsMac) { $assembleArgs['SkipXdvdfsMac'] = $true }
 & (Join-Path $ExtensionRoot 'scripts\assemble-sdk.ps1') @assembleArgs
 Test-StepExitCode -StepName 'assemble-sdk.ps1'
 
@@ -59,8 +61,8 @@ try {
     Pop-Location
 }
 
-$toolCount = (Get-ChildItem -LiteralPath (Join-Path $ExtensionRoot 'out\sdk\tools') -Recurse -File -ErrorAction SilentlyContinue).Count
-$version = Get-Content -LiteralPath (Join-Path $ExtensionRoot 'out\sdk\VERSION.txt') -ErrorAction SilentlyContinue
+$toolCount = (Get-ChildItem -LiteralPath (Join-Path $ExtensionRoot 'sdk\tools') -Recurse -File -ErrorAction SilentlyContinue).Count
+$version = Get-Content -LiteralPath (Join-Path $ExtensionRoot 'sdk\VERSION.txt') -ErrorAction SilentlyContinue
 Write-Host @"
 
 === RXDK-VSCode ready ===
@@ -74,6 +76,7 @@ Next: open RXDK-VSCode in VS Code, or run with -Package to build VSIX.
 if ($Package) {
     $packageArgs = @{ ExtensionRoot = $ExtensionRoot; BuildTools = [bool]$BuildTools }
     if ($CrossPlatformTools) { $packageArgs['CrossPlatformTools'] = $true }
+    if ($SkipXdvdfsMac) { $packageArgs['SkipXdvdfsMac'] = $true }
     & (Join-Path $ExtensionRoot 'scripts\package.ps1') @packageArgs
 }
 

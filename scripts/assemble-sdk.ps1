@@ -1,15 +1,16 @@
-# Assemble out/sdk/ for the extension: scripts from scripts/sdk, tools from RXDK-Tools + vendor.
+# Assemble sdk/ for the extension: scripts from scripts/sdk, tools from RXDK-Tools + xdvdfs submodule.
 # Headers/libs are cloned from RXDK-SDK on extension activate (not bundled in the VSIX).
 param(
     [string]$RxdkToolsRoot = (Join-Path $PSScriptRoot '..\external\RXDK-Tools'),
     [string]$ExtensionRoot = (Join-Path $PSScriptRoot '..'),
     [switch]$BuildTools,
-    [switch]$CrossPlatformTools
+    [switch]$CrossPlatformTools,
+    [switch]$SkipXdvdfsMac
 )
 $ErrorActionPreference = 'Stop'
 $RxdkToolsRoot = [IO.Path]::GetFullPath($RxdkToolsRoot)
 $ExtensionRoot = [IO.Path]::GetFullPath($ExtensionRoot)
-$sdkRoot = Join-Path $ExtensionRoot 'out\sdk'
+$sdkRoot = Join-Path $ExtensionRoot 'sdk'
 $sdkScriptsSrc = Join-Path $PSScriptRoot 'sdk'
 $requiredToolsFile = Join-Path $PSScriptRoot 'required-tools.txt'
 
@@ -86,11 +87,11 @@ function Resolve-ToolSource {
         [string]$ExtensionRoot
     )
     if ($Name -eq 'xdvdfs') {
-        $vendored = Join-Path $ExtensionRoot 'vendor\tools\xdvdfs.exe'
-        if (-not (Test-Path -LiteralPath $vendored)) {
-            throw "Missing vendored xdvdfs.exe at $vendored"
+        $candidate = Join-Path $ExtensionRoot 'external\xdvdfs\out\publish\win-x64\xdvdfs.exe'
+        if (Test-Path -LiteralPath $candidate) {
+            return $candidate
         }
-        return $vendored
+        throw "Missing xdvdfs.exe - run scripts/build-xdvdfs.ps1 (requires Rust + Zig)"
     }
     $managed = $ManagedTools | Where-Object { $_.Name -eq $Name } | Select-Object -First 1
     if (-not $managed) {
@@ -116,6 +117,21 @@ RXDK-Tools submodule not found at $RxdkToolsRoot
 Run: git submodule update --init external/RXDK-Tools
 "@
 }
+
+$xdvdfsRoot = Join-Path $ExtensionRoot 'external\xdvdfs'
+if (-not (Test-Path -LiteralPath $xdvdfsRoot)) {
+    throw @"
+xdvdfs submodule not found at $xdvdfsRoot
+Run: git submodule update --init external/xdvdfs
+"@
+}
+
+Write-Host '=== xdvdfs ===' -ForegroundColor Cyan
+$xdvdfsArgs = @{ XdvdfsRoot = $xdvdfsRoot }
+if ($BuildTools) { $xdvdfsArgs['Force'] = $true }
+if ($SkipXdvdfsMac) { $xdvdfsArgs['SkipMac'] = $true }
+& (Join-Path $PSScriptRoot 'build-xdvdfs.ps1') @xdvdfsArgs
+if ($LASTEXITCODE -ne 0) { throw 'build-xdvdfs.ps1 failed' }
 
 $scriptsDest = Join-Path $sdkRoot 'scripts'
 foreach ($stale in @('include', 'lib')) {
@@ -179,4 +195,4 @@ rxdk-tools=$toolsSha
 staged=$(Get-Date -Format 'yyyy-MM-ddTHH:mm:ss')
 "@ | Set-Content -LiteralPath (Join-Path $sdkRoot 'VERSION.txt') -Encoding ASCII
 
-Write-Host "OK: assembled out/sdk/ (scripts + tools; include/lib from RXDK-SDK git clone on activate)" -ForegroundColor Green
+Write-Host "OK: assembled sdk/ (scripts + tools; include/lib from RXDK-SDK git clone on activate)" -ForegroundColor Green
