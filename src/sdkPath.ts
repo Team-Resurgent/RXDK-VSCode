@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { bridgeExecutableName, resolveBundledBridgePath } from './bridgePath';
+import { bridgeExecutableName, resolveBundledBridgePath, resolveBundledXbwatsonPath } from './bridgePath';
 import { getStagedSdkRoot, isStagedSdkPresent } from './sdkStaging';
 
 export function getExtensionRoot(context: vscode.ExtensionContext): string {
@@ -64,6 +64,15 @@ export function getBridgePath(context: vscode.ExtensionContext): string {
     }
     const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
     return resolveBundledBridgePath(context.extensionPath, workspaceRoot);
+}
+
+export function getXbwatsonPath(context: vscode.ExtensionContext): string {
+    const configured = vscode.workspace.getConfiguration('rxdk').get<string>('xbwatsonPath')?.trim();
+    if (configured && fs.existsSync(configured)) {
+        return configured;
+    }
+    const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    return resolveBundledXbwatsonPath(context.extensionPath, workspaceRoot);
 }
 
 export function readSdkVersion(context: vscode.ExtensionContext): string {

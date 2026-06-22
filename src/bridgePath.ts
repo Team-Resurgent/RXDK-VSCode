@@ -14,12 +14,24 @@ export function platformToolRid(): string {
     return 'win-x64';
 }
 
-export function bridgeExecutableName(): string {
-    return process.platform === 'win32' ? 'xboxdbg-bridge.exe' : 'xboxdbg-bridge';
+export function hostToolExecutableName(baseName: string): string {
+    return process.platform === 'win32' ? `${baseName}.exe` : baseName;
 }
 
-export function defaultBridgeCandidates(extensionPath: string, workspaceRoot?: string): string[] {
-    const name = bridgeExecutableName();
+export function bridgeExecutableName(): string {
+    return hostToolExecutableName('xboxdbg-bridge');
+}
+
+export function xbwatsonExecutableName(): string {
+    return hostToolExecutableName('xbwatson');
+}
+
+export function defaultHostToolCandidates(
+    extensionPath: string,
+    baseName: string,
+    workspaceRoot?: string
+): string[] {
+    const name = hostToolExecutableName(baseName);
     const rid = platformToolRid();
     const candidates = [
         path.join(extensionPath, 'sdk', 'tools', rid, name),
@@ -29,6 +41,7 @@ export function defaultBridgeCandidates(extensionPath: string, workspaceRoot?: s
     ];
     if (workspaceRoot) {
         candidates.push(
+            path.join(workspaceRoot, 'external', 'RXDK-Tools', 'out', 'publish', 'managed', rid, 'tools', name),
             path.join(workspaceRoot, 'external', 'RXDK-Tools', 'out', 'publish', 'rxdk-vscode-win-x64', name),
             path.join(workspaceRoot, 'external', 'RXDK-Tools', 'out', 'publish', 'managed-cli-tools-win-x64', name),
             path.join(workspaceRoot, 'external', 'RXDK-Tools', 'out', 'bin', 'x64', 'Release', name)
@@ -37,15 +50,35 @@ export function defaultBridgeCandidates(extensionPath: string, workspaceRoot?: s
     return candidates;
 }
 
+export function defaultBridgeCandidates(extensionPath: string, workspaceRoot?: string): string[] {
+    return defaultHostToolCandidates(extensionPath, 'xboxdbg-bridge', workspaceRoot);
+}
+
+export function resolveBundledHostToolPath(
+    extensionPath: string,
+    baseName: string,
+    workspaceRoot?: string
+): string {
+    for (const candidate of defaultHostToolCandidates(extensionPath, baseName, workspaceRoot)) {
+        if (fs.existsSync(candidate)) {
+            return candidate;
+        }
+    }
+    return path.join(extensionPath, 'sdk', 'tools', hostToolExecutableName(baseName));
+}
+
 export function resolveBundledBridgePath(extensionPath: string, workspaceRoot?: string): string {
     const configured = process.env.XBOX_BRIDGE_PATH;
     if (configured && fs.existsSync(configured)) {
         return configured;
     }
-    for (const candidate of defaultBridgeCandidates(extensionPath, workspaceRoot)) {
-        if (fs.existsSync(candidate)) {
-            return candidate;
-        }
+    return resolveBundledHostToolPath(extensionPath, 'xboxdbg-bridge', workspaceRoot);
+}
+
+export function resolveBundledXbwatsonPath(extensionPath: string, workspaceRoot?: string): string {
+    const configured = process.env.RXDK_XBWATSON_PATH;
+    if (configured && fs.existsSync(configured)) {
+        return configured;
     }
-    return path.join(extensionPath, 'sdk', 'tools', bridgeExecutableName());
+    return resolveBundledHostToolPath(extensionPath, 'xbwatson', workspaceRoot);
 }

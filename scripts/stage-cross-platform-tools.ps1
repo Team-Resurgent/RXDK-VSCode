@@ -13,7 +13,7 @@ $RxdkToolsRoot = [IO.Path]::GetFullPath($RxdkToolsRoot)
 $ToolsDest = [IO.Path]::GetFullPath($ToolsDest)
 $ExtensionRoot = [IO.Path]::GetFullPath($ExtensionRoot)
 
-$ManagedTools = @('xbcp', 'imagebld', 'xbox-launch', 'xboxdbg-bridge')
+$ManagedTools = @('xbcp', 'imagebld', 'xbox-launch', 'xboxdbg-bridge', 'xbwatson')
 $WindowsOnlyTools = @('xdvdfs')
 $Rids = @('win-x64', 'linux-x64', 'osx-x64', 'osx-arm64')
 

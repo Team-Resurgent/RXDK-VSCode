@@ -18,6 +18,7 @@ $ManagedTools = @(
     @{ Project = 'src\Rxdk.ImageBld\Rxdk.ImageBld.csproj'; Name = 'imagebld' }
     @{ Project = 'src\Rxdk.XboxLaunch.Cli\Rxdk.XboxLaunch.Cli.csproj'; Name = 'xbox-launch' }
     @{ Project = 'src\Rxdk.XboxDbgBridge.Cli\Rxdk.XboxDbgBridge.Cli.csproj'; Name = 'xboxdbg-bridge' }
+    @{ Project = 'src\Rxdk.XbWatson\Rxdk.XbWatson.csproj'; Name = 'xbwatson' }
 )
 
 function Get-RequiredToolNames {
@@ -57,6 +58,7 @@ function Find-ManagedTool([string]$Root, [string]$Name) {
     @(
         (Join-Path (Get-RxdkToolsPublishDir $Root) $file)
         (Join-Path $Root "out\publish\managed-cli-tools-win-x64\$file")
+        (Join-Path $Root "out\publish\managed\win-x64\tools\$file")
         (Join-Path $Root "out\bin\x64\Release\$file")
     ) | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
 }

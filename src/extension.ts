@@ -14,6 +14,7 @@ import { getActiveXboxAddress, promptSetXboxIp } from './xboxConsole';
 import { openSdkDocs } from './sdkDocs';
 import { openPrebuiltProjectSetup } from './prebuiltDebug';
 import { refreshPrebuiltSourceFolder } from './prebuiltWorkspace';
+import { launchXbwatson } from './xbwatsonLauncher';
 let titleOutputChannel: vscode.OutputChannel | undefined;
 const titleLogWatchers = new Map<string, NodeJS.Timeout>();
 let rxdkOutput: vscode.OutputChannel;
@@ -118,6 +119,7 @@ export function activate(context: vscode.ExtensionContext): void {
             }
             await ensureDotNetRuntime(context, rxdkOutput);
         }),
+        vscode.commands.registerCommand('rxdk.launchXbwatson', () => launchXbwatson(context, rxdkOutput)),
         vscode.commands.registerCommand('xbox.pickConsole', () => promptSetXboxIp())
     );
 
