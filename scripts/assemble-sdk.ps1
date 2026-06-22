@@ -118,6 +118,12 @@ Run: git submodule update --init external/RXDK-Tools
 }
 
 $scriptsDest = Join-Path $sdkRoot 'scripts'
+foreach ($stale in @('include', 'lib')) {
+    $stalePath = Join-Path $sdkRoot $stale
+    if (Test-Path -LiteralPath $stalePath) {
+        Remove-Item -LiteralPath $stalePath -Recurse -Force
+    }
+}
 if (Test-Path -LiteralPath $scriptsDest) {
     Remove-Item -LiteralPath $scriptsDest -Recurse -Force
 }
