@@ -95,7 +95,11 @@ Notes:
     if (Test-Path -LiteralPath $zipPath) {
         Remove-Item -LiteralPath $zipPath -Force
     }
-    Compress-Archive -LiteralPath (Join-Path $stageRoot '*') -DestinationPath $zipPath -CompressionLevel Optimal
+    $archivePaths = @(Get-ChildItem -LiteralPath $stageRoot -File | ForEach-Object { $_.FullName })
+    if ($archivePaths.Count -eq 0) {
+        throw "No files staged under $stageRoot"
+    }
+    Compress-Archive -Path $archivePaths -DestinationPath $zipPath -CompressionLevel Optimal
 
     $sizeMb = [math]::Round((Get-Item -LiteralPath $zipPath).Length / 1MB, 2)
     Write-Host "OK: $zipPath ($sizeMb MB)" -ForegroundColor Green
