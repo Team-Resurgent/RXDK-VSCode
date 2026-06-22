@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import { ensureSdkDocsStaging, isSdkDocsPresent, resolveSdkDocsRoot } from './sdkDocsStaging';
 
 const DEFAULT_PAGE = 'xbox_pk_welcome.htm';
 
@@ -28,26 +29,23 @@ let activePanel: vscode.WebviewPanel | undefined;
 let activeDocsRoot = '';
 
 export function getSdkDocsRoot(context: vscode.ExtensionContext): string {
-    return path.join(context.extensionPath, 'docs', 'xboxsdk');
+    return resolveSdkDocsRoot(context);
 }
 
 export function sdkDocsAvailable(context: vscode.ExtensionContext): boolean {
-    const root = getSdkDocsRoot(context);
-    return (
-        fs.existsSync(path.join(root, 'toc.json')) &&
-        fs.existsSync(path.join(root, DEFAULT_PAGE))
-    );
+    return isSdkDocsPresent(context);
 }
 
 export async function openSdkDocs(
     context: vscode.ExtensionContext,
     page?: string
 ): Promise<void> {
+    await ensureSdkDocsStaging(context);
     const docsRoot = getSdkDocsRoot(context);
     const tocPath = path.join(docsRoot, 'toc.json');
     if (!fs.existsSync(tocPath)) {
         vscode.window.showErrorMessage(
-            'Xbox SDK documentation is missing from this build. Reinstall the RXDK extension from a VSIX packaged from this repository (docs/xboxsdk/ ships with it).'
+            'Xbox SDK documentation is not installed. Reload the window or reinstall the RXDK extension.'
         );
         return;
     }

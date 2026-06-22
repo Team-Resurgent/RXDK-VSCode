@@ -53,7 +53,7 @@ Project templates are maintained in `templates/`.
 
 ## Xbox SDK documentation
 
-XDK reference HTML lives in `docs/xboxsdk/` (tracked in git, shipped in the VSIX). Open from the RXDK sidebar → **Documentation** → **Xbox SDK Reference**, or **RXDK: Xbox SDK Documentation**.
+XDK reference HTML lives in `docs/xboxsdk/` (tracked in git). At package time `scripts/bundle-xboxsdk-docs.ps1` creates `docs/xboxsdk.tar.gz` (~19 MB); only the archive ships in the VSIX. The extension extracts it to `%ProgramData%\RXDK\docs\xboxsdk` on activate.
 
 ## One command
 

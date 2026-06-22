@@ -6,6 +6,7 @@ import { createProject, findProjectManifest } from './projectManager';
 import { runRxdkTask } from './buildRunner';
 import { getBridgePath } from './sdkPath';
 import { ensureSdkStaging, openStagedSdkFolder } from './sdkStaging';
+import { ensureSdkDocsStaging } from './sdkDocsStaging';
 import { ensureVscodeForWorkspace, generateVscodeFolder } from './vscodeGenerator';
 import { RxdkTemplateId } from './projectTypes';
 import { getActiveXboxAddress, promptSetXboxIp } from './xboxConsole';
@@ -23,6 +24,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
     sidebarProvider = new RxdkSidebarProvider(context);
     void ensureSdkStaging(context, rxdkOutput).then(() => sidebarProvider.refresh());
+    void ensureSdkDocsStaging(context, rxdkOutput).then(() => sidebarProvider.refresh());
     const treeView = vscode.window.createTreeView('rxdk.explorer', {
         treeDataProvider: sidebarProvider,
         showCollapseAll: false,
