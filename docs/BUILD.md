@@ -22,6 +22,8 @@ git submodule update --init external/RXDK-Tools external/xdvdfs
 | [RXDK-Tools](https://github.com/Team-Resurgent/RXDK-Tools) | Managed host tools (`xbcp`, `imagebld`, `xbox-launch`, `xboxdbg-bridge`) — published on CI via `dotnet` |
 | [xdvdfs](https://github.com/antangelo/xdvdfs) | XISO packer — built with Rust + Zig for `win-x64`, `linux-x64`, `osx-x64`, `osx-arm64` |
 
+**Do not commit changes inside `external/xdvdfs`.** Builds write to `external/xdvdfs/out/publish/` (gitignored). The parent repo only records the submodule commit SHA. If upstream needs a fix, bump the submodule pointer or add a patch under `patches/` and apply it in `scripts/build-xdvdfs.ps1` — do not fork the submodule in place.
+
 ## Build output (repo root)
 
 Generated artifacts (gitignored):
