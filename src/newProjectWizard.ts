@@ -18,6 +18,7 @@ interface NewProjectSpec {
 }
 
 const STATE_KEY = 'rxdk.newProjectWizard.lastSpec';
+const LAST_PARENT_KEY = 'rxdk.newProjectWizard.lastParentFolder';
 const TEMPLATE_IDS = Object.keys(TEMPLATE_LABELS) as RxdkTemplateId[];
 
 let activePanel: vscode.WebviewPanel | undefined;
@@ -53,16 +54,13 @@ export async function openNewProjectWizard(
         const type = String(msg.type ?? '');
         switch (type) {
             case 'ready': {
-                const last = context.workspaceState.get<Partial<NewProjectSpec>>(STATE_KEY) ?? {};
+                const last = context.globalState.get<Partial<NewProjectSpec>>(STATE_KEY) ?? {};
                 const template =
                     initialTemplate ??
                     (last.template && TEMPLATE_IDS.includes(last.template)
                         ? last.template
                         : 'd3d8-triangle');
-                const location =
-                    last.location?.trim() ||
-                    vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ||
-                    '';
+                const location = context.globalState.get<string>(LAST_PARENT_KEY)?.trim() ?? '';
                 const projectName =
                     last.projectName?.trim() || suggestProjectName(template);
                 panel.webview.postMessage({
@@ -81,6 +79,7 @@ export async function openNewProjectWizard(
                     String(msg.seed ?? '')
                 );
                 if (picked) {
+                    await context.globalState.update(LAST_PARENT_KEY, picked);
                     panel.webview.postMessage({ type: 'location', value: picked });
                 }
                 break;
@@ -102,7 +101,11 @@ export async function openNewProjectWizard(
                     panel.webview.postMessage({ type: 'error', message: error });
                     return;
                 }
-                await context.workspaceState.update(STATE_KEY, spec);
+                await context.globalState.update(LAST_PARENT_KEY, spec.location);
+                await context.globalState.update(STATE_KEY, {
+                    template: spec.template,
+                    projectName: spec.projectName,
+                });
                 const result = await scaffoldProjectFromTemplate(
                     context,
                     spec.template,
@@ -155,10 +158,9 @@ function validateSpec(spec: NewProjectSpec): string | undefined {
 }
 
 async function pickFolder(title: string, seed: string): Promise<string | undefined> {
+    const seedPath = seed.trim();
     const defaultUri =
-        seed && fs.existsSync(seed)
-            ? vscode.Uri.file(seed)
-            : vscode.workspace.workspaceFolders?.[0]?.uri;
+        seedPath && fs.existsSync(seedPath) ? vscode.Uri.file(path.normalize(seedPath)) : undefined;
     const picked = await vscode.window.showOpenDialog({
         canSelectFiles: false,
         canSelectFolders: true,
