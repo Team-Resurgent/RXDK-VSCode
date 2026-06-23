@@ -64,7 +64,15 @@ export const TEMPLATE_LABELS: Record<RxdkTemplateId, string> = {
 };
 
 export function manifestUsesCpp(manifest: RxdkProjectManifest): boolean {
-    return (manifest.sources ?? []).some((s) => /\.(cpp|cxx)$/i.test(s));
+    return (manifest.sources ?? []).some((s) => /\.(cpp|cxx|cc)$/i.test(s));
+}
+
+/** True when the project has compilable sources that need C/C++ IntelliSense. */
+export function manifestNeedsIntelliSense(manifest: RxdkProjectManifest): boolean {
+    if (isPrebuiltManifest(manifest)) {
+        return false;
+    }
+    return (manifest.sources ?? []).some((s) => /\.(c|cpp|cxx|cc|h|hpp)$/i.test(s));
 }
 
 export function isPrebuiltManifest(manifest: RxdkProjectManifest): boolean {

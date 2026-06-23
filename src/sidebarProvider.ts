@@ -4,6 +4,7 @@ import { findProjectManifest } from './projectManager';
 import { getXboxAddressInfo } from './xboxConsole';
 import { sdkDocsAvailable } from './sdkDocs';
 import { isPrebuiltManifest } from './projectTypes';
+import { isPrerequisitesReadySync } from './prerequisites';
 
 export class RxdkTreeItem extends vscode.TreeItem {
     constructor(
@@ -40,6 +41,15 @@ export class RxdkSidebarProvider implements vscode.TreeDataProvider<RxdkTreeItem
 
     async getChildren(element?: RxdkTreeItem): Promise<RxdkTreeItem[]> {
         if (!element) {
+            if (!isPrerequisitesReadySync()) {
+                return [
+                    new RxdkTreeItem(
+                        'Setup required',
+                        vscode.TreeItemCollapsibleState.Expanded
+                    ),
+                ];
+            }
+
             const version = readSdkVersion(this.context).split('\n')[0] ?? '';
             const root: RxdkTreeItem[] = [
                 new RxdkTreeItem(
@@ -73,6 +83,18 @@ export class RxdkSidebarProvider implements vscode.TreeDataProvider<RxdkTreeItem
                 );
             }
             return root;
+        }
+
+        if (element.label === 'Setup required') {
+            return [
+                new RxdkTreeItem(
+                    'Complete RXDK setup…',
+                    vscode.TreeItemCollapsibleState.None,
+                    'rxdk.setupPrerequisites',
+                    '.NET, RXDK-SDK, Zig',
+                    'warning'
+                ),
+            ];
         }
 
         if (element.label === 'Devkit') {
@@ -185,24 +207,11 @@ export class RxdkSidebarProvider implements vscode.TreeDataProvider<RxdkTreeItem
         if (element.label === 'Create project') {
             return [
                 new RxdkTreeItem(
-                    'New D3D8 Triangle',
+                    'New Project…',
                     vscode.TreeItemCollapsibleState.None,
-                    'rxdk.newProject.d3d8'
-                ),
-                new RxdkTreeItem(
-                    'New DSound Tone',
-                    vscode.TreeItemCollapsibleState.None,
-                    'rxdk.newProject.dsound'
-                ),
-                new RxdkTreeItem(
-                    'New XInput Gamepad',
-                    vscode.TreeItemCollapsibleState.None,
-                    'rxdk.newProject.xinput'
-                ),
-                new RxdkTreeItem(
-                    'New XMV Play',
-                    vscode.TreeItemCollapsibleState.None,
-                    'rxdk.newProject.xmv'
+                    'rxdk.newProject',
+                    'template wizard',
+                    'add'
                 ),
                 new RxdkTreeItem(
                     'New Prebuilt XBE Project',

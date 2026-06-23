@@ -1,13 +1,15 @@
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { execFile } from 'child_process';
+import { execFile, spawn } from 'child_process';
 import { promisify } from 'util';
 import * as vscode from 'vscode';
+import { downloadFileToPath, formatBytes, formatDownloadProgress, getDirectorySize } from './downloadFile';
 
 const execFileAsync = promisify(execFile);
 
 export const DOTNET_MAJOR_VERSION = '8';
+const ESTIMATED_RUNTIME_BYTES = 35 * 1024 * 1024;
 const RUNTIME_FRAMEWORK = 'Microsoft.NETCore.App';
 const DOTNET_INSTALL_URL =
     process.platform === 'win32'
@@ -90,15 +92,6 @@ export async function isDotNetRuntimeInstalled(): Promise<boolean> {
     return hasDotNet8OnDisk();
 }
 
-async function downloadFile(url: string, dest: string): Promise<void> {
-    const response = await fetch(url);
-    if (!response.ok) {
-        throw new Error(`Download failed (${response.status}): ${url}`);
-    }
-    const data = Buffer.from(await response.arrayBuffer());
-    fs.writeFileSync(dest, data);
-}
-
 async function ensureUserPathContains(dir: string): Promise<void> {
     if (process.platform === 'win32') {
         const escaped = dir.replace(/'/g, "''");
@@ -140,11 +133,43 @@ async function ensureUserPathContains(dir: string): Promise<void> {
     fs.appendFileSync(profilePath, block, 'utf8');
 }
 
-async function runDotNetInstallScript(scriptPath: string, installDir: string): Promise<void> {
-    if (process.platform === 'win32') {
-        await execFileAsync(
-            'powershell',
-            [
+export type DotNetInstallProgress = (update: { message: string; percent?: number }) => void;
+
+async function runDotNetInstallScript(
+    scriptPath: string,
+    installDir: string,
+    onProgress?: DotNetInstallProgress
+): Promise<void> {
+    const started = Date.now();
+    let finished = false;
+    let lastPercent = 15;
+
+    const reportInstallProgress = (): void => {
+        if (finished) {
+            return;
+        }
+        void getDirectorySize(installDir).then((bytes) => {
+            if (finished) {
+                return;
+            }
+            const elapsedSec = Math.round((Date.now() - started) / 1000);
+            const sizePct = Math.min(100, Math.round((bytes / ESTIMATED_RUNTIME_BYTES) * 100));
+            const percent = Math.max(lastPercent, 15 + Math.min(77, Math.round(sizePct * 0.77)));
+            lastPercent = percent;
+            const sizeHint = bytes > 0 ? ` ${formatBytes(bytes)} installed` : '';
+            onProgress?.({
+                message: `Installing .NET ${DOTNET_MAJOR_VERSION} runtime…${sizeHint} (${elapsedSec}s)`,
+                percent,
+            });
+        });
+    };
+
+    const progressTimer = setInterval(reportInstallProgress, 1000);
+    reportInstallProgress();
+
+    try {
+        if (process.platform === 'win32') {
+            await runProcess('powershell', [
                 '-NoProfile',
                 '-ExecutionPolicy',
                 'Bypass',
@@ -158,16 +183,12 @@ async function runDotNetInstallScript(scriptPath: string, installDir: string): P
                 installDir,
                 '-Quality',
                 'GA',
-            ],
-            { timeout: 600_000, windowsHide: true }
-        );
-        return;
-    }
+            ]);
+            return;
+        }
 
-    fs.chmodSync(scriptPath, 0o755);
-    await execFileAsync(
-        scriptPath,
-        [
+        fs.chmodSync(scriptPath, 0o755);
+        await runProcess(scriptPath, [
             '--runtime',
             'dotnet',
             '--channel',
@@ -176,21 +197,64 @@ async function runDotNetInstallScript(scriptPath: string, installDir: string): P
             installDir,
             '--quality',
             'GA',
-        ],
-        { timeout: 600_000 }
-    );
+        ]);
+    } finally {
+        finished = true;
+        clearInterval(progressTimer);
+    }
 }
 
-export async function installDotNetRuntime(output?: vscode.OutputChannel): Promise<boolean> {
+function runProcess(command: string, args: string[]): Promise<void> {
+    return new Promise((resolve, reject) => {
+        const proc = spawn(command, args, { windowsHide: true });
+        let stderr = '';
+        proc.stderr?.on('data', (chunk: Buffer) => {
+            stderr += chunk.toString();
+        });
+        proc.on('error', reject);
+        proc.on('close', (code) => {
+            if (code === 0) {
+                resolve();
+                return;
+            }
+            reject(new Error(stderr.trim() || `${command} exited with code ${code}`));
+        });
+    });
+}
+
+export async function installDotNetRuntime(
+    output?: vscode.OutputChannel,
+    onProgress?: DotNetInstallProgress
+): Promise<boolean> {
     const installDir = getDotNetInstallDir();
     const scriptName = process.platform === 'win32' ? 'dotnet-install.ps1' : 'dotnet-install.sh';
     const scriptPath = path.join(os.tmpdir(), `rxdk-${scriptName}`);
 
     output?.appendLine(`RXDK: downloading ${DOTNET_INSTALL_URL}`);
-    await downloadFile(DOTNET_INSTALL_URL, scriptPath);
+    onProgress?.({ message: `Downloading .NET ${DOTNET_MAJOR_VERSION} installer script…`, percent: 0 });
+
+    let lastLoggedPercent = -1;
+    await downloadFileToPath(DOTNET_INSTALL_URL, scriptPath, (progress) => {
+        const message = formatDownloadProgress(progress.bytesReceived, progress.totalBytes);
+        const percent =
+            progress.percent !== undefined ? Math.min(12, Math.round(progress.percent * 0.12)) : 5;
+        onProgress?.({ message: `Downloading .NET ${DOTNET_MAJOR_VERSION} installer… ${message}`, percent });
+        if (
+            progress.percent !== undefined &&
+            (progress.percent === 0 ||
+                progress.percent >= lastLoggedPercent + 25 ||
+                progress.percent === 100)
+        ) {
+            lastLoggedPercent = progress.percent;
+            output?.appendLine(`RXDK: ${message}`);
+        }
+    });
 
     output?.appendLine(`RXDK: installing .NET ${DOTNET_MAJOR_VERSION} runtime to ${installDir}`);
-    await runDotNetInstallScript(scriptPath, installDir);
+    onProgress?.({ message: `Installing .NET ${DOTNET_MAJOR_VERSION} runtime…`, percent: 15 });
+    await runDotNetInstallScript(scriptPath, installDir, onProgress);
+
+    onProgress?.({ message: 'Updating PATH…', percent: 97 });
     await ensureUserPathContains(installDir);
 
     try {
@@ -206,6 +270,7 @@ export async function installDotNetRuntime(output?: vscode.OutputChannel): Promi
     }
 
     output?.appendLine(`RXDK: .NET ${DOTNET_MAJOR_VERSION} runtime ready`);
+    onProgress?.({ message: `.NET ${DOTNET_MAJOR_VERSION} runtime ready`, percent: 100 });
     return true;
 }
 

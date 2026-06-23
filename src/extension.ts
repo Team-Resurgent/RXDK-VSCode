@@ -2,32 +2,51 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import { RxdkSidebarProvider } from './sidebarProvider';
-import { createProject, findProjectManifest } from './projectManager';
+import { createProject } from './projectManager';
 import { runRxdkTask } from './buildRunner';
 import { getBridgePath } from './sdkPath';
-import { ensureSdkStaging, openStagedSdkFolder, fetchLatestSdk } from './sdkStaging';
+import { openStagedSdkFolder, fetchLatestSdk } from './sdkStaging';
 import { ensureDotNetRuntime, isDotNetRuntimeInstalled } from './dotnetRuntime';
 import { ensureSdkDocsStaging } from './sdkDocsStaging';
-import { ensureVscodeForWorkspace, generateVscodeFolder } from './vscodeGenerator';
-import { RxdkTemplateId } from './projectTypes';
+import { ensureVscodeForWorkspace } from './vscodeGenerator';
 import { getActiveXboxAddress, promptSetXboxIp } from './xboxConsole';
 import { openSdkDocs } from './sdkDocs';
 import { openPrebuiltProjectSetup } from './prebuiltDebug';
 import { refreshPrebuiltSourceFolder } from './prebuiltWorkspace';
 import { launchXbwatson } from './xbwatsonLauncher';
+import {
+    isPrerequisitesReadySync,
+    refreshPrerequisitesContext,
+} from './prerequisites';
+import { openPrerequisitesSetup } from './prerequisitesSetup';
 let titleOutputChannel: vscode.OutputChannel | undefined;
 const titleLogWatchers = new Map<string, NodeJS.Timeout>();
 let rxdkOutput: vscode.OutputChannel;
 let sidebarProvider: RxdkSidebarProvider;
+let extensionContext: vscode.ExtensionContext;
+
+function guardPrerequisites<T extends unknown[]>(
+    action: (...args: T) => unknown
+): (...args: T) => unknown {
+    return (...args: T) => {
+        if (!isPrerequisitesReadySync()) {
+            void openPrerequisitesSetup(extensionContext, rxdkOutput);
+            return;
+        }
+        return action(...args);
+    };
+}
 
 export function activate(context: vscode.ExtensionContext): void {
+    extensionContext = context;
     rxdkOutput = vscode.window.createOutputChannel('RXDK');
     context.subscriptions.push(rxdkOutput);
 
+    void vscode.commands.executeCommand('setContext', 'rxdk.prerequisitesReady', false);
+
     sidebarProvider = new RxdkSidebarProvider(context);
-    void ensureSdkStaging(context, rxdkOutput).then(() => sidebarProvider.refresh());
     void ensureSdkDocsStaging(context, rxdkOutput).then(() => sidebarProvider.refresh());
-    void ensureDotNetRuntime(context, rxdkOutput);
+    void bootstrapPrerequisites(context);
     const treeView = vscode.window.createTreeView('rxdk.explorer', {
         treeDataProvider: sidebarProvider,
         showCollapseAll: false,
@@ -61,71 +80,60 @@ export function activate(context: vscode.ExtensionContext): void {
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand('rxdk.newProject', () => createProject(context)),
-        vscode.commands.registerCommand('rxdk.newProject.d3d8', () =>
-            createProject(context, 'd3d8-triangle' as RxdkTemplateId)
+        vscode.commands.registerCommand('rxdk.setupPrerequisites', () =>
+            openPrerequisitesSetup(context, rxdkOutput)
         ),
-        vscode.commands.registerCommand('rxdk.newProject.dsound', () =>
-            createProject(context, 'dsound-tone' as RxdkTemplateId)
-        ),
-        vscode.commands.registerCommand('rxdk.newProject.xinput', () =>
-            createProject(context, 'xinput-gamepad' as RxdkTemplateId)
-        ),
-        vscode.commands.registerCommand('rxdk.newProject.xmv', () =>
-            createProject(context, 'xmv-play' as RxdkTemplateId)
-        ),
-        vscode.commands.registerCommand('rxdk.build', () => runRxdkTask(context, 'build', rxdkOutput)),
-        vscode.commands.registerCommand('rxdk.deploy', () => runRxdkTask(context, 'deploy', rxdkOutput)),
-        vscode.commands.registerCommand('rxdk.run', async () => {
+        vscode.commands.registerCommand('rxdk.newProject', guardPrerequisites(() => createProject(context))),
+        vscode.commands.registerCommand('rxdk.build', guardPrerequisites(() => runRxdkTask(context, 'build', rxdkOutput))),
+        vscode.commands.registerCommand('rxdk.deploy', guardPrerequisites(() => runRxdkTask(context, 'deploy', rxdkOutput))),
+        vscode.commands.registerCommand('rxdk.run', guardPrerequisites(async () => {
             await runRxdkTask(context, 'build+deploy', rxdkOutput);
             await runRxdkTask(context, 'run', rxdkOutput);
-        }),
-        vscode.commands.registerCommand('rxdk.debug', () => vscode.commands.executeCommand('workbench.action.debug.start')),
-        vscode.commands.registerCommand('rxdk.debugPrebuiltXbe', () => openPrebuiltProjectSetup(context)),
-        vscode.commands.registerCommand('rxdk.refreshPrebuiltSource', () =>
+        })),
+        vscode.commands.registerCommand('rxdk.debug', guardPrerequisites(() => vscode.commands.executeCommand('workbench.action.debug.start'))),
+        vscode.commands.registerCommand('rxdk.debugPrebuiltXbe', guardPrerequisites(() => openPrebuiltProjectSetup(context))),
+        vscode.commands.registerCommand('rxdk.refreshPrebuiltSource', guardPrerequisites(() =>
             refreshPrebuiltSourceFolder(context).then(() => sidebarProvider.refresh())
-        ),
-        vscode.commands.registerCommand('rxdk.setXboxIp', () => promptSetXboxIp().then(() => sidebarProvider.refresh())),
+        )),
+        vscode.commands.registerCommand('rxdk.setXboxIp', guardPrerequisites(() => promptSetXboxIp().then(() => sidebarProvider.refresh()))),
         vscode.commands.registerCommand('rxdk.showSidebar', () =>
             vscode.commands.executeCommand('workbench.view.extension.rxdk-sidebar')
         ),
         vscode.commands.registerCommand('rxdk.refreshSidebar', () => sidebarProvider.refresh()),
-        vscode.commands.registerCommand('rxdk.refreshWorkspace', async () => {
-            const found = await findProjectManifest();
-            if (!found) {
-                vscode.window.showErrorMessage('No rxdk.project.json found in workspace.');
-                return;
-            }
-            await generateVscodeFolder(
-                context,
-                found.folder.uri.fsPath,
-                found.manifest.name,
-                found.manifest
-            );
-            vscode.window.showInformationMessage('RXDK workspace tasks and launch config refreshed.');
-        }),
-        vscode.commands.registerCommand('rxdk.openSdkDocs', () => openSdkDocs(context)),
-        vscode.commands.registerCommand('rxdk.openSdkFolder', () => openStagedSdkFolder(context)),
-        vscode.commands.registerCommand('rxdk.fetchLatestSdk', async () => {
+        vscode.commands.registerCommand('rxdk.openSdkDocs', guardPrerequisites(() => openSdkDocs(context))),
+        vscode.commands.registerCommand('rxdk.openSdkFolder', guardPrerequisites(() => openStagedSdkFolder(context))),
+        vscode.commands.registerCommand('rxdk.fetchLatestSdk', guardPrerequisites(async () => {
             const ok = await fetchLatestSdk(context, rxdkOutput);
             if (ok) {
                 sidebarProvider.refresh();
             }
-        }),
+        })),
         vscode.commands.registerCommand('rxdk.installDotNetRuntime', async () => {
             if (await isDotNetRuntimeInstalled()) {
                 vscode.window.showInformationMessage('RXDK: .NET 8 runtime is already installed.');
                 return;
             }
             await ensureDotNetRuntime(context, rxdkOutput);
+            await refreshPrerequisitesContext(context);
+            sidebarProvider.refresh();
         }),
-        vscode.commands.registerCommand('rxdk.launchXbwatson', () => launchXbwatson(context, rxdkOutput)),
-        vscode.commands.registerCommand('xbox.pickConsole', () => promptSetXboxIp())
+        vscode.commands.registerCommand('rxdk.launchXbwatson', guardPrerequisites(() => launchXbwatson(context, rxdkOutput))),
+        vscode.commands.registerCommand('xbox.pickConsole', guardPrerequisites(() => promptSetXboxIp()))
     );
 
     void ensureVscodeForWorkspace(context);
 
     registerDebugIntegration(context);
+}
+
+async function bootstrapPrerequisites(context: vscode.ExtensionContext): Promise<void> {
+    const ready = await refreshPrerequisitesContext(context);
+    sidebarProvider.refresh();
+    if (ready) {
+        await ensureVscodeForWorkspace(context);
+    } else {
+        await openPrerequisitesSetup(context, rxdkOutput);
+    }
 }
 
 async function resolveXboxLaunchConfig(

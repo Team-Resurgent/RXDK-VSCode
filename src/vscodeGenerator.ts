@@ -1,12 +1,21 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { isPrebuiltManifest, manifestUsesCpp, RxdkProjectManifest } from './projectTypes';
+import {
+    isPrebuiltManifest,
+    manifestNeedsIntelliSense,
+    manifestUsesCpp,
+    RxdkProjectManifest,
+} from './projectTypes';
 import { getBundledSdkRoot, getSdkIncludeDir, getSdkLibDir } from './sdkPath';
 
 const EXTENSION_ID = 'rxdk-libs.rxdk-vscode';
 const EXTENSION_ROOT = `\${extensionInstallFolder:${EXTENSION_ID}}`;
 const SDK_ROOT = `${EXTENSION_ROOT}/sdk`;
+
+function normalizeConfigPath(value: string): string {
+    return path.normalize(value).replace(/\\/g, '/').toLowerCase();
+}
 
 function vscodeConfigIsStale(projectRoot: string): boolean {
     const tasksPath = path.join(projectRoot, '.vscode', 'tasks.json');
@@ -23,8 +32,116 @@ function vscodeConfigIsStale(projectRoot: string): boolean {
     );
 }
 
+interface IntelliSenseConfig {
+    includePath: string[];
+    defines: string[];
+    usesCpp: boolean;
+}
+
+function buildIntelliSenseConfig(
+    context: vscode.ExtensionContext,
+    projectRoot: string,
+    manifest: RxdkProjectManifest
+): IntelliSenseConfig {
+    const includeDir = getSdkIncludeDir(context).replace(/\\/g, '/');
+    const includePath = [includeDir, '${workspaceFolder}/**'];
+    for (const rel of manifest.includePaths ?? []) {
+        if (!rel.trim()) {
+            continue;
+        }
+        includePath.push(path.join(projectRoot, rel).replace(/\\/g, '/'));
+    }
+    const defines = ['_XBOX', '_WIN32', '_WINNT', '_X86_', ...(manifest.defines ?? [])];
+    return { includePath, defines, usesCpp: manifestUsesCpp(manifest) };
+}
+
+function applyIntelliSenseSettings(settings: Record<string, unknown>, config: IntelliSenseConfig): void {
+    settings['C_Cpp.default.includePath'] = config.includePath;
+    settings['C_Cpp.default.defines'] = config.defines;
+    settings['C_Cpp.default.intelliSenseMode'] = 'windows-msvc-x86';
+    settings['C_Cpp.default.compilerPath'] = '';
+    settings['C_Cpp.default.cStandard'] = 'c17';
+    if (config.usesCpp) {
+        settings['C_Cpp.default.cppStandard'] = 'c++20';
+    }
+}
+
+function writeCppProperties(vscodeDir: string, config: IntelliSenseConfig): void {
+    const cppProperties = {
+        configurations: [
+            {
+                name: 'Xbox',
+                includePath: config.includePath,
+                defines: config.defines,
+                windowsSdkVersion: '',
+                compilerPath: '',
+                cStandard: 'c17',
+                cppStandard: 'c++20',
+                intelliSenseMode: 'windows-msvc-x86',
+            },
+        ],
+        version: 4,
+    };
+    fs.writeFileSync(
+        path.join(vscodeDir, 'c_cpp_properties.json'),
+        JSON.stringify(cppProperties, null, 4) + '\n',
+        'utf8'
+    );
+}
+
+function intelliSenseConfigIsStale(
+    projectRoot: string,
+    context: vscode.ExtensionContext,
+    manifest: RxdkProjectManifest
+): boolean {
+    if (!manifestNeedsIntelliSense(manifest)) {
+        return false;
+    }
+
+    const expectedInclude = normalizeConfigPath(getSdkIncludeDir(context));
+    const xtlHeader = path.join(getSdkIncludeDir(context), 'xtl.h');
+    if (!fs.existsSync(xtlHeader)) {
+        return false;
+    }
+
+    const cppPropsPath = path.join(projectRoot, '.vscode', 'c_cpp_properties.json');
+    if (!fs.existsSync(cppPropsPath)) {
+        return true;
+    }
+
+    try {
+        const props = JSON.parse(fs.readFileSync(cppPropsPath, 'utf8')) as {
+            configurations?: Array<{ includePath?: string[] }>;
+        };
+        const includes = props.configurations?.[0]?.includePath ?? [];
+        if (!includes.some((entry) => normalizeConfigPath(entry) === expectedInclude)) {
+            return true;
+        }
+    } catch {
+        return true;
+    }
+
+    const settingsPath = path.join(projectRoot, '.vscode', 'settings.json');
+    if (!fs.existsSync(settingsPath)) {
+        return true;
+    }
+
+    try {
+        const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8')) as Record<string, unknown>;
+        const includePath = settings['C_Cpp.default.includePath'];
+        if (!Array.isArray(includePath) || includePath.length === 0) {
+            return true;
+        }
+        return !includePath.some(
+            (entry) => typeof entry === 'string' && normalizeConfigPath(entry) === expectedInclude
+        );
+    } catch {
+        return true;
+    }
+}
+
 export async function generateVscodeFolder(
-    _context: vscode.ExtensionContext,
+    context: vscode.ExtensionContext,
     projectRoot: string,
     projectName: string,
     manifest: RxdkProjectManifest
@@ -38,9 +155,9 @@ export async function generateVscodeFolder(
     fs.mkdirSync(vscodeDir, { recursive: true });
 
     const sdkRoot = SDK_ROOT;
-    const bundledRoot = getBundledSdkRoot(_context);
-    const includeDir = getSdkIncludeDir(_context).replace(/\\/g, '/');
-    const libDir = getSdkLibDir(_context).replace(/\\/g, '/');
+    const bundledRoot = getBundledSdkRoot(context);
+    const includeDir = getSdkIncludeDir(context).replace(/\\/g, '/');
+    const libDir = getSdkLibDir(context).replace(/\\/g, '/');
     const buildScript = `${SDK_ROOT}/scripts/Build-XboxProject.ps1`;
     const deployScript = `${SDK_ROOT}/scripts/Invoke-XboxDeploy.ps1`;
     const launchScript = `${SDK_ROOT}/scripts/Invoke-XboxLaunch.ps1`;
@@ -145,19 +262,10 @@ export async function generateVscodeFolder(
         },
     };
 
-    if (manifestUsesCpp(manifest)) {
-        const includePath = [includeDir];
-        for (const rel of manifest.includePaths ?? []) {
-            if (!rel.trim()) {
-                continue;
-            }
-            includePath.push(path.join(projectRoot, rel).replace(/\\/g, '/'));
-        }
-        const defines = ['_XBOX', '_WIN32', '_WINNT', '_X86_', ...(manifest.defines ?? [])];
-        settings['C_Cpp.default.includePath'] = includePath;
-        settings['C_Cpp.default.defines'] = defines;
-        settings['C_Cpp.default.cppStandard'] = 'c++20';
-        settings['C_Cpp.default.compilerPath'] = '';
+    if (manifestNeedsIntelliSense(manifest)) {
+        const intelliSense = buildIntelliSenseConfig(context, projectRoot, manifest);
+        applyIntelliSenseSettings(settings, intelliSense);
+        writeCppProperties(vscodeDir, intelliSense);
     }
 
     fs.writeFileSync(path.join(vscodeDir, 'tasks.json'), JSON.stringify(tasks, null, 4) + '\n', 'utf8');
@@ -260,7 +368,10 @@ export async function ensureVscodeForWorkspace(context: vscode.ExtensionContext)
         return;
     }
     const projectRoot = found.folder.uri.fsPath;
-    if (!vscodeConfigIsStale(projectRoot)) {
+    const needsRefresh =
+        vscodeConfigIsStale(projectRoot) ||
+        intelliSenseConfigIsStale(projectRoot, context, found.manifest);
+    if (!needsRefresh) {
         return;
     }
     await generateVscodeFolder(context, projectRoot, found.manifest.name, found.manifest);

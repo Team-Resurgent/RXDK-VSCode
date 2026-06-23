@@ -1,13 +1,15 @@
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { execFile } from 'child_process';
+import { execFile, spawn } from 'child_process';
 import { promisify } from 'util';
 import * as vscode from 'vscode';
+import { formatBytes, getDirectorySize } from './downloadFile';
 
 const execFileAsync = promisify(execFile);
 
 export const DEFAULT_SDK_GIT_URL = 'https://github.com/Team-Resurgent/RXDK-SDK.git';
+const ESTIMATED_SDK_BYTES = 45 * 1024 * 1024;
 
 /** Default persistent include/lib root (ProgramData on Windows, XDG/App Support elsewhere). */
 export function getDefaultStagedSdkRoot(): string {
@@ -93,15 +95,91 @@ export function isStagedSdkPresent(context?: vscode.ExtensionContext): boolean {
     return fs.existsSync(path.join(root, 'include', 'd3d8.h'));
 }
 
-async function gitClone(repoUrl: string, dest: string, gitRef?: string): Promise<void> {
+export type SdkInstallProgress = (update: { message: string; percent?: number }) => void;
+
+async function runGitWithProgress(
+    args: string[],
+    options: {
+        cwd?: string;
+        watchDir?: string;
+        label: string;
+        onProgress?: SdkInstallProgress;
+    }
+): Promise<void> {
+    const started = Date.now();
+    let finished = false;
+    let lastPercent = 8;
+
+    const reportProgress = (message: string, percent?: number): void => {
+        if (percent !== undefined) {
+            lastPercent = Math.max(lastPercent, percent);
+        }
+        options.onProgress?.({ message, percent: percent ?? lastPercent });
+    };
+
+    const pollTimer = setInterval(() => {
+        if (finished || !options.watchDir) {
+            return;
+        }
+        const elapsedSec = Math.round((Date.now() - started) / 1000);
+        void getDirectorySize(options.watchDir).then((bytes) => {
+            if (finished) {
+                return;
+            }
+            const sizePct = Math.min(100, Math.round((bytes / ESTIMATED_SDK_BYTES) * 100));
+            const percent = Math.max(lastPercent, 10 + Math.min(85, Math.round(sizePct * 0.85)));
+            const sizeHint = bytes > 0 ? ` ${formatBytes(bytes)} received` : '';
+            reportProgress(`${options.label}…${sizeHint} (${elapsedSec}s)`, percent);
+        });
+    }, 1000);
+
+    try {
+        await new Promise<void>((resolve, reject) => {
+            const proc = spawn('git', args, { cwd: options.cwd, windowsHide: true });
+            let stderr = '';
+            proc.stderr?.on('data', (chunk: Buffer) => {
+                const text = chunk.toString();
+                stderr += text;
+                const match = text.match(/Receiving objects:\s+(\d+)%/);
+                if (match) {
+                    const gitPct = parseInt(match[1], 10);
+                    const percent = Math.max(lastPercent, 10 + Math.round(gitPct * 0.85));
+                    reportProgress(`${options.label}… ${gitPct}%`, percent);
+                }
+            });
+            proc.on('error', reject);
+            proc.on('close', (code) => {
+                if (code === 0) {
+                    resolve();
+                    return;
+                }
+                reject(new Error(stderr.trim() || `git exited with code ${code}`));
+            });
+        });
+    } finally {
+        finished = true;
+        clearInterval(pollTimer);
+    }
+}
+
+async function gitClone(
+    repoUrl: string,
+    dest: string,
+    gitRef?: string,
+    onProgress?: SdkInstallProgress
+): Promise<void> {
     const parent = path.dirname(dest);
     fs.mkdirSync(parent, { recursive: true });
-    const args = ['clone', '--depth', '1'];
+    const args = ['clone', '--progress', '--depth', '1'];
     if (gitRef) {
         args.push('--branch', gitRef);
     }
     args.push(repoUrl, dest);
-    await execFileAsync('git', args, { timeout: 600_000, windowsHide: true });
+    await runGitWithProgress(args, {
+        watchDir: dest,
+        label: 'Cloning RXDK-SDK',
+        onProgress,
+    });
 }
 
 function isGitRepo(dir: string): boolean {
@@ -122,13 +200,19 @@ async function gitCurrentBranch(repoDir: string): Promise<string | undefined> {
     }
 }
 
-async function gitPullLatest(repoDir: string, gitRef?: string): Promise<void> {
+async function gitPullLatest(
+    repoDir: string,
+    gitRef?: string,
+    onProgress?: SdkInstallProgress
+): Promise<void> {
     const branch = gitRef || (await gitCurrentBranch(repoDir)) || 'main';
-    await execFileAsync(
-        'git',
-        ['-C', repoDir, 'fetch', '--depth', '1', 'origin', branch],
-        { timeout: 600_000, windowsHide: true }
-    );
+    await runGitWithProgress(['fetch', '--progress', '--depth', '1', 'origin', branch], {
+        cwd: repoDir,
+        watchDir: repoDir,
+        label: 'Fetching RXDK-SDK',
+        onProgress,
+    });
+    onProgress?.({ message: 'Updating RXDK-SDK checkout…', percent: 96 });
     await execFileAsync(
         'git',
         ['-C', repoDir, 'reset', '--hard', `origin/${branch}`],
@@ -198,28 +282,45 @@ export async function ensureSdkStaging(
 /** Clone or pull the latest RXDK-SDK into the staged directory. */
 export async function fetchLatestSdk(
     context: vscode.ExtensionContext,
-    output?: vscode.OutputChannel
+    output?: vscode.OutputChannel,
+    onProgress?: SdkInstallProgress
 ): Promise<boolean> {
     const staged = getStagedSdkRoot(context);
     const repoUrl = getSdkGitUrl(context);
     const gitRef = getSdkGitRef(context);
+    const quietUi = Boolean(onProgress);
 
     if (isGitRepo(staged)) {
         output?.appendLine(`RXDK: fetching latest RXDK-SDK → ${staged}`);
+        onProgress?.({ message: 'Fetching latest RXDK-SDK…', percent: 5 });
         try {
-            await runWithProgress('Fetching latest RXDK-SDK...', () => gitPullLatest(staged, gitRef));
+            if (quietUi) {
+                await gitPullLatest(staged, gitRef, onProgress);
+            } else {
+                await runWithProgress('Fetching latest RXDK-SDK...', () =>
+                    gitPullLatest(staged, gitRef, onProgress)
+                );
+            }
             output?.appendLine(`RXDK: SDK updated at ${staged}`);
-            vscode.window.showInformationMessage('RXDK SDK updated to the latest release.');
+            onProgress?.({ message: 'RXDK-SDK ready', percent: 100 });
+            if (!quietUi) {
+                vscode.window.showInformationMessage('RXDK SDK updated to the latest release.');
+            }
             return true;
         } catch (err) {
             const message = err instanceof Error ? err.message : String(err);
             output?.appendLine(`RXDK: SDK update failed: ${message}`);
-            vscode.window.showErrorMessage(`RXDK SDK update failed: ${message}`);
+            if (!quietUi) {
+                vscode.window.showErrorMessage(`RXDK SDK update failed: ${message}`);
+            }
             return false;
         }
     }
 
     if (fs.existsSync(staged)) {
+        if (quietUi) {
+            return false;
+        }
         const pick = await vscode.window.showWarningMessage(
             'The SDK folder was not installed via git. Replace it with the latest RXDK-SDK from GitHub?',
             'Replace',
@@ -232,20 +333,30 @@ export async function fetchLatestSdk(
     }
 
     output?.appendLine(`RXDK: cloning ${repoUrl}${gitRef ? ` (${gitRef})` : ''} → ${staged}`);
+    onProgress?.({ message: 'Cloning RXDK-SDK…', percent: 0 });
     try {
-        await runWithProgress('Cloning RXDK-SDK (headers + libraries)...', () =>
-            gitClone(repoUrl, staged, gitRef)
-        );
+        if (quietUi) {
+            await gitClone(repoUrl, staged, gitRef, onProgress);
+        } else {
+            await runWithProgress('Cloning RXDK-SDK (headers + libraries)...', () =>
+                gitClone(repoUrl, staged, gitRef, onProgress)
+            );
+        }
         output?.appendLine(`RXDK: SDK cloned to ${staged}`);
-        vscode.window.showInformationMessage('RXDK SDK installed from GitHub.');
+        onProgress?.({ message: 'RXDK-SDK ready', percent: 100 });
+        if (!quietUi) {
+            vscode.window.showInformationMessage('RXDK SDK installed from GitHub.');
+        }
         return true;
     } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         output?.appendLine(`RXDK: SDK clone failed: ${message}`);
-        vscode.window.showErrorMessage(
-            `RXDK SDK clone failed. Install Git and ensure network access, or clone manually:\n` +
-                `git clone --depth 1 ${repoUrl} "${staged}"`
-        );
+        if (!quietUi) {
+            vscode.window.showErrorMessage(
+                `RXDK SDK clone failed. Install Git and ensure network access, or clone manually:\n` +
+                    `git clone --depth 1 ${repoUrl} "${staged}"`
+            );
+        }
         return false;
     }
 }

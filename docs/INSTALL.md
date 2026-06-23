@@ -2,14 +2,26 @@
 
 ## Prerequisites
 
+On first launch after installing the VSIX, **RXDK opens a setup page** and stays disabled until you install:
+
+| Item | Purpose |
+|------|---------|
+| **.NET 8 runtime** | Deploy, debug, and other managed host tools |
+| **RXDK-SDK** | Headers and libraries (cloned from GitHub; requires Git) |
+| **Zig** | Build tooling and cross-compilation workflows |
+
+Use **Install** on each row in the setup page, or **Open download page** for manual installs. When everything shows **Ready**, click **Continue** to enable RXDK. Reload the window if `.NET` or `zig` were just added to PATH.
+
+Additional requirements (not installed by the extension):
+
 - **Windows 10/11 x64** — required to **compile** Xbox titles (`cl.exe` / VS2022 x86)
-- **macOS / Linux** — deploy and debug only (host tools bundled per platform; the extension installs [.NET 8 runtime](https://dotnet.microsoft.com/download/dotnet/8.0) automatically when missing)
-- **Windows** — build requires Visual Studio; deploy/debug host tools also need the .NET 8 runtime (installed automatically by the extension when missing)
+- **macOS / Linux** — deploy and debug only (host tools bundled per platform)
 - [Visual Studio 2022](https://visualstudio.microsoft.com/) with **Desktop development with C++** and **MSVC v143** (x86 build tools) — Windows build only
+- [Git](https://git-scm.com/downloads) — required for the RXDK-SDK clone
 - Original Xbox devkit on the network
 - PowerShell 5.1+ (Windows) or bash + `code`/`cursor` CLI (macOS/Linux install script)
 
-The extension clones [RXDK-SDK](https://github.com/Team-Resurgent/RXDK-SDK) headers and libraries on first launch (see **RXDK: Open SDK Folder**). Host tools ship in the VSIX.
+Host tools ship in the VSIX. Headers/libs come from the RXDK-SDK clone above.
 
 ## Install the extension
 
@@ -80,8 +92,9 @@ See **Quick install** above, or install an existing VSIX without rebuilding:
 ## Verify
 
 1. Extensions list shows **RXDK** (`rxdk-libs.rxdk-vscode`) enabled
-2. Activity Bar → **RXDK** icon (or Command Palette → **RXDK: Show RXDK Sidebar**)
-3. Command Palette → **RXDK: New Project**
+2. Complete the **RXDK setup** page (.NET, RXDK-SDK, Zig) if it opens
+3. Activity Bar → **RXDK** icon (or Command Palette → **RXDK: Show RXDK Sidebar**)
+4. Command Palette → **RXDK: New Project**
 
 ## First project
 
@@ -105,7 +118,8 @@ Install a newer VSIX the same way as above, then reload.
 | Extension in Cursor, not VS Code | Use VS Code’s `code.cmd` path (see above) |
 | RXDK icon missing | Command Palette → **RXDK: Show RXDK Sidebar**; right-click Activity Bar → enable RXDK |
 | Deploy fails, empty ConsoleName | **Windows:** set IP via XBSetIP / Neighborhood, or **RXDK: Set Xbox IP**. **macOS/Linux:** set `rxdk.defaultConsole` in workspace/user settings JSON |
-| Build fails: missing sdk/include | Reload VS Code to trigger RXDK-SDK clone, or **RXDK: Open SDK Folder** → Clone now |
+| Build fails: missing sdk/include | Open **RXDK: Complete Setup** and install RXDK-SDK, or **RXDK: Open SDK Folder** → Clone now |
+| Setup page keeps reappearing | Install all three items (.NET, RXDK-SDK, Zig), click **Continue**, then reload if PATH tools are still missing |
 | Build fails: `cl.exe not found` | Install VS2022 C++ workload; restart VS Code |
 | F5 hangs / LNK1201 | Shift+F5 to stop debug session (PDB locked) |
 | F5 deploys but debug never starts | Reinstall extension (`install-extension.cmd`); DAP needs `@vscode/debugadapter` bundled in VSIX. Check **Debug Console** for `xbox-dap:` lines |

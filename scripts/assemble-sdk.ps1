@@ -4,7 +4,8 @@ param(
     [string]$RxdkToolsRoot = (Join-Path $PSScriptRoot '..\external\RXDK-Tools'),
     [string]$ExtensionRoot = (Join-Path $PSScriptRoot '..'),
     [switch]$BuildTools,
-    [switch]$CrossPlatformTools
+    [switch]$CrossPlatformTools,
+    [switch]$WindowsOnly
 )
 $ErrorActionPreference = 'Stop'
 $RxdkToolsRoot = [IO.Path]::GetFullPath($RxdkToolsRoot)
@@ -122,6 +123,7 @@ Run: git submodule update --init external/RXDK-Tools
 Write-Host '=== xdvdfs ===' -ForegroundColor Cyan
 $fetchArgs = @{ ExtensionRoot = $ExtensionRoot }
 if ($BuildTools) { $fetchArgs['Force'] = $true }
+if ($WindowsOnly -or -not $CrossPlatformTools) { $fetchArgs['WindowsOnly'] = $true }
 & (Join-Path $PSScriptRoot 'fetch-xdvdfs.ps1') @fetchArgs
 
 $scriptsDest = Join-Path $sdkRoot 'scripts'
@@ -188,6 +190,7 @@ if (Test-Path -LiteralPath $xdvdfsTagFile) {
 rxdk-sdk=cloned-on-activate
 rxdk-tools=$toolsSha
 xdvdfs=$xdvdfsTag
+tools-layout=$(if ($CrossPlatformTools) { 'cross-platform' } else { 'windows-only' })
 staged=$(Get-Date -Format 'yyyy-MM-ddTHH:mm:ss')
 "@ | Set-Content -LiteralPath (Join-Path $sdkRoot 'VERSION.txt') -Encoding ASCII
 

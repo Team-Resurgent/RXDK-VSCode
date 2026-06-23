@@ -24,11 +24,8 @@
   "main": "./dist/extension/extension.js",
   "contributes": {
     "commands": [
+      { "command": "rxdk.setupPrerequisites", "title": "Complete Setup", "category": "RXDK", "icon": "$(warning)" },
       { "command": "rxdk.newProject", "title": "New Project", "category": "RXDK", "icon": "$(add)" },
-      { "command": "rxdk.newProject.d3d8", "title": "New D3D8 Triangle", "category": "RXDK" },
-      { "command": "rxdk.newProject.dsound", "title": "New DSound Tone", "category": "RXDK" },
-      { "command": "rxdk.newProject.xinput", "title": "New XInput Gamepad", "category": "RXDK" },
-      { "command": "rxdk.newProject.xmv", "title": "New XMV Play", "category": "RXDK" },
       { "command": "rxdk.build", "title": "Build", "category": "RXDK", "icon": "$(tools)" },
       { "command": "rxdk.deploy", "title": "Deploy", "category": "RXDK", "icon": "$(cloud-upload)" },
       { "command": "rxdk.run", "title": "Run", "category": "RXDK", "icon": "$(run)" },
@@ -64,15 +61,24 @@
     },
     "menus": {
       "view/title": [
-        { "command": "rxdk.newProject", "when": "view == rxdk.explorer", "group": "navigation" },
+        { "command": "rxdk.setupPrerequisites", "when": "view == rxdk.explorer && !rxdk.prerequisitesReady", "group": "navigation" },
+        { "command": "rxdk.newProject", "when": "view == rxdk.explorer && rxdk.prerequisitesReady", "group": "navigation" },
         { "command": "rxdk.refreshSidebar", "when": "view == rxdk.explorer", "group": "navigation" }
       ],
       "commandPalette": [
-        { "command": "rxdk.build", "when": "rxdk.hasProject" },
-        { "command": "rxdk.deploy", "when": "rxdk.hasProject" },
-        { "command": "rxdk.run", "when": "rxdk.hasProject" },
-        { "command": "rxdk.debug", "when": "rxdk.hasProject" },
-        { "command": "rxdk.debugPrebuiltXbe" }
+        { "command": "rxdk.setupPrerequisites", "when": "!rxdk.prerequisitesReady" },
+        { "command": "rxdk.build", "when": "rxdk.prerequisitesReady && rxdk.hasProject" },
+        { "command": "rxdk.deploy", "when": "rxdk.prerequisitesReady && rxdk.hasProject" },
+        { "command": "rxdk.run", "when": "rxdk.prerequisitesReady && rxdk.hasProject" },
+        { "command": "rxdk.debug", "when": "rxdk.prerequisitesReady && rxdk.hasProject" },
+        { "command": "rxdk.debugPrebuiltXbe", "when": "rxdk.prerequisitesReady" },
+        { "command": "rxdk.newProject", "when": "rxdk.prerequisitesReady" },
+        { "command": "rxdk.showSidebar", "when": "rxdk.prerequisitesReady" },
+        { "command": "rxdk.openSdkDocs", "when": "rxdk.prerequisitesReady" },
+        { "command": "rxdk.openSdkFolder", "when": "rxdk.prerequisitesReady" },
+        { "command": "rxdk.fetchLatestSdk", "when": "rxdk.prerequisitesReady" },
+        { "command": "rxdk.launchXbwatson", "when": "rxdk.prerequisitesReady" },
+        { "command": "rxdk.installDotNetRuntime", "when": "rxdk.prerequisitesReady" }
       ]
     },
     "debuggers": [
@@ -145,8 +151,8 @@
         },
         "rxdk.autoInstallDotNetRuntime": {
           "type": "boolean",
-          "default": true,
-          "description": "When the .NET 8 runtime is missing, download and install it automatically on extension activation (required for deploy and debug host tools)."
+          "default": false,
+          "description": "When the .NET 8 runtime is missing outside the RXDK setup page, offer to download and install it automatically (deploy/debug host tools)."
         },
         "rxdk.xbwatsonPath": {
           "type": "string",

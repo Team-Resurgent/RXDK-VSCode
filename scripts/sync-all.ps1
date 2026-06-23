@@ -6,6 +6,7 @@ param(
     [switch]$BuildTools,
     [switch]$Package,
     [switch]$CrossPlatformTools,
+    [switch]$WindowsOnly,
     [switch]$InstallExtension
 )
 $ErrorActionPreference = 'Stop'
@@ -43,6 +44,7 @@ $assembleArgs = @{
 }
 if ($BuildTools) { $assembleArgs['BuildTools'] = $true }
 if ($CrossPlatformTools) { $assembleArgs['CrossPlatformTools'] = $true }
+if ($WindowsOnly) { $assembleArgs['WindowsOnly'] = $true }
 & (Join-Path $ExtensionRoot 'scripts\assemble-sdk.ps1') @assembleArgs
 Test-StepExitCode -StepName 'assemble-sdk.ps1'
 
@@ -74,6 +76,7 @@ Next: open RXDK-VSCode in VS Code, or run with -Package to build VSIX.
 if ($Package) {
     $packageArgs = @{ ExtensionRoot = $ExtensionRoot; BuildTools = [bool]$BuildTools }
     if ($CrossPlatformTools) { $packageArgs['CrossPlatformTools'] = $true }
+    if ($WindowsOnly) { $packageArgs['WindowsOnly'] = $true }
     & (Join-Path $ExtensionRoot 'scripts\package.ps1') @packageArgs
 }
 

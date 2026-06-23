@@ -2,7 +2,8 @@
 param(
     [string]$ExtensionRoot = (Join-Path $PSScriptRoot '..'),
     [switch]$BuildTools,
-    [switch]$CrossPlatformTools
+    [switch]$CrossPlatformTools,
+    [switch]$WindowsOnly
 )
 $ErrorActionPreference = 'Stop'
 $ExtensionRoot = [IO.Path]::GetFullPath($ExtensionRoot)
@@ -11,6 +12,7 @@ try {
     $assembleArgs = @{ ExtensionRoot = $ExtensionRoot }
     if ($BuildTools) { $assembleArgs['BuildTools'] = $true }
     if ($CrossPlatformTools) { $assembleArgs['CrossPlatformTools'] = $true }
+    if ($WindowsOnly) { $assembleArgs['WindowsOnly'] = $true }
     & (Join-Path $PSScriptRoot 'assemble-sdk.ps1') @assembleArgs
 
     # Xbox SDK HTML docs: source tree in git; VSIX ships docs/xboxsdk.tar.gz only.

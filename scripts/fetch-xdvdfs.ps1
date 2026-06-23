@@ -4,7 +4,8 @@ param(
     [string]$PublishRoot = '',
     [string]$Repo = 'Team-Resurgent/xdvdfs',
     [string]$Tag = '',
-    [switch]$Force
+    [switch]$Force,
+    [switch]$WindowsOnly
 )
 $ErrorActionPreference = 'Stop'
 $ExtensionRoot = [IO.Path]::GetFullPath($ExtensionRoot)
@@ -23,12 +24,17 @@ if (-not $Tag) {
     }
 }
 
-$RidSpecs = @(
+$AllRidSpecs = @(
     @{ Rid = 'win-x64';   AssetPrefix = 'xdvdfs-windows-';     Ext = '.exe' }
     @{ Rid = 'linux-x64'; AssetPrefix = 'xdvdfs-linux-';      Ext = '' }
     @{ Rid = 'osx-x64';   AssetPrefix = 'xdvdfs-macos-x64-';  Ext = '' }
     @{ Rid = 'osx-arm64'; AssetPrefix = 'xdvdfs-macos-arm64-'; Ext = '' }
 )
+$RidSpecs = if ($WindowsOnly) {
+    @($AllRidSpecs | Where-Object { $_.Rid -eq 'win-x64' })
+} else {
+    $AllRidSpecs
+}
 
 function Get-GitHubApiHeaders {
     $headers = @{
@@ -144,6 +150,9 @@ function Fetch-XdvdfsRid {
 }
 
 Write-Host '=== xdvdfs (Team-Resurgent/xdvdfs releases) ===' -ForegroundColor Cyan
+if ($WindowsOnly) {
+    Write-Host 'Windows-only: fetching win-x64 xdvdfs only' -ForegroundColor DarkGray
+}
 New-Item -ItemType Directory -Force -Path $PublishRoot | Out-Null
 
 $release = Get-ReleaseJson -Repository $Repo -ReleaseTag $Tag

@@ -61,17 +61,36 @@ XDK reference HTML lives in `docs/xboxsdk/` (tracked in git). At package time `s
 
 ## One command
 
+Cross-platform VSIX (default; includes macOS/Linux host tools):
+
 ```powershell
 cd D:\Git\RXDK-VSCode
 .\scripts\build-vsix.ps1
 ```
 
-Produces `rxdk-vscode-<version>.vsix` and `rxdk-vscode-<version>.zip` (VSIX + cross-platform install scripts).
+Windows-only VSIX for **local dev** (smaller; `sdk/tools/*.exe` for win-x64 only — not used by CI). Builds and **installs** into VS Code and Cursor by default:
+
+```powershell
+.\scripts\build-vsix-windows.ps1
+```
+
+Skip install: `.\scripts\build-vsix-windows.ps1 -NoInstall`
+
+Equivalent:
+
+```powershell
+.\scripts\build-vsix.ps1 -WindowsOnly -Install
+```
+
+CI and releases always use the cross-platform build (`build-vsix.ps1` without `-WindowsOnly`).
+
+Both local commands produce `rxdk-vscode-<version>.vsix` and `rxdk-vscode-<version>.zip`.
 
 Full sync path (assemble + compile + package):
 
 ```powershell
 .\scripts\sync-all.ps1 -Package -CrossPlatformTools -BuildTools
+.\scripts\sync-all.ps1 -Package -WindowsOnly -BuildTools   # Windows-only
 ```
 
 Fetch xdvdfs only:
@@ -88,7 +107,7 @@ GitHub Actions workflow [`.github/workflows/build-vsix.yml`](../.github/workflow
 
 | Job | Runner | Purpose |
 |-----|--------|---------|
-| `build` | `windows-latest` | Fetch xdvdfs release, publish managed tools, package VSIX + release zip |
+| `build` | `windows-latest` | Cross-platform VSIX: fetch xdvdfs, publish managed tools for all RIDs, package + release zip |
 | `release` | `ubuntu-latest` | Attach `rxdk-vscode-*.zip` only (VSIX + install scripts inside the zip) |
 
 **No Rust/Zig on CI.** xdvdfs comes from [Team-Resurgent/xdvdfs releases](https://github.com/Team-Resurgent/xdvdfs/releases/latest).

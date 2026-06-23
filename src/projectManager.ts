@@ -4,6 +4,8 @@ import * as path from 'path';
 import { RxdkProjectManifest, RxdkTemplateId, TEMPLATE_LABELS } from './projectTypes';
 import { generateVscodeFolder } from './vscodeGenerator';
 import { getExtensionRoot } from './sdkPath';
+import { openPrebuiltWorkspace, writePrebuiltWorkspaceFile } from './prebuiltWorkspace';
+import { openNewProjectWizard } from './newProjectWizard';
 
 export async function findProjectManifest(
     folder?: vscode.WorkspaceFolder
@@ -21,75 +23,17 @@ export async function findProjectManifest(
     return undefined;
 }
 
-export async function pickTemplate(): Promise<RxdkTemplateId | undefined> {
-    const items = (Object.keys(TEMPLATE_LABELS) as RxdkTemplateId[]).map((id) => ({
-        label: TEMPLATE_LABELS[id],
-        description: id,
-        id,
-    }));
-    const pick = await vscode.window.showQuickPick(items, { placeHolder: 'Choose Xbox project template' });
-    return pick?.id;
-}
-
-export async function createProject(
-    context: vscode.ExtensionContext,
-    templateId?: RxdkTemplateId
-): Promise<void> {
-    const template = templateId ?? (await pickTemplate());
-    if (!template) {
-        return;
-    }
-
-    const name = await vscode.window.showInputBox({
-        prompt: 'Project name (folder and executable name)',
-        value: suggestName(template),
-        validateInput: (v) => (/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(v) ? null : 'Use letters, digits, underscore, hyphen'),
-    });
+export function validateProjectName(name: string): string | undefined {
     if (!name) {
-        return;
+        return 'Enter a project name.';
     }
-
-    const dest = await vscode.window.showOpenDialog({
-        canSelectFiles: false,
-        canSelectFolders: true,
-        canSelectMany: false,
-        openLabel: 'Create project here',
-        title: 'Choose parent folder for the new Xbox project',
-    });
-    if (!dest?.length) {
-        return;
+    if (!/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(name)) {
+        return 'Use letters, digits, underscore, hyphen; must start with a letter.';
     }
-
-    const projectRoot = path.join(dest[0].fsPath, name);
-    if (fs.existsSync(projectRoot)) {
-        vscode.window.showErrorMessage(`Folder already exists: ${projectRoot}`);
-        return;
-    }
-
-    const templateDir = path.join(getExtensionRoot(context), 'templates', template);
-    if (!fs.existsSync(templateDir)) {
-        vscode.window.showErrorMessage(`Template not found: ${templateDir}. Run scripts/sync-all.ps1 first.`);
-        return;
-    }
-
-    copyTree(templateDir, projectRoot);
-    patchManifest(projectRoot, name);
-    const manifest = JSON.parse(
-        fs.readFileSync(path.join(projectRoot, 'rxdk.project.json'), 'utf8')
-    ) as RxdkProjectManifest;
-
-    const uri = vscode.Uri.file(projectRoot);
-    await generateVscodeFolder(context, projectRoot, name, manifest);
-    const add = await vscode.window.showInformationMessage(
-        `Created Xbox project "${name}" (${TEMPLATE_LABELS[template]})`,
-        'Open Folder'
-    );
-    if (add) {
-        await vscode.commands.executeCommand('vscode.openFolder', uri, { forceNewWindow: false });
-    }
+    return undefined;
 }
 
-function suggestName(template: RxdkTemplateId): string {
+export function suggestProjectName(template: RxdkTemplateId): string {
     switch (template) {
         case 'd3d8-triangle':
             return 'my-triangle';
@@ -102,6 +46,63 @@ function suggestName(template: RxdkTemplateId): string {
         default:
             return 'my-game';
     }
+}
+
+export type ScaffoldProjectResult = { ok: true } | { ok: false; error: string };
+
+export async function scaffoldProjectFromTemplate(
+    context: vscode.ExtensionContext,
+    template: RxdkTemplateId,
+    parentDir: string,
+    name: string
+): Promise<ScaffoldProjectResult> {
+    const nameError = validateProjectName(name);
+    if (nameError) {
+        return { ok: false, error: nameError };
+    }
+    if (!parentDir || !fs.existsSync(parentDir)) {
+        return { ok: false, error: 'Parent folder not found.' };
+    }
+
+    const projectRoot = path.join(parentDir, name);
+    if (fs.existsSync(projectRoot)) {
+        return { ok: false, error: `Folder already exists: ${projectRoot}` };
+    }
+
+    const templateDir = path.join(getExtensionRoot(context), 'templates', template);
+    if (!fs.existsSync(templateDir)) {
+        return {
+            ok: false,
+            error: `Template not found: ${templateDir}. Reinstall the RXDK extension.`,
+        };
+    }
+
+    try {
+        copyTree(templateDir, projectRoot);
+        patchManifest(projectRoot, name);
+        const manifest = JSON.parse(
+            fs.readFileSync(path.join(projectRoot, 'rxdk.project.json'), 'utf8')
+        ) as RxdkProjectManifest;
+
+        await generateVscodeFolder(context, projectRoot, name, manifest);
+        const workspacePath = writePrebuiltWorkspaceFile(projectRoot, name);
+        await openPrebuiltWorkspace(workspacePath);
+        await vscode.commands.executeCommand('setContext', 'rxdk.hasProject', true);
+        vscode.window.showInformationMessage(
+            `Created Xbox project "${name}" (${TEMPLATE_LABELS[template]}).`
+        );
+        return { ok: true };
+    } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        return { ok: false, error: message };
+    }
+}
+
+export async function createProject(
+    context: vscode.ExtensionContext,
+    templateId?: RxdkTemplateId
+): Promise<void> {
+    await openNewProjectWizard(context, templateId);
 }
 
 function copyTree(src: string, dest: string): void {
