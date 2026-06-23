@@ -83,5 +83,5 @@ if ($Package) {
 if ($InstallExtension) {
     $vsix = Get-ChildItem -LiteralPath $ExtensionRoot -Filter 'rxdk-vscode-*.vsix' | Sort-Object LastWriteTime -Descending | Select-Object -First 1
     if (-not $vsix) { throw 'No VSIX found; run with -Package first' }
-    & (Join-Path $ExtensionRoot 'scripts\install-extension.ps1') -ExtensionRoot $ExtensionRoot -VsixPath $vsix.FullName -Target auto
+    & (Join-Path $ExtensionRoot 'scripts\install-extension.ps1') -ExtensionRoot $ExtensionRoot -VsixPath $vsix.FullName -Target auto -Force
 }

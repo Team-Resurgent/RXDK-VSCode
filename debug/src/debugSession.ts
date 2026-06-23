@@ -888,6 +888,17 @@ export class XboxDebugSession extends LoggingDebugSession {
         return false;
     }
 
+    private isBridgeUserBreakpointStop(ev: BridgeEvent, addr: string): boolean {
+        if (ev.atUserBreakpoint === true) {
+            return Boolean(addr);
+        }
+        return Boolean(addr) && this.addressMatchesUserBreakpoint(addr);
+    }
+
+    private isBridgeIncidentalStop(ev: BridgeEvent): boolean {
+        return ev.incidental === true;
+    }
+
     private async ensureDebuggerConnected(): Promise<void> {
         const d = await this.bridge.request('diag');
         if (!d.connected) {
@@ -935,7 +946,7 @@ export class XboxDebugSession extends LoggingDebugSession {
             this.reportMainThread(threadId);
         }
         const addr = run.address ? String(run.address) : '';
-        if (addr && this.addressMatchesUserBreakpoint(addr)) {
+        if (addr && this.isBridgeUserBreakpointStop(run, addr)) {
             this.sendEvent(new OutputEvent(`xbox-dap: stopped at ${addr}.\n`, 'console'));
             this.notifyStopped('breakpoint', this.stoppedThreadId);
             await this.printDiag(`${label} breakpoint`);
@@ -965,7 +976,7 @@ export class XboxDebugSession extends LoggingDebugSession {
             if (!addr) {
                 continue;
             }
-            if (this.addressMatchesUserBreakpoint(addr)) {
+            if (this.isBridgeUserBreakpointStop(wb, addr)) {
                 const threadId = Number(wb.threadId || this.stoppedThreadId);
                 if (threadId > 0) {
                     this.stoppedThreadId = threadId;
@@ -1005,7 +1016,7 @@ export class XboxDebugSession extends LoggingDebugSession {
                     continue;
                 }
                 const runAddr = run.address ? String(run.address) : '';
-                if (runAddr && this.addressMatchesUserBreakpoint(runAddr)) {
+                if (runAddr && this.isBridgeUserBreakpointStop(run, runAddr)) {
                     const threadId = Number(run.threadId || this.stoppedThreadId);
                     if (threadId > 0) {
                         this.stoppedThreadId = threadId;

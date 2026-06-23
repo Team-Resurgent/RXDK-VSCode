@@ -53,6 +53,10 @@ try {
         }
     }
 
+    # Stale release zips from a prior build must not be picked up by vsce (they contain the VSIX).
+    Get-ChildItem -LiteralPath $ExtensionRoot -Filter 'rxdk-vscode-*.zip' -ErrorAction SilentlyContinue |
+        Remove-Item -Force
+
     npm run package
     if ($LASTEXITCODE -ne 0) { throw "vsce package failed (exit $LASTEXITCODE)" }
     $vsix = Get-ChildItem -LiteralPath $ExtensionRoot -Filter 'rxdk-vscode-*.vsix' | Sort-Object LastWriteTime -Descending | Select-Object -First 1

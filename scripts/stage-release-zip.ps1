@@ -33,8 +33,10 @@ function Get-VersionFromVsixName([string]$Name) {
 
 $vsix = Resolve-VsixFile -Root $ExtensionRoot -Explicit $VsixPath
 $version = Get-VersionFromVsixName $vsix.Name
+$releaseDir = Join-Path $ExtensionRoot 'release'
+New-Item -ItemType Directory -Force -Path $releaseDir | Out-Null
 $zipName = "rxdk-vscode-$version.zip"
-$zipPath = Join-Path $ExtensionRoot $zipName
+$zipPath = Join-Path $releaseDir $zipName
 
 $stageRoot = Join-Path ([IO.Path]::GetTempPath()) "rxdk-release-$([Guid]::NewGuid().ToString('n'))"
 New-Item -ItemType Directory -Force -Path $stageRoot | Out-Null

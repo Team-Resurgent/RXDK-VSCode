@@ -69,7 +69,7 @@ jobs:
         uses: actions/upload-artifact@v5
         with:
           name: rxdk-vscode-release-zip
-          path: rxdk-vscode-*.zip
+          path: release/rxdk-vscode-*.zip
           if-no-files-found: error
           compression-level: 0
 
@@ -79,7 +79,7 @@ jobs:
           $vsix = Get-ChildItem -Path $env:GITHUB_WORKSPACE -Filter 'rxdk-vscode-*.vsix' |
             Sort-Object LastWriteTime -Descending |
             Select-Object -First 1
-          $zip = Get-ChildItem -Path $env:GITHUB_WORKSPACE -Filter 'rxdk-vscode-*.zip' |
+          $zip = Get-ChildItem -Path (Join-Path $env:GITHUB_WORKSPACE 'release') -Filter 'rxdk-vscode-*.zip' |
             Sort-Object LastWriteTime -Descending |
             Select-Object -First 1
           if (-not $vsix) {
