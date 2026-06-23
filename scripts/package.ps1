@@ -15,19 +15,6 @@ try {
     if ($WindowsOnly) { $assembleArgs['WindowsOnly'] = $true }
     & (Join-Path $PSScriptRoot 'assemble-sdk.ps1') @assembleArgs
 
-    # Xbox SDK HTML docs: source tree in git; VSIX ships docs/xboxsdk.tar.gz only.
-    $docsToc = Join-Path $ExtensionRoot 'docs\xboxsdk\toc.json'
-    $docsWelcome = Join-Path $ExtensionRoot 'docs\xboxsdk\xbox_pk_welcome.htm'
-    if (-not ((Test-Path -LiteralPath $docsToc) -and (Test-Path -LiteralPath $docsWelcome))) {
-        throw 'docs/xboxsdk/ is missing toc.json or xbox_pk_welcome.htm. These are tracked in git; restore them (e.g. git checkout docs/xboxsdk).'
-    }
-    & (Join-Path $PSScriptRoot 'bundle-xboxsdk-docs.ps1') -ExtensionRoot $ExtensionRoot
-    if ($LASTEXITCODE -ne 0) { throw 'bundle-xboxsdk-docs.ps1 failed' }
-    $docsArchive = Join-Path $ExtensionRoot 'docs\xboxsdk.tar.gz'
-    if (-not (Test-Path -LiteralPath $docsArchive)) {
-        throw 'docs/xboxsdk.tar.gz was not created'
-    }
-
     $requiredTools = Join-Path $PSScriptRoot 'required-tools.txt'
     $missing = @()
     Get-Content -LiteralPath $requiredTools | ForEach-Object {
@@ -48,7 +35,6 @@ try {
         'sdk\tools\xbcp.exe'
         'sdk\tools\xboxdbg-bridge.exe'
         'sdk\scripts\Build-XboxProject.ps1'
-        'docs\xboxsdk.tar.gz'
     )
     if ($CrossPlatformTools) {
         $required += @(

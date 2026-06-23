@@ -953,6 +953,7 @@ export class XboxDebugSession extends LoggingDebugSession {
     private async waitForBreakpointLoop(): Promise<boolean> {
         const deadline = Date.now() + 120_000;
         let lastSkip = '';
+        let skipRepeats = 0;
         while (Date.now() < deadline && !this.shuttingDown) {
             let wb: BridgeEvent;
             try {
@@ -974,21 +975,50 @@ export class XboxDebugSession extends LoggingDebugSession {
                 this.notifyStopped('breakpoint', this.stoppedThreadId);
                 return true;
             }
-            if (wb.incidental === true) {
-                if (addr !== lastSkip) {
-                    this.sendEvent(
-                        new OutputEvent(
-                            `xbox-dap: skipping stop at ${addr} — continuing...\n`,
-                            'console'
-                        )
-                    );
-                    lastSkip = addr;
+
+            if (addr === lastSkip) {
+                skipRepeats++;
+            } else {
+                lastSkip = addr;
+                skipRepeats = 0;
+                this.sendEvent(
+                    new OutputEvent(
+                        `xbox-dap: skipping stop at ${addr} — continuing to your breakpoint...\n`,
+                        'console'
+                    )
+                );
+            }
+            if (skipRepeats >= 8) {
+                this.sendEvent(
+                    new OutputEvent(
+                        `xbox-dap: stuck at ${addr} after repeated continue attempts. ` +
+                            'Set a breakpoint in title code (e.g. the first line of main) and try again.\n',
+                        'console'
+                    )
+                );
+                return false;
+            }
+
+            try {
+                const run = await this.bridge.request('goUser');
+                if (run.running === true) {
+                    continue;
                 }
-                try {
-                    await this.bridge.request('go');
-                } catch {
-                    /* retry next loop */
+                const runAddr = run.address ? String(run.address) : '';
+                if (runAddr && this.addressMatchesUserBreakpoint(runAddr)) {
+                    const threadId = Number(run.threadId || this.stoppedThreadId);
+                    if (threadId > 0) {
+                        this.stoppedThreadId = threadId;
+                        this.reportMainThread(threadId);
+                    }
+                    this.sendEvent(new OutputEvent(`xbox-dap: stopped at ${runAddr}.\n`, 'console'));
+                    this.notifyStopped('breakpoint', this.stoppedThreadId);
+                    return true;
                 }
+            } catch (e) {
+                this.sendEvent(
+                    new OutputEvent(`xbox-dap: goUser failed: ${(e as Error).message}\n`, 'console')
+                );
             }
         }
         return false;

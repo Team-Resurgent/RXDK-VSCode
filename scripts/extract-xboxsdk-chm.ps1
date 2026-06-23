@@ -1,6 +1,5 @@
-# DEPRECATED: one-off importer only. The build no longer regenerates docs from XboxSDK.chm.
-# The extracted HTML + toc.json under docs/xboxsdk/ are committed to git and shipped as-is.
-# Run this manually only if you intentionally want to re-import from a CHM.
+# DEPRECATED: one-off importer only. Docs are maintained in RXDK-Docs (https://github.com/Team-Resurgent/RXDK-Docs).
+# Run this manually only if you intentionally want to re-import from a CHM into an RXDK-Docs checkout.
 #
 # Decompile XboxSDK.chm to HTML and build toc.json for the in-extension doc viewer.
 param(
@@ -26,7 +25,7 @@ Example: .\scripts\extract-xboxsdk-chm.ps1 -ChmPath 'D:\Git\RXDK\POC\XDKSetup584
 "@
 }
 if (-not $OutputDir) {
-    $OutputDir = Join-Path $ExtensionRoot 'docs\xboxsdk'
+    $OutputDir = Join-Path (Split-Path $ExtensionRoot -Parent) 'RXDK-Docs\xboxsdk'
 }
 $OutputDir = [IO.Path]::GetFullPath($OutputDir)
 $ChmPath = [IO.Path]::GetFullPath($ChmPath)

@@ -91,7 +91,7 @@ export class RxdkSidebarProvider implements vscode.TreeDataProvider<RxdkTreeItem
                     'Complete RXDK setup…',
                     vscode.TreeItemCollapsibleState.None,
                     'rxdk.setupPrerequisites',
-                    '.NET, RXDK-SDK, Zig',
+                    '.NET, RXDK-SDK, docs, Zig',
                     'warning'
                 ),
             ];
@@ -197,7 +197,7 @@ export class RxdkSidebarProvider implements vscode.TreeDataProvider<RxdkTreeItem
                     'Xbox SDK Reference',
                     vscode.TreeItemCollapsibleState.None,
                     'rxdk.openSdkDocs',
-                    sdkDocsAvailable(this.context) ? undefined : 'docs missing — reinstall the RXDK VSIX',
+                    sdkDocsAvailable(this.context) ? undefined : 'Install Xbox SDK docs from RXDK Setup',
                     'book'
                 ),
             ];

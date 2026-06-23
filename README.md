@@ -67,7 +67,7 @@ Each project uses `rxdk.project.json` at the workspace root. New projects get `.
 | **Devkit** | Current Xbox IP (Windows: registry; macOS/Linux: settings JSON), Set Xbox IP |
 | **Create project** | Templates, **New Prebuilt XBE Project** |
 | **Build / run** | Build, Deploy, Run, Debug (when a project is open) |
-| **Documentation** | In-editor Xbox SDK reference (`docs/xboxsdk/`) |
+| **Documentation** | In-editor Xbox SDK reference (installed from [RXDK-Docs](https://github.com/Team-Resurgent/RXDK-Docs) during setup) |
 | **SDK** | Version, **Open SDK folder** (cloned include/lib) |
 
 ## Maintainers

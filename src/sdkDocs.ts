@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { ensureSdkDocsStaging, isSdkDocsPresent, resolveSdkDocsRoot } from './sdkDocsStaging';
+import { isSdkDocsPresent, resolveSdkDocsRoot } from './sdkDocsStaging';
 
 const DEFAULT_PAGE = 'xbox_pk_welcome.htm';
 
@@ -40,16 +40,14 @@ export async function openSdkDocs(
     context: vscode.ExtensionContext,
     page?: string
 ): Promise<void> {
-    await ensureSdkDocsStaging(context);
-    const docsRoot = getSdkDocsRoot(context);
-    const tocPath = path.join(docsRoot, 'toc.json');
-    if (!fs.existsSync(tocPath)) {
+    if (!isSdkDocsPresent(context)) {
         vscode.window.showErrorMessage(
-            'Xbox SDK documentation is not installed. Reload the window or reinstall the RXDK extension.'
+            'Xbox SDK documentation is required. Open RXDK Setup and install the docs prerequisite.'
         );
         return;
     }
-
+    const docsRoot = getSdkDocsRoot(context);
+    const tocPath = path.join(docsRoot, 'toc.json');
     const toc = JSON.parse(readJsonText(tocPath)) as TocFile;
     const startPage = page || toc.defaultPage || DEFAULT_PAGE;
 

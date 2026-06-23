@@ -49,7 +49,7 @@ export async function openPrerequisitesSetup(
                 break;
             case 'install': {
                 const id = String(msg.id ?? '') as PrerequisiteId;
-                if (!['dotnet', 'sdk', 'zig'].includes(id) || installing) {
+                if (!['dotnet', 'sdk', 'docs', 'zig'].includes(id) || installing) {
                     return;
                 }
                 installing = true;
@@ -131,7 +131,7 @@ async function postStatuses(
     panel.webview.postMessage({
         type: 'status',
         items: items.map(serializeStatus),
-        allReady: items.every((item) => item.ready),
+        allReady: items.filter((item) => item.required !== false).every((item) => item.ready),
     });
 }
 
@@ -141,6 +141,7 @@ function serializeStatus(item: PrerequisiteStatus): Record<string, unknown> {
         label: item.label,
         description: item.description,
         ready: item.ready,
+        required: item.required,
         detail: item.detail ?? '',
         canInstall: item.canInstall,
         downloadUrl: item.downloadUrl ?? '',
@@ -273,7 +274,7 @@ function buildHtml(webview: vscode.Webview): string {
   <div class="wrap">
     <header>
       <h1>RXDK setup</h1>
-      <p class="lead">Install each prerequisite below before using build, deploy, and debug features. RXDK stays disabled until everything is ready.</p>
+      <p class="lead">Install all four prerequisites below (.NET, RXDK-SDK, Xbox SDK docs, Zig) before using build, deploy, debug, or documentation. RXDK stays disabled until everything is ready.</p>
     </header>
 
     <div class="banner" id="banner">Checking prerequisites…</div>
@@ -357,7 +358,8 @@ function buildHtml(webview: vscode.Webview): string {
         });
       });
 
-      const allReady = items.length > 0 && items.every((item) => item.ready);
+      const mandatory = items.filter((item) => item.required !== false);
+      const allReady = mandatory.length > 0 && mandatory.every((item) => item.ready);
       const banner = el('banner');
       banner.className = 'banner' + (allReady ? ' ready' : '');
       banner.textContent = allReady

@@ -2,18 +2,33 @@ import { execFile } from 'child_process';
 import { promisify } from 'util';
 import * as vscode from 'vscode';
 import { DOTNET_MAJOR_VERSION, installDotNetRuntime, isDotNetRuntimeInstalled } from './dotnetRuntime';
+import {
+    DEFAULT_DOCS_RELEASES_PAGE,
+    fetchLatestDocs,
+    getStagedDocsRoot,
+    isSdkDocsPresent,
+} from './sdkDocsStaging';
 import { DEFAULT_SDK_GIT_URL, fetchLatestSdk, getStagedSdkRoot, isStagedSdkPresent } from './sdkStaging';
 import { getZigVersionLine, installZig, isZigInstalled, ZIG_DOWNLOAD_PAGE, ZIG_VERSION } from './zigRuntime';
 
 const execFileAsync = promisify(execFile);
 
-export type PrerequisiteId = 'dotnet' | 'sdk' | 'zig';
+export type PrerequisiteId = 'dotnet' | 'sdk' | 'docs' | 'zig';
+
+/** All prerequisites must be installed before RXDK is enabled. */
+export const MANDATORY_PREREQUISITE_IDS: readonly PrerequisiteId[] = [
+    'dotnet',
+    'sdk',
+    'docs',
+    'zig',
+];
 
 export interface PrerequisiteStatus {
     id: PrerequisiteId;
     label: string;
     description: string;
     ready: boolean;
+    required: boolean;
     detail?: string;
     canInstall: boolean;
     downloadUrl?: string;
@@ -37,14 +52,16 @@ export async function isGitAvailable(): Promise<boolean> {
 export async function getPrerequisiteStatuses(
     context: vscode.ExtensionContext
 ): Promise<PrerequisiteStatus[]> {
-    const [dotnetReady, sdkReady, zigReady, gitReady] = await Promise.all([
+    const [dotnetReady, sdkReady, docsReady, zigReady, gitReady] = await Promise.all([
         isDotNetRuntimeInstalled(),
         Promise.resolve(isStagedSdkPresent(context)),
+        Promise.resolve(isSdkDocsPresent(context)),
         isZigInstalled(),
         isGitAvailable(),
     ]);
 
     const sdkPath = getStagedSdkRoot(context);
+    const docsPath = getStagedDocsRoot(context);
     const zigLine = zigReady ? await getZigVersionLine() : undefined;
 
     return [
@@ -53,6 +70,7 @@ export async function getPrerequisiteStatuses(
             label: `.NET ${DOTNET_MAJOR_VERSION} runtime`,
             description: 'Required for deploy, debug, and other managed host tools.',
             ready: dotnetReady,
+            required: true,
             detail: dotnetReady ? 'Installed' : 'Not found',
             canInstall: true,
             downloadUrl: 'https://dotnet.microsoft.com/download/dotnet/8.0',
@@ -60,8 +78,9 @@ export async function getPrerequisiteStatuses(
         {
             id: 'sdk',
             label: 'RXDK-SDK',
-            description: 'Headers and libraries cloned from GitHub on first use.',
+            description: 'Required headers and libraries cloned from GitHub.',
             ready: sdkReady,
+            required: true,
             detail: sdkReady
                 ? sdkPath
                 : gitReady
@@ -71,10 +90,21 @@ export async function getPrerequisiteStatuses(
             downloadUrl: DEFAULT_SDK_GIT_URL.replace(/\.git$/, ''),
         },
         {
+            id: 'docs',
+            label: 'Xbox SDK documentation',
+            description: 'Required in-editor HTML reference from the latest RXDK-Docs release.',
+            ready: docsReady,
+            required: true,
+            detail: docsReady ? docsPath : `Not installed (${docsPath})`,
+            canInstall: true,
+            downloadUrl: DEFAULT_DOCS_RELEASES_PAGE,
+        },
+        {
             id: 'zig',
             label: `Zig ${ZIG_VERSION}`,
             description: 'Required for some RXDK build tooling and cross-compilation workflows.',
             ready: zigReady,
+            required: true,
             detail: zigReady ? (zigLine ?? 'Installed') : 'Not found',
             canInstall: Boolean(process.platform === 'win32' || process.platform === 'linux' || process.platform === 'darwin'),
             downloadUrl: ZIG_DOWNLOAD_PAGE,
@@ -84,7 +114,7 @@ export async function getPrerequisiteStatuses(
 
 export async function arePrerequisitesReady(context: vscode.ExtensionContext): Promise<boolean> {
     const statuses = await getPrerequisiteStatuses(context);
-    return statuses.every((item) => item.ready);
+    return statuses.filter((item) => item.required).every((item) => item.ready);
 }
 
 export async function refreshPrerequisitesContext(context: vscode.ExtensionContext): Promise<boolean> {
@@ -109,6 +139,8 @@ export async function installPrerequisite(
             return installDotNetRuntime(output, (update) => progress?.report(update));
         case 'sdk':
             return fetchLatestSdk(context, output, (update) => progress?.report(update));
+        case 'docs':
+            return fetchLatestDocs(context, output, (update) => progress?.report(update));
         case 'zig':
             return installZig(output, (update) => progress?.report(update));
         default:
