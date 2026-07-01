@@ -160,12 +160,6 @@ function Resolve-Lib([string]$Name) {
     return $null
 }
 
-$krnlLib = Resolve-Lib 'libkernel.lib'
-if (-not $krnlLib) { $krnlLib = Resolve-Lib 'xboxkrnl.lib' }  # pre-rename SDKs
-if (-not $krnlLib -and -not $CompileOnly) {
-    throw "Missing libkernel.lib under sdk/lib - run RXDK SDK install"
-}
-
 $projectIncludeArgs = Get-ProjectIncludeArgs -ProjectRoot $ProjectRoot -SdkInclude $paths.Include -Manifest $manifest
 $projectDefineArgs = Get-ProjectDefineArgs -Manifest $manifest
 
@@ -198,15 +192,21 @@ if ($CompileOnly) {
 $usesXapi = @($manifest.libraries | Where-Object { $_ -eq 'libxapi' }).Count -gt 0
 $entry = if ($usesXapi) { 'XapiTitleStartup' } else { 'start' }
 
+# Every library the title links, in manifest order. The manifest lists libkernel
+# (the Xbox kernel import library) explicitly, and it MUST be last so libxapi and
+# the other archives resolve their kernel imports from it. Old SDKs shipped the
+# kernel import lib as xboxkrnl.lib.
 $linkLibs = @()
 foreach ($libName in $manifest.libraries) {
     $resolved = Resolve-Lib "$libName.lib"
+    if (-not $resolved -and $libName -eq 'libkernel') {
+        $resolved = Resolve-Lib 'xboxkrnl.lib'
+    }
     if (-not $resolved) {
-        throw "Missing library: $libName.lib under sdk/lib"
+        throw "Missing library: $libName.lib under sdk/lib - run RXDK SDK install"
     }
     $linkLibs += $resolved
 }
-$linkLibs += $krnlLib
 
 # The two title-link objects are baked into the SDK archives, so nothing extra
 # to add here: the XapiTitleStartup entry lives in libxapi.lib (pulled by -e for
