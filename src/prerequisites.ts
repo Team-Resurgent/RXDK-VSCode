@@ -9,11 +9,12 @@ import {
     isSdkDocsPresent,
 } from './sdkDocsStaging';
 import { DEFAULT_SDK_GIT_URL, fetchLatestSdk, getStagedSdkRoot, isStagedSdkPresent } from './sdkStaging';
+import { getStagedToolsRoot, installHostTools, isHostToolsInstalled } from './hostTools';
 import { getZigVersionLine, installZig, isZigInstalled, ZIG_DOWNLOAD_PAGE, ZIG_VERSION } from './zigRuntime';
 
 const execFileAsync = promisify(execFile);
 
-export type PrerequisiteId = 'dotnet' | 'sdk' | 'docs' | 'zig';
+export type PrerequisiteId = 'dotnet' | 'sdk' | 'docs' | 'zig' | 'tools';
 
 /** All prerequisites must be installed before RXDK is enabled. */
 export const MANDATORY_PREREQUISITE_IDS: readonly PrerequisiteId[] = [
@@ -21,6 +22,7 @@ export const MANDATORY_PREREQUISITE_IDS: readonly PrerequisiteId[] = [
     'sdk',
     'docs',
     'zig',
+    'tools',
 ];
 
 export interface PrerequisiteStatus {
@@ -52,16 +54,18 @@ export async function isGitAvailable(): Promise<boolean> {
 export async function getPrerequisiteStatuses(
     context: vscode.ExtensionContext
 ): Promise<PrerequisiteStatus[]> {
-    const [dotnetReady, sdkReady, docsReady, zigReady, gitReady] = await Promise.all([
+    const [dotnetReady, sdkReady, docsReady, zigReady, toolsReady, gitReady] = await Promise.all([
         isDotNetRuntimeInstalled(),
         Promise.resolve(isStagedSdkPresent(context)),
         Promise.resolve(isSdkDocsPresent(context)),
         isZigInstalled(),
+        Promise.resolve(isHostToolsInstalled()),
         isGitAvailable(),
     ]);
 
     const sdkPath = getStagedSdkRoot(context);
     const docsPath = getStagedDocsRoot(context);
+    const toolsPath = getStagedToolsRoot();
     const zigLine = zigReady ? await getZigVersionLine() : undefined;
 
     return [
@@ -109,6 +113,16 @@ export async function getPrerequisiteStatuses(
             canInstall: Boolean(process.platform === 'win32' || process.platform === 'linux' || process.platform === 'darwin'),
             downloadUrl: ZIG_DOWNLOAD_PAGE,
         },
+        {
+            id: 'tools',
+            label: 'RXDK host tools',
+            description: 'Required imagebld, xdvdfs, xbcp, and debug tools downloaded for your platform.',
+            ready: toolsReady,
+            required: true,
+            detail: toolsReady ? toolsPath : `Not installed (${toolsPath})`,
+            canInstall: true,
+            downloadUrl: 'https://github.com/Team-Resurgent/RXDK-Tools/releases/latest',
+        },
     ];
 }
 
@@ -143,6 +157,8 @@ export async function installPrerequisite(
             return fetchLatestDocs(context, output, (update) => progress?.report(update));
         case 'zig':
             return installZig(output, (update) => progress?.report(update));
+        case 'tools':
+            return installHostTools(output, (update) => progress?.report(update));
         default:
             return false;
     }

@@ -190,7 +190,7 @@ export async function generateVscodeFolder(
                 command: 'powershell',
                 args: buildTaskArgs,
                 group: { kind: 'build', isDefault: true },
-                problemMatcher: ['$msCompile'],
+                problemMatcher: ['$gcc'],
             },
             {
                 label: 'rxdk: deploy',

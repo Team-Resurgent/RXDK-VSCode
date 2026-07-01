@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { bridgeExecutableName, resolveBundledBridgePath, resolveBundledXbwatsonPath } from './bridgePath';
 import { getStagedSdkRoot, isStagedSdkPresent } from './sdkStaging';
+import { getStagedToolsRoot, resolveHostTool } from './hostTools';
 
 export function getExtensionRoot(context: vscode.ExtensionContext): string {
     return context.extensionPath;
@@ -29,8 +30,9 @@ export function getSdkScriptsDir(context: vscode.ExtensionContext): string {
     return path.join(getSdkRoot(context), 'scripts');
 }
 
-export function getSdkToolsDir(context: vscode.ExtensionContext): string {
-    return path.join(getSdkRoot(context), 'tools');
+/** Host tools live in the persistent staged tools root (downloaded by the host-tools prerequisite). */
+export function getSdkToolsDir(_context: vscode.ExtensionContext): string {
+    return getStagedToolsRoot();
 }
 
 /** Headers for builds and IntelliSense (cloned RXDK-SDK, override, or bundled fallback). */
@@ -62,6 +64,10 @@ export function getBridgePath(context: vscode.ExtensionContext): string {
     if (configured && fs.existsSync(configured)) {
         return configured;
     }
+    const staged = resolveHostTool('xboxdbg-bridge');
+    if (fs.existsSync(staged)) {
+        return staged;
+    }
     const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
     return resolveBundledBridgePath(context.extensionPath, workspaceRoot);
 }
@@ -70,6 +76,10 @@ export function getXbwatsonPath(context: vscode.ExtensionContext): string {
     const configured = vscode.workspace.getConfiguration('rxdk').get<string>('xbwatsonPath')?.trim();
     if (configured && fs.existsSync(configured)) {
         return configured;
+    }
+    const staged = resolveHostTool('xbwatson');
+    if (fs.existsSync(staged)) {
+        return staged;
     }
     const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
     return resolveBundledXbwatsonPath(context.extensionPath, workspaceRoot);

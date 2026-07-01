@@ -1,7 +1,6 @@
 # Build a cross-platform RXDK VSIX (host tools + SDK scripts; headers/libs from RXDK-SDK clone on activate).
 param(
     [string]$ExtensionRoot = (Join-Path $PSScriptRoot '..'),
-    [switch]$SkipToolsBuild,
     [switch]$Install,
     [switch]$WindowsOnly
 )
@@ -16,9 +15,6 @@ if (-not $WindowsOnly) {
     $syncArgs['CrossPlatformTools'] = $true
 } else {
     $syncArgs['WindowsOnly'] = $true
-}
-if (-not $SkipToolsBuild) {
-    $syncArgs['BuildTools'] = $true
 }
 if ($Install) {
     $syncArgs['InstallExtension'] = $true

@@ -5,7 +5,7 @@ All-in-one extension for original Xbox development in **VS Code** or **Cursor**.
 ## Quick start
 
 1. **Install the extension** — from a [GitHub Release](https://github.com/Team-Resurgent/RXDK-VSCode/releases) VSIX, or build locally (see [Install](#install))
-2. **Windows only:** Visual Studio 2022 with **Desktop development with C++** (x86 build tools) to compile titles
+2. **Zig** is installed automatically from the RXDK prerequisites panel (or use `zig` on PATH)
 3. Connect an original Xbox devkit on your network
 4. Open the **RXDK** sidebar → **Devkit** → **Set Xbox IP / Hostname**
 5. **New Project** (or **New Prebuilt XBE Project** for an existing `.xbe`) → choose a parent folder
@@ -46,7 +46,7 @@ Install an existing VSIX without rebuilding: `.\scripts\install-extension.ps1 -T
 |------------|---------|---------------|
 | Install extension | Yes | Yes |
 | Deploy / debug devkit | Yes | Yes (.NET 8 runtime) |
-| **Build** Xbox titles (`cl.exe`) | Yes (VS2022 x86) | No |
+| **Build** Xbox titles (Zig, x86 Windows target) | Yes | Yes |
 
 ## Project templates
 
@@ -72,24 +72,18 @@ Each project uses `rxdk.project.json` at the workspace root. New projects get `.
 
 ## Maintainers
 
-Clone with submodule:
-
-```powershell
-git submodule update --init external/RXDK-Tools
-```
-
 Build a cross-platform VSIX:
 
 ```powershell
 .\scripts\build-vsix.ps1
 ```
 
-CI builds on push/PR via [`.github/workflows/build-vsix.yml`](.github/workflows/build-vsix.yml). Private `RXDK-Tools` needs a `SUBMODULES_TOKEN` repo secret (see **[docs/BUILD.md](docs/BUILD.md)**).
+Host tools (`xbcp`, `imagebld`, `xbox-launch`, `xboxdbg-bridge`, `xbwatson`) are downloaded prebuilt from the [Team-Resurgent/RXDK-Tools releases](https://github.com/Team-Resurgent/RXDK-Tools/releases/latest) (pinned in [`scripts/rxdk-tools-release.txt`](scripts/rxdk-tools-release.txt)); `xdvdfs` from the [xdvdfs releases](https://github.com/Team-Resurgent/xdvdfs/releases/latest). No submodule or .NET SDK build step is needed.
 
-**Submodule workflow:** push commits in `RXDK-Tools` first, then push RXDK-VSCode (updates the submodule pointer).
+CI builds on push/PR via [`.github/workflows/build-vsix.yml`](.github/workflows/build-vsix.yml).
 
 ## What you provide
 
-- **Build (Windows):** Visual Studio 2022 (`cl.exe` / `link.exe`, x86)
+- **Build:** [Zig](https://ziglang.org/) 0.16+ (installed by RXDK prerequisites, or on PATH)
 - Original Xbox devkit on the network
 - Devkit IP or hostname (**Set Xbox IP**, XBSetIP, or `rxdk.defaultConsole` in settings)

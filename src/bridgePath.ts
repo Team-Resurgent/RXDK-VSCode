@@ -40,11 +40,10 @@ export function defaultHostToolCandidates(
         path.join(extensionPath, 'out', 'sdk', 'tools', name),
     ];
     if (workspaceRoot) {
+        // Dev fallback: the downloaded RXDK-Tools release set staged by
+        // scripts/fetch-rxdk-tools.ps1, before sdk/tools/ has been assembled.
         candidates.push(
-            path.join(workspaceRoot, 'external', 'RXDK-Tools', 'out', 'publish', 'managed', rid, 'tools', name),
-            path.join(workspaceRoot, 'external', 'RXDK-Tools', 'out', 'publish', 'rxdk-vscode-win-x64', name),
-            path.join(workspaceRoot, 'external', 'RXDK-Tools', 'out', 'publish', 'managed-cli-tools-win-x64', name),
-            path.join(workspaceRoot, 'external', 'RXDK-Tools', 'out', 'bin', 'x64', 'Release', name)
+            path.join(workspaceRoot, 'vendor', 'rxdk-tools', 'publish', rid, name)
         );
     }
     return candidates;

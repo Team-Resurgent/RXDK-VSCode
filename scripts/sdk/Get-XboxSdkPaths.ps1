@@ -36,7 +36,7 @@ function Get-HostToolPath {
     if (Test-Path -LiteralPath $flatNoExt) {
         return $flatNoExt
     }
-    throw "Missing host tool '$base' under $ToolsRoot (platform=$rid). Reinstall the RXDK extension or run scripts/sync-all.ps1 -BuildTools."
+    throw "Missing host tool '$base' under $ToolsRoot (platform=$rid). Reinstall the RXDK extension or run scripts/sync-all.ps1."
 }
 
 function Get-StagedSdkRoot {
@@ -84,9 +84,51 @@ function Resolve-StagedLibDir {
     $staged = Get-StagedSdkRoot
     if (-not $staged) { return $null }
     $lib = Join-Path $staged 'lib'
-    foreach ($marker in @('xboxkrnl.lib', 'libcmt.lib')) {
+    foreach ($marker in @('libkernel.lib', 'libc.lib', 'xboxkrnl.lib', 'libcmt.lib')) {
         if (Test-Path -LiteralPath (Join-Path $lib $marker)) {
             return $lib
+        }
+    }
+    return $null
+}
+
+# Persistent host-tools root (…/RXDK/tools), a sibling of the staged SDK. Populated
+# by the extension's host-tools prerequisite (download of RXDK-Tools + xdvdfs), not
+# bundled in the VSIX. Mirrors the layout in src/hostTools.ts.
+function Get-StagedToolsRoot {
+    if ($env:RXDK_STAGED_TOOLS) {
+        return $env:RXDK_STAGED_TOOLS
+    }
+    if ($PSVersionTable.PSVersion.Major -ge 6) {
+        if ($IsWindows) {
+            $pd = if ($env:ProgramData) { $env:ProgramData } else { 'C:\ProgramData' }
+            return Join-Path $pd 'RXDK\tools'
+        }
+        if ($IsMacOS) {
+            return Join-Path $env:HOME 'Library/Application Support/RXDK/tools'
+        }
+        if ($IsLinux) {
+            $xdg = if ($env:XDG_DATA_HOME) { $env:XDG_DATA_HOME } else { Join-Path $env:HOME '.local/share' }
+            return (Join-Path $xdg 'rxdk/tools')
+        }
+    }
+    if ($env:OS -eq 'Windows_NT') {
+        $pd = if ($env:ProgramData) { $env:ProgramData } else { 'C:\ProgramData' }
+        return Join-Path $pd 'RXDK\tools'
+    }
+    if ($env:HOME) {
+        $xdg = if ($env:XDG_DATA_HOME) { $env:XDG_DATA_HOME } else { Join-Path $env:HOME '.local/share' }
+        return (Join-Path $xdg 'rxdk/tools')
+    }
+    return $null
+}
+
+function Resolve-StagedToolsDir {
+    $staged = Get-StagedToolsRoot
+    if (-not $staged) { return $null }
+    foreach ($marker in @('imagebld.exe', 'imagebld')) {
+        if (Test-Path -LiteralPath (Join-Path $staged $marker)) {
+            return $staged
         }
     }
     return $null
@@ -97,7 +139,8 @@ function Get-XboxSdkPaths {
         [Parameter(Mandatory)]
         [string]$SdkRoot,
         [string]$IncludeDir,
-        [string]$LibDir
+        [string]$LibDir,
+        [string]$ToolsDir
     )
     $ErrorActionPreference = 'Stop'
     $SdkRoot = [IO.Path]::GetFullPath($SdkRoot)
@@ -113,11 +156,19 @@ function Get-XboxSdkPaths {
     if (-not $LibDir) {
         $LibDir = Join-Path $SdkRoot 'lib'
     }
+    # Host tools: explicit -ToolsDir (passed by the extension, honors its config),
+    # else the persistent staged tools root, else the legacy bundled sdk/tools.
+    if (-not $ToolsDir) {
+        $ToolsDir = Resolve-StagedToolsDir
+    }
+    if (-not $ToolsDir) {
+        $ToolsDir = Join-Path $SdkRoot 'tools'
+    }
     return @{
         SdkRoot   = $SdkRoot
         Include   = [IO.Path]::GetFullPath($IncludeDir)
         Lib       = [IO.Path]::GetFullPath($LibDir)
-        Tools     = Join-Path $SdkRoot 'tools'
+        Tools     = [IO.Path]::GetFullPath($ToolsDir)
         ToolRid   = Get-PlatformToolRid
         Scripts   = Join-Path $SdkRoot 'scripts'
         Extra     = Join-Path $SdkRoot 'extra'

@@ -9,6 +9,7 @@
 // after the voice-start click.
 
 #include <xtl.h>
+#include <dsound.h>
 #include <dsstdfx.h>
 #include <math.h>
 

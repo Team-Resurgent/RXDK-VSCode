@@ -1,11 +1,12 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { getSdkRoot, getSdkScriptsDir, getSdkIncludeDir, getSdkLibDir } from './sdkPath';
+import { getSdkRoot, getSdkScriptsDir, getSdkIncludeDir, getSdkLibDir, getSdkToolsDir } from './sdkPath';
 import { isStagedSdkPresent, getStagedSdkRoot } from './sdkStaging';
 import { isDotNetRuntimeInstalled, ensureDotNetRuntime } from './dotnetRuntime';
 import { findProjectManifest } from './projectManager';
 import { getActiveXboxAddress } from './xboxConsole';
 import { isPrebuiltManifest } from './projectTypes';
+import { resolveZigExecutable } from './zigRuntime';
 
 export type RxdkTaskKind = 'build' | 'deploy' | 'run' | 'build+deploy';
 
@@ -56,7 +57,7 @@ export async function runRxdkTask(
     if (kind === 'build+deploy') {
         const buildOk = await runPowerShell(
             path.join(scripts, scriptMap.build),
-            ['-SdkRoot', sdkRoot, '-ProjectRoot', projectRoot, ...sdkPathArgs, ...msvcArgsFromConfig()],
+            ['-SdkRoot', sdkRoot, '-ProjectRoot', projectRoot, ...sdkPathArgs, ...(await zigArgsFromConfig())],
             output,
             'RXDK Build'
         );
@@ -74,7 +75,7 @@ export async function runRxdkTask(
     const script = path.join(scripts, scriptMap[kind]);
     const args =
         kind === 'build'
-            ? ['-SdkRoot', sdkRoot, '-ProjectRoot', projectRoot, ...sdkPathArgs, ...msvcArgsFromConfig()]
+            ? ['-SdkRoot', sdkRoot, '-ProjectRoot', projectRoot, ...sdkPathArgs, ...(await zigArgsFromConfig())]
             : ['-SdkRoot', sdkRoot, '-ProjectRoot', projectRoot, '-ProjectName', name, ...consoleArgs];
 
     return runPowerShell(script, args, output, `RXDK ${kind}`);
@@ -114,9 +115,18 @@ async function deployConsoleArgs(): Promise<string[]> {
     return console ? ['-ConsoleName', console] : [];
 }
 
-function msvcArgsFromConfig(): string[] {
-    const msvc = vscode.workspace.getConfiguration('rxdk').get<string>('msvcVersion')?.trim();
-    return msvc ? ['-MsvcVersion', msvc] : [];
+async function zigArgsFromConfig(): Promise<string[]> {
+    const args: string[] = [];
+    const configured = vscode.workspace.getConfiguration('rxdk').get<string>('zigPath')?.trim();
+    if (configured) {
+        args.push('-ZigExecutable', configured);
+    } else {
+        const resolved = await resolveZigExecutable();
+        if (resolved && resolved !== 'zig') {
+            args.push('-ZigExecutable', resolved);
+        }
+    }
+    return args;
 }
 
 function buildSdkPathArgs(context: vscode.ExtensionContext): string[] {
@@ -130,6 +140,9 @@ function buildSdkPathArgs(context: vscode.ExtensionContext): string[] {
     if (libDir !== path.join(bundled, 'lib')) {
         args.push('-LibDir', libDir);
     }
+    // Host tools are downloaded to a persistent root by the host-tools prerequisite,
+    // not bundled in the VSIX — always point the build at it.
+    args.push('-ToolsDir', getSdkToolsDir(context));
     return args;
 }
 

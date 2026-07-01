@@ -6,6 +6,7 @@ param(
     [string]$ProjectRoot,
     [string]$IncludeDir,
     [string]$LibDir,
+    [string]$ToolsDir,
     [string]$ZigExecutable,
     [switch]$CompileOnly
 )
@@ -140,7 +141,7 @@ function Invoke-ZigCompile {
     Write-Host "Compiled $Object"
 }
 
-$paths = Get-XboxSdkPaths -SdkRoot $SdkRoot -IncludeDir $IncludeDir -LibDir $LibDir
+$paths = Get-XboxSdkPaths -SdkRoot $SdkRoot -IncludeDir $IncludeDir -LibDir $LibDir -ToolsDir $ToolsDir
 $ProjectRoot = [IO.Path]::GetFullPath($ProjectRoot)
 $manifest = Get-XboxProjectManifest -ProjectRoot $ProjectRoot
 $projectName = $manifest.name
@@ -207,29 +208,19 @@ foreach ($libName in $manifest.libraries) {
 }
 $linkLibs += $krnlLib
 
-# The title startup object (XapiTitleStartup), prebuilt title-side by the SDK and
-# shipped in sdk/lib. It must be compiled with the title recipe (never as an
-# internal libxapi source), which the SDK dist build guarantees.
-if ($usesXapi) {
-    $startupObj = Resolve-Lib 'xapi_start.obj'
-    if (-not $startupObj) {
-        throw "Missing xapi_start.obj under sdk/lib - reinstall the RXDK SDK"
-    }
-    $objs += $startupObj
-}
-
-# xboxkrnl_xbld.obj supplies kernel build/descriptor data every title needs.
-$xbldObj = Resolve-Lib 'xboxkrnl_xbld.obj'
-if (-not $xbldObj) {
-    throw "Missing xboxkrnl_xbld.obj under sdk/lib - reinstall the RXDK SDK"
-}
+# The two title-link objects are baked into the SDK archives, so nothing extra
+# to add here: the XapiTitleStartup entry lives in libxapi.lib (pulled by -e for
+# any title that links libxapi), and the kernel build/descriptor data
+# (xboxkrnl_xbld.obj / _XboxKrnlBuildNumber) lives in libc.lib (pulled by a
+# reference in the always-linked startup). No loose objects, no libxapi-vs-not
+# special casing.
 
 # Single-pass link. imagebld (build-78+) zero-fills the emitted .data so the XBE
 # loader copies the zeroed .bss tail -- uninitialized globals boot as zero with no
 # runtime fixup, so no per-title image_init bootstrap is needed.
 $exe = [IO.Path]::GetFullPath((Join-Path $outDir "$projectName.exe"))
 
-$linkResult = Invoke-XdkLink -Zig $zig -Objs $objs -Libs $linkLibs -OutExe $exe -XbldObj $xbldObj -Entry $entry
+$linkResult = Invoke-XdkLink -Zig $zig -Objs $objs -Libs $linkLibs -OutExe $exe -Entry $entry
 if ($linkResult.ExitCode -ne 0) {
     throw "Link failed (exit $($linkResult.ExitCode))"
 }

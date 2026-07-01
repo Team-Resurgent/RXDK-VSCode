@@ -90,7 +90,7 @@ After install:
 Notes:
   - Xbox headers/libs clone from RXDK-SDK on first launch.
   - .NET 8 runtime is installed automatically when missing (deploy/debug tools).
-  - Compiling Xbox titles still requires Windows + Visual Studio (x86) locally.
+  - Compiling Xbox titles uses Zig (installed by RXDK prerequisites) on Windows, macOS, and Linux.
 "@
     Set-Content -LiteralPath (Join-Path $stageRoot 'README-INSTALL.txt') -Value $readme -Encoding UTF8
 

@@ -8,7 +8,7 @@ import { downloadFileToPath, formatBytes, formatDownloadProgress, getDirectorySi
 
 const execFileAsync = promisify(execFile);
 
-export const ZIG_VERSION = '0.14.0';
+export const ZIG_VERSION = '0.16.0';
 export const ZIG_DOWNLOAD_PAGE = 'https://ziglang.org/download/';
 
 export function getZigInstallRoot(): string {

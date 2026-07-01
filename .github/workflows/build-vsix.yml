@@ -21,10 +21,11 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  DOTNET_VERSION: '8.0.x'
   NODE_VERSION: '22'
-  # Authenticated GitHub API (5000/hr) vs unauthenticated (60/hr per shared runner IP)
+  # Authenticated GitHub API (5000/hr) vs unauthenticated (60/hr per shared runner IP).
+  # Used by fetch-rxdk-tools.ps1 / fetch-xdvdfs.ps1 to pull prebuilt host tools.
   GH_TOKEN: ${{ github.token }}
+  GITHUB_TOKEN: ${{ github.token }}
 
 jobs:
   build:
@@ -36,20 +37,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
-        with:
-          submodules: recursive
-          token: ${{ secrets.SUBMODULES_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Install npm dependencies
         run: npm ci
@@ -101,7 +94,7 @@ jobs:
             'Host tools are bundled for `win-x64`, `linux-x64`, `osx-x64`, and `osx-arm64` under `sdk/tools/<rid>/`.',
             '`xdvdfs` is downloaded from [Team-Resurgent/xdvdfs releases](https://github.com/Team-Resurgent/xdvdfs/releases/latest).',
             'Xbox headers/libs are cloned from [RXDK-SDK](https://github.com/Team-Resurgent/RXDK-SDK) on first extension launch.',
-            'Compiling Xbox titles still requires **Windows + Visual Studio (x86)** locally.',
+            'Compiling Xbox titles uses **Zig** (RXDK prerequisites) on Windows, macOS, and Linux.',
             '',
             'Install from release zip:',
             '```powershell',

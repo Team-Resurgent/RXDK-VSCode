@@ -1,3 +1,0 @@
-function Get-XdkLinkAliases {
-    return @()
-}

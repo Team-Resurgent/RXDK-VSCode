@@ -49,7 +49,7 @@ export async function openPrerequisitesSetup(
                 break;
             case 'install': {
                 const id = String(msg.id ?? '') as PrerequisiteId;
-                if (!['dotnet', 'sdk', 'docs', 'zig'].includes(id) || installing) {
+                if (!['dotnet', 'sdk', 'docs', 'zig', 'tools'].includes(id) || installing) {
                     return;
                 }
                 installing = true;
@@ -274,7 +274,7 @@ function buildHtml(webview: vscode.Webview): string {
   <div class="wrap">
     <header>
       <h1>RXDK setup</h1>
-      <p class="lead">Install all four prerequisites below (.NET, RXDK-SDK, Xbox SDK docs, Zig) before using build, deploy, debug, or documentation. RXDK stays disabled until everything is ready.</p>
+      <p class="lead">Install all prerequisites below (.NET, RXDK-SDK, Xbox SDK docs, Zig, host tools) before using build, deploy, debug, or documentation. RXDK stays disabled until everything is ready.</p>
     </header>
 
     <div class="banner" id="banner">Checking prerequisites…</div>
