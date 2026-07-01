@@ -68,8 +68,7 @@ export function getBridgePath(context: vscode.ExtensionContext): string {
     if (fs.existsSync(staged)) {
         return staged;
     }
-    const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-    return resolveBundledBridgePath(context.extensionPath, workspaceRoot);
+    return resolveBundledBridgePath(context.extensionPath);
 }
 
 export function getXbwatsonPath(context: vscode.ExtensionContext): string {
@@ -81,8 +80,7 @@ export function getXbwatsonPath(context: vscode.ExtensionContext): string {
     if (fs.existsSync(staged)) {
         return staged;
     }
-    const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-    return resolveBundledXbwatsonPath(context.extensionPath, workspaceRoot);
+    return resolveBundledXbwatsonPath(context.extensionPath);
 }
 
 export function readSdkVersion(context: vscode.ExtensionContext): string {

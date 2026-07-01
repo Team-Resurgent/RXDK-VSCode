@@ -72,13 +72,20 @@ Each project uses `rxdk.project.json` at the workspace root. New projects get `.
 
 ## Maintainers
 
+Run the extension from source (installs npm deps, compiles, and downloads host
+tools + the SDK into their persistent locations if missing):
+
+```powershell
+.\scripts\setup.ps1   # or scripts\setup.cmd
+```
+
 Build a cross-platform VSIX:
 
 ```powershell
 .\scripts\build-vsix.ps1
 ```
 
-Host tools (`xbcp`, `imagebld`, `xbox-launch`, `xboxdbg-bridge`, `xbwatson`) are downloaded prebuilt from the [Team-Resurgent/RXDK-Tools releases](https://github.com/Team-Resurgent/RXDK-Tools/releases/latest) (pinned in [`scripts/rxdk-tools-release.txt`](scripts/rxdk-tools-release.txt)); `xdvdfs` from the [xdvdfs releases](https://github.com/Team-Resurgent/xdvdfs/releases/latest). No submodule or .NET SDK build step is needed.
+Host tools (`imagebld`, `xdvdfs`, `xbcp`, `xbox-launch`, `xboxdbg-bridge`, `xbwatson`) are **not** bundled in the VSIX — the extension downloads the latest per-platform set at runtime (its host-tools prerequisite, `src/hostTools.ts`) into `…/RXDK/tools`, and `scripts/setup.ps1` does the same headlessly for dev/CI. Prebuilt from the [Team-Resurgent/RXDK-Tools](https://github.com/Team-Resurgent/RXDK-Tools/releases/latest) and [xdvdfs](https://github.com/Team-Resurgent/xdvdfs/releases/latest) releases; no submodule or .NET SDK build step is needed.
 
 CI builds on push/PR via [`.github/workflows/build-vsix.yml`](.github/workflows/build-vsix.yml).
 
