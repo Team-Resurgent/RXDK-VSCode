@@ -1,4 +1,4 @@
-# Generic Xbox title build from rxdk.project.json using bundled SDK.
+# Generic Xbox title build from rxdk.project.json using staged SDK + Zig toolchain.
 param(
     [Parameter(Mandatory)]
     [string]$SdkRoot,
@@ -6,34 +6,138 @@ param(
     [string]$ProjectRoot,
     [string]$IncludeDir,
     [string]$LibDir,
-    [string]$MsvcVersion,
+    [string]$ZigExecutable,
     [switch]$CompileOnly
 )
 $ErrorActionPreference = 'Stop'
 
 . (Join-Path $PSScriptRoot 'Get-XboxSdkPaths.ps1')
-. (Join-Path $PSScriptRoot 'Get-XdkLinkAliases.ps1')
-. (Join-Path $PSScriptRoot 'Get-XdkLinkIgnores.ps1')
+. (Join-Path $PSScriptRoot 'Get-ZigExecutable.ps1')
+. (Join-Path $PSScriptRoot 'Invoke-XdkLink.ps1')
 . (Join-Path $PSScriptRoot 'Invoke-ImageBuild.ps1')
 . (Join-Path $PSScriptRoot 'Invoke-PackXiso.ps1')
 
-function Get-MsvcToolsetVersion {
+function Get-XdkClangWarnings {
+    return @(
+        '-Wno-macro-redefined',
+        '-Wno-deprecated-declarations',
+        '-Wno-sign-compare',
+        '-Wno-sign-conversion',
+        '-Wno-implicit-int-conversion',
+        '-Wno-shorten-64-to-32',
+        '-Wno-pointer-to-int-cast',
+        '-Wno-int-to-pointer-cast',
+        '-Wno-unused-parameter',
+        '-Wno-unused-variable',
+        '-Wno-unused-function',
+        '-Wno-missing-field-initializers',
+        '-Wno-switch',
+        '-Wno-ignored-qualifiers',
+        '-Wno-invalid-source-encoding',
+        '-Wno-pragma-pack',
+        '-Wno-nonportable-include-path',
+        '-Wno-main-return-type',
+        '-Wno-missing-prototype-for-cc',
+        '-Wno-ignored-pragma-intrinsic',
+        '-Wno-multichar',
+        '-Wno-comment',
+        '-Wno-extra-tokens',
+        '-Wno-unused-command-line-argument'
+    )
+}
+
+function Get-ProjectIncludeArgs {
+    param(
+        [string]$ProjectRoot,
+        [string]$SdkInclude,
+        [object]$Manifest
+    )
+    # -I (not -isystem): the SDK's clean-room windef.h/etc. must win over zig's
+    # bundled MinGW any-windows-any headers, which -isystem would let shadow them.
+    $includeArgs = @('-I', $SdkInclude)
+    if ($Manifest.includePaths) {
+        foreach ($relPath in $Manifest.includePaths) {
+            if ([string]::IsNullOrWhiteSpace($relPath)) { continue }
+            $dir = Join-Path $ProjectRoot (($relPath -replace '/', '\').TrimEnd('\'))
+            if (-not (Test-Path -LiteralPath $dir)) {
+                throw "includePaths: not found $dir"
+            }
+            $includeArgs += "-I$([IO.Path]::GetFullPath($dir))"
+        }
+    }
+    return ,@($includeArgs)
+}
+
+function Get-ProjectDefineArgs {
+    param([object]$Manifest)
+    $defineArgs = @()
+    if ($Manifest.defines) {
+        foreach ($define in $Manifest.defines) {
+            if ([string]::IsNullOrWhiteSpace($define)) { continue }
+            $defineArgs += "-D$define"
+        }
+    }
+    return ,@($defineArgs)
+}
+
+function Invoke-ZigCompile {
     param(
         [Parameter(Mandatory)]
-        [string]$VsInstall,
-        [string]$Override
+        [string]$Zig,
+        [Parameter(Mandatory)]
+        [string]$Source,
+        [Parameter(Mandatory)]
+        [string]$Object,
+        [string[]]$IncludeArgs = @(),
+        [string[]]$DefineArgs = @(),
+        [string[]]$ExtraArgs = @(),
+        [switch]$IsCpp
     )
-    if ($Override) { return $Override.Trim() }
-    if ($env:RXDK_MSVC_VERSION) { return $env:RXDK_MSVC_VERSION.Trim() }
-    $msvcRoot = Join-Path $VsInstall 'VC\Tools\MSVC'
-    if (-not (Test-Path -LiteralPath $msvcRoot)) {
-        throw "MSVC toolsets not found under $msvcRoot"
+    # Matches the RXDK SDK's own title compile recipe (build/xbox_target.zig):
+    # x86-windows-gnu + -nostdinc + force-included picolibc.h, so the staged SDK
+    # headers (<xtl.h> and friends) are the only ones on the path. -march=pentium3
+    # is the Xbox CPU.
+    $warnOff = @(Get-XdkClangWarnings)
+    $common = @(
+        '-target', 'x86-windows-gnu',
+        '-O0', '-g', '-fno-sanitize=undefined',
+        '-ffreestanding',
+        '-fno-stack-protector',
+        '-fms-extensions', '-fms-compatibility',
+        '-nostdinc',
+        '-include', 'picolibc.h',
+        '-march=pentium3'
+    ) + $IncludeArgs + $DefineArgs + $ExtraArgs + $warnOff + @('-c', $Source, "-o$Object")
+
+    if ($IsCpp) {
+        $toolArgs = @(
+            'c++',
+            '-std=c++20',
+            '-nostdinc++',
+            '-fno-exceptions',
+            '-frtti'
+        ) + $common
+    } else {
+        $toolArgs = @('cc', '-std=c17') + $common
     }
-    $latest = Get-ChildItem -LiteralPath $msvcRoot -Directory | Sort-Object Name -Descending | Select-Object -First 1
-    if (-not $latest) {
-        throw "No MSVC toolset found under $msvcRoot"
+
+    Write-Host "$Zig $($toolArgs -join ' ')"
+    $prevEap = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    $log = @( & $Zig @toolArgs 2>&1 )
+    $ErrorActionPreference = $prevEap
+    $warnLines = $log | Where-Object {
+        $_ -match ': warning:' -and $_ -match ([regex]::Escape([IO.Path]::GetFullPath($Source)))
     }
-    return $latest.Name
+    if ($warnLines -and $IsCpp) {
+        $warnLines | ForEach-Object { Write-Warning $_ }
+        throw "Compile reported $($warnLines.Count) warning(s) in $Source"
+    }
+    if ($LASTEXITCODE -ne 0) {
+        $log | ForEach-Object { Write-Host $_ }
+        throw "Zig compile failed on $Source (exit $LASTEXITCODE)"
+    }
+    Write-Host "Compiled $Object"
 }
 
 $paths = Get-XboxSdkPaths -SdkRoot $SdkRoot -IncludeDir $IncludeDir -LibDir $LibDir
@@ -44,68 +148,21 @@ $outDir = Get-XboxProjectOutDir -ProjectRoot $ProjectRoot -Manifest $manifest
 New-Item -ItemType Directory -Force -Path $outDir | Out-Null
 
 if (-not (Test-Path -LiteralPath $paths.Include)) {
-    throw "Missing sdk/include - run scripts/sync-all.ps1"
+    throw "Missing sdk/include - run RXDK prerequisites (SDK install)"
 }
 
-$vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath
-if (-not $vs) {
-    throw @"
-Visual Studio 2022 not found. Install VS2022 with Desktop development with C++ (x86 build tools).
-"@
-}
-$msvcVer = Get-MsvcToolsetVersion -VsInstall $vs -Override $MsvcVersion
-$cl = Join-Path $vs "VC\Tools\MSVC\$msvcVer\bin\Hostx86\x86\cl.exe"
-$link = Join-Path $vs "VC\Tools\MSVC\$msvcVer\bin\Hostx86\x86\link.exe"
-if (-not (Test-Path $cl)) { throw "cl.exe not found: $cl" }
+$zig = Resolve-ZigExecutable -Override $ZigExecutable
 
 function Resolve-Lib([string]$Name) {
-    $candidates = @(
-        (Join-Path $paths.Lib $Name)
-    )
-    $candidates | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+    $candidate = Join-Path $paths.Lib $Name
+    if (Test-Path -LiteralPath $candidate) { return $candidate }
+    return $null
 }
 
-$krnlLib = Resolve-Lib 'xboxkrnl.lib'
+$krnlLib = Resolve-Lib 'libkernel.lib'
+if (-not $krnlLib) { $krnlLib = Resolve-Lib 'xboxkrnl.lib' }  # pre-rename SDKs
 if (-not $krnlLib -and -not $CompileOnly) {
-    throw "Missing xboxkrnl.lib under sdk/lib - run sync-all.ps1"
-}
-
-$warnOff = @(
-    '/wd4005', '/wd4996', '/wd4018', '/wd4244', '/wd4267', '/wd4311', '/wd4312',
-    '/wd4326', '/wd4508', '/wd4701', '/wd4702', '/wd4710', '/wd4711', '/wd4800', '/wd5287',
-    '/wd4094', '/wd4335', '/wd4346'
-)
-
-function Get-ProjectIncludeArgs {
-    param(
-        [string]$ProjectRoot,
-        [string]$SdkInclude,
-        [object]$Manifest
-    )
-    $includeArgs = @("/I$SdkInclude")
-    if ($Manifest.includePaths) {
-        foreach ($relPath in $Manifest.includePaths) {
-            if ([string]::IsNullOrWhiteSpace($relPath)) { continue }
-            $dir = Join-Path $ProjectRoot (($relPath -replace '/', '\').TrimEnd('\'))
-            if (-not (Test-Path -LiteralPath $dir)) {
-                throw "includePaths: not found $dir"
-            }
-            $includeArgs += "/I$([IO.Path]::GetFullPath($dir))"
-        }
-    }
-    return $includeArgs
-}
-
-function Get-ProjectDefineArgs {
-    param([object]$Manifest)
-    $defineArgs = @()
-    if ($Manifest.defines) {
-        foreach ($define in $Manifest.defines) {
-            if ([string]::IsNullOrWhiteSpace($define)) { continue }
-            $defineArgs += "/D$define"
-        }
-    }
-    return $defineArgs
+    throw "Missing libkernel.lib under sdk/lib - run RXDK SDK install"
 }
 
 $projectIncludeArgs = Get-ProjectIncludeArgs -ProjectRoot $ProjectRoot -SdkInclude $paths.Include -Manifest $manifest
@@ -122,42 +179,11 @@ foreach ($relSrc in $manifest.sources) {
     $base = [IO.Path]::GetFileNameWithoutExtension($src)
     $obj = Join-Path $outDir "$base.obj"
     $ext = [IO.Path]::GetExtension($src).ToLowerInvariant()
+    $isCpp = ($ext -eq '.cpp' -or $ext -eq '.cxx')
+    if ($isCpp) { $useCpp = $true }
 
-    if ($ext -eq '.cpp' -or $ext -eq '.cxx') {
-        $useCpp = $true
-        $fiModern = Join-Path $paths.Include 'xdk_modern_stl.h'
-        $fiHeap = Join-Path $paths.Include 'xdk_crt_heap.h'
-        if (-not (Test-Path $fiModern)) {
-            throw "Missing $fiModern - sync sdk/include"
-        }
-        $clArgs = @(
-            '/nologo', '/W3', '/EHsc', '/GR', '/GS-', '/std:c++20', '/permissive-', '/Zc:__cplusplus',
-            '/Zi', '/Oy-', '/arch:IA32',
-            '/D_WIN32', '/D_WINNT', '/D_XBOX', '/D_X86_', '/DNT_UP=1', '/D_CRTBLD', '/D_MT', '/D_STATIC_CPPLIB',
-            '/D_MBCS', '/D_MB_MAP_DIRECT', '/D_KANJI', '/D_HAS_CXX20=1', '/DNDEBUG',
-            "/FI$fiModern", "/FI$fiHeap"
-        ) + $projectIncludeArgs + $projectDefineArgs + $warnOff + @('/c', "/Fo:$obj", $src)
-    } else {
-        $clArgs = @(
-            '/nologo', '/W3', '/EHsc-', '/GR-', '/GS-', '/TC',
-            '/Zi', '/Oy-',
-            '/D_WIN32', '/D_WINNT', '/D_XBOX', '/D_X86_', '/DNT_UP=1', '/DNDEBUG',
-            '/DNOD3D', '/DNODSOUND'
-        ) + $projectIncludeArgs + $projectDefineArgs + $warnOff + @('/c', "/Fo:$obj", $src)
-    }
-
-    Write-Host "$cl $($clArgs -join ' ')"
-    $log = @( & $cl @clArgs 2>&1 )
-    $warnLines = $log | Where-Object { $_ -match ': warning C' }
-    if ($warnLines -and $useCpp) {
-        $warnLines | ForEach-Object { Write-Warning $_ }
-        throw "Compile reported $($warnLines.Count) warning(s) in $relSrc"
-    }
-    if ($LASTEXITCODE -ne 0) {
-        $log | ForEach-Object { Write-Host $_ }
-        throw "cl.exe failed on $relSrc (exit $LASTEXITCODE)"
-    }
-    Write-Host "Compiled $obj"
+    Invoke-ZigCompile -Zig $zig -Source $src -Object $obj -IncludeArgs $projectIncludeArgs `
+        -DefineArgs $projectDefineArgs -IsCpp:$isCpp
     $objs += $obj
 }
 
@@ -166,9 +192,11 @@ if ($CompileOnly) {
     exit 0
 }
 
-if (-not (Test-Path $link)) { throw "link.exe not found: $link" }
+# Any title that links libxapi gets the XAPI + CRT + TLS bring-up before main
+# (entry XapiTitleStartup); a bare libc title enters at 'start'.
+$usesXapi = @($manifest.libraries | Where-Object { $_ -eq 'libxapi' }).Count -gt 0
+$entry = if ($usesXapi) { 'XapiTitleStartup' } else { 'start' }
 
-$libPaths = @("/LIBPATH:$($paths.Lib)")
 $linkLibs = @()
 foreach ($libName in $manifest.libraries) {
     $resolved = Resolve-Lib "$libName.lib"
@@ -177,42 +205,33 @@ foreach ($libName in $manifest.libraries) {
     }
     $linkLibs += $resolved
 }
-$linkLibs += (Split-Path $krnlLib -Leaf)
+$linkLibs += $krnlLib
 
-$linkAliases = @(Get-XdkLinkAliases)
-$linkIgnoreArgs = @(Get-XdkLinkIgnoreArg -StrictLink)
-$exe = [IO.Path]::GetFullPath((Join-Path $outDir "$projectName.exe"))
-$mapFile = Join-Path $outDir "$projectName.map"
-
-$linkArgs = @(
-    '/nologo',
-    '/SUBSYSTEM:CONSOLE', '/MACHINE:IX86', "/OUT:$exe",
-    "/MAP:$mapFile",
-    '/DEBUG:FULL', '/PDBALTPATH:%_PDB%',
-    '/NODEFAULTLIB'
-)
-if (-not $useCpp) {
-    $linkArgs += '/ENTRY:mainCRTStartup'
-}
-$linkArgs += $libPaths + $objs
-$linkArgs += $linkIgnoreArgs + $linkAliases + $linkLibs
-
-Write-Host "$link $($linkArgs -join ' ')"
-$linkLog = @( & $link @linkArgs 2>&1 )
-$linkLog | Write-Host
-$ignoredLinkWarn = Get-XdkLinkIgnorePattern -StrictLink
-$linkWarn = $linkLog | Where-Object { $_ -match ': warning LNK' -and $_ -notmatch "LNK($ignoredLinkWarn)\b" }
-if ($linkWarn) {
-    $linkWarn | ForEach-Object { Write-Warning $_ }
-    throw "Link reported $($linkWarn.Count) warning(s)"
-}
-if ($LASTEXITCODE -ne 0) {
-    if ($linkLog -match 'LNK1201') {
-        throw @"
-link.exe failed (LNK1201): PDB locked. Stop the Xbox debug session (Shift+F5) and rebuild.
-"@
+# The title startup object (XapiTitleStartup), prebuilt title-side by the SDK and
+# shipped in sdk/lib. It must be compiled with the title recipe (never as an
+# internal libxapi source), which the SDK dist build guarantees.
+if ($usesXapi) {
+    $startupObj = Resolve-Lib 'xapi_start.obj'
+    if (-not $startupObj) {
+        throw "Missing xapi_start.obj under sdk/lib - reinstall the RXDK SDK"
     }
-    throw "link.exe failed (exit $LASTEXITCODE)"
+    $objs += $startupObj
+}
+
+# xboxkrnl_xbld.obj supplies kernel build/descriptor data every title needs.
+$xbldObj = Resolve-Lib 'xboxkrnl_xbld.obj'
+if (-not $xbldObj) {
+    throw "Missing xboxkrnl_xbld.obj under sdk/lib - reinstall the RXDK SDK"
+}
+
+# Single-pass link. imagebld (build-78+) zero-fills the emitted .data so the XBE
+# loader copies the zeroed .bss tail -- uninitialized globals boot as zero with no
+# runtime fixup, so no per-title image_init bootstrap is needed.
+$exe = [IO.Path]::GetFullPath((Join-Path $outDir "$projectName.exe"))
+
+$linkResult = Invoke-XdkLink -Zig $zig -Objs $objs -Libs $linkLibs -OutExe $exe -XbldObj $xbldObj -Entry $entry
+if ($linkResult.ExitCode -ne 0) {
+    throw "Link failed (exit $($linkResult.ExitCode))"
 }
 Write-Host "Linked $exe"
 
