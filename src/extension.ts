@@ -9,7 +9,7 @@ import { openStagedSdkFolder, fetchLatestSdk } from './sdkStaging';
 import { ensureDotNetRuntime, isDotNetRuntimeInstalled } from './dotnetRuntime';
 import { ensureVscodeForWorkspace } from './vscodeGenerator';
 import { getActiveXboxAddress, promptSetXboxIp } from './xboxConsole';
-import { openSdkDocs } from './sdkDocs';
+import { openSdkDocs, openExtensionDocs } from './sdkDocs';
 import { openPrebuiltProjectSetup } from './prebuiltDebug';
 import { refreshPrebuiltSourceFolder } from './prebuiltWorkspace';
 import { launchXbwatson } from './xbwatsonLauncher';
@@ -18,6 +18,7 @@ import {
     refreshPrerequisitesContext,
 } from './prerequisites';
 import { openPrerequisitesSetup } from './prerequisitesSetup';
+import { openSettingsPanel } from './settingsPanel';
 let titleOutputChannel: vscode.OutputChannel | undefined;
 const titleLogWatchers = new Map<string, NodeJS.Timeout>();
 let rxdkOutput: vscode.OutputChannel;
@@ -99,6 +100,7 @@ export function activate(context: vscode.ExtensionContext): void {
         ),
         vscode.commands.registerCommand('rxdk.refreshSidebar', () => sidebarProvider.refresh()),
         vscode.commands.registerCommand('rxdk.openSdkDocs', guardPrerequisites(() => openSdkDocs(context))),
+        vscode.commands.registerCommand('rxdk.openExtensionDocs', guardPrerequisites(() => openExtensionDocs(context))),
         vscode.commands.registerCommand('rxdk.openSdkFolder', guardPrerequisites(() => openStagedSdkFolder(context))),
         vscode.commands.registerCommand('rxdk.fetchLatestSdk', guardPrerequisites(async () => {
             const ok = await fetchLatestSdk(context, rxdkOutput);
@@ -116,7 +118,8 @@ export function activate(context: vscode.ExtensionContext): void {
             sidebarProvider.refresh();
         }),
         vscode.commands.registerCommand('rxdk.launchXbwatson', guardPrerequisites(() => launchXbwatson(context, rxdkOutput))),
-        vscode.commands.registerCommand('xbox.pickConsole', guardPrerequisites(() => promptSetXboxIp()))
+        vscode.commands.registerCommand('rxdk.cycleGlobalsScope', () => cycleGlobalsScope()),
+        vscode.commands.registerCommand('rxdk.openSettings', () => openSettingsPanel(context))
     );
 
     void ensureVscodeForWorkspace(context);
@@ -177,7 +180,31 @@ async function resolveXboxLaunchConfig(
         config.reboot = false;
     }
     config.__extensionPath = context.extensionPath;
+    config.__globalsFilter = globalsScopeLevel();
     return config;
+}
+
+const GLOBALS_SCOPE_ORDER = ['title', 'titleAndConstants', 'all'] as const;
+const GLOBALS_SCOPE_LABELS: Record<string, string> = {
+    title: 'Title globals only',
+    titleAndConstants: 'Title globals + constants',
+    all: 'All globals (incl. libraries)',
+};
+
+function globalsScopeLevel(): number {
+    const scope = vscode.workspace.getConfiguration('rxdk').get<string>('debugger.globalsScope') || 'title';
+    const level = GLOBALS_SCOPE_ORDER.indexOf(scope as (typeof GLOBALS_SCOPE_ORDER)[number]);
+    return level < 0 ? 0 : level;
+}
+
+// Advance the Globals-pane visibility to the next level. Updating the setting drives the live
+// refresh (see the onDidChangeConfiguration handler) and seeds __globalsFilter for future launches.
+async function cycleGlobalsScope(): Promise<void> {
+    const cfg = vscode.workspace.getConfiguration('rxdk');
+    const current = cfg.get<string>('debugger.globalsScope') || 'title';
+    const next = GLOBALS_SCOPE_ORDER[(GLOBALS_SCOPE_ORDER.indexOf(current as (typeof GLOBALS_SCOPE_ORDER)[number]) + 1) % GLOBALS_SCOPE_ORDER.length];
+    await cfg.update('debugger.globalsScope', next, vscode.ConfigurationTarget.Global);
+    vscode.window.setStatusBarMessage(`RXDK Globals: ${GLOBALS_SCOPE_LABELS[next]}`, 3000);
 }
 
 function registerDebugIntegration(context: vscode.ExtensionContext): void {
@@ -210,6 +237,23 @@ function registerDebugIntegration(context: vscode.ExtensionContext): void {
         vscode.debug.onDidTerminateDebugSession((session) => {
             if (session?.type === 'xbox') {
                 stopTitleLogWatcher(session.id);
+            }
+        })
+    );
+
+    // Changing the Globals-visibility setting (via Settings UI or the cycle command) refreshes a
+    // running session live, so users don't have to relaunch to see the new filter take effect.
+    context.subscriptions.push(
+        vscode.workspace.onDidChangeConfiguration((e) => {
+            if (!e.affectsConfiguration('rxdk.debugger.globalsScope')) {
+                return;
+            }
+            const session = vscode.debug.activeDebugSession;
+            if (session?.type === 'xbox') {
+                void session.customRequest('setGlobalsFilter', { level: globalsScopeLevel() }).then(
+                    undefined,
+                    () => undefined
+                );
             }
         })
     );

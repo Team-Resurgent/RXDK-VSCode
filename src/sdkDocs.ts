@@ -1,7 +1,12 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { isSdkDocsPresent, resolveSdkDocsRoot } from './sdkDocsStaging';
+import {
+    isSdkDocsPresent,
+    resolveSdkDocsRoot,
+    areExtensionDocsPresent,
+    resolveExtensionDocsRoot,
+} from './sdkDocsStaging';
 
 const DEFAULT_PAGE = 'xbox_pk_welcome.htm';
 
@@ -25,8 +30,14 @@ function readJsonText(filePath: string): string {
     return fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '');
 }
 
-let activePanel: vscode.WebviewPanel | undefined;
-let activeDocsRoot = '';
+interface Viewer {
+    panel: vscode.WebviewPanel;
+    docsRoot: string;
+}
+
+// One viewer panel per doc set (keyed by webview view type) so the Xbox SDK reference and the RXDK
+// extension docs can be open side by side without clobbering each other.
+const viewers = new Map<string, Viewer>();
 
 export function getSdkDocsRoot(context: vscode.ExtensionContext): string {
     return resolveSdkDocsRoot(context);
@@ -36,61 +47,80 @@ export function sdkDocsAvailable(context: vscode.ExtensionContext): boolean {
     return isSdkDocsPresent(context);
 }
 
-export async function openSdkDocs(
-    context: vscode.ExtensionContext,
-    page?: string
-): Promise<void> {
+export function extensionDocsAvailable(context: vscode.ExtensionContext): boolean {
+    return areExtensionDocsPresent(context);
+}
+
+export async function openSdkDocs(context: vscode.ExtensionContext, page?: string): Promise<void> {
     if (!isSdkDocsPresent(context)) {
         vscode.window.showErrorMessage(
             'Xbox SDK documentation is required. Open RXDK Setup and install the docs prerequisite.'
         );
         return;
     }
-    const docsRoot = getSdkDocsRoot(context);
-    const tocPath = path.join(docsRoot, 'toc.json');
-    const toc = JSON.parse(readJsonText(tocPath)) as TocFile;
+    await openDocsViewer('rxdk.sdkDocs', resolveSdkDocsRoot(context), page, 'Xbox SDK Documentation');
+}
+
+export async function openExtensionDocs(
+    context: vscode.ExtensionContext,
+    page?: string
+): Promise<void> {
+    if (!areExtensionDocsPresent(context)) {
+        vscode.window.showErrorMessage(
+            'RXDK documentation is not installed. Open RXDK Setup and install the docs prerequisite.'
+        );
+        return;
+    }
+    await openDocsViewer('rxdk.extensionDocs', resolveExtensionDocsRoot(context), page, 'RXDK Documentation');
+}
+
+async function openDocsViewer(
+    viewType: string,
+    docsRoot: string,
+    page: string | undefined,
+    fallbackTitle: string
+): Promise<void> {
+    const toc = JSON.parse(readJsonText(path.join(docsRoot, 'toc.json'))) as TocFile;
     const startPage = page || toc.defaultPage || DEFAULT_PAGE;
 
-    if (activePanel) {
-        activeDocsRoot = docsRoot;
-        activePanel.reveal(vscode.ViewColumn.Beside);
-        await postNavigate(activePanel, startPage);
+    const existing = viewers.get(viewType);
+    if (existing) {
+        existing.docsRoot = docsRoot;
+        existing.panel.reveal(vscode.ViewColumn.Beside);
+        await postNavigate(existing, startPage);
         return;
     }
 
     const docsUri = vscode.Uri.file(docsRoot);
-    activeDocsRoot = docsRoot;
     const panel = vscode.window.createWebviewPanel(
-        'rxdk.sdkDocs',
-        toc.title || 'Xbox SDK Documentation',
+        viewType,
+        toc.title || fallbackTitle,
         vscode.ViewColumn.Beside,
-        {
-            enableScripts: true,
-            retainContextWhenHidden: true,
-            localResourceRoots: [docsUri],
-        }
+        { enableScripts: true, retainContextWhenHidden: true, localResourceRoots: [docsUri] }
     );
-    activePanel = panel;
+    const viewer: Viewer = { panel, docsRoot };
+    viewers.set(viewType, viewer);
     panel.webview.html = buildShellHtml(panel.webview, docsUri, toc, startPage);
 
     panel.webview.onDidReceiveMessage(async (msg: { type: string; page?: string }) => {
         if (msg.type === 'navigate' && msg.page) {
-            await postNavigate(panel, msg.page);
+            await postNavigate(viewer, msg.page);
         }
     });
 
     panel.onDidDispose(() => {
-        activePanel = undefined;
-        activeDocsRoot = '';
+        if (viewers.get(viewType) === viewer) {
+            viewers.delete(viewType);
+        }
     });
 
-    await postNavigate(panel, startPage);
+    await postNavigate(viewer, startPage);
 }
 
-async function postNavigate(panel: vscode.WebviewPanel, page: string): Promise<void> {
-    const docsRoot = vscode.Uri.file(activeDocsRoot);
-    const html = await loadDocPage(docsRoot, panel.webview, page);
-    panel.webview.postMessage({ type: 'content', page, html });
+async function postNavigate(viewer: Viewer, page: string): Promise<void> {
+    const docsRoot = vscode.Uri.file(viewer.docsRoot);
+    const html = await loadDocPage(docsRoot, viewer.panel.webview, page);
+    viewer.panel.webview.postMessage({ type: 'content', page, html });
 }
 
 async function loadDocPage(

@@ -274,7 +274,7 @@ function buildHtml(webview: vscode.Webview): string {
   <div class="wrap">
     <header>
       <h1>RXDK setup</h1>
-      <p class="lead">Install all prerequisites below (.NET, RXDK-SDK, Xbox SDK docs, Zig, host tools) before using build, deploy, debug, or documentation. RXDK stays disabled until everything is ready.</p>
+      <p class="lead">Install all prerequisites below (.NET, RXDK-SDK, documentation, Zig, host tools) before using build, deploy, debug, or documentation. RXDK stays disabled until everything is ready.</p>
     </header>
 
     <div class="banner" id="banner">Checking prerequisites…</div>

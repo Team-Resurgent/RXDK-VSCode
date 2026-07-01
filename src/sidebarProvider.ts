@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { readSdkVersion } from './sdkPath';
 import { findProjectManifest } from './projectManager';
 import { getXboxAddressInfo } from './xboxConsole';
-import { sdkDocsAvailable } from './sdkDocs';
+import { sdkDocsAvailable, extensionDocsAvailable } from './sdkDocs';
 import { isPrebuiltManifest } from './projectTypes';
 import { isPrerequisitesReadySync } from './prerequisites';
 
@@ -82,6 +82,15 @@ export class RxdkSidebarProvider implements vscode.TreeDataProvider<RxdkTreeItem
                     )
                 );
             }
+            root.push(
+                new RxdkTreeItem(
+                    'Settings',
+                    vscode.TreeItemCollapsibleState.None,
+                    'rxdk.openSettings',
+                    undefined,
+                    'gear'
+                )
+            );
             return root;
         }
 
@@ -193,6 +202,13 @@ export class RxdkSidebarProvider implements vscode.TreeDataProvider<RxdkTreeItem
 
         if (element.label === 'Documentation') {
             const items: RxdkTreeItem[] = [
+                new RxdkTreeItem(
+                    'RXDK Extension Docs',
+                    vscode.TreeItemCollapsibleState.None,
+                    'rxdk.openExtensionDocs',
+                    extensionDocsAvailable(this.context) ? undefined : 'Install docs from RXDK Setup',
+                    'book'
+                ),
                 new RxdkTreeItem(
                     'Xbox SDK Reference',
                     vscode.TreeItemCollapsibleState.None,

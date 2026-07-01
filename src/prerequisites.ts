@@ -3,7 +3,7 @@ import { promisify } from 'util';
 import * as vscode from 'vscode';
 import { DOTNET_MAJOR_VERSION, installDotNetRuntime, isDotNetRuntimeInstalled } from './dotnetRuntime';
 import {
-    DEFAULT_DOCS_RELEASES_PAGE,
+    DEFAULT_DOCS_REPO_PAGE,
     fetchLatestDocs,
     getStagedDocsRoot,
     isSdkDocsPresent,
@@ -95,13 +95,17 @@ export async function getPrerequisiteStatuses(
         },
         {
             id: 'docs',
-            label: 'Xbox SDK documentation',
-            description: 'Required in-editor HTML reference from the latest RXDK-Docs release.',
+            label: 'Documentation',
+            description: 'In-editor HTML docs (Xbox SDK reference + RXDK guide) cloned from RXDK-Docs.',
             ready: docsReady,
             required: true,
-            detail: docsReady ? docsPath : `Not installed (${docsPath})`,
-            canInstall: true,
-            downloadUrl: DEFAULT_DOCS_RELEASES_PAGE,
+            detail: docsReady
+                ? docsPath
+                : gitReady
+                  ? `Not installed (${docsPath})`
+                  : 'Install Git, then clone RXDK-Docs',
+            canInstall: gitReady,
+            downloadUrl: DEFAULT_DOCS_REPO_PAGE,
         },
         {
             id: 'zig',
