@@ -5,8 +5,8 @@
 # runtime via its host-tools prerequisite (src/hostTools.ts) into …/RXDK/tools.
 # Headers/libs are cloned from RXDK-SDK on extension activate. The -CrossPlatformTools
 # / -WindowsOnly switches are accepted for pipeline compatibility but no longer stage
-# anything (tools are runtime-only). scripts/fetch-*.ps1 + required-tools.txt remain
-# for manual/dev staging into vendor/.
+# anything (tools are runtime-only). For a headless dev/CI setup that populates the
+# staged tool + SDK roots, use scripts/setup.ps1.
 param(
     [string]$ExtensionRoot = (Join-Path $PSScriptRoot '..'),
     [switch]$CrossPlatformTools,
