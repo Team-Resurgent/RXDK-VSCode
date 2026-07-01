@@ -41,3 +41,7 @@ staged=$(Get-Date -Format 'yyyy-MM-ddTHH:mm:ss')
 "@ | Set-Content -LiteralPath (Join-Path $sdkRoot 'VERSION.txt') -Encoding ASCII
 
 Write-Host "OK: assembled sdk/ (build scripts only; tools via runtime prerequisite, include/lib from RXDK-SDK clone on activate)" -ForegroundColor Green
+
+# Explicit success code: this script runs no external command that would set
+# $LASTEXITCODE, and sync-all.ps1 checks it after invoking us.
+exit 0
