@@ -7,7 +7,7 @@
 # the XapiTitleStartup entry are baked into libc.lib / libxapi.lib respectively, so
 # they need no loose object on the command line.
 #
-# libcomdatfix.lib (staged in $LibDir alongside the other .lib archives) is the
+# libcompat.lib (staged in $LibDir alongside the other .lib archives) is the
 # one exception and is ALWAYS force-linked whole here, ahead of everything else.
 # picolibc's copies (in libc.lib) are compiled -fno-builtin, but zig's own
 # compiler-rt (auto-pulled in via -rtlib=compiler-rt below, for
@@ -28,14 +28,14 @@
 # them one at a time as each is discovered.
 #
 # -Wl,--whole-archive/--no-whole-archive force-extracts every member of
-# libcomdatfix.lib unconditionally, the same "already included before any
+# libcompat.lib unconditionally, the same "already included before any
 # archive/comdat candidate is even considered" guarantee a loose object gets --
 # just packaged as one ordinary-looking .lib instead of 32 loose .o files
 # cluttering the SDK's lib directory. Verified byte-identical (mod PE
 # timestamp) linked output vs. the older loose-object-list approach. This is
 # invisible to a title's own rxdk.project.json -- no project needs to know
 # about it.
-$script:XdkComdatFixLib = 'libcomdatfix.lib'
+$script:XdkComdatFixLib = 'libcompat.lib'
 
 function Invoke-XdkLink {
     param(
