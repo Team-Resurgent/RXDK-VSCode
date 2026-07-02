@@ -5,7 +5,7 @@ import { isStagedSdkPresent, getStagedSdkRoot } from './sdkStaging';
 import { isDotNetRuntimeInstalled, ensureDotNetRuntime } from './dotnetRuntime';
 import { findProjectManifest } from './projectManager';
 import { getActiveXboxAddress } from './xboxConsole';
-import { isPrebuiltManifest } from './projectTypes';
+import { isPrebuiltManifest, isLibraryManifest } from './projectTypes';
 import { resolveZigExecutable } from './zigRuntime';
 
 export type RxdkTaskKind = 'build' | 'deploy' | 'run' | 'build+deploy';
@@ -44,6 +44,22 @@ export async function runRxdkTask(
 
     if (isPrebuiltManifest(found.manifest)) {
         return runPrebuiltTask(scripts, sdkRoot, found.manifest, kind, output);
+    }
+
+    // A library project produces a .lib linked by executables that reference it — build only.
+    if (isLibraryManifest(found.manifest)) {
+        if (kind === 'deploy' || kind === 'run') {
+            vscode.window.showInformationMessage(
+                `Library project "${name}" builds a .lib and is not deployed/run — reference it from an executable via projectReferences.`
+            );
+            return true;
+        }
+        return runPowerShell(
+            path.join(scripts, 'Build-XboxProject.ps1'),
+            ['-SdkRoot', sdkRoot, '-ProjectRoot', projectRoot, ...sdkPathArgs, ...(await zigArgsFromConfig())],
+            output,
+            'RXDK Build (library)'
+        );
     }
 
     const scriptMap: Record<RxdkTaskKind, string> = {

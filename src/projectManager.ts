@@ -37,12 +37,16 @@ export function suggestProjectName(template: RxdkTemplateId): string {
     switch (template) {
         case 'd3d8-triangle':
             return 'my-triangle';
-        case 'dsound-tone':
-            return 'my-tone';
+        case 'd3d8-cube-lib':
+            return 'my-cube';
+        case 'dsound-music':
+            return 'my-music';
         case 'xinput-gamepad':
             return 'my-pad';
         case 'xmv-play':
             return 'my-xmv';
+        case 'library':
+            return 'my-lib';
         default:
             return 'my-game';
     }

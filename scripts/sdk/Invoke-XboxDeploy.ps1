@@ -136,24 +136,42 @@ if ($manifest.deployPaths) {
             Write-Warning "deployPaths: not found $localPath"
             continue
         }
-        $files = @(Get-ChildItem -LiteralPath $localPath -Recurse -File -ErrorAction SilentlyContinue)
-        if ($files.Count -eq 0) {
+        # NOTE: this local var is deliberately NOT named $files/$file -- PowerShell
+        # variables are case-insensitive, so $files would alias the script's own
+        # [string[]]$Files parameter above and silently coerce every FileInfo here
+        # into a bare string (via ToString(), i.e. just .Name) on assignment, making
+        # .FullName below resolve to $null. Cost real debugging time once already.
+        $deployFiles = @(Get-ChildItem -LiteralPath $localPath -Recurse -File -ErrorAction SilentlyContinue)
+        if ($deployFiles.Count -eq 0) {
             Write-Warning "deployPaths: no files under $localPath"
             continue
         }
         $leaf = Split-Path $localPath -Leaf
-        $remoteDest = "$RemoteDir\$leaf"
-        $deployArgs = @('/y', '/t', '/r', '/q')
+        # xbcp's directory/wildcard recursive-copy paths (XbCopyService.
+        # CopySourceToDirectory / CopyFileOrDirectory / ChildPath in
+        # Rxdk.XbFile) have edge cases that don't behave as documented for a
+        # plain local folder source (recursion silently no-ops in one code
+        # path; ChildPath embeds a literal "*" in the rebuilt path in
+        # another). Sidestepping all of that: copy each file individually
+        # with a plain single-file xbcp call and an explicit destination path
+        # -- the same well-tested pattern already used above for the XBE/PDB
+        # -- reconstructing the relative path so nested subfolders under
+        # deployPaths are preserved.
+        $deployArgs = @('/y', '/t', '/q')
         if ($console) { $deployArgs += @('/x', $console) }
-        if (-not $Quiet) {
-            Write-Host "$xbcp $($deployArgs -join ' ') $localPath -> $remoteDest ($($files.Count) file(s))"
+        foreach ($deployFile in $deployFiles) {
+            $relFile = $deployFile.FullName.Substring($localPath.Length).TrimStart('\')
+            $dest = "$RemoteDir\$leaf\$relFile"
+            if (-not $Quiet) {
+                Write-Host "$xbcp $($deployArgs -join ' ') $($deployFile.FullName) -> $dest"
+            }
+            & $xbcp @deployArgs $deployFile.FullName $dest
+            if ($LASTEXITCODE -ne 0) {
+                throw "xbcp failed copying $($deployFile.FullName) (exit $LASTEXITCODE)"
+            }
         }
-        & $xbcp @deployArgs $localPath $remoteDest
-        if ($LASTEXITCODE -ne 0) {
-            throw "xbcp failed copying $localPath (exit $LASTEXITCODE)"
-        }
-        $deployCopied += $files.Count
-        $deploySummary += "$leaf -> $remoteDest"
+        $deployCopied += $deployFiles.Count
+        $deploySummary += "$leaf -> $RemoteDir\$leaf ($($deployFiles.Count) file(s))"
     }
 }
 
