@@ -38,6 +38,42 @@ interface IntelliSenseConfig {
     usesCpp: boolean;
 }
 
+// Transitive publicIncludePaths of a manifest's projectReferences (absolute, forward-slash),
+// so referenced libraries' headers resolve in the editor exactly as they do at build time.
+function collectReferencedPublicIncludes(
+    projectRoot: string,
+    manifest: RxdkProjectManifest,
+    seen: Set<string> = new Set()
+): string[] {
+    const out: string[] = [];
+    for (const rel of manifest.projectReferences ?? []) {
+        if (!rel.trim()) {
+            continue;
+        }
+        const depRoot = path.resolve(projectRoot, rel);
+        const key = depRoot.toLowerCase();
+        if (seen.has(key)) {
+            continue;
+        }
+        seen.add(key);
+        let depManifest: RxdkProjectManifest;
+        try {
+            depManifest = JSON.parse(
+                fs.readFileSync(path.join(depRoot, 'rxdk.project.json'), 'utf8')
+            ) as RxdkProjectManifest;
+        } catch {
+            continue;
+        }
+        for (const inc of depManifest.publicIncludePaths ?? []) {
+            if (inc.trim()) {
+                out.push(path.join(depRoot, inc).replace(/\\/g, '/'));
+            }
+        }
+        out.push(...collectReferencedPublicIncludes(depRoot, depManifest, seen));
+    }
+    return out;
+}
+
 function buildIntelliSenseConfig(
     context: vscode.ExtensionContext,
     projectRoot: string,
@@ -45,11 +81,26 @@ function buildIntelliSenseConfig(
 ): IntelliSenseConfig {
     const includeDir = getSdkIncludeDir(context).replace(/\\/g, '/');
     const includePath = [includeDir, '${workspaceFolder}/**'];
-    for (const rel of manifest.includePaths ?? []) {
-        if (!rel.trim()) {
-            continue;
+    const pushDir = (root: string, rel: string): void => {
+        if (rel.trim()) {
+            const dir = path.join(root, rel).replace(/\\/g, '/');
+            if (!includePath.includes(dir)) {
+                includePath.push(dir);
+            }
         }
-        includePath.push(path.join(projectRoot, rel).replace(/\\/g, '/'));
+    };
+    // The project's own include dirs (a library's publicIncludePaths are visible to itself), then
+    // every referenced library's exported public includes (transitively).
+    for (const rel of manifest.includePaths ?? []) {
+        pushDir(projectRoot, rel);
+    }
+    for (const rel of manifest.publicIncludePaths ?? []) {
+        pushDir(projectRoot, rel);
+    }
+    for (const dir of collectReferencedPublicIncludes(projectRoot, manifest)) {
+        if (!includePath.includes(dir)) {
+            includePath.push(dir);
+        }
     }
     const defines = ['_XBOX', '_WIN32', '_WINNT', '_X86_', ...(manifest.defines ?? [])];
     return { includePath, defines, usesCpp: manifestUsesCpp(manifest) };

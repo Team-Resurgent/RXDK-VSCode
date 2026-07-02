@@ -4,6 +4,7 @@ import * as path from 'path';
 import {
     RxdkTemplateId,
     TEMPLATE_LABELS,
+    TEMPLATE_DESCRIPTIONS,
 } from './projectTypes';
 import {
     scaffoldProjectFromTemplate,
@@ -69,6 +70,7 @@ export async function openNewProjectWizard(
                     templates: TEMPLATE_IDS.map((id) => ({
                         id,
                         label: TEMPLATE_LABELS[id],
+                        description: TEMPLATE_DESCRIPTIONS[id],
                     })),
                 });
                 break;
@@ -251,6 +253,39 @@ function buildHtml(webview: vscode.Webview, initialTemplate?: RxdkTemplateId): s
       margin: 0 0 12px;
       color: var(--vscode-inputValidation-errorForeground, var(--vscode-errorForeground));
     }
+    .template-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 10px;
+      max-height: 340px;
+      overflow-y: auto;
+      padding: 2px;
+    }
+    .template-card {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      text-align: left;
+      padding: 12px 14px;
+      border: 1px solid var(--vscode-input-border, var(--border));
+      border-radius: 8px;
+      background: var(--vscode-input-background);
+      color: var(--vscode-editor-foreground);
+      cursor: pointer;
+      white-space: normal;
+      transition: border-color .1s, background .1s;
+    }
+    .template-card:hover { background: var(--vscode-list-hoverBackground, rgba(127,127,127,.12)); }
+    .template-card:focus-visible { outline: none; border-color: var(--vscode-focusBorder, var(--accent)); }
+    .template-card.selected {
+      border-color: var(--vscode-focusBorder, var(--accent));
+      background: var(--vscode-list-activeSelectionBackground, rgba(127,127,127,.18));
+      box-shadow: 0 0 0 1px var(--vscode-focusBorder, var(--accent)) inset;
+    }
+    .template-card .tc-head { display: flex; align-items: center; gap: 8px; }
+    .template-card .tc-icon { font-size: 1.25em; line-height: 1; }
+    .template-card .tc-title { font-weight: 600; }
+    .template-card .tc-desc { color: var(--muted); font-size: .85em; line-height: 1.4; }
   </style>
 </head>
 <body>
@@ -262,8 +297,8 @@ function buildHtml(webview: vscode.Webview, initialTemplate?: RxdkTemplateId): s
 
     <div class="card">
       <div class="field">
-        <label for="template">Template</label>
-        <select id="template"></select>
+        <label>Template</label>
+        <div id="templateGrid" class="template-grid" role="listbox" aria-label="Project template"></div>
       </div>
       <div class="field">
         <label for="projectName">Project name</label>
@@ -292,6 +327,15 @@ function buildHtml(webview: vscode.Webview, initialTemplate?: RxdkTemplateId): s
     const initialTemplate = ${JSON.stringify(initial)};
     const el = (id) => document.getElementById(id);
     let nameTouched = false;
+    let selectedTemplate = '';
+    const TEMPLATE_ICONS = {
+      'd3d8-triangle': '🔺',
+      'd3d8-cube-lib': '🧊',
+      'dsound-music': '🎵',
+      'xinput-gamepad': '🎮',
+      'xmv-play': '🎬',
+      'library': '📦',
+    };
 
     function setStatus(msg) {
       el('status').textContent = msg || '';
@@ -311,21 +355,48 @@ function buildHtml(webview: vscode.Webview, initialTemplate?: RxdkTemplateId): s
 
     function getSpec() {
       return {
-        template: el('template').value,
+        template: selectedTemplate,
         projectName: el('projectName').value.trim(),
         location: el('location').value.trim(),
       };
     }
 
-    el('browseLocation').addEventListener('click', () => {
-      vscode.postMessage({ type: 'browseLocation', seed: el('location').value });
-    });
-
-    el('template').addEventListener('change', () => {
-      if (!nameTouched) {
-        vscode.postMessage({ type: 'suggestName', template: el('template').value });
+    function selectTemplate(id, suggest) {
+      selectedTemplate = id;
+      document.querySelectorAll('.template-card').forEach((c) => {
+        const on = c.getAttribute('data-id') === id;
+        c.classList.toggle('selected', on);
+        c.setAttribute('aria-selected', on ? 'true' : 'false');
+        if (on && c.scrollIntoView) c.scrollIntoView({ block: 'nearest' });
+      });
+      if (suggest && !nameTouched) {
+        vscode.postMessage({ type: 'suggestName', template: id });
       }
       refreshDerived();
+    }
+
+    function renderTemplates(templates) {
+      const grid = el('templateGrid');
+      grid.innerHTML = '';
+      (templates || []).forEach((t) => {
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'template-card';
+        card.setAttribute('data-id', t.id);
+        card.setAttribute('role', 'option');
+        card.innerHTML =
+          '<div class="tc-head"><span class="tc-icon"></span><span class="tc-title"></span></div>' +
+          '<div class="tc-desc"></div>';
+        card.querySelector('.tc-icon').textContent = TEMPLATE_ICONS[t.id] || '📄';
+        card.querySelector('.tc-title').textContent = t.label;
+        card.querySelector('.tc-desc').textContent = t.description || '';
+        card.addEventListener('click', () => selectTemplate(t.id, true));
+        grid.appendChild(card);
+      });
+    }
+
+    el('browseLocation').addEventListener('click', () => {
+      vscode.postMessage({ type: 'browseLocation', seed: el('location').value });
     });
 
     el('projectName').addEventListener('input', () => {
@@ -343,27 +414,16 @@ function buildHtml(webview: vscode.Webview, initialTemplate?: RxdkTemplateId): s
     window.addEventListener('message', (event) => {
       const m = event.data;
       if (m.type === 'init') {
-        const select = el('template');
-        select.innerHTML = '';
-        (m.templates || []).forEach((t) => {
-          const opt = document.createElement('option');
-          opt.value = t.id;
-          opt.textContent = t.label;
-          select.appendChild(opt);
-        });
+        renderTemplates(m.templates);
         const s = m.spec || {};
-        if (s.template) select.value = s.template;
-        if (initialTemplate) select.value = initialTemplate;
+        const first = m.templates && m.templates[0] ? m.templates[0].id : '';
+        selectTemplate(initialTemplate || s.template || first, false);
         if (s.projectName) el('projectName').value = s.projectName;
         if (s.location) el('location').value = s.location;
         nameTouched = false;
         refreshDerived();
       } else if (m.type === 'selectTemplate') {
-        el('template').value = m.template;
-        if (!nameTouched) {
-          vscode.postMessage({ type: 'suggestName', template: m.template });
-        }
-        refreshDerived();
+        selectTemplate(m.template, true);
       } else if (m.type === 'location') {
         el('location').value = m.value || '';
         refreshDerived();
