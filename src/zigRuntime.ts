@@ -66,7 +66,27 @@ function installedZigCandidates(): string[] {
     return candidates;
 }
 
-export async function resolveZigExecutable(): Promise<string | undefined> {
+/**
+ * Resolve the Zig executable to use for a title build: an explicit `override`
+ * (e.g. the `rxdk.zigPath` setting) wins outright, then `RXDK_ZIG` (must point to
+ * an existing file), then `zig` on PATH, then the RXDK-managed install dir.
+ */
+export async function resolveZigExecutable(override?: string): Promise<string | undefined> {
+    if (override) {
+        const resolved = path.resolve(override);
+        if (!fs.existsSync(resolved)) {
+            throw new Error(`Zig not found: ${resolved}`);
+        }
+        return resolved;
+    }
+    const envOverride = process.env.RXDK_ZIG?.trim();
+    if (envOverride) {
+        const resolved = path.resolve(envOverride);
+        if (!fs.existsSync(resolved)) {
+            throw new Error(`RXDK_ZIG points to missing file: ${resolved}`);
+        }
+        return resolved;
+    }
     try {
         await execFileAsync('zig', ['version'], { windowsHide: true });
         return 'zig';
