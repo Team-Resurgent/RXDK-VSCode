@@ -1,13 +1,16 @@
 import * as vscode from 'vscode';
-import * as path from 'path';
-import { getSdkRoot, getSdkScriptsDir, getSdkIncludeDir, getSdkLibDir, getSdkToolsDir } from './sdkPath';
+import { getSdkIncludeDir, getSdkLibDir } from './sdkPath';
 import { isStagedSdkPresent, getStagedSdkRoot } from './sdkStaging';
 import { isDotNetRuntimeInstalled, ensureDotNetRuntime } from './dotnetRuntime';
 import { findProjectManifest } from './projectManager';
-import { isPrebuiltManifest, isLibraryManifest, RxdkProjectManifest } from './projectTypes';
-import { resolveZigExecutable } from './zigRuntime';
+import { isPrebuiltManifest, RxdkProjectManifest } from './projectTypes';
 import { deployProject, deployPrebuilt, DeployResult } from './xboxDeploy';
 import { launchProject, LaunchResult } from './xboxLaunch';
+import { buildXboxProject, BuildProjectResult } from './xboxBuild';
+
+function configuredZigOverride(): string | undefined {
+    return vscode.workspace.getConfiguration('rxdk').get<string>('zigPath')?.trim() || undefined;
+}
 
 export type RxdkTaskKind = 'build' | 'deploy' | 'run' | 'build+deploy';
 
@@ -37,9 +40,6 @@ export async function runRxdkTask(
         }
     }
 
-    const scripts = getSdkScriptsDir(context);
-    const sdkRoot = getSdkRoot(context);
-    const sdkPathArgs = buildSdkPathArgs(context);
     const projectRoot = found.folder.uri.fsPath;
     const name = found.manifest.name;
 
@@ -47,20 +47,16 @@ export async function runRxdkTask(
         return runPrebuiltTask(found.manifest, kind, output);
     }
 
-    // A library project produces a .lib linked by executables that reference it — build only.
-    if (isLibraryManifest(found.manifest)) {
-        if (kind === 'deploy' || kind === 'run') {
+    // isLibraryManifest projects are handled inside buildXboxProject itself (compiles + archives,
+    // then returns without linking/deploying) -- but deploy/run on one is a user-facing no-op here,
+    // since a library isn't something to deploy or launch on its own.
+    if (kind === 'deploy' || kind === 'run') {
+        if (found.manifest.type === 'library') {
             vscode.window.showInformationMessage(
                 `Library project "${name}" builds a .lib and is not deployed/run — reference it from an executable via projectReferences.`
             );
             return true;
         }
-        return runPowerShell(
-            path.join(scripts, 'Build-XboxProject.ps1'),
-            ['-SdkRoot', sdkRoot, '-ProjectRoot', projectRoot, ...sdkPathArgs, ...(await zigArgsFromConfig())],
-            output,
-            'RXDK Build (library)'
-        );
     }
 
     if (kind === 'deploy') {
@@ -70,25 +66,38 @@ export async function runRxdkTask(
         return reportLaunchResult(await launchProject({ projectName: name, output }), output);
     }
     if (kind === 'build+deploy') {
-        const buildOk = await runPowerShell(
-            path.join(scripts, 'Build-XboxProject.ps1'),
-            ['-SdkRoot', sdkRoot, '-ProjectRoot', projectRoot, ...sdkPathArgs, ...(await zigArgsFromConfig())],
-            output,
-            'RXDK Build'
-        );
-        if (!buildOk) {
+        const buildResult = await runBuild(context, projectRoot, output);
+        if (!reportBuildResult(buildResult, output)) {
             return false;
         }
         return reportDeployResult(await deployProject({ projectRoot, projectName: name, output }), output);
     }
 
     // kind === 'build'
-    return runPowerShell(
-        path.join(scripts, 'Build-XboxProject.ps1'),
-        ['-SdkRoot', sdkRoot, '-ProjectRoot', projectRoot, ...sdkPathArgs, ...(await zigArgsFromConfig())],
+    return reportBuildResult(await runBuild(context, projectRoot, output), output);
+}
+
+function runBuild(
+    context: vscode.ExtensionContext,
+    projectRoot: string,
+    output: vscode.OutputChannel
+): Promise<BuildProjectResult> {
+    return buildXboxProject({
+        projectRoot,
+        sdkInclude: getSdkIncludeDir(context),
+        sdkLib: getSdkLibDir(context),
+        zigExecutable: configuredZigOverride(),
         output,
-        'RXDK Build'
-    );
+    });
+}
+
+function reportBuildResult(result: BuildProjectResult, output: vscode.OutputChannel): boolean {
+    if (result.ok) {
+        return true;
+    }
+    output.appendLine(`RXDK Build failed: ${result.error}`);
+    vscode.window.showErrorMessage(`RXDK Build failed: ${result.error}`);
+    return false;
 }
 
 function reportDeployResult(result: DeployResult, output: vscode.OutputChannel): boolean {
@@ -135,53 +144,4 @@ async function runPrebuiltTask(
         output,
     });
     return reportDeployResult(result, output);
-}
-
-async function zigArgsFromConfig(): Promise<string[]> {
-    const args: string[] = [];
-    const configured = vscode.workspace.getConfiguration('rxdk').get<string>('zigPath')?.trim();
-    if (configured) {
-        args.push('-ZigExecutable', configured);
-    } else {
-        const resolved = await resolveZigExecutable();
-        if (resolved && resolved !== 'zig') {
-            args.push('-ZigExecutable', resolved);
-        }
-    }
-    return args;
-}
-
-function buildSdkPathArgs(context: vscode.ExtensionContext): string[] {
-    const bundled = path.join(context.extensionPath, 'sdk');
-    const includeDir = getSdkIncludeDir(context);
-    const libDir = getSdkLibDir(context);
-    const args: string[] = [];
-    if (includeDir !== path.join(bundled, 'include')) {
-        args.push('-IncludeDir', includeDir);
-    }
-    if (libDir !== path.join(bundled, 'lib')) {
-        args.push('-LibDir', libDir);
-    }
-    // Host tools are downloaded to a persistent root by the host-tools prerequisite,
-    // not bundled in the VSIX — always point the build at it.
-    args.push('-ToolsDir', getSdkToolsDir(context));
-    return args;
-}
-
-function runPowerShell(
-    script: string,
-    args: string[],
-    output: vscode.OutputChannel,
-    title: string
-): Promise<boolean> {
-    return new Promise((resolve) => {
-        const quoted = args.map((a) => (a.includes(' ') ? `'${a.replace(/'/g, "''")}'` : a));
-        const cmd = `& '${script.replace(/'/g, "''")}' ${quoted.join(' ')}`;
-        const term = vscode.window.createTerminal({ name: title, hideFromUser: false });
-        output.appendLine(`$ ${cmd}`);
-        term.show();
-        term.sendText(cmd, true);
-        vscode.window.showInformationMessage(`${title} started in terminal.`);
-        resolve(true);
-    });
 }
