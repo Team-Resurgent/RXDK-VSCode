@@ -2,8 +2,9 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { bridgeExecutableName, resolveBundledBridgePath, resolveBundledXbwatsonPath } from './bridgePath';
-import { getStagedSdkRoot, isStagedSdkPresent } from './sdkStaging';
+import { getStagedSdkRoot, isStagedSdkLibPresent, isStagedSdkPresent } from './sdkStaging';
 import { getStagedToolsRoot, resolveHostTool } from './hostTools';
+import { RxdkProjectManifest } from './projectTypes';
 
 export function getExtensionRoot(context: vscode.ExtensionContext): string {
     return context.extensionPath;
@@ -53,7 +54,7 @@ export function getSdkLibDir(context: vscode.ExtensionContext): string {
     if (override) {
         return path.join(override, 'lib');
     }
-    if (isStagedSdkPresent(context)) {
+    if (isStagedSdkLibPresent(context)) {
         return path.join(getStagedSdkRoot(context), 'lib');
     }
     return path.join(getBundledSdkRoot(context), 'lib');
@@ -109,4 +110,9 @@ function readVersionFromRoot(root: string): string {
 
 export function getBridgeExecutableName(): string {
     return bridgeExecutableName();
+}
+
+/** A project's build output directory (manifest `outputDir`, default "out"), as an absolute path. */
+export function getXboxProjectOutDir(projectRoot: string, manifest: RxdkProjectManifest): string {
+    return path.resolve(projectRoot, manifest.outputDir || 'out');
 }

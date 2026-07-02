@@ -4,9 +4,10 @@ import { getSdkRoot, getSdkScriptsDir, getSdkIncludeDir, getSdkLibDir, getSdkToo
 import { isStagedSdkPresent, getStagedSdkRoot } from './sdkStaging';
 import { isDotNetRuntimeInstalled, ensureDotNetRuntime } from './dotnetRuntime';
 import { findProjectManifest } from './projectManager';
-import { getActiveXboxAddress } from './xboxConsole';
-import { isPrebuiltManifest, isLibraryManifest } from './projectTypes';
+import { isPrebuiltManifest, isLibraryManifest, RxdkProjectManifest } from './projectTypes';
 import { resolveZigExecutable } from './zigRuntime';
+import { deployProject, deployPrebuilt, DeployResult } from './xboxDeploy';
+import { launchProject, LaunchResult } from './xboxLaunch';
 
 export type RxdkTaskKind = 'build' | 'deploy' | 'run' | 'build+deploy';
 
@@ -43,7 +44,7 @@ export async function runRxdkTask(
     const name = found.manifest.name;
 
     if (isPrebuiltManifest(found.manifest)) {
-        return runPrebuiltTask(scripts, sdkRoot, found.manifest, kind, output);
+        return runPrebuiltTask(found.manifest, kind, output);
     }
 
     // A library project produces a .lib linked by executables that reference it — build only.
@@ -62,17 +63,15 @@ export async function runRxdkTask(
         );
     }
 
-    const scriptMap: Record<RxdkTaskKind, string> = {
-        build: 'Build-XboxProject.ps1',
-        deploy: 'Invoke-XboxDeploy.ps1',
-        run: 'Invoke-XboxLaunch.ps1',
-        'build+deploy': '',
-    };
-    const consoleArgs = await deployConsoleArgs();
-
+    if (kind === 'deploy') {
+        return reportDeployResult(await deployProject({ projectRoot, projectName: name, output }), output);
+    }
+    if (kind === 'run') {
+        return reportLaunchResult(await launchProject({ projectName: name, output }), output);
+    }
     if (kind === 'build+deploy') {
         const buildOk = await runPowerShell(
-            path.join(scripts, scriptMap.build),
+            path.join(scripts, 'Build-XboxProject.ps1'),
             ['-SdkRoot', sdkRoot, '-ProjectRoot', projectRoot, ...sdkPathArgs, ...(await zigArgsFromConfig())],
             output,
             'RXDK Build'
@@ -80,27 +79,44 @@ export async function runRxdkTask(
         if (!buildOk) {
             return false;
         }
-        return runPowerShell(
-            path.join(scripts, scriptMap.deploy),
-            ['-SdkRoot', sdkRoot, '-ProjectRoot', projectRoot, '-ProjectName', name, ...consoleArgs],
-            output,
-            'RXDK Deploy'
-        );
+        return reportDeployResult(await deployProject({ projectRoot, projectName: name, output }), output);
     }
 
-    const script = path.join(scripts, scriptMap[kind]);
-    const args =
-        kind === 'build'
-            ? ['-SdkRoot', sdkRoot, '-ProjectRoot', projectRoot, ...sdkPathArgs, ...(await zigArgsFromConfig())]
-            : ['-SdkRoot', sdkRoot, '-ProjectRoot', projectRoot, '-ProjectName', name, ...consoleArgs];
+    // kind === 'build'
+    return runPowerShell(
+        path.join(scripts, 'Build-XboxProject.ps1'),
+        ['-SdkRoot', sdkRoot, '-ProjectRoot', projectRoot, ...sdkPathArgs, ...(await zigArgsFromConfig())],
+        output,
+        'RXDK Build'
+    );
+}
 
-    return runPowerShell(script, args, output, `RXDK ${kind}`);
+function reportDeployResult(result: DeployResult, output: vscode.OutputChannel): boolean {
+    if (result.ok) {
+        return true;
+    }
+    output.appendLine(`RXDK Deploy failed: ${result.error}`);
+    vscode.window.showErrorMessage(`RXDK Deploy failed: ${result.error}`);
+    return false;
+}
+
+function reportLaunchResult(result: LaunchResult, output: vscode.OutputChannel): boolean {
+    if (result.ok) {
+        return true;
+    }
+    if ('noConsoleConfigured' in result) {
+        vscode.window.showWarningMessage(
+            'No Xbox console configured (set rxdk.defaultConsole or Xbox Neighborhood).'
+        );
+        return true;
+    }
+    output.appendLine(`RXDK Run failed: ${result.error}`);
+    vscode.window.showErrorMessage(`RXDK Run failed: ${result.error}`);
+    return false;
 }
 
 async function runPrebuiltTask(
-    scripts: string,
-    sdkRoot: string,
-    manifest: import('./projectTypes').RxdkProjectManifest,
+    manifest: RxdkProjectManifest,
     kind: RxdkTaskKind,
     output: vscode.OutputChannel
 ): Promise<boolean> {
@@ -109,26 +125,16 @@ async function runPrebuiltTask(
         return true;
     }
     const p = manifest.prebuilt!;
-    const consoleArgs = await deployConsoleArgs();
-    const args = [
-        '-SdkRoot',
-        sdkRoot,
-        '-XbePath',
-        p.xbe,
-        '-RemoteName',
-        p.remoteName,
-        ...(p.pdb ? ['-PdbPath', p.pdb] : []),
-        ...(p.map ? ['-MapPath', p.map] : []),
-        ...consoleArgs,
-    ];
     // 'deploy', 'run', and 'build+deploy' all reduce to a deploy for prebuilt projects;
     // launching is handled by the debugger (F5) via the generated launch config.
-    return runPowerShell(path.join(scripts, 'Invoke-XboxDeploy.ps1'), args, output, 'RXDK Deploy (prebuilt)');
-}
-
-async function deployConsoleArgs(): Promise<string[]> {
-    const console = await getActiveXboxAddress();
-    return console ? ['-ConsoleName', console] : [];
+    const result = await deployPrebuilt({
+        xbePath: p.xbe,
+        pdbPath: p.pdb,
+        mapPath: p.map,
+        remoteName: p.remoteName,
+        output,
+    });
+    return reportDeployResult(result, output);
 }
 
 async function zigArgsFromConfig(): Promise<string[]> {

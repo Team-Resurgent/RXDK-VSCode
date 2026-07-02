@@ -95,6 +95,20 @@ export function isStagedSdkPresent(context?: vscode.ExtensionContext): boolean {
     return fs.existsSync(path.join(root, 'include', 'd3d8.h'));
 }
 
+/**
+ * True if the staged SDK's lib/ actually contains a linkable library, checked
+ * independently of isStagedSdkPresent (which only verifies include/). Headers and
+ * libs are always staged together in practice, but this mirrors the .lib-specific
+ * marker check the build pipeline used to make before the TS port, so a
+ * partially-staged SDK (include present, lib missing/stale) is still caught.
+ */
+export function isStagedSdkLibPresent(context?: vscode.ExtensionContext): boolean {
+    const lib = path.join(getStagedSdkRoot(context), 'lib');
+    return ['libkernel.lib', 'libc.lib', 'xboxkrnl.lib', 'libcmt.lib'].some((marker) =>
+        fs.existsSync(path.join(lib, marker))
+    );
+}
+
 export type SdkInstallProgress = (update: { message: string; percent?: number }) => void;
 
 async function runGitWithProgress(
