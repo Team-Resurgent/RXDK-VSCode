@@ -106,6 +106,7 @@ export function activate(context: vscode.ExtensionContext): void {
             await runRxdkTask(context, 'build+deploy', rxdkOutput);
             await runRxdkTask(context, 'run', rxdkOutput);
         })),
+        vscode.commands.registerCommand('rxdk.removeDxt', guardPrerequisites(() => runRxdkTask(context, 'remove-dxt', rxdkOutput))),
         vscode.commands.registerCommand('rxdk.debug', guardPrerequisites(() => vscode.commands.executeCommand('workbench.action.debug.start'))),
         vscode.commands.registerCommand('rxdk.debugPrebuiltXbe', guardPrerequisites(() => openPrebuiltProjectSetup(context))),
         vscode.commands.registerCommand('rxdk.refreshPrebuiltSource', guardPrerequisites(() =>

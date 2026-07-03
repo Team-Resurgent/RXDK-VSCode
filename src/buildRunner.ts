@@ -4,7 +4,7 @@ import { isStagedSdkPresent, getStagedSdkRoot } from './sdkStaging';
 import { isDotNetRuntimeInstalled, ensureDotNetRuntime } from './dotnetRuntime';
 import { findProjectManifest } from './projectManager';
 import { isPrebuiltManifest, RxdkProjectManifest } from './projectTypes';
-import { deployProject, deployPrebuilt, DeployResult } from './xboxDeploy';
+import { deployProject, deployPrebuilt, removeDxt, DeployResult } from './xboxDeploy';
 import { launchProject, rebootConsole, LaunchResult } from './xboxLaunch';
 import { buildXboxProject, BuildProjectResult } from './xboxBuild';
 
@@ -12,7 +12,7 @@ function configuredZigOverride(): string | undefined {
     return vscode.workspace.getConfiguration('rxdk').get<string>('zigPath')?.trim() || undefined;
 }
 
-export type RxdkTaskKind = 'build' | 'deploy' | 'run' | 'build+deploy';
+export type RxdkTaskKind = 'build' | 'deploy' | 'run' | 'build+deploy' | 'remove-dxt';
 
 export async function runRxdkTask(
     context: vscode.ExtensionContext,
@@ -76,6 +76,14 @@ export async function runRxdkTask(
             return false;
         }
         return reportDeployResult(await deployProject({ projectRoot, projectName: name, output }), output);
+    }
+    if (kind === 'remove-dxt') {
+        // Delete the DXT from E:\dxt, then warm reboot so xbdm no longer loads it.
+        const removed = await removeDxt({ projectRoot, projectName: name, output });
+        if (!reportDeployResult(removed, output)) {
+            return false;
+        }
+        return reportLaunchResult(await rebootConsole({ output }), output);
     }
 
     // kind === 'build'
