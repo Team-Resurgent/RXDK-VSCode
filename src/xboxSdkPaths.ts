@@ -1,29 +1,12 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as vscode from 'vscode';
-import { platformToolRid } from './bridgePath';
 import { RxdkProjectManifest } from './projectTypes';
-import { getSdkIncludeDir, getSdkLibDir, getSdkRoot, getSdkScriptsDir, getSdkToolsDir } from './sdkPath';
 
-export interface XboxSdkPaths {
-    sdkRoot: string;
-    include: string;
-    lib: string;
-    tools: string;
-    toolRid: string;
-    scripts: string;
-}
-
-/** Resolve every path the title build pipeline needs, in one call. */
-export function getXboxSdkPaths(context: vscode.ExtensionContext): XboxSdkPaths {
-    return {
-        sdkRoot: getSdkRoot(context),
-        include: getSdkIncludeDir(context),
-        lib: getSdkLibDir(context),
-        tools: getSdkToolsDir(context),
-        toolRid: platformToolRid(),
-        scripts: getSdkScriptsDir(context),
-    };
+/** Strip a UTF-8 BOM if present -- PowerShell's ConvertFrom-Json (used before this
+ * pipeline was ported to TS) silently tolerated one; JSON.parse does not, and at
+ * least one shipped template's manifest actually has one. */
+export function stripBom(text: string): string {
+    return text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
 }
 
 /**
@@ -37,6 +20,6 @@ export function readProjectManifestAt(projectRoot: string): RxdkProjectManifest 
     if (!fs.existsSync(manifestPath)) {
         throw new Error(`Missing rxdk.project.json in ${projectRoot}`);
     }
-    const raw = fs.readFileSync(manifestPath, 'utf8');
+    const raw = stripBom(fs.readFileSync(manifestPath, 'utf8'));
     return JSON.parse(raw) as RxdkProjectManifest;
 }

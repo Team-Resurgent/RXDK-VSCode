@@ -15,10 +15,13 @@ try {
 
     # Host tools are no longer bundled — the extension downloads them per-platform
     # at runtime (host-tools prerequisite), so there is no sdk/tools preflight.
+    # The title build/deploy/run pipeline itself is plain compiled JS (cli.js,
+    # invoked by generated tasks.json) since the PowerShell-to-TS migration —
+    # sdk/scripts/ no longer ships pipeline scripts, just IntelliSense-adjacent bits.
     $required = @(
         'dist\extension\extension.js'
         'dist\debug\adapter.js'
-        'sdk\scripts\Build-XboxProject.ps1'
+        'dist\extension\cli.js'
     )
     foreach ($rel in $required) {
         $full = Join-Path $ExtensionRoot ($rel -replace '/', '\')

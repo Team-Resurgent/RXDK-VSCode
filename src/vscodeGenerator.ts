@@ -8,6 +8,7 @@ import {
     RxdkProjectManifest,
 } from './projectTypes';
 import { getSdkIncludeDir, getSdkLibDir } from './sdkPath';
+import { stripBom } from './xboxSdkPaths';
 
 const EXTENSION_ID = 'rxdk-libs.rxdk-vscode';
 const EXTENSION_ROOT = `\${extensionInstallFolder:${EXTENSION_ID}}`;
@@ -67,7 +68,7 @@ function collectReferencedPublicIncludes(
         let depManifest: RxdkProjectManifest;
         try {
             depManifest = JSON.parse(
-                fs.readFileSync(path.join(depRoot, 'rxdk.project.json'), 'utf8')
+                stripBom(fs.readFileSync(path.join(depRoot, 'rxdk.project.json'), 'utf8'))
             ) as RxdkProjectManifest;
         } catch {
             continue;

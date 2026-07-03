@@ -37,15 +37,6 @@ function sdkPathOverride(context: vscode.ExtensionContext): string | undefined {
     return undefined;
 }
 
-/** SdkRoot for scripts/tools (full override, else bundled extension SDK). */
-export function getSdkRoot(context: vscode.ExtensionContext): string {
-    return sdkPathOverride(context) ?? getBundledSdkRoot(context);
-}
-
-export function getSdkScriptsDir(context: vscode.ExtensionContext): string {
-    return path.join(getSdkRoot(context), 'scripts');
-}
-
 /** Host tools live in the persistent staged tools root (downloaded by the host-tools prerequisite). */
 export function getSdkToolsDir(_context: vscode.ExtensionContext): string {
     return getStagedToolsRoot();
