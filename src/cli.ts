@@ -13,7 +13,7 @@
 // code is what the task/problem-matcher machinery actually reacts to.
 import { buildXboxProject } from './xboxBuild';
 import { deployProject, deployPrebuilt } from './xboxDeploy';
-import { launchProject } from './xboxLaunch';
+import { launchProject, rebootConsole } from './xboxLaunch';
 import { isRxdkOptimizeMode } from './optimizeMode';
 
 interface OutputChannelLike {
@@ -133,8 +133,24 @@ async function main(): Promise<number> {
             }
             return 0;
         }
+        case 'reboot': {
+            // Warm-reboot the kit to (re)load DXTs from E:\dxt (no title launched).
+            const result = await rebootConsole({
+                consoleName: stringArg(args, 'console-name'),
+                output: consoleOutput,
+            });
+            if (!result.ok) {
+                if ('noConsoleConfigured' in result) {
+                    console.warn('No Xbox console configured (set rxdk.defaultConsole or Xbox Neighborhood).');
+                    return 2;
+                }
+                console.error(result.error);
+                return 1;
+            }
+            return 0;
+        }
         default:
-            console.error(`Unknown command: ${command ?? '(none)'}. Expected build|deploy|deploy-prebuilt|run.`);
+            console.error(`Unknown command: ${command ?? '(none)'}. Expected build|deploy|deploy-prebuilt|run|reboot.`);
             return 1;
     }
 }
