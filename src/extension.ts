@@ -6,6 +6,8 @@ import { createProject } from './projectManager';
 import { runRxdkTask } from './buildRunner';
 import { getBridgePath } from './sdkPath';
 import { openStagedSdkFolder, fetchLatestSdk } from './sdkStaging';
+import { getStagedToolsRoot } from './hostTools';
+import { getStagedDocsRoot } from './sdkDocsStaging';
 import { ensureDotNetRuntime, isDotNetRuntimeInstalled } from './dotnetRuntime';
 import { ensureVscodeForWorkspace } from './vscodeGenerator';
 import { getActiveXboxAddress, promptSetXboxIp } from './xboxConsole';
@@ -36,6 +38,18 @@ function guardPrerequisites<T extends unknown[]>(
         }
         return action(...args);
     };
+}
+
+// Reveal a staged RXDK subfolder (sdk/tools/docs, under %ProgramData%/RXDK) in the
+// OS file manager, or point at the path if it isn't installed yet.
+async function revealStagedFolder(dir: string, label: string): Promise<void> {
+    if (fs.existsSync(dir)) {
+        await vscode.env.openExternal(vscode.Uri.file(dir));
+    } else {
+        void vscode.window.showInformationMessage(
+            `RXDK ${label} not installed yet — install it from RXDK setup. Path: ${dir}`
+        );
+    }
 }
 
 export function activate(context: vscode.ExtensionContext): void {
@@ -103,6 +117,8 @@ export function activate(context: vscode.ExtensionContext): void {
         vscode.commands.registerCommand('rxdk.openSdkDocs', guardPrerequisites(() => openSdkDocs(context))),
         vscode.commands.registerCommand('rxdk.openExtensionDocs', guardPrerequisites(() => openExtensionDocs(context))),
         vscode.commands.registerCommand('rxdk.openSdkFolder', guardPrerequisites(() => openStagedSdkFolder(context))),
+        vscode.commands.registerCommand('rxdk.openToolsFolder', guardPrerequisites(() => revealStagedFolder(getStagedToolsRoot(), 'host tools'))),
+        vscode.commands.registerCommand('rxdk.openDocsFolder', guardPrerequisites(() => revealStagedFolder(getStagedDocsRoot(context), 'documentation'))),
         vscode.commands.registerCommand('rxdk.fetchLatestSdk', guardPrerequisites(async () => {
             const ok = await fetchLatestSdk(context, rxdkOutput);
             if (ok) {

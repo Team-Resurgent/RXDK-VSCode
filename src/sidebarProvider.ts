@@ -199,6 +199,20 @@ export class RxdkSidebarProvider implements vscode.TreeDataProvider<RxdkTreeItem
                     'include + lib',
                     'folder-opened'
                 ),
+                new RxdkTreeItem(
+                    'Open tools folder',
+                    vscode.TreeItemCollapsibleState.None,
+                    'rxdk.openToolsFolder',
+                    'imagebld, xdvdfs, xbcp…',
+                    'folder-opened'
+                ),
+                new RxdkTreeItem(
+                    'Open docs folder',
+                    vscode.TreeItemCollapsibleState.None,
+                    'rxdk.openDocsFolder',
+                    'Xbox SDK + RXDK docs',
+                    'folder-opened'
+                ),
             ];
         }
 
