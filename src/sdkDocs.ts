@@ -178,12 +178,13 @@ function transformDocHtml(
             ) {
                 return `${attr}="${target}"`;
             }
-            // Leave in-doc .htm(l) links relative so the webview click handler can
-            // intercept them and load the page in-panel. Rewriting them to a webview
-            // resource URI gives them an https: scheme, which the handler treats as an
-            // external link -- so VS Code opens them in a browser instead of navigating.
+            // In-doc .htm(l) links load in-panel via the click handler, not the
+            // browser. A relative href still resolves against <base> to a webview
+            // resource URI, which VS Code opens externally on click even when the
+            // handler calls preventDefault. So neutralize the href entirely and stash
+            // the real target in data-doc-page for the handler to navigate to.
             if (attr.toLowerCase() === 'href' && /\.html?$/i.test(target.split(/[#?]/)[0])) {
-                return `${attr}="${target}"`;
+                return `data-doc-page="${target}" href="#"`;
             }
             // Preserve relative sub-paths (e.g. images/foo.gif) instead of flattening to the
             // basename, otherwise files in subfolders like images/ resolve to the wrong place.
@@ -430,18 +431,21 @@ function buildShellHtml(
       }
     });
     content.addEventListener('click', (e) => {
-      const a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+      const a = e.target && e.target.closest ? e.target.closest('a') : null;
       if (!a) return;
-      const href = a.getAttribute('href') || '';
-      if (!href || href.startsWith('#') || /^[a-z]+:/i.test(href)) return;
-      // Strip any #anchor / ?query so cross-page links like "page.htm#sec" are
-      // still recognized as an in-doc .htm page and navigated in-panel.
-      const page = href.split('#')[0].split('?')[0].split('/').pop();
-      if (page && page.toLowerCase().endsWith('.htm')) {
+      // In-doc links are rewritten to data-doc-page (href neutralized to "#"), so
+      // navigate in-panel and never let the click reach the browser.
+      const docTarget = a.getAttribute('data-doc-page');
+      if (docTarget) {
         e.preventDefault();
-        setActive(page);
-        vscode.postMessage({ type: 'navigate', page });
+        const page = docTarget.split('#')[0].split('?')[0].split('/').pop();
+        if (page && page.toLowerCase().endsWith('.htm')) {
+          setActive(page);
+          vscode.postMessage({ type: 'navigate', page });
+        }
+        return;
       }
+      // Anything else (external http(s) links, same-page #anchors) behaves normally.
     }, true);
     const filter = document.getElementById('filter');
     filter.addEventListener('input', () => {
