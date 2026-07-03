@@ -11,10 +11,11 @@ import {
 import { DEFAULT_SDK_GIT_URL, fetchLatestSdk, getStagedSdkRoot, isStagedSdkPresent } from './sdkStaging';
 import { getStagedToolsRoot, installHostTools, isHostToolsInstalled } from './hostTools';
 import { getZigVersionLine, installZig, isZigInstalled, ZIG_DOWNLOAD_PAGE, ZIG_VERSION } from './zigRuntime';
+import { installXboxNeighborhood, isXboxNeighborhoodShellRegistered } from './xboxNeighborhoodShell';
 
 const execFileAsync = promisify(execFile);
 
-export type PrerequisiteId = 'dotnet' | 'sdk' | 'docs' | 'zig' | 'tools';
+export type PrerequisiteId = 'dotnet' | 'sdk' | 'docs' | 'zig' | 'tools' | 'xbneighborhood';
 
 /** All prerequisites must be installed before RXDK is enabled. */
 export const MANDATORY_PREREQUISITE_IDS: readonly PrerequisiteId[] = [
@@ -54,21 +55,23 @@ export async function isGitAvailable(): Promise<boolean> {
 export async function getPrerequisiteStatuses(
     context: vscode.ExtensionContext
 ): Promise<PrerequisiteStatus[]> {
-    const [dotnetReady, sdkReady, docsReady, zigReady, toolsReady, gitReady] = await Promise.all([
-        isDotNetRuntimeInstalled(),
-        Promise.resolve(isStagedSdkPresent(context)),
-        Promise.resolve(isSdkDocsPresent(context)),
-        isZigInstalled(),
-        Promise.resolve(isHostToolsInstalled()),
-        isGitAvailable(),
-    ]);
+    const [dotnetReady, sdkReady, docsReady, zigReady, toolsReady, gitReady, xbNeighborhoodReady] =
+        await Promise.all([
+            isDotNetRuntimeInstalled(),
+            Promise.resolve(isStagedSdkPresent(context)),
+            Promise.resolve(isSdkDocsPresent(context)),
+            isZigInstalled(),
+            Promise.resolve(isHostToolsInstalled()),
+            isGitAvailable(),
+            isXboxNeighborhoodShellRegistered(),
+        ]);
 
     const sdkPath = getStagedSdkRoot(context);
     const docsPath = getStagedDocsRoot(context);
     const toolsPath = getStagedToolsRoot();
     const zigLine = zigReady ? await getZigVersionLine() : undefined;
 
-    return [
+    const statuses: PrerequisiteStatus[] = [
         {
             id: 'dotnet',
             label: `.NET ${DOTNET_MAJOR_VERSION} runtime`,
@@ -128,6 +131,25 @@ export async function getPrerequisiteStatuses(
             downloadUrl: 'https://github.com/Team-Resurgent/RXDK-Tools/releases/latest',
         },
     ];
+
+    // Optional, Windows-only: the Xbox Neighborhood Explorer shell integration.
+    // Detected via the registered shell-extension CLSID (same signal the sidebar
+    // uses). Not required, so it never blocks RXDK readiness.
+    if (process.platform === 'win32') {
+        statuses.push({
+            id: 'xbneighborhood',
+            label: 'Xbox Neighborhood',
+            description:
+                'Optional. Explorer shell integration for browsing your devkit’s drives (adds Xbox Neighborhood to This PC).',
+            ready: xbNeighborhoodReady,
+            required: false,
+            detail: xbNeighborhoodReady ? 'Installed and registered' : 'Not installed',
+            canInstall: true,
+            downloadUrl: 'https://github.com/Team-Resurgent/RXDK-Tools/releases/latest',
+        });
+    }
+
+    return statuses;
 }
 
 export async function arePrerequisitesReady(context: vscode.ExtensionContext): Promise<boolean> {
@@ -163,6 +185,8 @@ export async function installPrerequisite(
             return installZig(output, (update) => progress?.report(update));
         case 'tools':
             return installHostTools(output, (update) => progress?.report(update));
+        case 'xbneighborhood':
+            return installXboxNeighborhood(output, (update) => progress?.report(update));
         default:
             return false;
     }

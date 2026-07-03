@@ -50,16 +50,12 @@ export interface XboxAddressInfo {
 }
 
 /**
- * Active Xbox target for deploy/debug.
- * Windows: registry (XBSetIP / Neighborhood) unless workspace JSON overrides.
- * macOS/Linux: workspace or user settings JSON only (no registry).
+ * Active Xbox target for deploy/debug. Single source of truth per platform:
+ * Windows: the registry (XBSetIP / Neighborhood) — no settings-JSON override.
+ * macOS/Linux: workspace or user settings JSON (no registry).
  */
 export async function getActiveXboxAddress(): Promise<string | undefined> {
     if (isWindowsHost()) {
-        const override = getWorkspaceXboxAddress();
-        if (override) {
-            return override;
-        }
         return readRegistryXboxName();
     }
     const fromSettings = getWorkspaceXboxAddress();
@@ -69,10 +65,6 @@ export async function getActiveXboxAddress(): Promise<string | undefined> {
 /** Sidebar / status: where the active Xbox address comes from. */
 export async function getXboxAddressInfo(): Promise<XboxAddressInfo> {
     if (isWindowsHost()) {
-        const override = getWorkspaceXboxAddress();
-        if (override) {
-            return { address: override, source: 'workspace' };
-        }
         const fromReg = await readRegistryXboxName();
         if (fromReg) {
             return { address: fromReg, source: 'registry' };
@@ -98,9 +90,14 @@ export async function setActiveXboxAddress(address: string): Promise<void> {
     }
 
     if (isWindowsHost()) {
+        // Windows: the registry is the single source of truth (XBSetIP / Neighborhood).
+        // Deliberately do NOT mirror into settings JSON — a stale JSON value must
+        // never shadow the registry.
         await writeRegistryXboxName(trimmed);
+        return;
     }
 
+    // macOS/Linux: no registry — settings JSON is the source of truth.
     const vs = tryVscode();
     if (!vs) {
         throw new Error('setActiveXboxAddress requires running inside the VS Code extension host.');
@@ -121,7 +118,7 @@ export async function promptSetXboxIp(): Promise<void> {
     const value = await vs.window.showInputBox({
         title: 'Set Xbox IP / Hostname',
         prompt: isWindowsHost()
-            ? 'IP or hostname for xbcp, xbox-launch, and debug. Saved to Windows registry (XBSetIP) and workspace settings.'
+            ? 'IP or hostname for xbcp, xbox-launch, and debug. Saved to the Windows registry (XBSetIP / Neighborhood).'
             : 'IP or hostname for xbcp, xbox-launch, and debug. Saved to VS Code settings JSON (workspace or user).',
         value: current,
         placeHolder: 'e.g. 192.168.1.100 or xbox-devkit',

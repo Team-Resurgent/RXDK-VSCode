@@ -49,7 +49,10 @@ export async function openPrerequisitesSetup(
                 break;
             case 'install': {
                 const id = String(msg.id ?? '') as PrerequisiteId;
-                if (!['dotnet', 'sdk', 'docs', 'zig', 'tools'].includes(id) || installing) {
+                if (
+                    !['dotnet', 'sdk', 'docs', 'zig', 'tools', 'xbneighborhood'].includes(id) ||
+                    installing
+                ) {
                     return;
                 }
                 installing = true;
@@ -329,7 +332,7 @@ function buildHtml(webview: vscode.Webview): string {
           '<div>' +
             '<p class="title">' + escapeHtml(item.label) +
               ' <span class="badge ' + (item.ready ? 'ok' : '') + '">' +
-                (item.ready ? 'Ready' : 'Required') +
+                (item.ready ? 'Ready' : (item.required === false ? 'Optional' : 'Required')) +
               '</span>' +
             '</p>' +
             '<p class="desc">' + escapeHtml(item.description) + '</p>' +
