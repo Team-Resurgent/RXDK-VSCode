@@ -52,18 +52,30 @@ export class RxdkSidebarProvider implements vscode.TreeDataProvider<RxdkTreeItem
             }
 
             const version = readSdkVersion(this.context).split('\n')[0] ?? '';
+            // Every root section carries an icon so their labels line up: a
+            // tree item with an icon indents its label past the icon, so mixing
+            // icon and icon-less siblings at the same level looks misaligned.
             const root: RxdkTreeItem[] = [
                 new RxdkTreeItem(
                     'Devkit',
-                    vscode.TreeItemCollapsibleState.Expanded
+                    vscode.TreeItemCollapsibleState.Expanded,
+                    undefined,
+                    undefined,
+                    'device-desktop'
                 ),
                 new RxdkTreeItem(
                     'Create project',
-                    vscode.TreeItemCollapsibleState.Expanded
+                    vscode.TreeItemCollapsibleState.Expanded,
+                    undefined,
+                    undefined,
+                    'new-folder'
                 ),
                 new RxdkTreeItem(
                     'Documentation',
-                    vscode.TreeItemCollapsibleState.Expanded
+                    vscode.TreeItemCollapsibleState.Expanded,
+                    undefined,
+                    undefined,
+                    'book'
                 ),
             ];
             const project = await findProjectManifest();
@@ -71,7 +83,10 @@ export class RxdkSidebarProvider implements vscode.TreeDataProvider<RxdkTreeItem
                 root.push(
                     new RxdkTreeItem(
                         'Build / run',
-                        vscode.TreeItemCollapsibleState.Expanded
+                        vscode.TreeItemCollapsibleState.Expanded,
+                        undefined,
+                        undefined,
+                        'run'
                     )
                 );
             }
