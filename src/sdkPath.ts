@@ -1,10 +1,25 @@
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { bridgeExecutableName, resolveBundledBridgePath, resolveBundledXbwatsonPath } from './bridgePath';
 import { getStagedSdkRoot, isStagedSdkLibPresent, isStagedSdkPresent } from './sdkStaging';
 import { getStagedToolsRoot, resolveHostTool } from './hostTools';
 import { RxdkProjectManifest } from './projectTypes';
+
+// 'vscode' only resolves inside the extension host. getXboxProjectOutDir (used by
+// the CLI-invoked build pipeline, see xboxBuild.ts) lives in this same file and
+// needs to load as a plain `node` process outside the extension host, so the
+// import above is type-only and every real access goes through this lazy,
+// failure-tolerant getter -- the other functions here are only ever called from
+// within the extension host, where it always resolves.
+function tryVscode(): typeof vscode | undefined {
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        return require('vscode');
+    } catch {
+        return undefined;
+    }
+}
 
 export function getExtensionRoot(context: vscode.ExtensionContext): string {
     return context.extensionPath;
@@ -15,7 +30,7 @@ export function getBundledSdkRoot(context: vscode.ExtensionContext): string {
 }
 
 function sdkPathOverride(context: vscode.ExtensionContext): string | undefined {
-    const override = vscode.workspace.getConfiguration('rxdk').get<string>('sdkPath')?.trim();
+    const override = tryVscode()?.workspace.getConfiguration('rxdk').get<string>('sdkPath')?.trim();
     if (override && fs.existsSync(override)) {
         return path.normalize(override);
     }
@@ -61,7 +76,7 @@ export function getSdkLibDir(context: vscode.ExtensionContext): string {
 }
 
 export function getBridgePath(context: vscode.ExtensionContext): string {
-    const configured = vscode.workspace.getConfiguration('xbox').get<string>('bridgePath');
+    const configured = tryVscode()?.workspace.getConfiguration('xbox').get<string>('bridgePath');
     if (configured && fs.existsSync(configured)) {
         return configured;
     }
@@ -73,7 +88,7 @@ export function getBridgePath(context: vscode.ExtensionContext): string {
 }
 
 export function getXbwatsonPath(context: vscode.ExtensionContext): string {
-    const configured = vscode.workspace.getConfiguration('rxdk').get<string>('xbwatsonPath')?.trim();
+    const configured = tryVscode()?.workspace.getConfiguration('rxdk').get<string>('xbwatsonPath')?.trim();
     if (configured && fs.existsSync(configured)) {
         return configured;
     }

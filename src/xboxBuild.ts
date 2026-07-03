@@ -1,12 +1,11 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as vscode from 'vscode';
+import { OutputLike, runStreamed } from './processRunner';
 import { RxdkProjectManifest } from './projectTypes';
 import { getXboxProjectOutDir } from './sdkPath';
 import { readProjectManifestAt } from './xboxSdkPaths';
 import { resolveZigExecutable } from './zigRuntime';
 import { resolveHostTool } from './hostTools';
-import { runStreamed } from './processRunner';
 import { linkXdk } from './xdkLink';
 import { buildXbe } from './imageBuild';
 import { packXiso } from './packXiso';
@@ -61,7 +60,7 @@ interface ZigCompileOptions {
     includeArgs: string[];
     defineArgs: string[];
     isCpp: boolean;
-    output?: vscode.OutputChannel;
+    output?: OutputLike;
 }
 
 async function zigCompile(opts: ZigCompileOptions): Promise<void> {
@@ -187,7 +186,7 @@ async function compileProjectSources(
     outDir: string,
     includeArgs: string[],
     defineArgs: string[],
-    output?: vscode.OutputChannel
+    output?: OutputLike
 ): Promise<CompiledSources> {
     const objs: string[] = [];
     let usesCpp = false;
@@ -214,7 +213,7 @@ async function buildXboxLibrary(
     libRoot: string,
     zig: string,
     sdkInclude: string,
-    output?: vscode.OutputChannel
+    output?: OutputLike
 ): Promise<string> {
     const manifest = readProjectManifestAt(libRoot);
     if (manifest.type !== 'library') {
@@ -257,7 +256,7 @@ export interface BuildXboxProjectOptions {
     sdkLib: string;
     zigExecutable?: string;
     compileOnly?: boolean;
-    output?: vscode.OutputChannel;
+    output?: OutputLike;
 }
 
 export async function buildXboxProject(opts: BuildXboxProjectOptions): Promise<BuildProjectResult> {

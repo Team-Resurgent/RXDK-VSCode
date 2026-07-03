@@ -3,10 +3,25 @@ import * as os from 'os';
 import * as path from 'path';
 import { execFile, spawn } from 'child_process';
 import { promisify } from 'util';
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import { formatBytes, getDirectorySize } from './downloadFile';
 
 const execFileAsync = promisify(execFile);
+
+// 'vscode' only resolves inside the extension host. getStagedSdkRoot (via
+// sdkPath.ts) also needs to load as a plain `node` process spawned from a
+// generated VS Code task -- outside the extension host -- so the import above is
+// type-only and every real access goes through this lazy, failure-tolerant
+// getter. The UI-only functions further down (ensureSdkStaging, fetchLatestSdk,
+// openStagedSdkFolder) are never called from that context, where it always resolves.
+function tryVscode(): typeof vscode | undefined {
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        return require('vscode');
+    } catch {
+        return undefined;
+    }
+}
 
 export const DEFAULT_SDK_GIT_URL = 'https://github.com/Team-Resurgent/RXDK-SDK.git';
 const ESTIMATED_SDK_BYTES = 45 * 1024 * 1024;
@@ -29,7 +44,7 @@ export function getStagedSdkRoot(context?: vscode.ExtensionContext): string {
         return path.normalize(process.env.RXDK_STAGED_SDK.trim());
     }
     try {
-        const override = vscode.workspace.getConfiguration('rxdk').get<string>('stagedSdkPath')?.trim();
+        const override = tryVscode()?.workspace.getConfiguration('rxdk').get<string>('stagedSdkPath')?.trim();
         if (override) {
             return path.normalize(override);
         }
@@ -37,8 +52,8 @@ export function getStagedSdkRoot(context?: vscode.ExtensionContext): string {
         /* no workspace yet */
     }
     if (context) {
-        const globalOverride = vscode.workspace
-            .getConfiguration('rxdk', null)
+        const globalOverride = tryVscode()
+            ?.workspace.getConfiguration('rxdk', null)
             .get<string>('stagedSdkPath')
             ?.trim();
         if (globalOverride) {
@@ -53,7 +68,7 @@ function getSdkGitUrl(context?: vscode.ExtensionContext): string {
         return process.env.RXDK_SDK_GIT_URL.trim();
     }
     try {
-        const configured = vscode.workspace.getConfiguration('rxdk').get<string>('sdkGitUrl')?.trim();
+        const configured = tryVscode()?.workspace.getConfiguration('rxdk').get<string>('sdkGitUrl')?.trim();
         if (configured) {
             return configured;
         }
@@ -61,7 +76,7 @@ function getSdkGitUrl(context?: vscode.ExtensionContext): string {
         /* no workspace yet */
     }
     if (context) {
-        const global = vscode.workspace.getConfiguration('rxdk', null).get<string>('sdkGitUrl')?.trim();
+        const global = tryVscode()?.workspace.getConfiguration('rxdk', null).get<string>('sdkGitUrl')?.trim();
         if (global) {
             return global;
         }
@@ -74,7 +89,7 @@ function getSdkGitRef(context?: vscode.ExtensionContext): string | undefined {
         return process.env.RXDK_SDK_GIT_REF.trim();
     }
     try {
-        const configured = vscode.workspace.getConfiguration('rxdk').get<string>('sdkGitRef')?.trim();
+        const configured = tryVscode()?.workspace.getConfiguration('rxdk').get<string>('sdkGitRef')?.trim();
         if (configured) {
             return configured;
         }
@@ -82,7 +97,7 @@ function getSdkGitRef(context?: vscode.ExtensionContext): string | undefined {
         /* no workspace yet */
     }
     if (context) {
-        const global = vscode.workspace.getConfiguration('rxdk', null).get<string>('sdkGitRef')?.trim();
+        const global = tryVscode()?.workspace.getConfiguration('rxdk', null).get<string>('sdkGitRef')?.trim();
         if (global) {
             return global;
         }
@@ -235,9 +250,13 @@ async function gitPullLatest(
 }
 
 async function runWithProgress<T>(message: string, task: () => Promise<T>): Promise<T> {
-    return vscode.window.withProgress(
+    const vs = tryVscode();
+    if (!vs) {
+        throw new Error('runWithProgress requires running inside the VS Code extension host.');
+    }
+    return vs.window.withProgress(
         {
-            location: vscode.ProgressLocation.Notification,
+            location: vs.ProgressLocation.Notification,
             title: 'RXDK',
             cancellable: false,
         },
@@ -256,6 +275,10 @@ export async function ensureSdkStaging(
     context: vscode.ExtensionContext,
     output?: vscode.OutputChannel
 ): Promise<void> {
+    const vs = tryVscode();
+    if (!vs) {
+        throw new Error('ensureSdkStaging requires running inside the VS Code extension host.');
+    }
     const staged = getStagedSdkRoot(context);
 
     if (isStagedSdkPresent(context)) {
@@ -267,7 +290,7 @@ export async function ensureSdkStaging(
         output?.appendLine(
             `RXDK: SDK folder exists but headers are missing — not overwriting: ${staged}`
         );
-        vscode.window.showWarningMessage(
+        vs.window.showWarningMessage(
             `RXDK SDK folder exists but is incomplete. Fix or delete it, then reload: ${staged}`
         );
         return;
@@ -282,11 +305,11 @@ export async function ensureSdkStaging(
             gitClone(repoUrl, staged, gitRef)
         );
         output?.appendLine(`RXDK: SDK cloned to ${staged}`);
-        vscode.window.showInformationMessage(`RXDK SDK ready at ${staged}`);
+        vs.window.showInformationMessage(`RXDK SDK ready at ${staged}`);
     } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         output?.appendLine(`RXDK: SDK clone failed: ${message}`);
-        vscode.window.showErrorMessage(
+        vs.window.showErrorMessage(
             `RXDK SDK clone failed. Install Git and ensure network access, or clone manually:\n` +
                 `git clone --depth 1 ${repoUrl} "${staged}"`
         );
@@ -318,14 +341,14 @@ export async function fetchLatestSdk(
             output?.appendLine(`RXDK: SDK updated at ${staged}`);
             onProgress?.({ message: 'RXDK-SDK ready', percent: 100 });
             if (!quietUi) {
-                vscode.window.showInformationMessage('RXDK SDK updated to the latest release.');
+                tryVscode()?.window.showInformationMessage('RXDK SDK updated to the latest release.');
             }
             return true;
         } catch (err) {
             const message = err instanceof Error ? err.message : String(err);
             output?.appendLine(`RXDK: SDK update failed: ${message}`);
             if (!quietUi) {
-                vscode.window.showErrorMessage(`RXDK SDK update failed: ${message}`);
+                tryVscode()?.window.showErrorMessage(`RXDK SDK update failed: ${message}`);
             }
             return false;
         }
@@ -335,7 +358,7 @@ export async function fetchLatestSdk(
         if (quietUi) {
             return false;
         }
-        const pick = await vscode.window.showWarningMessage(
+        const pick = await tryVscode()?.window.showWarningMessage(
             'The SDK folder was not installed via git. Replace it with the latest RXDK-SDK from GitHub?',
             'Replace',
             'Cancel'
@@ -359,14 +382,14 @@ export async function fetchLatestSdk(
         output?.appendLine(`RXDK: SDK cloned to ${staged}`);
         onProgress?.({ message: 'RXDK-SDK ready', percent: 100 });
         if (!quietUi) {
-            vscode.window.showInformationMessage('RXDK SDK installed from GitHub.');
+            tryVscode()?.window.showInformationMessage('RXDK SDK installed from GitHub.');
         }
         return true;
     } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         output?.appendLine(`RXDK: SDK clone failed: ${message}`);
         if (!quietUi) {
-            vscode.window.showErrorMessage(
+            tryVscode()?.window.showErrorMessage(
                 `RXDK SDK clone failed. Install Git and ensure network access, or clone manually:\n` +
                     `git clone --depth 1 ${repoUrl} "${staged}"`
             );
@@ -377,9 +400,13 @@ export async function fetchLatestSdk(
 
 /** Reveal the persistent SDK folder (include/lib) in the system file manager. */
 export async function openStagedSdkFolder(context: vscode.ExtensionContext): Promise<void> {
+    const vs = tryVscode();
+    if (!vs) {
+        throw new Error('openStagedSdkFolder requires running inside the VS Code extension host.');
+    }
     const staged = getStagedSdkRoot(context);
     if (!isStagedSdkPresent(context)) {
-        const pick = await vscode.window.showInformationMessage(
+        const pick = await vs.window.showInformationMessage(
             `RXDK SDK not installed yet (${staged}). Clone from GitHub now?`,
             'Clone now',
             'Show path'
@@ -391,8 +418,8 @@ export async function openStagedSdkFolder(context: vscode.ExtensionContext): Pro
         }
     }
     if (fs.existsSync(staged)) {
-        await vscode.env.openExternal(vscode.Uri.file(staged));
+        await vs.env.openExternal(vs.Uri.file(staged));
     } else {
-        await vscode.window.showInformationMessage(`RXDK SDK path: ${staged}`);
+        await vs.window.showInformationMessage(`RXDK SDK path: ${staged}`);
     }
 }

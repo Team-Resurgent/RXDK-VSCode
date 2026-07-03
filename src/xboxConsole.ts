@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
 
@@ -7,15 +7,32 @@ const execFileAsync = promisify(execFile);
 const REG_KEY = 'Software\\Microsoft\\XboxSDK';
 const REG_VALUE = 'XboxName';
 
+// 'vscode' only resolves inside the extension host. getActiveXboxAddress (and
+// everything it calls) also needs to run as a plain `node` process spawned from a
+// generated VS Code task -- outside the extension host -- so the import above is
+// type-only and every real access goes through this lazy, failure-tolerant getter.
+function tryVscode(): typeof vscode | undefined {
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        return require('vscode');
+    } catch {
+        return undefined;
+    }
+}
+
 export function isWindowsHost(): boolean {
     return process.platform === 'win32';
 }
 
-/** Workspace / user settings JSON (`rxdk.defaultConsole` or `xbox.defaultConsole`). */
+/** Workspace / user settings JSON (`rxdk.defaultConsole` or `xbox.defaultConsole`). Empty outside the extension host. */
 export function getWorkspaceXboxAddress(): string {
+    const vs = tryVscode();
+    if (!vs) {
+        return '';
+    }
     return (
-        vscode.workspace.getConfiguration('rxdk').get<string>('defaultConsole') ||
-        vscode.workspace.getConfiguration('xbox').get<string>('defaultConsole') ||
+        vs.workspace.getConfiguration('rxdk').get<string>('defaultConsole') ||
+        vs.workspace.getConfiguration('xbox').get<string>('defaultConsole') ||
         ''
     ).trim();
 }
@@ -84,16 +101,24 @@ export async function setActiveXboxAddress(address: string): Promise<void> {
         await writeRegistryXboxName(trimmed);
     }
 
-    const target = vscode.workspace.workspaceFolders?.length
-        ? vscode.ConfigurationTarget.Workspace
-        : vscode.ConfigurationTarget.Global;
-    await vscode.workspace.getConfiguration('rxdk').update('defaultConsole', trimmed, target);
-    await vscode.workspace.getConfiguration('xbox').update('defaultConsole', trimmed, target);
+    const vs = tryVscode();
+    if (!vs) {
+        throw new Error('setActiveXboxAddress requires running inside the VS Code extension host.');
+    }
+    const target = vs.workspace.workspaceFolders?.length
+        ? vs.ConfigurationTarget.Workspace
+        : vs.ConfigurationTarget.Global;
+    await vs.workspace.getConfiguration('rxdk').update('defaultConsole', trimmed, target);
+    await vs.workspace.getConfiguration('xbox').update('defaultConsole', trimmed, target);
 }
 
 export async function promptSetXboxIp(): Promise<void> {
+    const vs = tryVscode();
+    if (!vs) {
+        return;
+    }
     const current = (await getActiveXboxAddress()) ?? '';
-    const value = await vscode.window.showInputBox({
+    const value = await vs.window.showInputBox({
         title: 'Set Xbox IP / Hostname',
         prompt: isWindowsHost()
             ? 'IP or hostname for xbcp, xbox-launch, and debug. Saved to Windows registry (XBSetIP) and workspace settings.'
@@ -114,9 +139,9 @@ export async function promptSetXboxIp(): Promise<void> {
 
     try {
         await setActiveXboxAddress(value);
-        vscode.window.showInformationMessage(`Xbox address set to: ${value.trim()}`);
+        vs.window.showInformationMessage(`Xbox address set to: ${value.trim()}`);
     } catch (e) {
-        vscode.window.showErrorMessage((e as Error).message);
+        vs.window.showErrorMessage((e as Error).message);
     }
 }
 
