@@ -183,11 +183,13 @@ export class RxdkSidebarProvider implements vscode.TreeDataProvider<RxdkTreeItem
         const label = typeof element.label === 'string' ? element.label : element.label?.label ?? '';
         if (label.startsWith('SDK:')) {
             return [
+                // The setup page manages/updates every component (SDK, docs, tools,
+                // Zig, .NET) in one place -- more sensible than a lone "fetch SDK".
                 new RxdkTreeItem(
-                    'Fetch latest SDK',
+                    'Check for updates…',
                     vscode.TreeItemCollapsibleState.None,
-                    'rxdk.fetchLatestSdk',
-                    'RXDK-SDK from GitHub',
+                    'rxdk.setupPrerequisites',
+                    'SDK, docs & tools',
                     'cloud-download'
                 ),
                 new RxdkTreeItem(

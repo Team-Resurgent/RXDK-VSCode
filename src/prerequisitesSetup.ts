@@ -273,8 +273,8 @@ function buildHtml(webview: vscode.Webview): string {
 <body>
   <div class="wrap">
     <header>
-      <h1>RXDK setup</h1>
-      <p class="lead">Install all prerequisites below (.NET, RXDK-SDK, documentation, Zig, host tools) before using build, deploy, debug, or documentation. RXDK stays disabled until everything is ready.</p>
+      <h1>RXDK setup &amp; updates</h1>
+      <p class="lead">Install the prerequisites below (.NET, RXDK-SDK, documentation, Zig, host tools) before using build, deploy, debug, or documentation. RXDK stays disabled until everything is ready. Already installed? Use <strong>Update</strong> to pull the latest SDK, docs, and tools.</p>
     </header>
 
     <div class="banner" id="banner">Checking prerequisites…</div>
@@ -336,8 +336,10 @@ function buildHtml(webview: vscode.Webview): string {
             (item.detail ? '<p class="detail">' + escapeHtml(item.detail) + '</p>' : '') +
           '</div>' +
           '<div class="actions">' +
+            // Ready components stay updatable: re-running install fetches the latest
+            // (sdk/docs git-pull, tools re-download) or repairs the pinned Zig.
             '<button type="button" data-action="install" data-id="' + escapeHtml(item.id) + '"' +
-              (item.ready || !item.canInstall ? ' disabled' : '') + '>Install</button>' +
+              (item.canInstall ? '' : ' disabled') + '>' + (item.ready ? 'Update' : 'Install') + '</button>' +
             (item.downloadUrl
               ? '<button type="button" data-action="open" data-url="' + escapeHtml(item.downloadUrl) + '">Open download page</button>'
               : '') +
