@@ -12,7 +12,7 @@ import { readProjectManifestAt } from './xboxSdkPaths';
 import { resolveZigExecutable } from './zigRuntime';
 import { resolveHostTool } from './hostTools';
 import { linkXdk } from './xdkLink';
-import { buildXbe } from './imageBuild';
+import { buildXbe, buildDxt } from './imageBuild';
 import { packXiso, StageFileEntry } from './packXiso';
 import { optimizeCompileFlags, optimizeKeepsDebugInfo, RxdkOptimizeMode } from './optimizeMode';
 import { resolveDeployPaths } from './xboxDeploy';
@@ -398,11 +398,22 @@ export async function buildXboxProject(opts: BuildXboxProjectOptions): Promise<B
             libNames.push('libkernel');
         }
 
-        // Any title that links libxapi gets the XAPI + CRT + TLS bring-up before main
-        // (entry XapiTitleStartup); a bare libc title enters at 'start'.
-        const entry = libNames.includes('libxapi') ? 'XapiTitleStartup' : 'start';
+        // A DXT is entered at DxtEntry by xbdm's loader. Otherwise: any title that
+        // links libxapi gets the XAPI + CRT + TLS bring-up before main (entry
+        // XapiTitleStartup); a bare libc title enters at 'start'.
+        const isDxt = manifest.type === 'dxt';
+        const entry = isDxt
+            ? 'DxtEntry'
+            : libNames.includes('libxapi')
+              ? 'XapiTitleStartup'
+              : 'start';
 
         const linkLibs: string[] = [];
+        // A DXT must keep its base-relocation table (xbdm relocates the raw image
+        // in place); a title doesn't (fixed XBE base), so relocs are stripped there.
+        if (isDxt) {
+            linkLibs.push('-Wl,--dynamicbase');
+        }
         // Referenced library .libs go in a group so their inter-library (and back-)
         // references resolve regardless of link order.
         if (userLibs.length > 0) {
@@ -428,6 +439,24 @@ export async function buildXboxProject(opts: BuildXboxProjectOptions): Promise<B
             throw new Error(`Link failed (exit ${linkResult.exitCode})`);
         }
         opts.output?.appendLine(`Linked ${exe}`);
+
+        // A DXT is a raw flat PE, not an XBE: run imagebld /DXT to flatten (file
+        // offset == RVA) + set the Xbox subsystem, and stop. No XBE, no ISO.
+        if (isDxt) {
+            const imageBldPathDxt = resolveHostTool('imagebld');
+            if (!fs.existsSync(imageBldPathDxt)) {
+                throw new Error(`Missing ${imageBldPathDxt}`);
+            }
+            const dxt = await buildDxt({
+                inputExe: exe,
+                outputDxt: path.resolve(path.join(outDir, `${projectName}.dxt`)),
+                toolPath: imageBldPathDxt,
+                output: opts.output,
+            });
+            opts.output?.appendLine(`Built ${dxt}`);
+            opts.output?.appendLine(`OK: DXT ${projectName} build complete -> ${outDir}`);
+            return { ok: true, outDir };
+        }
 
         const imageBldPath = resolveHostTool('imagebld');
         const xdvdfsPath = resolveHostTool('xdvdfs');

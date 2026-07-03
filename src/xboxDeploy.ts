@@ -150,14 +150,18 @@ export async function deployProject(opts: DeployProjectOptions): Promise<DeployR
             return { ok: false, error: `Deploy source directory not found: ${localDir}` };
         }
 
-        const remoteDir = normalizeRemoteDir(opts.remoteDir || '', projectName);
+        // A DXT deploys to xe:\dxt (top level -- xbdm scans E:\dxt\*.DXT
+        // non-recursively at debug-monitor init), not xe:\<name>.
+        const isDxt = manifest.type === 'dxt';
+        const remoteDir = isDxt ? 'xe:\\dxt' : normalizeRemoteDir(opts.remoteDir || '', projectName);
         const xbcp = resolveHostTool('xbcp');
         const consoleAddr = opts.consoleName || (await getActiveXboxAddress());
         opts.output?.appendLine(
             consoleAddr ? `Deploying to Xbox '${consoleAddr}' -> ${remoteDir}` : `Deploying to default Xbox -> ${remoteDir}`
         );
 
-        const patterns = opts.files && opts.files.length > 0 ? opts.files : ['*.xbe', '*.pdb', '*.map'];
+        const defaultPatterns = isDxt ? ['*.dxt'] : ['*.xbe', '*.pdb', '*.map'];
+        const patterns = opts.files && opts.files.length > 0 ? opts.files : defaultPatterns;
         const sent: string[] = [];
         for (const pattern of patterns) {
             for (const name of listFilesMatching(localDir, pattern)) {

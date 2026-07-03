@@ -111,3 +111,37 @@ export async function buildXbe(opts: BuildXbeOptions): Promise<string> {
     }
     return outputFull;
 }
+
+export interface BuildDxtOptions {
+    inputExe: string;
+    outputDxt?: string;
+    toolPath: string;
+    output?: OutputLike;
+}
+
+/**
+ * Convert a linked Win32 PE .exe into a flat Xbox .dxt (debug-monitor extension)
+ * via `imagebld /DXT`. Unlike buildXbe there is no XBE wrapping: imagebld lays
+ * every section down at its RVA (file offset == RVA) and sets the subsystem to
+ * Xbox, so xbdm's raw-file loader jumps to the right entry point (DxtEntry).
+ */
+export async function buildDxt(opts: BuildDxtOptions): Promise<string> {
+    const inputFull = path.resolve(opts.inputExe);
+    if (!fs.existsSync(inputFull)) {
+        throw new Error(`imagebld: input not found: ${inputFull}`);
+    }
+    const outputFull = path.resolve(opts.outputDxt || inputFull.replace(/\.exe$/i, '.dxt'));
+    if (!opts.toolPath) {
+        throw new Error('imagebld: toolPath required');
+    }
+    if (!fs.existsSync(opts.toolPath)) {
+        throw new Error(`imagebld: tool not found: ${opts.toolPath}`);
+    }
+
+    const args = ['/DXT', inputFull, outputFull];
+    const result = await runStreamed(opts.toolPath, args, { output: opts.output });
+    if (result.exitCode !== 0) {
+        throw new Error(`imagebld /DXT failed (exit ${result.exitCode})`);
+    }
+    return outputFull;
+}

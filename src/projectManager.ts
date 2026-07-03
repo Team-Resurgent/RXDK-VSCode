@@ -50,6 +50,8 @@ export function suggestProjectName(template: RxdkTemplateId): string {
             return 'my-scroller';
         case 'network-server':
             return 'my-server';
+        case 'dxt':
+            return 'my-dxt';
         case 'library':
             return 'my-library';
         default:

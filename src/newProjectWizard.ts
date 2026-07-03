@@ -336,6 +336,7 @@ function buildHtml(webview: vscode.Webview, initialTemplate?: RxdkTemplateId): s
       'video-player': '🎬',
       'font-scroller': '🔤',
       'network-server': '🌐',
+      'dxt': '🔧',
       'library': '📦',
     };
 

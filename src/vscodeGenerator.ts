@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import {
+    isDxtManifest,
     isPrebuiltManifest,
     manifestNeedsIntelliSense,
     manifestUsesCpp,
@@ -211,6 +212,11 @@ export async function generateVscodeFolder(
         return;
     }
 
+    if (isDxtManifest(manifest)) {
+        await generateDxtVscodeFolder(context, projectRoot, projectName, manifest);
+        return;
+    }
+
     const vscodeDir = path.join(projectRoot, '.vscode');
     fs.mkdirSync(vscodeDir, { recursive: true });
 
@@ -311,6 +317,86 @@ export async function generateVscodeFolder(
 
     fs.writeFileSync(path.join(vscodeDir, 'tasks.json'), JSON.stringify(tasks, null, 4) + '\n', 'utf8');
     fs.writeFileSync(path.join(vscodeDir, 'launch.json'), JSON.stringify(launch, null, 4) + '\n', 'utf8');
+    fs.writeFileSync(path.join(vscodeDir, 'settings.json'), JSON.stringify(settings, null, 4) + '\n', 'utf8');
+}
+
+// A DXT (debug-monitor extension) builds a flat .dxt, deploys to E:\dxt, and
+// loads on a warm reboot. There's no title to launch and it can't be attached
+// to (it runs inside the debug monitor), so there's no launch.json / DAP config;
+// the primary action is "deploy & reboot".
+async function generateDxtVscodeFolder(
+    context: vscode.ExtensionContext,
+    projectRoot: string,
+    projectName: string,
+    manifest: RxdkProjectManifest
+): Promise<void> {
+    const vscodeDir = path.join(projectRoot, '.vscode');
+    fs.mkdirSync(vscodeDir, { recursive: true });
+
+    const includeDir = getSdkIncludeDir(context).replace(/\\/g, '/');
+    const libDir = getSdkLibDir(context).replace(/\\/g, '/');
+
+    const tasks = {
+        version: '2.0.0',
+        tasks: [
+            {
+                label: 'rxdk: build',
+                type: 'shell',
+                command: 'node',
+                args: [
+                    CLI_PATH,
+                    'build',
+                    '--project-root',
+                    '${workspaceFolder}',
+                    '--sdk-include',
+                    includeDir,
+                    '--sdk-lib',
+                    libDir,
+                    '--optimize',
+                    '${config:rxdk.optimize}',
+                ],
+                group: { kind: 'build', isDefault: true },
+                problemMatcher: ['$gcc'],
+            },
+            {
+                label: 'rxdk: deploy',
+                type: 'shell',
+                command: 'node',
+                args: [CLI_PATH, 'deploy', '--project-root', '${workspaceFolder}', '--project-name', projectName],
+                problemMatcher: [],
+            },
+            {
+                label: 'rxdk: reboot',
+                type: 'shell',
+                command: 'node',
+                args: [CLI_PATH, 'reboot'],
+                problemMatcher: [],
+            },
+            {
+                // The main action: build the .dxt, copy it to E:\dxt, then warm
+                // reboot so xbdm loads it at debug-monitor init.
+                label: 'rxdk: deploy & reboot',
+                dependsOrder: 'sequence',
+                dependsOn: ['rxdk: build', 'rxdk: deploy', 'rxdk: reboot'],
+                problemMatcher: [],
+            },
+        ],
+    };
+
+    const settings: Record<string, unknown> = {
+        'rxdk.defaultConsole': '',
+        'files.associations': {
+            '*.dxt': 'binary',
+        },
+    };
+
+    if (manifestNeedsIntelliSense(manifest)) {
+        const intelliSense = buildIntelliSenseConfig(context, projectRoot, manifest);
+        applyIntelliSenseSettings(settings, intelliSense);
+        writeCppProperties(vscodeDir, intelliSense);
+    }
+
+    fs.writeFileSync(path.join(vscodeDir, 'tasks.json'), JSON.stringify(tasks, null, 4) + '\n', 'utf8');
     fs.writeFileSync(path.join(vscodeDir, 'settings.json'), JSON.stringify(settings, null, 4) + '\n', 'utf8');
 }
 

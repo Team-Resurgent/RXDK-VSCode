@@ -5,7 +5,7 @@ import { isDotNetRuntimeInstalled, ensureDotNetRuntime } from './dotnetRuntime';
 import { findProjectManifest } from './projectManager';
 import { isPrebuiltManifest, RxdkProjectManifest } from './projectTypes';
 import { deployProject, deployPrebuilt, DeployResult } from './xboxDeploy';
-import { launchProject, LaunchResult } from './xboxLaunch';
+import { launchProject, rebootConsole, LaunchResult } from './xboxLaunch';
 import { buildXboxProject, BuildProjectResult } from './xboxBuild';
 
 function configuredZigOverride(): string | undefined {
@@ -63,6 +63,11 @@ export async function runRxdkTask(
         return reportDeployResult(await deployProject({ projectRoot, projectName: name, output }), output);
     }
     if (kind === 'run') {
+        // A DXT isn't launched as a title -- it loads at boot from E:\dxt, so
+        // "run" warm-reboots the console to (re)load it.
+        if (found.manifest.type === 'dxt') {
+            return reportLaunchResult(await rebootConsole({ output }), output);
+        }
         return reportLaunchResult(await launchProject({ projectName: name, output }), output);
     }
     if (kind === 'build+deploy') {

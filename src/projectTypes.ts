@@ -6,6 +6,7 @@ export type RxdkTemplateId =
     | 'video-player'
     | 'font-scroller'
     | 'network-server'
+    | 'dxt'
     | 'library';
 
 export interface RxdkEmbedFile {
@@ -49,7 +50,7 @@ export interface RxdkPrebuiltConfig {
  * "executable" (default) builds an .xbe; "library" builds a static .lib that other projects
  * reference via <see cref="RxdkProjectManifest.projectReferences"/> and is not deployed/run.
  */
-export type RxdkProjectKind = 'executable' | 'library';
+export type RxdkProjectKind = 'executable' | 'library' | 'dxt';
 
 /**
  * Which prebuilt SDK library variant this project links. The staged SDK ships every library
@@ -109,6 +110,7 @@ export const TEMPLATE_LABELS: Record<RxdkTemplateId, string> = {
     'video-player': 'Video Player (Looping)',
     'font-scroller': 'Bitmap Font Scroller',
     'network-server': 'Network + Web Server',
+    dxt: 'Debug-Monitor Extension (DXT)',
     library: 'Static Library',
 };
 
@@ -121,6 +123,7 @@ export const TEMPLATE_DESCRIPTIONS: Record<RxdkTemplateId, string> = {
     'video-player': 'Plays a bundled XMV video clip on a continuous loop.',
     'font-scroller': 'Demoscene-style bitmap-font scroller using libxfont — sine bounce, stretch-blit scaling, rainbow color cycle, and a typing hacker-terminal background.',
     'network-server': 'Brings up XNet + DHCP and hosts a tiny HTTP server — shows the URL to open on screen with libxfont.',
+    dxt: 'An Xbox debug-monitor extension (.dxt) that xbdm loads from E:\\dxt at boot — an FPS/memory overlay drawn via the NV2A video overlay. Deploys to E:\\dxt and warm-reboots; not an XBE.',
     library: 'A standalone static library (.lib) that other projects link via projectReferences.',
 };
 
@@ -143,4 +146,13 @@ export function isPrebuiltManifest(manifest: RxdkProjectManifest): boolean {
 /** True for a static-library project (builds a .lib, never deployed/run). */
 export function isLibraryManifest(manifest: RxdkProjectManifest): boolean {
     return manifest.type === 'library';
+}
+
+/**
+ * True for a DXT (debug-monitor extension) project. Builds a raw flat .dxt (entry
+ * DxtEntry, via imagebld /DXT) instead of an XBE; deploys to xe:\dxt and loads on
+ * a warm reboot. Not debuggable via attach (it runs inside the debug monitor).
+ */
+export function isDxtManifest(manifest: RxdkProjectManifest): boolean {
+    return manifest.type === 'dxt';
 }

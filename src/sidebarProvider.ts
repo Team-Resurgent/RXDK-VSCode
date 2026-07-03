@@ -4,7 +4,7 @@ import { readDocsVersion } from './sdkDocsStaging';
 import { findProjectManifest } from './projectManager';
 import { getXboxAddressInfo } from './xboxConsole';
 import { sdkDocsAvailable, extensionDocsAvailable } from './sdkDocs';
-import { isPrebuiltManifest } from './projectTypes';
+import { isPrebuiltManifest, isDxtManifest } from './projectTypes';
 import { isPrerequisitesReadySync } from './prerequisites';
 import { isXboxNeighborhoodShellRegistered } from './xboxNeighborhoodShell';
 
@@ -214,6 +214,22 @@ export class RxdkSidebarProvider implements vscode.TreeDataProvider<RxdkTreeItem
                         'rxdk.refreshPrebuiltSource',
                         undefined,
                         'folder-opened'
+                    ),
+                ];
+            }
+            if (project && isDxtManifest(project.manifest)) {
+                // A DXT deploys to E:\dxt and loads on a warm reboot; there's no
+                // title to launch and it can't be attached to (it runs inside the
+                // debug monitor), so no Debug entry.
+                return [
+                    new RxdkTreeItem('Build', vscode.TreeItemCollapsibleState.None, 'rxdk.build'),
+                    new RxdkTreeItem('Deploy', vscode.TreeItemCollapsibleState.None, 'rxdk.deploy'),
+                    new RxdkTreeItem(
+                        'Deploy & Reboot',
+                        vscode.TreeItemCollapsibleState.None,
+                        'rxdk.run',
+                        'load DXT from E:\\dxt',
+                        'debug-restart'
                     ),
                 ];
             }
