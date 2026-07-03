@@ -178,6 +178,13 @@ function transformDocHtml(
             ) {
                 return `${attr}="${target}"`;
             }
+            // Leave in-doc .htm(l) links relative so the webview click handler can
+            // intercept them and load the page in-panel. Rewriting them to a webview
+            // resource URI gives them an https: scheme, which the handler treats as an
+            // external link -- so VS Code opens them in a browser instead of navigating.
+            if (attr.toLowerCase() === 'href' && /\.html?$/i.test(target.split(/[#?]/)[0])) {
+                return `${attr}="${target}"`;
+            }
             // Preserve relative sub-paths (e.g. images/foo.gif) instead of flattening to the
             // basename, otherwise files in subfolders like images/ resolve to the wrong place.
             const segments = target
@@ -427,7 +434,9 @@ function buildShellHtml(
       if (!a) return;
       const href = a.getAttribute('href') || '';
       if (!href || href.startsWith('#') || /^[a-z]+:/i.test(href)) return;
-      const page = href.split('/').pop().split('?')[0];
+      // Strip any #anchor / ?query so cross-page links like "page.htm#sec" are
+      // still recognized as an in-doc .htm page and navigated in-panel.
+      const page = href.split('#')[0].split('?')[0].split('/').pop();
       if (page && page.toLowerCase().endsWith('.htm')) {
         e.preventDefault();
         setActive(page);
