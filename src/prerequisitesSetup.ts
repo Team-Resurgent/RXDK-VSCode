@@ -287,7 +287,7 @@ function buildHtml(webview: vscode.Webview): string {
     <div class="footer">
       <p class="status" id="status"></p>
       <button id="refresh" type="button">Refresh</button>
-      <button class="primary" id="continue" type="button" disabled>Continue</button>
+      <button class="primary" id="continue" type="button">Close</button>
     </div>
   </div>
 
@@ -365,9 +365,8 @@ function buildHtml(webview: vscode.Webview): string {
       const banner = el('banner');
       banner.className = 'banner' + (allReady ? ' ready' : '');
       banner.textContent = allReady
-        ? 'All prerequisites are installed. Click Continue to start using RXDK.'
+        ? 'All prerequisites are installed. RXDK is ready to use.'
         : 'Complete each item below to enable RXDK.';
-      el('continue').disabled = !allReady;
     }
 
     function escapeHtml(value) {
