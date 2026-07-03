@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { readSdkVersion } from './sdkPath';
+import { readDocsVersion } from './sdkDocsStaging';
 import { findProjectManifest } from './projectManager';
 import { getXboxAddressInfo } from './xboxConsole';
 import { sdkDocsAvailable, extensionDocsAvailable } from './sdkDocs';
@@ -77,8 +78,11 @@ export class RxdkSidebarProvider implements vscode.TreeDataProvider<RxdkTreeItem
             if (version) {
                 root.push(
                     new RxdkTreeItem(
-                        `SDK: ${version}`,
-                        vscode.TreeItemCollapsibleState.Collapsed
+                        'Components',
+                        vscode.TreeItemCollapsibleState.Collapsed,
+                        undefined,
+                        undefined,
+                        'package'
                     )
                 );
             }
@@ -181,7 +185,9 @@ export class RxdkSidebarProvider implements vscode.TreeDataProvider<RxdkTreeItem
         }
 
         const label = typeof element.label === 'string' ? element.label : element.label?.label ?? '';
-        if (label.startsWith('SDK:')) {
+        if (label === 'Components') {
+            const sdkVersion = readSdkVersion(this.context).split('\n')[0]?.trim() || '';
+            const docsVersion = readDocsVersion(this.context).split('\n')[0]?.trim() || '';
             return [
                 // The setup page manages/updates every component (SDK, docs, tools,
                 // Zig, .NET) in one place -- more sensible than a lone "fetch SDK".
@@ -196,7 +202,7 @@ export class RxdkSidebarProvider implements vscode.TreeDataProvider<RxdkTreeItem
                     'Open SDK folder',
                     vscode.TreeItemCollapsibleState.None,
                     'rxdk.openSdkFolder',
-                    'include + lib',
+                    sdkVersion || 'include + lib',
                     'folder-opened'
                 ),
                 new RxdkTreeItem(
@@ -210,7 +216,7 @@ export class RxdkSidebarProvider implements vscode.TreeDataProvider<RxdkTreeItem
                     'Open docs folder',
                     vscode.TreeItemCollapsibleState.None,
                     'rxdk.openDocsFolder',
-                    'Xbox SDK + RXDK docs',
+                    docsVersion || 'Xbox SDK + RXDK docs',
                     'folder-opened'
                 ),
             ];
