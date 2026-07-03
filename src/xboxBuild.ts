@@ -51,6 +51,27 @@ function projectDefineArgs(manifest: RxdkProjectManifest): string[] {
     return (manifest.defines ?? []).filter((d) => d?.trim()).map((d) => `-D${d}`);
 }
 
+// The SDK lib variant a title links against. The staged SDK lays its libraries
+// out as lib/debug and lib/release; titles default to release. (A per-project
+// override -- a "configuration" field in rxdk.project.json -- is a planned
+// follow-up; when it lands, thread the chosen variant through here.)
+const SDK_LIB_DEFAULT_VARIANT = 'release';
+
+// Pick the lib directory to link from. A split SDK (lib/debug + lib/release)
+// resolves to the release subdir; a legacy flat SDK (libs directly under
+// sdkLib) resolves to sdkLib unchanged.
+function resolveSdkLibVariantDir(sdkLib: string): string {
+    const variantDir = path.join(sdkLib, SDK_LIB_DEFAULT_VARIANT);
+    try {
+        if (fs.statSync(variantDir).isDirectory()) {
+            return variantDir;
+        }
+    } catch {
+        /* no split -- fall through to the flat layout */
+    }
+    return sdkLib;
+}
+
 function escapeRegExp(value: string): string {
     return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
@@ -283,8 +304,17 @@ export async function buildXboxProject(opts: BuildXboxProjectOptions): Promise<B
             throw new Error('Zig not found. Install Zig from the RXDK prerequisites panel, or add zig to PATH.');
         }
 
+        // The staged SDK ships each library in two variants side by side --
+        // lib/debug (Debug, -O0 -g) and lib/release (ReleaseSmall, -Os). Titles
+        // link the release variant by default (smaller, no debug info pulled
+        // into the title's own link); a future rxdk.project.json "configuration"
+        // field can select debug per project. Old/flat SDKs with no such subdir
+        // fall back to sdkLib itself, so this stays backward compatible.
+        // libcompat.lib (whole-archive-linked below) must come from the SAME
+        // variant dir, so linkXdk's libDir is pointed here too.
+        const sdkLibDir = resolveSdkLibVariantDir(opts.sdkLib);
         const resolveLib = (name: string): string | undefined => {
-            const candidate = path.join(opts.sdkLib, name);
+            const candidate = path.join(sdkLibDir, name);
             return fs.existsSync(candidate) ? candidate : undefined;
         };
 
@@ -365,7 +395,7 @@ export async function buildXboxProject(opts: BuildXboxProjectOptions): Promise<B
         // runtime fixup, so no per-title image_init bootstrap is needed.
         const exe = path.resolve(path.join(outDir, `${projectName}.exe`));
         const linkResult = await linkXdk({
-            zig, objs, libs: linkLibs, outExe: exe, entry, libDir: opts.sdkLib,
+            zig, objs, libs: linkLibs, outExe: exe, entry, libDir: sdkLibDir,
             debugInfo: optimizeKeepsDebugInfo(optimize), output: opts.output,
         });
         if (linkResult.exitCode !== 0) {
