@@ -206,8 +206,8 @@ export class RxdkSidebarProvider implements vscode.TreeDataProvider<RxdkTreeItem
             const project = await findProjectManifest();
             if (project && isPrebuiltManifest(project.manifest)) {
                 return [
-                    new RxdkTreeItem('Deploy', vscode.TreeItemCollapsibleState.None, 'rxdk.deploy'),
-                    new RxdkTreeItem('Debug', vscode.TreeItemCollapsibleState.None, 'rxdk.debug'),
+                    new RxdkTreeItem('Deploy', vscode.TreeItemCollapsibleState.None, 'rxdk.deploy', undefined, 'cloud-upload'),
+                    new RxdkTreeItem('Debug', vscode.TreeItemCollapsibleState.None, 'rxdk.debug', undefined, 'bug'),
                     new RxdkTreeItem(
                         'Refresh source folder',
                         vscode.TreeItemCollapsibleState.None,
@@ -220,24 +220,33 @@ export class RxdkSidebarProvider implements vscode.TreeDataProvider<RxdkTreeItem
             if (project && isDxtManifest(project.manifest)) {
                 // A DXT deploys to E:\dxt and loads on a warm reboot; there's no
                 // title to launch and it can't be attached to (it runs inside the
-                // debug monitor), so no Debug entry.
+                // debug monitor), so no Debug entry. "Deploy & Reboot" is the
+                // build+deploy+reboot make-it-live action (the Run analog); a
+                // neutral (non-debug) icon avoids VS Code auto-coloring it green.
                 return [
-                    new RxdkTreeItem('Build', vscode.TreeItemCollapsibleState.None, 'rxdk.build'),
-                    new RxdkTreeItem('Deploy', vscode.TreeItemCollapsibleState.None, 'rxdk.deploy'),
+                    new RxdkTreeItem('Build', vscode.TreeItemCollapsibleState.None, 'rxdk.build', undefined, 'tools'),
+                    new RxdkTreeItem('Deploy', vscode.TreeItemCollapsibleState.None, 'rxdk.deploy', 'copy .dxt to E:\\dxt', 'cloud-upload'),
                     new RxdkTreeItem(
                         'Deploy & Reboot',
                         vscode.TreeItemCollapsibleState.None,
                         'rxdk.run',
-                        'load DXT from E:\\dxt',
-                        'debug-restart'
+                        'build, deploy & warm reboot',
+                        'rocket'
+                    ),
+                    new RxdkTreeItem(
+                        'Remove & Reboot',
+                        vscode.TreeItemCollapsibleState.None,
+                        'rxdk.removeDxt',
+                        'delete from E:\\dxt & reboot',
+                        'trash'
                     ),
                 ];
             }
             return [
-                new RxdkTreeItem('Build', vscode.TreeItemCollapsibleState.None, 'rxdk.build'),
-                new RxdkTreeItem('Deploy', vscode.TreeItemCollapsibleState.None, 'rxdk.deploy'),
-                new RxdkTreeItem('Run', vscode.TreeItemCollapsibleState.None, 'rxdk.run'),
-                new RxdkTreeItem('Debug', vscode.TreeItemCollapsibleState.None, 'rxdk.debug'),
+                new RxdkTreeItem('Build', vscode.TreeItemCollapsibleState.None, 'rxdk.build', undefined, 'tools'),
+                new RxdkTreeItem('Deploy', vscode.TreeItemCollapsibleState.None, 'rxdk.deploy', undefined, 'cloud-upload'),
+                new RxdkTreeItem('Run', vscode.TreeItemCollapsibleState.None, 'rxdk.run', undefined, 'play'),
+                new RxdkTreeItem('Debug', vscode.TreeItemCollapsibleState.None, 'rxdk.debug', undefined, 'bug'),
             ];
         }
 

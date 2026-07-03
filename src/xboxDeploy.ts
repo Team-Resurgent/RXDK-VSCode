@@ -8,6 +8,43 @@ import { getXboxProjectOutDir } from './sdkPath';
 
 export type DeployResult = { ok: true; deployed: string[] } | { ok: false; error: string };
 
+/**
+ * Delete a DXT from the console's E:\dxt via xbdel. Pair with a warm reboot so
+ * xbdm no longer loads it at debug-monitor init.
+ */
+export async function removeDxt(opts: {
+    projectRoot: string;
+    projectName?: string;
+    consoleName?: string;
+    output?: OutputLike;
+}): Promise<DeployResult> {
+    try {
+        const manifest = readProjectManifestAt(path.resolve(opts.projectRoot));
+        const projectName = opts.projectName || manifest.name;
+        const xbdel = resolveHostTool('xbdel');
+        if (!fs.existsSync(xbdel)) {
+            return { ok: false, error: `xbdel not found at ${xbdel}. Update the RXDK host tools.` };
+        }
+        const consoleAddr = opts.consoleName || (await getActiveXboxAddress());
+        const remote = `xe:\\dxt\\${projectName}.dxt`;
+        opts.output?.appendLine(
+            consoleAddr ? `Removing ${remote} from '${consoleAddr}'` : `Removing ${remote} from default Xbox`
+        );
+        // /f clears read-only; xbdel exits non-zero if the file wasn't there.
+        const args = ['/f', remote];
+        if (consoleAddr) {
+            args.push('/x', consoleAddr);
+        }
+        const result = await runStreamed(xbdel, args, { output: opts.output });
+        if (result.exitCode !== 0) {
+            return { ok: false, error: `xbdel failed (exit ${result.exitCode}) — was ${remote} present?` };
+        }
+        return { ok: true, deployed: [`${projectName}.dxt (removed)`] };
+    } catch (err) {
+        return { ok: false, error: err instanceof Error ? err.message : String(err) };
+    }
+}
+
 /** Only `*.ext`-shaped patterns are ever used by callers today -- a full glob engine is out of scope. */
 function matchesSimplePattern(fileName: string, pattern: string): boolean {
     if (pattern.startsWith('*.')) {
