@@ -67,9 +67,18 @@ function installedZigCandidates(): string[] {
 }
 
 /**
- * Resolve the Zig executable to use for a title build: an explicit `override`
- * (e.g. the `rxdk.zigPath` setting) wins outright, then `RXDK_ZIG` (must point to
- * an existing file), then `zig` on PATH, then the RXDK-managed install dir.
+ * Resolve the Zig executable to use for a title build. Resolution order:
+ *   1. explicit `override` (e.g. the `rxdk.zigPath` setting)
+ *   2. `RXDK_ZIG` env (must point to an existing file)
+ *   3. the RXDK-managed pinned install (ZIG_VERSION, downloaded by the prereq)
+ *   4. `zig` on PATH (fallback only when the managed install is absent)
+ *
+ * The managed install is preferred over PATH deliberately: the SDK libraries are
+ * built and tested against exactly ZIG_VERSION, and a different Zig on the user's
+ * PATH ships a different Clang whose codegen/predefined macros can diverge (e.g.
+ * predefining _DEBUG, which pulls in debug-only SDK symbols that the retail libs
+ * don't export). A user who genuinely wants a different toolchain still has the
+ * explicit rxdk.zigPath / RXDK_ZIG overrides above.
  */
 export async function resolveZigExecutable(override?: string): Promise<string | undefined> {
     if (override) {
@@ -87,16 +96,16 @@ export async function resolveZigExecutable(override?: string): Promise<string | 
         }
         return resolved;
     }
-    try {
-        await execFileAsync('zig', ['version'], { windowsHide: true });
-        return 'zig';
-    } catch {
-        /* fall through */
-    }
     for (const candidate of installedZigCandidates()) {
         if (fs.existsSync(candidate)) {
             return candidate;
         }
+    }
+    try {
+        await execFileAsync('zig', ['version'], { windowsHide: true });
+        return 'zig';
+    } catch {
+        /* no managed install and no PATH zig */
     }
     return undefined;
 }
