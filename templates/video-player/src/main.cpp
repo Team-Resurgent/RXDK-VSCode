@@ -1,10 +1,16 @@
-// XMV hardware smoke test - load an XMV file and play it to completion.
+// XMV playback demo - loads test.xmv and plays it back in an endless loop,
+// reopening the decoder from the start each time end-of-file is hit.
 //
 // Uses GetNextFrame + D3D overlay (XMVPlayer / vendor xmv/test pattern). Play()
 // can finish instantly on clips with bad timing metadata (e.g. VideoB.xmv).
 //
-// Assets live in samples/xmv-play/media/ (test.xmv, dsstdfx.bin). Deploy copies
-// media\ to xe:\xmv-play\media\; ISO build stages the same tree under d:\media\.
+// DirectSound bring-up is non-fatal: the leak decoder's own XMV audio path is
+// not yet implemented, so a missing/failed effects image just means silent
+// video (see RXDK-Libs samples/xmv-play for the reference behavior).
+//
+// Assets live in media/ (test.xmv, dsstdfx.bin) next to this project. Deploy
+// copies media\ to xe:\<project>\media\; ISO build stages the same tree under
+// d:\media\.
 
 #include <xtl.h>
 #include <d3d8.h>
@@ -159,7 +165,10 @@ static HRESULT InitDirectSound(void)
     return S_OK;
 }
 
-static HRESULT PlayXmvTest(void)
+// Plays test.xmv once, start to finish. Returns S_OK on a normal end-of-file
+// (the caller loops back and reopens the decoder to replay from the start) or
+// a failure HRESULT on a real decode/device error (the caller hangs).
+static HRESULT PlayXmvOnce(BOOL audioReady)
 {
     XMVDecoder* pDecoder = NULL;
     XMVVIDEO_DESC videoDesc;
@@ -173,16 +182,6 @@ static HRESULT PlayXmvTest(void)
     DWORD elapsedMs = 0;
     BOOL overlayEnabled = FALSE;
     HRESULT hr;
-
-    hr = InitD3D();
-    if (FAILED(hr)) {
-        return hr;
-    }
-
-    hr = InitDirectSound();
-    if (FAILED(hr)) {
-        return hr;
-    }
 
     hr = XMVDecoder_CreateDecoderForFile(XMVFLAG_NONE, XMV_PATH, &pDecoder);
     if (FAILED(hr)) {
@@ -225,13 +224,15 @@ static HRESULT PlayXmvTest(void)
     }
 
     if (videoDesc.AudioStreamCount > 0) {
+        // Non-fatal: the leak decoder's XMV audio path is not yet implemented
+        // (EnableAudioStream returns E_NOTIMPL for most clips), so a failure
+        // here just means silent video rather than aborting playback.
         hr = XMVDecoder_EnableAudioStream(pDecoder, 0, 0, NULL, NULL);
         if (FAILED(hr)) {
-            DbgTraceHr("EnableAudioStream failed", hr);
-            XMVDecoder_CloseDecoder(pDecoder);
-            return hr;
+            DbgTraceHr("EnableAudioStream failed (video-only)", hr);
+        } else {
+            DbgTrace("xmv-hw: audio stream 0 enabled\n");
         }
-        DbgTrace("xmv-hw: audio stream 0 enabled\n");
     }
 
     DbgTrace("xmv-hw: decoding started\n");
@@ -296,7 +297,9 @@ static HRESULT PlayXmvTest(void)
             return E_FAIL;
         }
 
-        DirectSoundDoWork();
+        if (audioReady) {
+            DirectSoundDoWork();
+        }
         g_pd3dDevice->BlockUntilVerticalBlank();
         elapsedMs += 16;
         if (elapsedMs >= PLAY_TIMEOUT_MS) {
@@ -313,20 +316,35 @@ static HRESULT PlayXmvTest(void)
 int main(void)
 {
     HRESULT hr;
+    BOOL audioReady;
 
-    DbgTrace("xmv-hw: starting XMV load/play test\n");
-    hr = PlayXmvTest();
+    DbgTrace("xmv-hw: starting XMV loop demo\n");
+
+    hr = InitD3D();
     if (FAILED(hr)) {
-        DbgTrace("xmv-hw: test failed\n");
+        DbgTrace("xmv-hw: device init failed\n");
         for (;;) {
             Sleep(1000);
         }
     }
 
-    DbgTrace("xmv-hw: all tests passed\n");
-    for (;;) {
-        DirectSoundDoWork();
-        g_pd3dDevice->BlockUntilVerticalBlank();
+    // Non-fatal: a missing/failed effects image just means silent video (the
+    // leak decoder's own XMV audio path isn't implemented yet anyway).
+    audioReady = SUCCEEDED(InitDirectSound());
+    if (!audioReady) {
+        DbgTrace("xmv-hw: continuing without DirectSound (video only)\n");
     }
+
+    for (;;) {
+        hr = PlayXmvOnce(audioReady);
+        if (FAILED(hr)) {
+            DbgTrace("xmv-hw: playback failed\n");
+            for (;;) {
+                Sleep(1000);
+            }
+        }
+        DbgTrace("xmv-hw: end of file -- looping\n");
+    }
+
     return 0;
 }
