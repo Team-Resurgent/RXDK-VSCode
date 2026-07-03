@@ -43,15 +43,15 @@ export function suggestProjectName(template: RxdkTemplateId): string {
         case 'music-visualizer':
             return 'my-music';
         case 'controller-input':
-            return 'my-pad';
+            return 'my-controller';
         case 'video-player':
-            return 'my-xmv';
+            return 'my-player';
         case 'font-scroller':
-            return 'my-xfont';
+            return 'my-scroller';
         case 'network-server':
-            return 'my-net';
+            return 'my-server';
         case 'library':
-            return 'my-lib';
+            return 'my-library';
         default:
             return 'my-game';
     }
