@@ -51,10 +51,27 @@ export interface RxdkPrebuiltConfig {
  */
 export type RxdkProjectKind = 'executable' | 'library';
 
+/**
+ * Which prebuilt SDK library variant this project links. The staged SDK ships every library
+ * in both flavors side by side (lib/debug: Debug -O0 -g, lib/release: ReleaseSmall -Os).
+ * Omitted = "release".
+ */
+export type RxdkConfiguration = 'debug' | 'release';
+
+export const RXDK_CONFIGURATIONS: RxdkConfiguration[] = ['debug', 'release'];
+
+export const DEFAULT_RXDK_CONFIGURATION: RxdkConfiguration = 'release';
+
+export function isRxdkConfiguration(value: string): value is RxdkConfiguration {
+    return (RXDK_CONFIGURATIONS as string[]).includes(value);
+}
+
 export interface RxdkProjectManifest {
     name: string;
     /** Output kind. Omitted = "executable". */
     type?: RxdkProjectKind;
+    /** Which SDK library variant to link (lib/debug or lib/release). Omitted = "release". */
+    configuration?: RxdkConfiguration;
     sources?: string[];
     libraries?: string[];
     /**
