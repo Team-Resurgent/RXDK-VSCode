@@ -164,6 +164,13 @@ export class RxdkSidebarProvider implements vscode.TreeDataProvider<RxdkTreeItem
                     'rxdk.setXboxIp',
                     undefined,
                     'edit'
+                ),
+                new RxdkTreeItem(
+                    'Warm Reboot',
+                    vscode.TreeItemCollapsibleState.None,
+                    'rxdk.rebootConsole',
+                    undefined,
+                    'sync'
                 )
             );
             return items;

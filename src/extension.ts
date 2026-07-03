@@ -9,6 +9,7 @@ import { openStagedSdkFolder, fetchLatestSdk } from './sdkStaging';
 import { getStagedToolsRoot } from './hostTools';
 import { getStagedDocsRoot } from './sdkDocsStaging';
 import { ensureDotNetRuntime, isDotNetRuntimeInstalled } from './dotnetRuntime';
+import { rebootConsole } from './xboxLaunch';
 import { ensureVscodeForWorkspace } from './vscodeGenerator';
 import { getActiveXboxAddress, promptSetXboxIp } from './xboxConsole';
 import { openSdkDocs, openExtensionDocs } from './sdkDocs';
@@ -113,6 +114,19 @@ export function activate(context: vscode.ExtensionContext): void {
             refreshPrebuiltSourceFolder(context).then(() => sidebarProvider.refresh())
         )),
         vscode.commands.registerCommand('rxdk.setXboxIp', guardPrerequisites(() => promptSetXboxIp().then(() => sidebarProvider.refresh()))),
+        vscode.commands.registerCommand('rxdk.rebootConsole', guardPrerequisites(async () => {
+            if (!(await ensureDotNetRuntime(context, rxdkOutput))) {
+                return;
+            }
+            const result = await rebootConsole({ output: rxdkOutput });
+            if (result.ok) {
+                vscode.window.showInformationMessage('Xbox warm reboot requested.');
+            } else if ('noConsoleConfigured' in result) {
+                vscode.window.showWarningMessage('No Xbox console configured — set the Xbox IP first.');
+            } else {
+                vscode.window.showErrorMessage(`Warm reboot failed: ${result.error}`);
+            }
+        })),
         vscode.commands.registerCommand('rxdk.showSidebar', () =>
             vscode.commands.executeCommand('workbench.view.extension.rxdk-sidebar')
         ),
