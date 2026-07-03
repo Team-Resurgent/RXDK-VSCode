@@ -133,8 +133,25 @@ async function loadDocPage(
     if (!fs.existsSync(filePath)) {
         return `<p>Topic not found: ${escapeHtml(safeName)}</p>`;
     }
-    const raw = fs.readFileSync(filePath, 'latin1');
+    const raw = readDocFile(filePath);
     return transformDocHtml(raw, docsRoot, webview, safeName);
+}
+
+// The two doc sets use different encodings: the RXDK extension docs (rxdk/) are
+// UTF-8, while the legacy Xbox SDK reference (xboxsdk/) is Windows-1252 (declared
+// charset, with smart quotes/trademark bytes). Decode as UTF-8 when the bytes are
+// valid UTF-8 (covers the RXDK docs and any pure-ASCII file), otherwise fall back
+// to Windows-1252 -- whose high bytes (e.g. 0x91/0x92 smart quotes) are invalid
+// UTF-8, so the fatal decode reliably rejects them. A fixed encoding can't serve
+// both: latin1 mangled the UTF-8 docs (em-dash -> "aEUR"), utf8 would mangle the
+// 1252 ones.
+function readDocFile(filePath: string): string {
+    const buf = fs.readFileSync(filePath);
+    try {
+        return new TextDecoder('utf-8', { fatal: true }).decode(buf).replace(/^﻿/, '');
+    } catch {
+        return new TextDecoder('windows-1252').decode(buf);
+    }
 }
 
 function extractBodyHtml(html: string): string {
