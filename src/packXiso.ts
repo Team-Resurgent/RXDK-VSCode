@@ -1,7 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as vscode from 'vscode';
-import { runStreamed } from './processRunner';
+import { OutputLike, runStreamed } from './processRunner';
 
 export interface StageFileEntry {
     source: string;
@@ -15,7 +14,7 @@ export interface PackXisoOptions {
     outputIso?: string;
     stageFiles?: StageFileEntry[];
     toolPath: string;
-    output?: vscode.OutputChannel;
+    output?: OutputLike;
 }
 
 /** Pack a .xbe (+ any staged files) into an XISO via the xdvdfs host tool. */

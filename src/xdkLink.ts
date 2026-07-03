@@ -1,7 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as vscode from 'vscode';
-import { runStreamed } from './processRunner';
+import { OutputLike, runStreamed } from './processRunner';
 
 // Link Xbox title objects with Zig, mirroring the SDK's own title link
 // (build/link_pe.zig). A title is: the title's objects + the SDK libs, linked with
@@ -48,7 +47,7 @@ export interface LinkXdkOptions {
     /** Link entry point. Default 'start'. */
     entry?: string;
     libDir?: string;
-    output?: vscode.OutputChannel;
+    output?: OutputLike;
 }
 
 export interface LinkXdkResult {

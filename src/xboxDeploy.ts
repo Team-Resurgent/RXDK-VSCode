@@ -1,11 +1,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as vscode from 'vscode';
+import { OutputLike, runStreamed } from './processRunner';
 import { getActiveXboxAddress } from './xboxConsole';
 import { resolveHostTool } from './hostTools';
 import { readProjectManifestAt } from './xboxSdkPaths';
 import { getXboxProjectOutDir } from './sdkPath';
-import { runStreamed } from './processRunner';
 
 export type DeployResult = { ok: true; deployed: string[] } | { ok: false; error: string };
 
@@ -59,7 +58,7 @@ async function xbcpCopy(
     localFile: string,
     remoteDest: string,
     console: string | undefined,
-    output?: vscode.OutputChannel
+    output?: OutputLike
 ): Promise<void> {
     const args = ['/y', '/t', '/q'];
     if (console) {
@@ -80,7 +79,7 @@ export interface DeployProjectOptions {
     /** Filename patterns for the project's own build output. Default: *.xbe, *.pdb, *.map. */
     files?: string[];
     quiet?: boolean;
-    output?: vscode.OutputChannel;
+    output?: OutputLike;
 }
 
 export async function deployProject(opts: DeployProjectOptions): Promise<DeployResult> {
@@ -173,7 +172,7 @@ export interface DeployPrebuiltOptions {
     remoteName?: string;
     consoleName?: string;
     quiet?: boolean;
-    output?: vscode.OutputChannel;
+    output?: OutputLike;
 }
 
 /** Manifest-less deploy of an explicit prebuilt XBE (+ optional PDB/MAP). */

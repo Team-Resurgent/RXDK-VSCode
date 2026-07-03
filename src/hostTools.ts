@@ -1,8 +1,21 @@
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import { hostToolExecutableName, platformToolRid } from './bridgePath';
+
+// 'vscode' only resolves inside the extension host. resolveHostTool (via
+// getStagedToolsRoot) also needs to run as a plain `node` process spawned from a
+// generated VS Code task -- outside the extension host -- so the import above is
+// type-only and every real access goes through this lazy, failure-tolerant getter.
+function tryVscode(): typeof vscode | undefined {
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        return require('vscode');
+    } catch {
+        return undefined;
+    }
+}
 import { downloadFileToPath, formatDownloadProgress } from './downloadFile';
 import { readZipEntries } from './unzip';
 
@@ -42,7 +55,7 @@ export function getStagedToolsRoot(): string {
         return path.normalize(process.env.RXDK_STAGED_TOOLS.trim());
     }
     try {
-        const override = vscode.workspace.getConfiguration('rxdk').get<string>('stagedToolsPath')?.trim();
+        const override = tryVscode()?.workspace.getConfiguration('rxdk').get<string>('stagedToolsPath')?.trim();
         if (override) {
             return path.normalize(override);
         }
@@ -66,7 +79,7 @@ export function isHostToolsInstalled(): boolean {
 
 function readConfig(key: string): string | undefined {
     try {
-        return vscode.workspace.getConfiguration('rxdk').get<string>(key)?.trim() || undefined;
+        return tryVscode()?.workspace.getConfiguration('rxdk').get<string>(key)?.trim() || undefined;
     } catch {
         return undefined;
     }

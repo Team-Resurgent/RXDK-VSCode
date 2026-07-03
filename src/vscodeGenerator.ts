@@ -7,11 +7,16 @@ import {
     manifestUsesCpp,
     RxdkProjectManifest,
 } from './projectTypes';
-import { getBundledSdkRoot, getSdkIncludeDir, getSdkLibDir } from './sdkPath';
+import { getSdkIncludeDir, getSdkLibDir } from './sdkPath';
 
 const EXTENSION_ID = 'rxdk-libs.rxdk-vscode';
 const EXTENSION_ROOT = `\${extensionInstallFolder:${EXTENSION_ID}}`;
 const SDK_ROOT = `${EXTENSION_ROOT}/sdk`;
+// The generated tasks.json shells out to this CLI (compiled alongside the rest of
+// the extension) instead of a PowerShell script, so build/deploy/run tasks -- and
+// therefore F5 debugging, which depends on the "rxdk: build+deploy" preLaunchTask
+// -- work on macOS/Linux with no pwsh prerequisite. See src/cli.ts.
+const CLI_PATH = `${EXTENSION_ROOT}/dist/extension/cli.js`;
 
 function normalizeConfigPath(value: string): string {
     return path.normalize(value).replace(/\\/g, '/').toLowerCase();
@@ -28,7 +33,10 @@ function vscodeConfigIsStale(projectRoot: string): boolean {
         content.includes('.cursor/extensions/rxdk-libs.rxdk-vscode-') ||
         !content.includes('extensionInstallFolder:rxdk-libs.rxdk-vscode') ||
         content.includes('rxdk-vscode}/out/sdk') ||
-        (content.includes('rxdk-vscode}/sdk') && !content.includes('extensionInstallFolder:rxdk-libs.rxdk-vscode'))
+        (content.includes('rxdk-vscode}/sdk') && !content.includes('extensionInstallFolder:rxdk-libs.rxdk-vscode')) ||
+        // Pre-CLI-migration tasks.json shelled out to PowerShell scripts directly.
+        content.includes('"command": "powershell"') ||
+        content.includes('.ps1')
     );
 }
 
@@ -205,32 +213,9 @@ export async function generateVscodeFolder(
     const vscodeDir = path.join(projectRoot, '.vscode');
     fs.mkdirSync(vscodeDir, { recursive: true });
 
-    const sdkRoot = SDK_ROOT;
-    const bundledRoot = getBundledSdkRoot(context);
     const includeDir = getSdkIncludeDir(context).replace(/\\/g, '/');
     const libDir = getSdkLibDir(context).replace(/\\/g, '/');
-    const buildScript = `${SDK_ROOT}/scripts/Build-XboxProject.ps1`;
-    const deployScript = `${SDK_ROOT}/scripts/Invoke-XboxDeploy.ps1`;
-    const launchScript = `${SDK_ROOT}/scripts/Invoke-XboxLaunch.ps1`;
     const bridgePath = `${SDK_ROOT}/tools/xboxdbg-bridge.exe`;
-
-    const buildTaskArgs = [
-        '-NoProfile',
-        '-ExecutionPolicy',
-        'Bypass',
-        '-File',
-        buildScript,
-        '-SdkRoot',
-        sdkRoot,
-        '-ProjectRoot',
-        '${workspaceFolder}',
-    ];
-    if (includeDir !== path.join(bundledRoot, 'include').replace(/\\/g, '/')) {
-        buildTaskArgs.push('-IncludeDir', includeDir);
-    }
-    if (libDir !== path.join(bundledRoot, 'lib').replace(/\\/g, '/')) {
-        buildTaskArgs.push('-LibDir', libDir);
-    }
 
     const tasks = {
         version: '2.0.0',
@@ -238,26 +223,30 @@ export async function generateVscodeFolder(
             {
                 label: 'rxdk: build',
                 type: 'shell',
-                command: 'powershell',
-                args: buildTaskArgs,
+                command: 'node',
+                args: [
+                    CLI_PATH,
+                    'build',
+                    '--project-root',
+                    '${workspaceFolder}',
+                    '--sdk-include',
+                    includeDir,
+                    '--sdk-lib',
+                    libDir,
+                ],
                 group: { kind: 'build', isDefault: true },
                 problemMatcher: ['$gcc'],
             },
             {
                 label: 'rxdk: deploy',
                 type: 'shell',
-                command: 'powershell',
+                command: 'node',
                 args: [
-                    '-NoProfile',
-                    '-ExecutionPolicy',
-                    'Bypass',
-                    '-File',
-                    deployScript,
-                    '-SdkRoot',
-                    sdkRoot,
-                    '-ProjectRoot',
+                    CLI_PATH,
+                    'deploy',
+                    '--project-root',
                     '${workspaceFolder}',
-                    '-ProjectName',
+                    '--project-name',
                     projectName,
                 ],
                 problemMatcher: [],
@@ -271,18 +260,8 @@ export async function generateVscodeFolder(
             {
                 label: 'rxdk: run',
                 type: 'shell',
-                command: 'powershell',
-                args: [
-                    '-NoProfile',
-                    '-ExecutionPolicy',
-                    'Bypass',
-                    '-File',
-                    launchScript,
-                    '-SdkRoot',
-                    sdkRoot,
-                    '-ProjectName',
-                    projectName,
-                ],
+                command: 'node',
+                args: [CLI_PATH, 'run', '--project-name', projectName],
                 problemMatcher: [],
             },
         ],
@@ -332,30 +311,16 @@ async function generatePrebuiltVscodeFolder(
     const vscodeDir = path.join(projectRoot, '.vscode');
     fs.mkdirSync(vscodeDir, { recursive: true });
 
-    const sdkRoot = SDK_ROOT;
-    const deployScript = `${SDK_ROOT}/scripts/Invoke-XboxDeploy.ps1`;
     const bridgePath = `${SDK_ROOT}/tools/xboxdbg-bridge.exe`;
     const p = manifest.prebuilt!;
     const xbeLeaf = path.basename(p.xbe);
 
-    const deployArgs = [
-        '-NoProfile',
-        '-ExecutionPolicy',
-        'Bypass',
-        '-File',
-        deployScript,
-        '-SdkRoot',
-        sdkRoot,
-        '-XbePath',
-        p.xbe,
-        '-RemoteName',
-        p.remoteName,
-    ];
+    const deployArgs = [CLI_PATH, 'deploy-prebuilt', '--xbe-path', p.xbe, '--remote-name', p.remoteName];
     if (p.pdb) {
-        deployArgs.push('-PdbPath', p.pdb);
+        deployArgs.push('--pdb-path', p.pdb);
     }
     if (p.map) {
-        deployArgs.push('-MapPath', p.map);
+        deployArgs.push('--map-path', p.map);
     }
 
     const tasks = {
@@ -364,7 +329,7 @@ async function generatePrebuiltVscodeFolder(
             {
                 label: 'rxdk: deploy',
                 type: 'shell',
-                command: 'powershell',
+                command: 'node',
                 args: deployArgs,
                 group: { kind: 'build', isDefault: true },
                 problemMatcher: [],

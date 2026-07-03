@@ -1,7 +1,6 @@
-import * as vscode from 'vscode';
 import { getActiveXboxAddress } from './xboxConsole';
 import { resolveHostTool } from './hostTools';
-import { runStreamed } from './processRunner';
+import { OutputLike, runStreamed } from './processRunner';
 
 export type LaunchResult =
     | { ok: true }
@@ -16,7 +15,7 @@ export interface LaunchProjectOptions {
     cmdLine?: string;
     reboot?: boolean;
     timeoutMs?: number;
-    output?: vscode.OutputChannel;
+    output?: OutputLike;
 }
 
 /** Launch a deployed Xbox title via xbox-launch.exe. */

@@ -1,8 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as vscode from 'vscode';
 import { RxdkImageBuildOptions } from './projectTypes';
-import { runStreamed } from './processRunner';
+import { OutputLike, runStreamed } from './processRunner';
 
 interface ResolvedImageBuildSettings {
     stackSize: number;
@@ -57,7 +56,7 @@ export interface BuildXbeOptions {
     noLibWarnOverride?: boolean;
     /** Pre-built "path,name,R"-style imagebld /INSERTFILE strings -- passed through opaquely, not parsed. */
     insertFiles?: string[];
-    output?: vscode.OutputChannel;
+    output?: OutputLike;
 }
 
 /** Convert a linked Win32 PE .exe into an Xbox .xbe via the imagebld host tool. */

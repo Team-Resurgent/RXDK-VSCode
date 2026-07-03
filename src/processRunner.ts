@@ -1,5 +1,14 @@
 import { spawn } from 'child_process';
-import * as vscode from 'vscode';
+
+/**
+ * The subset of vscode.OutputChannel every pipeline module actually uses. Kept
+ * structural (not `vscode.OutputChannel` itself) so `src/cli.ts` -- a plain Node
+ * process with no `vscode` module available -- can pass a simple
+ * console.log-backed object instead. A real OutputChannel already satisfies this.
+ */
+export interface OutputLike {
+    appendLine(value: string): void;
+}
 
 export interface RunResult {
     exitCode: number;
@@ -9,7 +18,7 @@ export interface RunResult {
 
 export interface RunStreamedOptions {
     cwd?: string;
-    output?: vscode.OutputChannel;
+    output?: OutputLike;
 }
 
 /**
