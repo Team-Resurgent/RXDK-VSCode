@@ -60,7 +60,7 @@ export async function openNewProjectWizard(
                     initialTemplate ??
                     (last.template && TEMPLATE_IDS.includes(last.template)
                         ? last.template
-                        : 'd3d8-triangle');
+                        : 'spinning-triangle');
                 const location = context.globalState.get<string>(LAST_PARENT_KEY)?.trim() ?? '';
                 const projectName =
                     last.projectName?.trim() || suggestProjectName(template);
@@ -133,7 +133,7 @@ export async function openNewProjectWizard(
 function normalizeSpec(raw: Partial<NewProjectSpec>): NewProjectSpec {
     const template = TEMPLATE_IDS.includes(raw.template as RxdkTemplateId)
         ? (raw.template as RxdkTemplateId)
-        : 'd3d8-triangle';
+        : 'spinning-triangle';
     return {
         template,
         projectName: String(raw.projectName ?? '').trim(),
@@ -329,11 +329,13 @@ function buildHtml(webview: vscode.Webview, initialTemplate?: RxdkTemplateId): s
     let nameTouched = false;
     let selectedTemplate = '';
     const TEMPLATE_ICONS = {
-      'd3d8-triangle': '🔺',
-      'd3d8-cube-lib': '🧊',
-      'dsound-music': '🎵',
-      'xinput-gamepad': '🎮',
-      'xmv-play': '🎬',
+      'spinning-triangle': '🔺',
+      'spinning-cube': '🧊',
+      'music-visualizer': '🎵',
+      'controller-input': '🎮',
+      'video-player': '🎬',
+      'font-scroller': '🔤',
+      'network-server': '🌐',
       'library': '📦',
     };
 

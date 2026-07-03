@@ -36,16 +36,20 @@ export function validateProjectName(name: string): string | undefined {
 
 export function suggestProjectName(template: RxdkTemplateId): string {
     switch (template) {
-        case 'd3d8-triangle':
+        case 'spinning-triangle':
             return 'my-triangle';
-        case 'd3d8-cube-lib':
+        case 'spinning-cube':
             return 'my-cube';
-        case 'dsound-music':
+        case 'music-visualizer':
             return 'my-music';
-        case 'xinput-gamepad':
+        case 'controller-input':
             return 'my-pad';
-        case 'xmv-play':
+        case 'video-player':
             return 'my-xmv';
+        case 'font-scroller':
+            return 'my-xfont';
+        case 'network-server':
+            return 'my-net';
         case 'library':
             return 'my-lib';
         default:

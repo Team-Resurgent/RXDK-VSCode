@@ -1,9 +1,11 @@
 export type RxdkTemplateId =
-    | 'd3d8-triangle'
-    | 'd3d8-cube-lib'
-    | 'dsound-music'
-    | 'xinput-gamepad'
-    | 'xmv-play'
+    | 'spinning-triangle'
+    | 'spinning-cube'
+    | 'music-visualizer'
+    | 'controller-input'
+    | 'video-player'
+    | 'font-scroller'
+    | 'network-server'
     | 'library';
 
 export interface RxdkEmbedFile {
@@ -83,21 +85,25 @@ export interface RxdkProjectManifest {
 }
 
 export const TEMPLATE_LABELS: Record<RxdkTemplateId, string> = {
-    'd3d8-triangle': 'D3D8 Triangle',
-    'd3d8-cube-lib': 'D3D8 Cube + Library',
-    'dsound-music': 'DSound Music Visualizer',
-    'xinput-gamepad': 'XInput Gamepad',
-    'xmv-play': 'XMV Play',
+    'spinning-triangle': 'Spinning Triangle',
+    'spinning-cube': 'Spinning Cube (Multi-Project)',
+    'music-visualizer': 'Music Visualizer',
+    'controller-input': 'Controller Input Monitor',
+    'video-player': 'Video Player (Looping)',
+    'font-scroller': 'Bitmap Font Scroller',
+    'network-server': 'Network + Web Server',
     library: 'Static Library',
 };
 
 /** One-line summary of each template, shown in the New Project picker. */
 export const TEMPLATE_DESCRIPTIONS: Record<RxdkTemplateId, string> = {
-    'd3d8-triangle': 'Rotating Direct3D 8 triangle with a Z-buffer — the classic starting point.',
-    'd3d8-cube-lib': 'Spinning RGB cube whose mesh comes from a referenced library project — a multi-project sample.',
-    'dsound-music': 'Streams an Ogg track through DirectSound with a Direct3D 8 spectrum visualizer — references a vorbis library project.',
-    'xinput-gamepad': 'Reads gamepad state with XInput and logs button/stick input.',
-    'xmv-play': 'Plays a bundled XMV video clip.',
+    'spinning-triangle': 'Rotating Direct3D 8 triangle with a Z-buffer — the classic starting point.',
+    'spinning-cube': 'Spinning RGB cube whose mesh comes from a referenced library project — a multi-project sample.',
+    'music-visualizer': 'Streams an Ogg track through DirectSound with a Direct3D 8 spectrum visualizer — references a vorbis library project.',
+    'controller-input': 'Reads gamepad state with XInput and logs button/stick input.',
+    'video-player': 'Plays a bundled XMV video clip.',
+    'font-scroller': 'Demoscene-style bitmap-font scroller using libxfont — sine bounce, stretch-blit scaling, rainbow color cycle, and a typing hacker-terminal background.',
+    'network-server': 'Brings up XNet + DHCP and hosts a tiny HTTP server — shows the URL to open on screen with libxfont.',
     library: 'A standalone static library (.lib) that other projects link via projectReferences.',
 };
 
