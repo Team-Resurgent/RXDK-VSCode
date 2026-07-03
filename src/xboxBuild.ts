@@ -1,7 +1,12 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { OutputLike, runStreamed } from './processRunner';
-import { RxdkProjectManifest } from './projectTypes';
+import {
+    DEFAULT_RXDK_CONFIGURATION,
+    isRxdkConfiguration,
+    RxdkConfiguration,
+    RxdkProjectManifest,
+} from './projectTypes';
 import { getXboxProjectOutDir } from './sdkPath';
 import { readProjectManifestAt } from './xboxSdkPaths';
 import { resolveZigExecutable } from './zigRuntime';
@@ -51,17 +56,28 @@ function projectDefineArgs(manifest: RxdkProjectManifest): string[] {
     return (manifest.defines ?? []).filter((d) => d?.trim()).map((d) => `-D${d}`);
 }
 
-// The SDK lib variant a title links against. The staged SDK lays its libraries
-// out as lib/debug and lib/release; titles default to release. (A per-project
-// override -- a "configuration" field in rxdk.project.json -- is a planned
-// follow-up; when it lands, thread the chosen variant through here.)
-const SDK_LIB_DEFAULT_VARIANT = 'release';
+// Resolve the SDK library variant a project links, from its manifest's
+// `configuration` field (default "release"). An invalid value warns and falls
+// back to the default rather than failing the build.
+function resolveConfiguration(manifest: RxdkProjectManifest, output?: OutputLike): RxdkConfiguration {
+    const raw = manifest.configuration;
+    if (raw === undefined) {
+        return DEFAULT_RXDK_CONFIGURATION;
+    }
+    if (isRxdkConfiguration(raw)) {
+        return raw;
+    }
+    output?.appendLine(
+        `Warning: invalid configuration "${raw}" in rxdk.project.json (expected debug|release); using ${DEFAULT_RXDK_CONFIGURATION}`
+    );
+    return DEFAULT_RXDK_CONFIGURATION;
+}
 
 // Pick the lib directory to link from. A split SDK (lib/debug + lib/release)
-// resolves to the release subdir; a legacy flat SDK (libs directly under
-// sdkLib) resolves to sdkLib unchanged.
-function resolveSdkLibVariantDir(sdkLib: string): string {
-    const variantDir = path.join(sdkLib, SDK_LIB_DEFAULT_VARIANT);
+// resolves to the requested variant's subdir; a legacy flat SDK (libs directly
+// under sdkLib) resolves to sdkLib unchanged.
+function resolveSdkLibVariantDir(sdkLib: string, configuration: RxdkConfiguration): string {
+    const variantDir = path.join(sdkLib, configuration);
     try {
         if (fs.statSync(variantDir).isDirectory()) {
             return variantDir;
@@ -305,14 +321,16 @@ export async function buildXboxProject(opts: BuildXboxProjectOptions): Promise<B
         }
 
         // The staged SDK ships each library in two variants side by side --
-        // lib/debug (Debug, -O0 -g) and lib/release (ReleaseSmall, -Os). Titles
-        // link the release variant by default (smaller, no debug info pulled
-        // into the title's own link); a future rxdk.project.json "configuration"
-        // field can select debug per project. Old/flat SDKs with no such subdir
-        // fall back to sdkLib itself, so this stays backward compatible.
-        // libcompat.lib (whole-archive-linked below) must come from the SAME
-        // variant dir, so linkXdk's libDir is pointed here too.
-        const sdkLibDir = resolveSdkLibVariantDir(opts.sdkLib);
+        // lib/debug (Debug, -O0 -g) and lib/release (ReleaseSmall, -Os). The
+        // manifest's "configuration" field picks which one this project links
+        // (default "release": smaller, no debug info pulled into the title's own
+        // link). Old/flat SDKs with no such subdir fall back to sdkLib itself,
+        // so this stays backward compatible. libcompat.lib (whole-archive-linked
+        // below) must come from the SAME variant dir, so linkXdk's libDir is
+        // pointed here too.
+        const configuration = resolveConfiguration(manifest, opts.output);
+        const sdkLibDir = resolveSdkLibVariantDir(opts.sdkLib, configuration);
+        opts.output?.appendLine(`Linking SDK libraries (configuration: ${configuration})`);
         const resolveLib = (name: string): string | undefined => {
             const candidate = path.join(sdkLibDir, name);
             return fs.existsSync(candidate) ? candidate : undefined;
