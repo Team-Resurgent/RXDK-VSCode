@@ -121,6 +121,22 @@ async function fetchRelease(repo: string, tag: string | undefined): Promise<GitH
     return (await res.json()) as GitHubRelease;
 }
 
+/**
+ * Resolve a named asset in the latest (or pinned via rxdk.hostToolsTag) RXDK-Tools
+ * release to its download URL. Used for standalone installers like
+ * XboxNeighborhood-Setup.exe that aren't part of the managed tools bundle.
+ */
+export async function resolveRxdkToolsAssetUrl(
+    assetName: string
+): Promise<{ url: string; tag: string }> {
+    const release = await fetchRelease(RXDK_TOOLS_REPO, readConfig('hostToolsTag'));
+    const asset = release.assets.find((a) => a.name === assetName);
+    if (!asset) {
+        throw new Error(`RXDK-Tools ${release.tag_name} has no asset "${assetName}"`);
+    }
+    return { url: asset.browser_download_url, tag: release.tag_name };
+}
+
 function xdvdfsAssetPrefix(): string {
     switch (platformToolRid()) {
         case 'linux-x64':

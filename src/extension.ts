@@ -15,6 +15,8 @@ import { openSdkDocs, openExtensionDocs } from './sdkDocs';
 import { openPrebuiltProjectSetup } from './prebuiltDebug';
 import { refreshPrebuiltSourceFolder } from './prebuiltWorkspace';
 import { launchXbwatson } from './xbwatsonLauncher';
+import { launchXbNeighborhood } from './xbNeighborhoodLauncher';
+import { openXboxNeighborhood } from './xboxNeighborhoodShell';
 import {
     isPrerequisitesReadySync,
     refreshPrerequisitesContext,
@@ -135,6 +137,8 @@ export function activate(context: vscode.ExtensionContext): void {
             sidebarProvider.refresh();
         }),
         vscode.commands.registerCommand('rxdk.launchXbwatson', guardPrerequisites(() => launchXbwatson(context, rxdkOutput))),
+        vscode.commands.registerCommand('rxdk.launchXbNeighborhood', guardPrerequisites(() => launchXbNeighborhood(context, rxdkOutput))),
+        vscode.commands.registerCommand('rxdk.openXboxNeighborhood', () => openXboxNeighborhood(rxdkOutput)),
         vscode.commands.registerCommand('rxdk.cycleGlobalsScope', () => cycleGlobalsScope()),
         vscode.commands.registerCommand('rxdk.setBuildType', () => promptSetBuildType()),
         vscode.commands.registerCommand('rxdk.openSettings', () => openSettingsPanel(context))

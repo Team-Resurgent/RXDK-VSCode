@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { getActiveXboxAddress, setActiveXboxAddress } from './xboxConsole';
+import { getActiveXboxAddress, setActiveXboxAddress, isWindowsHost } from './xboxConsole';
 
 // A curated RXDK settings screen. Unlike VS Code's native settings (which apply instantly and are
 // scattered across the tree), this groups the settings users actually reach for and applies them as
@@ -17,9 +17,10 @@ interface FieldDef {
     kind: FieldKind;
     config?: string; // full configuration key, e.g. 'rxdk.defaultConsole'
     state?: string; // globalState key (mutually exclusive with config)
-    // The active Xbox address (same value the sidebar shows). Read via
-    // getActiveXboxAddress (workspace config override, else the Windows registry),
-    // written via setActiveXboxAddress (validates + writes registry and config).
+    // The active Xbox address (same value the sidebar shows). Single source of
+    // truth per platform: the Windows registry (XBSetIP / Neighborhood), or the
+    // settings JSON on macOS/Linux. Read via getActiveXboxAddress, written via
+    // setActiveXboxAddress (validates + writes the platform's source of truth).
     console?: boolean;
     placeholder?: string;
     options?: { value: string; label: string }[]; // enum only
@@ -63,7 +64,7 @@ const SECTIONS: Section[] = [
             {
                 id: 'defaultConsole',
                 label: 'Default Xbox IP / hostname',
-                desc: 'The active devkit shown in the sidebar. On Windows this reads/writes the Xbox SDK registry (XBSetIP / Neighborhood); clear it to fall back to the registry value.',
+                desc: 'The active devkit shown in the sidebar. On Windows this reads/writes the Xbox SDK registry (XBSetIP / Neighborhood); on macOS/Linux it reads/writes VS Code settings JSON.',
                 kind: 'text',
                 console: true,
                 placeholder: 'e.g. 192.168.1.42 or my-devkit',
@@ -178,15 +179,17 @@ async function applyValues(
         if (f.console) {
             const value = String(raw ?? '').trim();
             if (value) {
-                // Writes the registry (Windows) + config, same as "Set Xbox IP".
+                // Writes the platform source of truth (registry on Windows, settings
+                // JSON on macOS/Linux), same as "Set Xbox IP".
                 try {
                     await setActiveXboxAddress(value);
                 } catch (e) {
                     errors.push(`${f.label}: ${e instanceof Error ? e.message : String(e)}`);
                 }
-            } else {
-                // Cleared: drop the config override so it falls back to the registry
-                // (Windows) or simply unsets it (macOS/Linux).
+            } else if (!isWindowsHost()) {
+                // Cleared on macOS/Linux: unset the settings-JSON source of truth.
+                // On Windows the registry (XBSetIP / Neighborhood) owns the value —
+                // leave it untouched here and never write settings JSON.
                 await cfg.update('rxdk.defaultConsole', '', vscode.ConfigurationTarget.Global);
                 await cfg.update('xbox.defaultConsole', '', vscode.ConfigurationTarget.Global);
                 if (vscode.workspace.workspaceFolders?.length) {

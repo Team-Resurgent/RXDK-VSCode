@@ -6,6 +6,7 @@ import { getXboxAddressInfo } from './xboxConsole';
 import { sdkDocsAvailable, extensionDocsAvailable } from './sdkDocs';
 import { isPrebuiltManifest } from './projectTypes';
 import { isPrerequisitesReadySync } from './prerequisites';
+import { isXboxNeighborhoodShellRegistered } from './xboxNeighborhoodShell';
 
 export class RxdkTreeItem extends vscode.TreeItem {
     constructor(
@@ -77,6 +78,13 @@ export class RxdkSidebarProvider implements vscode.TreeDataProvider<RxdkTreeItem
                     undefined,
                     'book'
                 ),
+                new RxdkTreeItem(
+                    'Tools',
+                    vscode.TreeItemCollapsibleState.Expanded,
+                    undefined,
+                    undefined,
+                    'tools'
+                ),
             ];
             const project = await findProjectManifest();
             if (project) {
@@ -129,20 +137,12 @@ export class RxdkSidebarProvider implements vscode.TreeDataProvider<RxdkTreeItem
             const info = await getXboxAddressInfo();
             const items: RxdkTreeItem[] = [];
             if (info.address) {
-                const sourceLabel =
-                    info.source === 'registry'
-                        ? 'registry'
-                        : info.source === 'workspace'
-                          ? process.platform === 'win32'
-                              ? 'settings override'
-                              : 'settings JSON'
-                          : '';
                 items.push(
                     new RxdkTreeItem(
                         info.address,
                         vscode.TreeItemCollapsibleState.None,
                         undefined,
-                        sourceLabel,
+                        undefined,
                         'vm-active'
                     )
                 );
@@ -164,15 +164,41 @@ export class RxdkSidebarProvider implements vscode.TreeDataProvider<RxdkTreeItem
                     'rxdk.setXboxIp',
                     undefined,
                     'edit'
-                ),
+                )
+            );
+            return items;
+        }
+
+        if (element.label === 'Tools') {
+            const items: RxdkTreeItem[] = [
                 new RxdkTreeItem(
                     'Launch xbWatson',
                     vscode.TreeItemCollapsibleState.None,
                     'rxdk.launchXbwatson',
                     'debug output viewer',
                     'output'
-                )
-            );
+                ),
+                new RxdkTreeItem(
+                    'Launch xbNeighborhood',
+                    vscode.TreeItemCollapsibleState.None,
+                    'rxdk.launchXbNeighborhood',
+                    'console file browser',
+                    'files'
+                ),
+            ];
+            // Windows-only, and only when the Explorer shell namespace extension
+            // (Rxdk.XbShellExt) is actually registered under C:\Program Files\Xbox Neighborhood.
+            if (await isXboxNeighborhoodShellRegistered()) {
+                items.push(
+                    new RxdkTreeItem(
+                        'Open Xbox Neighborhood',
+                        vscode.TreeItemCollapsibleState.None,
+                        'rxdk.openXboxNeighborhood',
+                        'Explorer shell namespace',
+                        'root-folder'
+                    )
+                );
+            }
             return items;
         }
 
