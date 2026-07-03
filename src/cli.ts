@@ -14,6 +14,7 @@
 import { buildXboxProject } from './xboxBuild';
 import { deployProject, deployPrebuilt } from './xboxDeploy';
 import { launchProject } from './xboxLaunch';
+import { isRxdkOptimizeMode } from './optimizeMode';
 
 interface OutputChannelLike {
     appendLine(value: string): void;
@@ -63,12 +64,18 @@ async function main(): Promise<number> {
 
     switch (command) {
         case 'build': {
+            const optimizeArg = stringArg(args, 'optimize');
+            if (optimizeArg !== undefined && !isRxdkOptimizeMode(optimizeArg)) {
+                console.error(`Invalid --optimize "${optimizeArg}" (expected Debug|ReleaseSafe|ReleaseFast|ReleaseSmall)`);
+                return 1;
+            }
             const result = await buildXboxProject({
                 projectRoot: requireArg(args, 'project-root'),
                 sdkInclude: requireArg(args, 'sdk-include'),
                 sdkLib: requireArg(args, 'sdk-lib'),
                 zigExecutable: stringArg(args, 'zig-executable'),
                 compileOnly: args.get('compile-only') === true,
+                optimize: optimizeArg,
                 output: consoleOutput,
             });
             if (!result.ok) {

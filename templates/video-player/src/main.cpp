@@ -8,9 +8,14 @@
 // not yet implemented, so a missing/failed effects image just means silent
 // video (see RXDK-Libs samples/xmv-play for the reference behavior).
 //
-// Assets live in media/ (test.xmv, dsstdfx.bin) next to this project. Deploy
-// copies media\ to xe:\<project>\media\; ISO build stages the same tree under
-// d:\media\.
+// Assets live in media/ next to this project. dsstdfx.bin is baked into the
+// XBE itself (rxdk.project.json's "embed" entry -> XAudioDownloadEffectsImage
+// loads it from the embedded XBE section; no external-file fallback -- if the
+// embed is missing/broken, DirectSound effects just don't come up, same as
+// any other InitDirectSound failure).
+// test.xmv is too large to embed, so it's deployed/staged as a loose file:
+// deployPaths copies media/test.xmv to xe:\<project>\media\test.xmv on
+// deploy, and stages the same path into the .iso on build.
 
 #include <xtl.h>
 #include <d3d8.h>
@@ -18,7 +23,6 @@
 #include <xmv.h>
 
 #define XMV_PATH            "d:\\media\\test.xmv"
-#define DSSTDFX_EXTERN      "d:\\media\\dsstdfx.bin"
 #define PLAY_TIMEOUT_MS     120000
 #define MIN_FRAMES          10
 
@@ -146,22 +150,16 @@ static HRESULT InitDirectSound(void)
     effectLoc.dwI3DL2ReverbIndex = GraphI3DL2_I3DL2Reverb;
     effectLoc.dwCrosstalkIndex = GraphXTalk_XTalk;
 
+    // Loaded from the XBE section imagebld /INSERTFILE bakes in for the
+    // "embed" entry in rxdk.project.json -- no external-file fallback.
     hr = XAudioDownloadEffectsImage(
         "dsstdfx", &effectLoc, XAUDIO_DOWNLOADFX_XBESECTION, NULL);
     if (FAILED(hr)) {
-        hr = XAudioDownloadEffectsImage(
-            DSSTDFX_EXTERN,
-            &effectLoc,
-            XAUDIO_DOWNLOADFX_EXTERNFILE,
-            NULL);
-    }
-    if (FAILED(hr)) {
-        DbgTraceHr("XAudioDownloadEffectsImage failed", hr);
-        DbgTrace("xmv-hw: embed dsstdfx.bin or deploy media\\dsstdfx.bin\n");
+        DbgTraceHr("XAudioDownloadEffectsImage (XBESECTION) failed", hr);
+        DbgTrace("xmv-hw: check rxdk.project.json's \"embed\" entry for dsstdfx\n");
         return hr;
     }
-
-    DbgTrace("xmv-hw: effects image loaded\n");
+    DbgTrace("xmv-hw: effects image loaded from embedded XBE section\n");
     return S_OK;
 }
 

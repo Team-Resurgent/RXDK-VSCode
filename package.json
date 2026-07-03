@@ -42,6 +42,7 @@
       { "command": "rxdk.installDotNetRuntime", "title": "Install .NET 8 Runtime", "category": "RXDK", "icon": "$(cloud-download)" },
       { "command": "rxdk.launchXbwatson", "title": "Launch xbWatson", "category": "RXDK", "icon": "$(output)" },
       { "command": "rxdk.cycleGlobalsScope", "title": "Cycle Globals Visibility (Title / +Constants / All)", "category": "RXDK", "icon": "$(list-filter)" },
+      { "command": "rxdk.setBuildType", "title": "Set Build Type (Debug / ReleaseSafe / ReleaseFast / ReleaseSmall)", "category": "RXDK", "icon": "$(settings-gear)" },
       { "command": "rxdk.openSettings", "title": "Settings", "category": "RXDK", "icon": "$(gear)" }
     ],
     "viewsContainers": {
@@ -84,6 +85,7 @@
         { "command": "rxdk.launchXbwatson", "when": "rxdk.prerequisitesReady" },
         { "command": "rxdk.installDotNetRuntime", "when": "rxdk.prerequisitesReady" },
         { "command": "rxdk.cycleGlobalsScope", "when": "debugType == 'xbox'" },
+        { "command": "rxdk.setBuildType", "when": "rxdk.prerequisitesReady && rxdk.hasProject" },
         { "command": "rxdk.openSettings", "when": "true" },
         { "command": "rxdk.refreshSidebar", "when": "false" },
         { "command": "rxdk.refreshPrebuiltSource", "when": "false" }
@@ -110,7 +112,8 @@
               "srcRoot": { "type": "string", "description": "Source root for mapping PDB paths (defaults to the workspace folder)" },
               "consoleName": { "type": "string", "description": "Target Xbox console name" },
               "bridgePath": { "type": "string", "description": "Path to xboxdbg-bridge (managed Rxdk.XboxDbgBridge host)" },
-              "reboot": { "type": "boolean", "default": false }
+              "reboot": { "type": "boolean", "default": false },
+              "buildOnly": { "type": "boolean", "default": false, "description": "Run only preLaunchTask (build), then end the session immediately -- no deploy, no hardware launch, no attach." }
             }
           },
           "attach": {
@@ -129,6 +132,14 @@
             "name": "Debug Xbox title",
             "preLaunchTask": "rxdk: build+deploy",
             "program": "${workspaceFolder}/out/my-game.exe",
+            "xbePath": "xe:\\my-game\\my-game.xbe"
+          },
+          {
+            "type": "xbox",
+            "request": "launch",
+            "name": "Build Xbox title",
+            "preLaunchTask": "rxdk: build",
+            "buildOnly": true,
             "xbePath": "xe:\\my-game\\my-game.xbe"
           }
         ]
@@ -227,6 +238,18 @@
           ],
           "default": "title",
           "markdownDescription": "Which symbols appear in the debugger's **Globals** pane. Toggle live during a session with the **RXDK: Cycle Globals Visibility** command."
+        },
+        "rxdk.optimize": {
+          "type": "string",
+          "enum": ["Debug", "ReleaseSafe", "ReleaseFast", "ReleaseSmall"],
+          "enumDescriptions": [
+            "No optimization, full debug info -- the default.",
+            "Optimized, but keeps runtime safety checks (traps on undefined behavior instead of a silent miscompile).",
+            "Optimized for speed, no safety checks, no debug info.",
+            "Optimized for size, no safety checks, no debug info."
+          ],
+          "default": "Debug",
+          "markdownDescription": "Build type used by the **rxdk: build** task. Change it with the **RXDK: Set Build Type** command."
         }
       }
     }

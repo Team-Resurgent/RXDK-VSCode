@@ -234,6 +234,8 @@ export async function generateVscodeFolder(
                     includeDir,
                     '--sdk-lib',
                     libDir,
+                    '--optimize',
+                    '${config:rxdk.optimize}',
                 ],
                 group: { kind: 'build', isDefault: true },
                 problemMatcher: ['$gcc'],
@@ -282,6 +284,14 @@ export async function generateVscodeFolder(
                 bridgePath,
                 consoleName: '${config:rxdk.defaultConsole}',
                 reboot: false,
+            },
+            {
+                type: 'xbox',
+                request: 'launch',
+                name: `Build ${projectName}`,
+                preLaunchTask: 'rxdk: build',
+                buildOnly: true,
+                xbePath: `xe:\\${projectName}\\${projectName}.xbe`,
             },
         ],
     };

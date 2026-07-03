@@ -47,6 +47,8 @@ export interface LinkXdkOptions {
     /** Link entry point. Default 'start'. */
     entry?: string;
     libDir?: string;
+    /** Emit debug info (-g) for PDB/symbol generation. Default true. */
+    debugInfo?: boolean;
     output?: OutputLike;
 }
 
@@ -77,7 +79,8 @@ export async function linkXdk(opts: LinkXdkOptions): Promise<LinkXdkResult> {
         '-target', 'x86-windows-gnu',
         '-nostdlib', '-nostartfiles',
         '-Wl,--image-base=0x10000',
-        '-O0', '-g',
+        '-O0',
+        ...(opts.debugInfo === false ? [] : ['-g']),
         '-rtlib=compiler-rt',
         '-e', entry,
         '-o', opts.outExe

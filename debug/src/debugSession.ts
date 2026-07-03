@@ -35,6 +35,11 @@ interface XboxLaunchRequestArguments extends DebugProtocol.LaunchRequestArgument
     consoleName?: string;
     reboot?: boolean;
     bridgePath?: string;
+    // When set, the debug session ends right after preLaunchTask finishes --
+    // no deploy, no hardware launch, no attach. Lets a "Build <project>" entry
+    // sit in the same launch.json/dropdown as "Debug <project>" while reusing
+    // the "xbox" debugger type purely for its preLaunchTask plumbing.
+    buildOnly?: boolean;
 }
 
 interface XboxAttachRequestArguments extends DebugProtocol.AttachRequestArguments {
@@ -113,6 +118,13 @@ export class XboxDebugSession extends LoggingDebugSession {
         response: DebugProtocol.LaunchResponse,
         args: XboxLaunchRequestArguments
     ): Promise<void> {
+        if (args.buildOnly) {
+            // preLaunchTask (the build) has already run and succeeded by the time
+            // VS Code calls launchRequest -- there's nothing left to do here.
+            this.sendResponse(response);
+            this.sendEvent(new TerminatedEvent());
+            return;
+        }
         try {
             this.launchStartupInProgress = true;
             this.srcRoot = args.srcRoot ? path.resolve(args.srcRoot) : '';

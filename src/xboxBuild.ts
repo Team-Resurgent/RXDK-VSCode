@@ -8,7 +8,9 @@ import { resolveZigExecutable } from './zigRuntime';
 import { resolveHostTool } from './hostTools';
 import { linkXdk } from './xdkLink';
 import { buildXbe } from './imageBuild';
-import { packXiso } from './packXiso';
+import { packXiso, StageFileEntry } from './packXiso';
+import { optimizeCompileFlags, optimizeKeepsDebugInfo, RxdkOptimizeMode } from './optimizeMode';
+import { resolveDeployPaths } from './xboxDeploy';
 
 export type BuildProjectResult = { ok: true; outDir: string } | { ok: false; error: string };
 
@@ -60,13 +62,14 @@ interface ZigCompileOptions {
     includeArgs: string[];
     defineArgs: string[];
     isCpp: boolean;
+    optimize: RxdkOptimizeMode;
     output?: OutputLike;
 }
 
 async function zigCompile(opts: ZigCompileOptions): Promise<void> {
     const common = [
         '-target', 'x86-windows-gnu',
-        '-O0', '-g', '-fno-sanitize=undefined',
+        ...optimizeCompileFlags(opts.optimize),
         '-ffreestanding',
         '-fno-stack-protector',
         '-fms-extensions', '-fms-compatibility',
@@ -186,6 +189,7 @@ async function compileProjectSources(
     outDir: string,
     includeArgs: string[],
     defineArgs: string[],
+    optimize: RxdkOptimizeMode,
     output?: OutputLike
 ): Promise<CompiledSources> {
     const objs: string[] = [];
@@ -201,7 +205,7 @@ async function compileProjectSources(
         if (isCpp) {
             usesCpp = true;
         }
-        await zigCompile({ zig, source: src, object: obj, includeArgs, defineArgs, isCpp, output });
+        await zigCompile({ zig, source: src, object: obj, includeArgs, defineArgs, isCpp, optimize, output });
         output?.appendLine(`Compiled ${obj}`);
         objs.push(obj);
     }
@@ -213,6 +217,7 @@ async function buildXboxLibrary(
     libRoot: string,
     zig: string,
     sdkInclude: string,
+    optimize: RxdkOptimizeMode,
     output?: OutputLike
 ): Promise<string> {
     const manifest = readProjectManifestAt(libRoot);
@@ -231,7 +236,7 @@ async function buildXboxLibrary(
     const defineArgs = projectDefineArgs(manifest);
 
     output?.appendLine(`== Building library ${manifest.name} ==`);
-    const compiled = await compileProjectSources(libRoot, manifest, zig, outDir, includeArgs, defineArgs, output);
+    const compiled = await compileProjectSources(libRoot, manifest, zig, outDir, includeArgs, defineArgs, optimize, output);
     if (compiled.objs.length === 0) {
         throw new Error(`Library ${manifest.name} has no sources to archive`);
     }
@@ -256,6 +261,8 @@ export interface BuildXboxProjectOptions {
     sdkLib: string;
     zigExecutable?: string;
     compileOnly?: boolean;
+    /** Build type (Debug/ReleaseSafe/ReleaseFast/ReleaseSmall). Default 'Debug'. */
+    optimize?: RxdkOptimizeMode;
     output?: OutputLike;
 }
 
@@ -266,6 +273,7 @@ export async function buildXboxProject(opts: BuildXboxProjectOptions): Promise<B
         const projectName = manifest.name;
         const outDir = getXboxProjectOutDir(projectRoot, manifest);
         fs.mkdirSync(outDir, { recursive: true });
+        const optimize: RxdkOptimizeMode = opts.optimize ?? 'Debug';
 
         if (!fs.existsSync(opts.sdkInclude)) {
             throw new Error('Missing sdk/include - run RXDK prerequisites (SDK install)');
@@ -284,12 +292,12 @@ export async function buildXboxProject(opts: BuildXboxProjectOptions): Promise<B
         const depOrder = getDependencyOrder(projectRoot, manifest);
         const userLibs: string[] = [];
         for (const dep of depOrder) {
-            userLibs.push(await buildXboxLibrary(dep, zig, opts.sdkInclude, opts.output));
+            userLibs.push(await buildXboxLibrary(dep, zig, opts.sdkInclude, optimize, opts.output));
         }
 
         // A library root builds to a .lib and stops (no link / imagebld / deploy).
         if (manifest.type === 'library') {
-            const lib = await buildXboxLibrary(projectRoot, zig, opts.sdkInclude, opts.output);
+            const lib = await buildXboxLibrary(projectRoot, zig, opts.sdkInclude, optimize, opts.output);
             opts.output?.appendLine(`OK: library ${projectName} build complete -> ${lib}`);
             return { ok: true, outDir };
         }
@@ -306,7 +314,7 @@ export async function buildXboxProject(opts: BuildXboxProjectOptions): Promise<B
 
         opts.output?.appendLine(`== Building executable ${projectName} ==`);
         const compiled = await compileProjectSources(
-            projectRoot, manifest, zig, outDir, projectIncludeArgs, projectDefines, opts.output
+            projectRoot, manifest, zig, outDir, projectIncludeArgs, projectDefines, optimize, opts.output
         );
         const objs = compiled.objs;
 
@@ -357,7 +365,8 @@ export async function buildXboxProject(opts: BuildXboxProjectOptions): Promise<B
         // runtime fixup, so no per-title image_init bootstrap is needed.
         const exe = path.resolve(path.join(outDir, `${projectName}.exe`));
         const linkResult = await linkXdk({
-            zig, objs, libs: linkLibs, outExe: exe, entry, libDir: opts.sdkLib, output: opts.output,
+            zig, objs, libs: linkLibs, outExe: exe, entry, libDir: opts.sdkLib,
+            debugInfo: optimizeKeepsDebugInfo(optimize), output: opts.output,
         });
         if (linkResult.exitCode !== 0) {
             throw new Error(`Link failed (exit ${linkResult.exitCode})`);
@@ -396,8 +405,15 @@ export async function buildXboxProject(opts: BuildXboxProjectOptions): Promise<B
         });
         opts.output?.appendLine(`Built ${xbe}`);
         try {
+            // deployPaths: project-relative files/dirs (e.g. "media") staged into the ISO next
+            // to default.xbe, same layout a live deploy produces (xe:\<name>\... -> D:\...).
+            const stageFiles: StageFileEntry[] = resolveDeployPaths(projectRoot, manifest.deployPaths, opts.output);
+            if (stageFiles.length > 0) {
+                opts.output?.appendLine(`Staging ${stageFiles.length} deployPaths file(s) into ISO`);
+            }
+
             const iso = await packXiso({
-                inputXbe: xbe, projectName, outDir, toolPath: xdvdfsPath, output: opts.output,
+                inputXbe: xbe, projectName, outDir, toolPath: xdvdfsPath, stageFiles, output: opts.output,
             });
             opts.output?.appendLine(`Packed ${iso}`);
         } catch (err) {
