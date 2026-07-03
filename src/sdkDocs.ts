@@ -86,7 +86,7 @@ async function openDocsViewer(
     const existing = viewers.get(viewType);
     if (existing) {
         existing.docsRoot = docsRoot;
-        existing.panel.reveal(vscode.ViewColumn.Beside);
+        existing.panel.reveal(vscode.ViewColumn.Active);
         await postNavigate(existing, startPage);
         return;
     }
@@ -95,7 +95,7 @@ async function openDocsViewer(
     const panel = vscode.window.createWebviewPanel(
         viewType,
         toc.title || fallbackTitle,
-        vscode.ViewColumn.Beside,
+        vscode.ViewColumn.Active,
         { enableScripts: true, retainContextWhenHidden: true, localResourceRoots: [docsUri] }
     );
     const viewer: Viewer = { panel, docsRoot };
