@@ -120,6 +120,14 @@ async function zigCompile(opts: ZigCompileOptions): Promise<void> {
         // own build.zig (build/xbox_target.zig, libs/*/build.zig) - every title's
         // own source needs the same guarantee, not just the SDK libraries.
         '-fno-builtin',
+        // RXDK ships retail SDK libraries (built DBG=0), so they never export the
+        // debug-only parameter-check helpers (D3DDevice_SetRenderState_ParameterCheck
+        // etc.). The public d3d8.h guards references to those behind #ifdef _DEBUG.
+        // Some Clang builds predefine _DEBUG in ms-compatibility mode, which would
+        // take that path and fail the link with an undefined ParameterCheck symbol.
+        // Pin the retail path deterministically so titles link the same way on every
+        // toolchain, regardless of whether the compiler predefines _DEBUG.
+        '-U_DEBUG',
         ...opts.includeArgs,
         ...opts.defineArgs,
         ...XDK_CLANG_WARNINGS,
