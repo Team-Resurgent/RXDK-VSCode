@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import { getActiveXboxAddress, setActiveXboxAddress } from './xboxConsole';
 
 // A curated RXDK settings screen. Unlike VS Code's native settings (which apply instantly and are
 // scattered across the tree), this groups the settings users actually reach for and applies them as
@@ -16,6 +17,10 @@ interface FieldDef {
     kind: FieldKind;
     config?: string; // full configuration key, e.g. 'rxdk.defaultConsole'
     state?: string; // globalState key (mutually exclusive with config)
+    // The active Xbox address (same value the sidebar shows). Read via
+    // getActiveXboxAddress (workspace config override, else the Windows registry),
+    // written via setActiveXboxAddress (validates + writes registry and config).
+    console?: boolean;
     placeholder?: string;
     options?: { value: string; label: string }[]; // enum only
 }
@@ -58,9 +63,9 @@ const SECTIONS: Section[] = [
             {
                 id: 'defaultConsole',
                 label: 'Default Xbox IP / hostname',
-                desc: 'Used for deploy/debug. Windows: leave empty to use the Xbox SDK registry.',
+                desc: 'The active devkit shown in the sidebar. On Windows this reads/writes the Xbox SDK registry (XBSetIP / Neighborhood); clear it to fall back to the registry value.',
                 kind: 'text',
-                config: 'rxdk.defaultConsole',
+                console: true,
                 placeholder: 'e.g. 192.168.1.42 or my-devkit',
             },
         ],
@@ -108,7 +113,7 @@ export function openSettingsPanel(context: vscode.ExtensionContext): void {
     panel.webview.onDidReceiveMessage(async (msg: Record<string, unknown>) => {
         switch (String(msg.type ?? '')) {
             case 'ready':
-                panel.webview.postMessage({ type: 'init', values: readValues(context) });
+                panel.webview.postMessage({ type: 'init', values: await readValues(context) });
                 break;
             case 'browse': {
                 const field = ALL_FIELDS.find((f) => f.id === String(msg.field ?? ''));
@@ -121,10 +126,17 @@ export function openSettingsPanel(context: vscode.ExtensionContext): void {
                 }
                 break;
             }
-            case 'apply':
-                await applyValues(context, (msg.values as Record<string, unknown>) ?? {});
+            case 'apply': {
+                const errors = await applyValues(context, (msg.values as Record<string, unknown>) ?? {});
+                if (errors.length) {
+                    void vscode.window.showErrorMessage(`RXDK settings: ${errors.join('; ')}`);
+                }
+                // Reflect the resolved/saved values (the console field may now show the
+                // registry value that was actually written, or revert if it was invalid).
+                panel.webview.postMessage({ type: 'init', values: await readValues(context) });
                 panel.webview.postMessage({ type: 'saved' });
                 break;
+            }
             case 'cancel':
                 panel.dispose();
                 break;
@@ -134,11 +146,13 @@ export function openSettingsPanel(context: vscode.ExtensionContext): void {
     });
 }
 
-function readValues(context: vscode.ExtensionContext): Record<string, string | boolean> {
+async function readValues(context: vscode.ExtensionContext): Promise<Record<string, string | boolean>> {
     const cfg = vscode.workspace.getConfiguration();
     const out: Record<string, string | boolean> = {};
     for (const f of ALL_FIELDS) {
-        if (f.state) {
+        if (f.console) {
+            out[f.id] = (await getActiveXboxAddress()) ?? '';
+        } else if (f.state) {
             out[f.id] = context.globalState.get<string>(f.state) ?? '';
         } else if (f.kind === 'bool') {
             out[f.id] = cfg.get<boolean>(f.config!) ?? false;
@@ -149,17 +163,38 @@ function readValues(context: vscode.ExtensionContext): Record<string, string | b
     return out;
 }
 
+/** Returns validation errors that blocked a field (empty = all applied). */
 async function applyValues(
     context: vscode.ExtensionContext,
     values: Record<string, unknown>
-): Promise<void> {
+): Promise<string[]> {
     const cfg = vscode.workspace.getConfiguration();
+    const errors: string[] = [];
     for (const f of ALL_FIELDS) {
         if (!(f.id in values)) {
             continue;
         }
         const raw = values[f.id];
-        if (f.state) {
+        if (f.console) {
+            const value = String(raw ?? '').trim();
+            if (value) {
+                // Writes the registry (Windows) + config, same as "Set Xbox IP".
+                try {
+                    await setActiveXboxAddress(value);
+                } catch (e) {
+                    errors.push(`${f.label}: ${e instanceof Error ? e.message : String(e)}`);
+                }
+            } else {
+                // Cleared: drop the config override so it falls back to the registry
+                // (Windows) or simply unsets it (macOS/Linux).
+                await cfg.update('rxdk.defaultConsole', '', vscode.ConfigurationTarget.Global);
+                await cfg.update('xbox.defaultConsole', '', vscode.ConfigurationTarget.Global);
+                if (vscode.workspace.workspaceFolders?.length) {
+                    await cfg.update('rxdk.defaultConsole', undefined, vscode.ConfigurationTarget.Workspace);
+                    await cfg.update('xbox.defaultConsole', undefined, vscode.ConfigurationTarget.Workspace);
+                }
+            }
+        } else if (f.state) {
             await context.globalState.update(f.state, String(raw ?? '').trim());
         } else if (f.kind === 'bool') {
             await cfg.update(f.config!, Boolean(raw), vscode.ConfigurationTarget.Global);
@@ -168,6 +203,7 @@ async function applyValues(
             await cfg.update(f.config!, value, vscode.ConfigurationTarget.Global);
         }
     }
+    return errors;
 }
 
 async function pickPath(field: FieldDef, seed: string): Promise<string | undefined> {
