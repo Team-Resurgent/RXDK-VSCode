@@ -116,12 +116,18 @@ export function isStagedSdkPresent(context?: vscode.ExtensionContext): boolean {
  * libs are always staged together in practice, but this mirrors the .lib-specific
  * marker check the build pipeline used to make before the TS port, so a
  * partially-staged SDK (include present, lib missing/stale) is still caught.
+ *
+ * The SDK ships libs either flat (lib/libc.lib) or split by build configuration
+ * (lib/release/libc.lib + lib/debug/libc.lib); a marker in any of those counts,
+ * so a split-layout SDK isn't mistaken for "no libs" and downgraded to the
+ * stale bundled fallback. getSdkLibDir returns the lib/ root either way; the
+ * build pipeline appends the configuration subdir (see resolveSdkLibVariantDir).
  */
 export function isStagedSdkLibPresent(context?: vscode.ExtensionContext): boolean {
     const lib = path.join(getStagedSdkRoot(context), 'lib');
-    return ['libkernel.lib', 'libc.lib', 'xboxkrnl.lib', 'libcmt.lib'].some((marker) =>
-        fs.existsSync(path.join(lib, marker))
-    );
+    const markers = ['libkernel.lib', 'libc.lib', 'xboxkrnl.lib', 'libcmt.lib'];
+    const dirs = [lib, path.join(lib, 'release'), path.join(lib, 'debug')];
+    return dirs.some((dir) => markers.some((marker) => fs.existsSync(path.join(dir, marker))));
 }
 
 export type SdkInstallProgress = (update: { message: string; percent?: number }) => void;
