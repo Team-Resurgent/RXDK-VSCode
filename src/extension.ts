@@ -19,6 +19,7 @@ import {
 } from './prerequisites';
 import { openPrerequisitesSetup } from './prerequisitesSetup';
 import { openSettingsPanel } from './settingsPanel';
+import { RXDK_OPTIMIZE_MODES, RxdkOptimizeMode } from './optimizeMode';
 let titleOutputChannel: vscode.OutputChannel | undefined;
 const titleLogWatchers = new Map<string, NodeJS.Timeout>();
 let rxdkOutput: vscode.OutputChannel;
@@ -119,6 +120,7 @@ export function activate(context: vscode.ExtensionContext): void {
         }),
         vscode.commands.registerCommand('rxdk.launchXbwatson', guardPrerequisites(() => launchXbwatson(context, rxdkOutput))),
         vscode.commands.registerCommand('rxdk.cycleGlobalsScope', () => cycleGlobalsScope()),
+        vscode.commands.registerCommand('rxdk.setBuildType', () => promptSetBuildType()),
         vscode.commands.registerCommand('rxdk.openSettings', () => openSettingsPanel(context))
     );
 
@@ -205,6 +207,37 @@ async function cycleGlobalsScope(): Promise<void> {
     const next = GLOBALS_SCOPE_ORDER[(GLOBALS_SCOPE_ORDER.indexOf(current as (typeof GLOBALS_SCOPE_ORDER)[number]) + 1) % GLOBALS_SCOPE_ORDER.length];
     await cfg.update('debugger.globalsScope', next, vscode.ConfigurationTarget.Global);
     vscode.window.setStatusBarMessage(`RXDK Globals: ${GLOBALS_SCOPE_LABELS[next]}`, 3000);
+}
+
+const BUILD_TYPE_DESCRIPTIONS: Record<RxdkOptimizeMode, string> = {
+    Debug: 'No optimization, full debug info -- the default.',
+    ReleaseSafe: 'Optimized, keeps runtime safety checks (traps on undefined behavior).',
+    ReleaseFast: 'Optimized for speed, no safety checks, no debug info.',
+    ReleaseSmall: 'Optimized for size, no safety checks, no debug info.',
+};
+
+// Quick-pick to change the build type the generated "rxdk: build" task uses.
+// Workspace scope when a project is open (so it travels with the project),
+// falling back to Global otherwise -- same pattern as promptSetXboxIp.
+async function promptSetBuildType(): Promise<void> {
+    const cfg = vscode.workspace.getConfiguration('rxdk');
+    const current = cfg.get<string>('optimize') || 'Debug';
+    const picked = await vscode.window.showQuickPick(
+        RXDK_OPTIMIZE_MODES.map((mode) => ({
+            label: mode === current ? `$(check) ${mode}` : mode,
+            description: BUILD_TYPE_DESCRIPTIONS[mode],
+            mode,
+        })),
+        { title: 'RXDK: Set Build Type', placeHolder: `Current: ${current}` }
+    );
+    if (!picked) {
+        return;
+    }
+    const target = vscode.workspace.workspaceFolders?.length
+        ? vscode.ConfigurationTarget.Workspace
+        : vscode.ConfigurationTarget.Global;
+    await cfg.update('optimize', picked.mode, target);
+    vscode.window.setStatusBarMessage(`RXDK Build Type: ${picked.mode}`, 3000);
 }
 
 function registerDebugIntegration(context: vscode.ExtensionContext): void {

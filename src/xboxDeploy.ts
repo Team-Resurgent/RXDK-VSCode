@@ -29,7 +29,7 @@ function listFilesMatching(dir: string, pattern: string): string[] {
 }
 
 /** Every file under `localPath`, recursively, as paths relative to `localPath`. */
-function listFilesRecursive(localPath: string): string[] {
+export function listFilesRecursive(localPath: string): string[] {
     const out: string[] = [];
     const walk = (dir: string): void => {
         for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -42,6 +42,64 @@ function listFilesRecursive(localPath: string): string[] {
         }
     };
     walk(localPath);
+    return out;
+}
+
+export interface ResolvedDeployFile {
+    /** Absolute local source path. */
+    source: string;
+    /** Destination path relative to the deployed root (remote dir / ISO stage dir), forward-slash. */
+    relativeDest: string;
+}
+
+/**
+ * Resolve a manifest's `deployPaths` entries to concrete files. Each entry may name either a
+ * single file (copied to the same relative path) or a directory (recursively copied, with the
+ * entry's own relative path as the destination's leading directory) -- e.g. "media" -> every
+ * file under it lands at "media/...", "readme.txt" -> lands at "readme.txt" directly.
+ */
+export function resolveDeployPaths(
+    projectRoot: string,
+    deployPaths: string[] | undefined,
+    output?: OutputLike
+): ResolvedDeployFile[] {
+    const out: ResolvedDeployFile[] = [];
+    for (const relPath of deployPaths ?? []) {
+        if (!relPath?.trim()) {
+            continue;
+        }
+        const cleanRel = relPath.replace(/\\/g, '/').replace(/\/+$/, '');
+        const localPath = path.join(projectRoot, cleanRel.replace(/\//g, path.sep));
+
+        let stat: fs.Stats;
+        try {
+            stat = fs.statSync(localPath);
+        } catch {
+            output?.appendLine(`Warning: deployPaths: not found ${localPath}`);
+            continue;
+        }
+
+        if (stat.isFile()) {
+            out.push({ source: localPath, relativeDest: cleanRel });
+            continue;
+        }
+        if (!stat.isDirectory()) {
+            output?.appendLine(`Warning: deployPaths: not a file or directory ${localPath}`);
+            continue;
+        }
+
+        const files = listFilesRecursive(localPath);
+        if (files.length === 0) {
+            output?.appendLine(`Warning: deployPaths: no files under ${localPath}`);
+            continue;
+        }
+        for (const relFile of files) {
+            out.push({
+                source: path.join(localPath, relFile),
+                relativeDest: `${cleanRel}/${relFile.replace(/\\/g, '/')}`,
+            });
+        }
+    }
     return out;
 }
 
@@ -115,8 +173,8 @@ export async function deployProject(opts: DeployProjectOptions): Promise<DeployR
             return { ok: false, error: `No files matched in ${localDir} (patterns: ${patterns.join(', ')})` };
         }
 
-        // deployPaths: project-relative dirs (e.g. "media") copied recursively next to the
-        // project's own output on the console. xbcp's own directory/wildcard recursive-copy
+        // deployPaths: project-relative files/dirs (e.g. "media", "readme.txt") copied next to
+        // the project's own output on the console. xbcp's own directory/wildcard recursive-copy
         // has real bugs for a plain local folder source (silently no-ops in one code path;
         // embeds a literal "*" in the rebuilt path in another) -- sidestepped by copying each
         // file individually with an explicit destination path, reconstructing the relative
@@ -125,38 +183,18 @@ export async function deployProject(opts: DeployProjectOptions): Promise<DeployR
         // case-insensitive variables would have silently aliased the script's own typed
         // $Files parameter -- not a risk in TS's real block scoping, but the descriptive
         // names are kept for clarity.)
-        let deployCopied = 0;
-        const deploySummary: string[] = [];
-        for (const relPath of manifest.deployPaths ?? []) {
-            if (!relPath?.trim()) {
-                continue;
+        const deployFiles = resolveDeployPaths(projectRoot, manifest.deployPaths, opts.output);
+        for (const entry of deployFiles) {
+            const dest = `${remoteDir}\\${entry.relativeDest.replace(/\//g, '\\')}`;
+            if (!opts.quiet) {
+                opts.output?.appendLine(`${entry.source} -> ${dest}`);
             }
-            const localPath = path.join(projectRoot, relPath.replace(/\//g, path.sep).replace(/[\\/]+$/, ''));
-            if (!fs.existsSync(localPath)) {
-                opts.output?.appendLine(`Warning: deployPaths: not found ${localPath}`);
-                continue;
-            }
-            const deployFiles = listFilesRecursive(localPath);
-            if (deployFiles.length === 0) {
-                opts.output?.appendLine(`Warning: deployPaths: no files under ${localPath}`);
-                continue;
-            }
-            const leaf = path.basename(localPath);
-            for (const relFile of deployFiles) {
-                const dest = `${remoteDir}\\${leaf}\\${relFile}`;
-                const fullFile = path.join(localPath, relFile);
-                if (!opts.quiet) {
-                    opts.output?.appendLine(`${fullFile} -> ${dest}`);
-                }
-                await xbcpCopy(xbcp, fullFile, dest, consoleAddr, opts.output);
-            }
-            deployCopied += deployFiles.length;
-            deploySummary.push(`${leaf} -> ${remoteDir}\\${leaf} (${deployFiles.length} file(s))`);
+            await xbcpCopy(xbcp, entry.source, dest, consoleAddr, opts.output);
         }
 
         let summary = `Deployed: ${sent.join(', ')} -> ${remoteDir}`;
-        if (deployCopied > 0) {
-            summary += `; deployPaths: ${deployCopied} file(s) (${deploySummary.join('; ')})`;
+        if (deployFiles.length > 0) {
+            summary += `; deployPaths: ${deployFiles.length} file(s)`;
         }
         opts.output?.appendLine(summary);
         return { ok: true, deployed: sent };
