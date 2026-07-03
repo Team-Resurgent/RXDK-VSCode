@@ -4,6 +4,7 @@ import * as path from 'path';
 import { RxdkProjectManifest, RxdkTemplateId, TEMPLATE_LABELS } from './projectTypes';
 import { generateVscodeFolder } from './vscodeGenerator';
 import { getExtensionRoot } from './sdkPath';
+import { stripBom } from './xboxSdkPaths';
 import { openPrebuiltWorkspace, writePrebuiltWorkspaceFile } from './prebuiltWorkspace';
 import { openNewProjectWizard } from './newProjectWizard';
 
@@ -16,7 +17,7 @@ export async function findProjectManifest(
         if (!fs.existsSync(manifestPath)) {
             continue;
         }
-        const raw = fs.readFileSync(manifestPath, 'utf8');
+        const raw = stripBom(fs.readFileSync(manifestPath, 'utf8'));
         const manifest = JSON.parse(raw) as RxdkProjectManifest;
         return { folder: ws, manifest, manifestPath };
     }
@@ -85,7 +86,7 @@ export async function scaffoldProjectFromTemplate(
         copyTree(templateDir, projectRoot);
         patchManifest(projectRoot, name);
         const manifest = JSON.parse(
-            fs.readFileSync(path.join(projectRoot, 'rxdk.project.json'), 'utf8')
+            stripBom(fs.readFileSync(path.join(projectRoot, 'rxdk.project.json'), 'utf8'))
         ) as RxdkProjectManifest;
 
         await generateVscodeFolder(context, projectRoot, name, manifest);
@@ -124,7 +125,7 @@ function copyTree(src: string, dest: string): void {
 
 function patchManifest(projectRoot: string, name: string): void {
     const manifestPath = path.join(projectRoot, 'rxdk.project.json');
-    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8')) as RxdkProjectManifest;
+    const manifest = JSON.parse(stripBom(fs.readFileSync(manifestPath, 'utf8'))) as RxdkProjectManifest;
     manifest.name = name;
     fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n', 'utf8');
 }
