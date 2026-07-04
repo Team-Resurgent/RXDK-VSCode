@@ -132,6 +132,25 @@ jobs:
           name: rxdk-vscode-release-zip
           path: dist
 
+      - name: Make install-extension.sh executable in the release zip
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          root="$(pwd)"
+          for z in dist/*.zip; do
+            abs="${root}/${z}"
+            tmp="$(mktemp -d)"
+            unzip -q "$abs" -d "$tmp"
+            # The Windows build runner packs with Compress-Archive, which can't record
+            # a Unix exec bit. Re-pack with Info-ZIP (host=Unix) so install-extension.sh
+            # extracts as executable and users don't have to chmod +x it.
+            [[ -f "$tmp/install-extension.sh" ]] && chmod 0755 "$tmp/install-extension.sh"
+            rm -f "$abs"
+            ( cd "$tmp" && zip -q -X -r "$abs" . )
+            rm -rf "$tmp"
+          done
+
       - name: Resolve release tag
         id: meta
         shell: bash
