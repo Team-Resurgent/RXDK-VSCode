@@ -12,6 +12,7 @@ import { ensureDotNetRuntime, isDotNetRuntimeInstalled } from './dotnetRuntime';
 import { rebootConsole } from './xboxLaunch';
 import { ensureVscodeForWorkspace } from './vscodeGenerator';
 import { getActiveXboxAddress, promptSetXboxIp } from './xboxConsole';
+import { RxdkTaskProvider, RXDK_TASK_TYPE } from './rxdkTaskProvider';
 import { openSdkDocs, openExtensionDocs } from './sdkDocs';
 import { openPrebuiltProjectSetup } from './prebuiltDebug';
 import { refreshPrebuiltSourceFolder } from './prebuiltWorkspace';
@@ -69,6 +70,12 @@ export function activate(context: vscode.ExtensionContext): void {
         showCollapseAll: false,
     });
     context.subscriptions.push(treeView);
+
+    // Build/deploy/run run in-process as custom-execution tasks (no external Node, no
+    // ELECTRON_RUN_AS_NODE dependency). Backs the generated tasks.json and F5's preLaunchTask.
+    context.subscriptions.push(
+        vscode.tasks.registerTaskProvider(RXDK_TASK_TYPE, new RxdkTaskProvider(context))
+    );
     treeView.onDidChangeVisibility((e) => {
         if (e.visible) {
             sidebarProvider.refresh();
