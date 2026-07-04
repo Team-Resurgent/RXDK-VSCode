@@ -19,6 +19,16 @@ const SDK_ROOT = `${EXTENSION_ROOT}/sdk`;
 // therefore F5 debugging, which depends on the "rxdk: build+deploy" preLaunchTask
 // -- work on macOS/Linux with no pwsh prerequisite. See src/cli.ts.
 const CLI_PATH = `${EXTENSION_ROOT}/dist/extension/cli.js`;
+// The integrated-terminal shell has no guaranteed `node` on PATH -- notably
+// snap-packaged VS Code on Linux runs its own bundled Electron and the task's
+// bash sees no node, failing with "node: command not found". Instead run the CLI
+// on the very Electron binary VS Code itself is running (${execPath}) with
+// ELECTRON_RUN_AS_NODE=1 so it behaves as plain node. `type: process` (not shell)
+// spawns it directly, so a Code path containing spaces (e.g. C:\Program Files\...
+// on Windows, or the .app bundle on macOS) needs no shell quoting. This removes
+// the Node prerequisite entirely on every platform, F5 debugging included.
+const NODE_COMMAND = '${execPath}';
+const NODE_TASK_ENV = { ELECTRON_RUN_AS_NODE: '1' };
 
 function normalizeConfigPath(value: string): string {
     return path.normalize(value).replace(/\\/g, '/').toLowerCase();
@@ -38,7 +48,10 @@ function vscodeConfigIsStale(projectRoot: string): boolean {
         (content.includes('rxdk-vscode}/sdk') && !content.includes('extensionInstallFolder:rxdk-libs.rxdk-vscode')) ||
         // Pre-CLI-migration tasks.json shelled out to PowerShell scripts directly.
         content.includes('"command": "powershell"') ||
-        content.includes('.ps1')
+        content.includes('.ps1') ||
+        // Older CLI tasks.json ran bare `node`, which isn't on PATH for snap VS
+        // Code on Linux; regenerate to run ${execPath} with ELECTRON_RUN_AS_NODE.
+        content.includes('"command": "node"')
     );
 }
 
@@ -226,11 +239,12 @@ export async function generateVscodeFolder(
 
     const tasks = {
         version: '2.0.0',
+        options: { env: NODE_TASK_ENV },
         tasks: [
             {
                 label: 'rxdk: build',
-                type: 'shell',
-                command: 'node',
+                type: 'process',
+                command: NODE_COMMAND,
                 args: [
                     CLI_PATH,
                     'build',
@@ -248,8 +262,8 @@ export async function generateVscodeFolder(
             },
             {
                 label: 'rxdk: deploy',
-                type: 'shell',
-                command: 'node',
+                type: 'process',
+                command: NODE_COMMAND,
                 args: [
                     CLI_PATH,
                     'deploy',
@@ -268,8 +282,8 @@ export async function generateVscodeFolder(
             },
             {
                 label: 'rxdk: run',
-                type: 'shell',
-                command: 'node',
+                type: 'process',
+                command: NODE_COMMAND,
                 args: [CLI_PATH, 'run', '--project-name', projectName],
                 problemMatcher: [],
             },
@@ -338,11 +352,12 @@ async function generateDxtVscodeFolder(
 
     const tasks = {
         version: '2.0.0',
+        options: { env: NODE_TASK_ENV },
         tasks: [
             {
                 label: 'rxdk: build',
-                type: 'shell',
-                command: 'node',
+                type: 'process',
+                command: NODE_COMMAND,
                 args: [
                     CLI_PATH,
                     'build',
@@ -360,15 +375,15 @@ async function generateDxtVscodeFolder(
             },
             {
                 label: 'rxdk: deploy',
-                type: 'shell',
-                command: 'node',
+                type: 'process',
+                command: NODE_COMMAND,
                 args: [CLI_PATH, 'deploy', '--project-root', '${workspaceFolder}', '--project-name', projectName],
                 problemMatcher: [],
             },
             {
                 label: 'rxdk: reboot',
-                type: 'shell',
-                command: 'node',
+                type: 'process',
+                command: NODE_COMMAND,
                 args: [CLI_PATH, 'reboot'],
                 problemMatcher: [],
             },
@@ -422,11 +437,12 @@ async function generatePrebuiltVscodeFolder(
 
     const tasks = {
         version: '2.0.0',
+        options: { env: NODE_TASK_ENV },
         tasks: [
             {
                 label: 'rxdk: deploy',
-                type: 'shell',
-                command: 'node',
+                type: 'process',
+                command: NODE_COMMAND,
                 args: deployArgs,
                 group: { kind: 'build', isDefault: true },
                 problemMatcher: [],
