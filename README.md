@@ -4,7 +4,7 @@ All-in-one extension for original Xbox development in **VS Code** or **Cursor**.
 
 ## Quick start
 
-1. **Install the extension** — from a [GitHub Release](https://github.com/Team-Resurgent/RXDK-VSCode/releases) VSIX, or build locally (see [Install](#install))
+1. **Install the extension** — from the [latest release](https://github.com/Team-Resurgent/RXDK-VSCode/releases/latest) VSIX, or build locally (see [Install](#install))
 2. **Zig** is installed automatically from the RXDK prerequisites panel (or use `zig` on PATH)
 3. Connect an original Xbox devkit on your network
 4. Open the **RXDK** sidebar → **Devkit** → **Set Xbox IP / Hostname**
@@ -17,7 +17,7 @@ Full install steps and troubleshooting: **[docs/INSTALL.md](docs/INSTALL.md)**
 
 ### From GitHub Releases
 
-Download `rxdk-vscode-*.vsix` from [Releases](https://github.com/Team-Resurgent/RXDK-VSCode/releases), then **Extensions → … → Install from VSIX…** and reload.
+Download `rxdk-vscode-*.vsix` from the [latest release](https://github.com/Team-Resurgent/RXDK-VSCode/releases/latest) — the `latest` tag always tracks the newest build off `main` — then **Extensions → … → Install from VSIX…** and reload.
 
 ### From this repo
 

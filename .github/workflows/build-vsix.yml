@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       publish_release:
-        description: 'Attach VSIX to a GitHub Release (uses tag v<package.json version> if not on a tag)'
+        description: 'Publish the moving "latest" GitHub Release (same as a push to main)'
         required: false
         type: boolean
         default: false
@@ -138,15 +138,30 @@ jobs:
         run: |
           set -euo pipefail
           if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            # An explicit v* tag makes a permanent, versioned release.
             tag="${GITHUB_REF#refs/tags/}"
-            prerelease=false
+            moving=false
           else
-            tag="vsix-${GITHUB_RUN_NUMBER}"
-            prerelease=true
+            # Push to main (or a manual publish): move a single "latest" release to
+            # this build so .../RXDK-VSCode/releases/latest always serves the newest
+            # VSIX, mirroring how RXDK-Tools publishes its moving "latest".
+            tag="latest"
+            moving=true
           fi
           echo "tag=${tag}" >> "$GITHUB_OUTPUT"
-          echo "prerelease=${prerelease}" >> "$GITHUB_OUTPUT"
-          echo "Release tag: ${tag} (prerelease=${prerelease})"
+          echo "moving=${moving}" >> "$GITHUB_OUTPUT"
+          echo "Release tag: ${tag} (moving=${moving})"
+
+      - name: Move the 'latest' tag/release to this build
+        if: steps.meta.outputs.moving == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          # Delete any prior "latest" release AND its git tag so the create step
+          # recreates both pointing at this commit (gh won't move an existing tag).
+          # Non-fatal on the first run when nothing exists yet.
+          gh release delete latest --repo "${{ github.repository }}" --cleanup-tag --yes || true
 
       - name: Create GitHub Release
         env:
@@ -160,15 +175,15 @@ jobs:
             echo "No release zip in dist/" >&2
             exit 1
           fi
-          args=(
-            release create "${{ steps.meta.outputs.tag }}"
-            --title "RXDK VSCode ${{ steps.meta.outputs.tag }}"
-            --generate-notes
-          )
-          if [[ "${{ steps.meta.outputs.prerelease }}" == "true" ]]; then
-            args+=(--prerelease)
-          fi
-          gh "${args[@]}" "${files[@]}"
+          # Both the moving "latest" and any v* tag are the repo's Latest release, so
+          # /releases/latest resolves to them.
+          gh release create "${{ steps.meta.outputs.tag }}" \
+            --repo "${{ github.repository }}" \
+            --target "${GITHUB_SHA}" \
+            --title "RXDK VSCode ${{ steps.meta.outputs.tag }}" \
+            --generate-notes \
+            --latest \
+            "${files[@]}"
 
       - name: Write release summary
         shell: bash
@@ -177,6 +192,6 @@ jobs:
             echo "### GitHub Release"
             echo ""
             echo "- Tag: \`${{ steps.meta.outputs.tag }}\`"
-            echo "- Pre-release: \`${{ steps.meta.outputs.prerelease }}\`"
+            echo "- Moving latest: \`${{ steps.meta.outputs.moving }}\`"
             echo "- Artifact: \`rxdk-vscode-*.zip\` (VSIX + install scripts; VSIX is not attached separately)"
           } >> "$GITHUB_STEP_SUMMARY"
