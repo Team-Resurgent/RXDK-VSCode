@@ -28,16 +28,20 @@ function zigExecutableName(): string {
 }
 
 function zigArchiveBaseName(): string | undefined {
+    // Zig release tarballs are named `zig-<arch>-<os>-<version>` (arch first).
+    // Older Zig used `zig-<os>-<arch>-...`; the current scheme is arch-first, so
+    // the old order 404s (e.g. zig-linux-x86_64-0.16.0.tar.xz is gone;
+    // zig-x86_64-linux-0.16.0.tar.xz is correct).
     if (process.platform === 'win32') {
-        return `zig-windows-x86_64-${ZIG_VERSION}`;
+        return `zig-x86_64-windows-${ZIG_VERSION}`;
     }
     if (process.platform === 'linux') {
-        return `zig-linux-x86_64-${ZIG_VERSION}`;
+        return `zig-x86_64-linux-${ZIG_VERSION}`;
     }
     if (process.platform === 'darwin') {
         return process.arch === 'arm64'
-            ? `zig-macos-aarch64-${ZIG_VERSION}`
-            : `zig-macos-x86_64-${ZIG_VERSION}`;
+            ? `zig-aarch64-macos-${ZIG_VERSION}`
+            : `zig-x86_64-macos-${ZIG_VERSION}`;
     }
     return undefined;
 }
