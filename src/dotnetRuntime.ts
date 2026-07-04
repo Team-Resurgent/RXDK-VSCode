@@ -9,6 +9,10 @@ import { downloadFileToPath, formatBytes, formatDownloadProgress, getDirectorySi
 const execFileAsync = promisify(execFile);
 
 export const DOTNET_MAJOR_VERSION = '8';
+// dotnet-install expects a major.minor channel (e.g. 8.0). A bare major ("8")
+// plus `--quality GA` makes the script fail with "Failed to resolve the exact
+// version number". Channel 8.0 alone resolves to the latest GA 8.0.x runtime.
+const DOTNET_CHANNEL = `${DOTNET_MAJOR_VERSION}.0`;
 const ESTIMATED_RUNTIME_BYTES = 35 * 1024 * 1024;
 const RUNTIME_FRAMEWORK = 'Microsoft.NETCore.App';
 const DOTNET_INSTALL_URL =
@@ -178,11 +182,9 @@ async function runDotNetInstallScript(
                 '-Runtime',
                 'dotnet',
                 '-Channel',
-                DOTNET_MAJOR_VERSION,
+                DOTNET_CHANNEL,
                 '-InstallDir',
                 installDir,
-                '-Quality',
-                'GA',
             ]);
             return;
         }
@@ -192,11 +194,9 @@ async function runDotNetInstallScript(
             '--runtime',
             'dotnet',
             '--channel',
-            DOTNET_MAJOR_VERSION,
+            DOTNET_CHANNEL,
             '--install-dir',
             installDir,
-            '--quality',
-            'GA',
         ]);
     } finally {
         finished = true;
