@@ -121,9 +121,9 @@ function applyIntelliSenseSettings(settings: Record<string, unknown>, config: In
     settings['C_Cpp.default.defines'] = config.defines;
     settings['C_Cpp.default.intelliSenseMode'] = 'windows-msvc-x86';
     settings['C_Cpp.default.compilerPath'] = '';
-    settings['C_Cpp.default.cStandard'] = 'c17';
+    settings['C_Cpp.default.cStandard'] = 'c23';
     if (config.usesCpp) {
-        settings['C_Cpp.default.cppStandard'] = 'c++20';
+        settings['C_Cpp.default.cppStandard'] = 'c++23';
     }
 }
 
@@ -136,8 +136,8 @@ function writeCppProperties(vscodeDir: string, config: IntelliSenseConfig): void
                 defines: config.defines,
                 windowsSdkVersion: '',
                 compilerPath: '',
-                cStandard: 'c17',
-                cppStandard: 'c++20',
+                cStandard: 'c23',
+                cppStandard: 'c++23',
                 intelliSenseMode: 'windows-msvc-x86',
             },
         ],
