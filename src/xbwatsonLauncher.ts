@@ -22,7 +22,7 @@ export async function launchXbwatson(
     }
 
     const consoleName = await getActiveXboxAddress();
-    const args = consoleName ? ['/x', consoleName] : [];
+    const args = consoleName ? ['-x', consoleName] : [];
 
     try {
         const child = spawn(toolPath, args, {
