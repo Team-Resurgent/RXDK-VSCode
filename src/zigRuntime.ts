@@ -5,6 +5,7 @@ import { execFile } from 'child_process';
 import { promisify } from 'util';
 import * as vscode from 'vscode';
 import { downloadFileToPath, formatBytes, formatDownloadProgress, getDirectorySize } from './downloadFile';
+import { requireOneOf } from './platformDeps';
 
 const execFileAsync = promisify(execFile);
 
@@ -231,6 +232,8 @@ export async function installZig(
     if (!archiveName || !archiveBase) {
         throw new Error(`Automatic Zig install is not supported on ${process.platform}/${process.arch}.`);
     }
+    // The Zig archive is .tar.xz on Linux/macOS; `tar -xf` needs xz to unpack it.
+    await requireOneOf(['xz'], 'Unpacking the Zig archive', 'xz-utils');
 
     const url = `${ZIG_DOWNLOAD_PAGE}${ZIG_VERSION}/${archiveName}`;
     const installRoot = path.join(getZigInstallRoot(), ZIG_VERSION);

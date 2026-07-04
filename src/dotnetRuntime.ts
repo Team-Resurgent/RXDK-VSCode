@@ -5,6 +5,7 @@ import { execFile, spawn } from 'child_process';
 import { promisify } from 'util';
 import * as vscode from 'vscode';
 import { downloadFileToPath, formatBytes, formatDownloadProgress, getDirectorySize } from './downloadFile';
+import { requireOneOf } from './platformDeps';
 
 const execFileAsync = promisify(execFile);
 
@@ -227,6 +228,9 @@ export async function installDotNetRuntime(
     onProgress?: DotNetInstallProgress
 ): Promise<boolean> {
     const installDir = getDotNetInstallDir();
+    // dotnet-install.sh downloads the runtime with curl or wget; fail early with a
+    // clear message rather than deep inside the script if neither is present.
+    await requireOneOf(['curl', 'wget'], 'The .NET runtime installer', 'curl');
     const scriptName = process.platform === 'win32' ? 'dotnet-install.ps1' : 'dotnet-install.sh';
     const scriptPath = path.join(os.tmpdir(), `rxdk-${scriptName}`);
 
