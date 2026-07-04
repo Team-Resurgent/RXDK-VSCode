@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { getActiveXboxAddress, setActiveXboxAddress, isWindowsHost } from './xboxConsole';
+import { getActiveXboxAddress, setActiveXboxAddress, clearActiveXboxAddress, isWindowsHost } from './xboxConsole';
 
 // A curated RXDK settings screen. Unlike VS Code's native settings (which apply instantly and are
 // scattered across the tree), this groups the settings users actually reach for and applies them as
@@ -179,23 +179,18 @@ async function applyValues(
         if (f.console) {
             const value = String(raw ?? '').trim();
             if (value) {
-                // Writes the platform source of truth (registry on Windows, settings
-                // JSON on macOS/Linux), same as "Set Xbox IP".
+                // Writes the platform source of truth (registry on Windows, the RXDK
+                // global console store on macOS/Linux), same as "Set Xbox IP".
                 try {
                     await setActiveXboxAddress(value);
                 } catch (e) {
                     errors.push(`${f.label}: ${e instanceof Error ? e.message : String(e)}`);
                 }
             } else if (!isWindowsHost()) {
-                // Cleared on macOS/Linux: unset the settings-JSON source of truth.
-                // On Windows the registry (XBSetIP / Neighborhood) owns the value —
-                // leave it untouched here and never write settings JSON.
-                await cfg.update('rxdk.defaultConsole', '', vscode.ConfigurationTarget.Global);
-                await cfg.update('xbox.defaultConsole', '', vscode.ConfigurationTarget.Global);
-                if (vscode.workspace.workspaceFolders?.length) {
-                    await cfg.update('rxdk.defaultConsole', undefined, vscode.ConfigurationTarget.Workspace);
-                    await cfg.update('xbox.defaultConsole', undefined, vscode.ConfigurationTarget.Workspace);
-                }
+                // Cleared on macOS/Linux: remove it from the global console store (and
+                // the legacy settings-JSON fallback). On Windows the registry (XBSetIP
+                // / Neighborhood) owns the value — leave it untouched here.
+                await clearActiveXboxAddress();
             }
         } else if (f.state) {
             await context.globalState.update(f.state, String(raw ?? '').trim());

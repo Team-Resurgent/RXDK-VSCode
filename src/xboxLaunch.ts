@@ -1,4 +1,4 @@
-import { getActiveXboxAddress } from './xboxConsole';
+import { resolveConsoleSwitch } from './xboxConsole';
 import { resolveHostTool } from './hostTools';
 import { OutputLike, runStreamed } from './processRunner';
 
@@ -30,9 +30,9 @@ export async function rebootConsole(opts: {
     try {
         const launcher = resolveHostTool('xbox-launch');
         const args = ['-rebootonly'];
-        const consoleAddr = opts.consoleName || (await getActiveXboxAddress());
-        if (consoleAddr) {
-            args.push('-x', consoleAddr);
+        const consoleSwitch = await resolveConsoleSwitch(opts.consoleName);
+        if (consoleSwitch) {
+            args.push('-x', consoleSwitch);
         }
 
         const result = await runStreamed(launcher, args, { output: opts.output });
@@ -63,9 +63,9 @@ export async function launchProject(opts: LaunchProjectOptions): Promise<LaunchR
         if (opts.cmdLine) {
             args.push('-cmd', opts.cmdLine);
         }
-        const consoleAddr = opts.consoleName || (await getActiveXboxAddress());
-        if (consoleAddr) {
-            args.push('-x', consoleAddr);
+        const consoleSwitch = await resolveConsoleSwitch(opts.consoleName);
+        if (consoleSwitch) {
+            args.push('-x', consoleSwitch);
         }
         if (opts.reboot) {
             args.push('-reboot');

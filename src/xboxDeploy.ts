@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { OutputLike, runStreamed } from './processRunner';
-import { getActiveXboxAddress } from './xboxConsole';
+import { getActiveXboxAddress, resolveConsoleSwitch } from './xboxConsole';
 import { resolveHostTool } from './hostTools';
 import { readProjectManifestAt } from './xboxSdkPaths';
 import { getXboxProjectOutDir } from './sdkPath';
@@ -25,17 +25,18 @@ export async function removeDxt(opts: {
         if (!fs.existsSync(xbdel)) {
             return { ok: false, error: `xbdel not found at ${xbdel}. Update the RXDK host tools.` };
         }
-        const consoleAddr = opts.consoleName || (await getActiveXboxAddress());
+        const displayAddr = opts.consoleName?.trim() || (await getActiveXboxAddress());
+        const consoleSwitch = await resolveConsoleSwitch(opts.consoleName);
         const remote = `xe:\\dxt\\${projectName}.dxt`;
         opts.output?.appendLine(
-            consoleAddr ? `Removing ${remote} from '${consoleAddr}'` : `Removing ${remote} from default Xbox`
+            displayAddr ? `Removing ${remote} from '${displayAddr}'` : `Removing ${remote} from default Xbox`
         );
         // -f clears read-only; xbdel exits non-zero if the file wasn't there.
         // Use '-' switches, not '/': a POSIX absolute source path starts with '/'
         // and would otherwise be misparsed as a switch bundle on Linux.
         const args = ['-f', remote];
-        if (consoleAddr) {
-            args.push('-x', consoleAddr);
+        if (consoleSwitch) {
+            args.push('-x', consoleSwitch);
         }
         const result = await runStreamed(xbdel, args, { output: opts.output });
         if (result.exitCode !== 0) {
@@ -196,9 +197,10 @@ export async function deployProject(opts: DeployProjectOptions): Promise<DeployR
         const isDxt = manifest.type === 'dxt';
         const remoteDir = isDxt ? 'xe:\\dxt' : normalizeRemoteDir(opts.remoteDir || '', projectName);
         const xbcp = resolveHostTool('xbcp');
-        const consoleAddr = opts.consoleName || (await getActiveXboxAddress());
+        const displayAddr = opts.consoleName?.trim() || (await getActiveXboxAddress());
+        const consoleSwitch = await resolveConsoleSwitch(opts.consoleName);
         opts.output?.appendLine(
-            consoleAddr ? `Deploying to Xbox '${consoleAddr}' -> ${remoteDir}` : `Deploying to default Xbox -> ${remoteDir}`
+            displayAddr ? `Deploying to Xbox '${displayAddr}' -> ${remoteDir}` : `Deploying to default Xbox -> ${remoteDir}`
         );
 
         const defaultPatterns = isDxt ? ['*.dxt'] : ['*.xbe', '*.pdb', '*.map'];
@@ -210,7 +212,7 @@ export async function deployProject(opts: DeployProjectOptions): Promise<DeployR
                 if (!opts.quiet) {
                     opts.output?.appendLine(`${name} -> ${dest}`);
                 }
-                await xbcpCopy(xbcp, path.join(localDir, name), dest, consoleAddr, opts.output);
+                await xbcpCopy(xbcp, path.join(localDir, name), dest, consoleSwitch, opts.output);
                 sent.push(name);
             }
         }
@@ -234,7 +236,7 @@ export async function deployProject(opts: DeployProjectOptions): Promise<DeployR
             if (!opts.quiet) {
                 opts.output?.appendLine(`${entry.source} -> ${dest}`);
             }
-            await xbcpCopy(xbcp, entry.source, dest, consoleAddr, opts.output);
+            await xbcpCopy(xbcp, entry.source, dest, consoleSwitch, opts.output);
         }
 
         let summary = `Deployed: ${sent.join(', ')} -> ${remoteDir}`;
@@ -269,9 +271,10 @@ export async function deployPrebuilt(opts: DeployPrebuiltOptions): Promise<Deplo
         const remoteDir = `xe:\\${remoteName}`.replace(/\\+$/, '');
 
         const xbcp = resolveHostTool('xbcp');
-        const consoleAddr = opts.consoleName || (await getActiveXboxAddress());
+        const displayAddr = opts.consoleName?.trim() || (await getActiveXboxAddress());
+        const consoleSwitch = await resolveConsoleSwitch(opts.consoleName);
         opts.output?.appendLine(
-            consoleAddr ? `Deploying to Xbox '${consoleAddr}' -> ${remoteDir}` : `Deploying to default Xbox -> ${remoteDir}`
+            displayAddr ? `Deploying to Xbox '${displayAddr}' -> ${remoteDir}` : `Deploying to default Xbox -> ${remoteDir}`
         );
 
         const toCopy = [xbePath];
@@ -289,7 +292,7 @@ export async function deployPrebuilt(opts: DeployPrebuiltOptions): Promise<Deplo
             if (!opts.quiet) {
                 opts.output?.appendLine(`${name} -> ${dest}`);
             }
-            await xbcpCopy(xbcp, file, dest, consoleAddr, opts.output);
+            await xbcpCopy(xbcp, file, dest, consoleSwitch, opts.output);
             sent.push(name);
         }
         if (sent.length === 0) {

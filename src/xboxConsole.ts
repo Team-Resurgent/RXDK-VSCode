@@ -1,6 +1,9 @@
 import type * as vscode from 'vscode';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
 
 const execFileAsync = promisify(execFile);
 
@@ -42,7 +45,104 @@ export function getConfiguredXboxAddress(): string {
     return getWorkspaceXboxAddress();
 }
 
-export type XboxAddressSource = 'workspace' | 'registry' | 'none';
+export type XboxAddressSource = 'workspace' | 'registry' | 'global' | 'none';
+
+// --- RXDK global console store (non-Windows) -------------------------------
+// The managed tools (xbcp, xbox-launch, xbwatson, debug bridge) read their
+// default console from Rxdk.KitConfig's consoles.json, under the OS
+// "ApplicationData" directory. On Linux *and* macOS, .NET maps that to
+// $XDG_CONFIG_HOME (or ~/.config) -- NOT ~/Library. Persisting the IP here as
+// the default console means every tool resolves it on its own with no -x
+// switch, and -- crucially -- the plain-node deploy/run task can read it too
+// (VS Code settings are only visible inside the extension host).
+const KIT_APP_FOLDER = 'Rxdk.XbNeighborhood';
+const KIT_LEGACY_APP_FOLDER = 'RXDKNeighborhood';
+const KIT_CONSOLES_FILE = 'consoles.json';
+
+/** Mirror of Rxdk.KitConfig KitConfigPaths.GetConfigDirectory (non-Windows). */
+function kitConfigDir(): string {
+    const base = process.env.XDG_CONFIG_HOME?.trim() || path.join(os.homedir(), '.config');
+    const dir = path.join(base, KIT_APP_FOLDER);
+    const legacy = path.join(base, KIT_LEGACY_APP_FOLDER);
+    if (!fs.existsSync(dir) && fs.existsSync(legacy)) {
+        return legacy;
+    }
+    return dir;
+}
+
+function kitConsolesPath(): string {
+    return path.join(kitConfigDir(), KIT_CONSOLES_FILE);
+}
+
+interface KitConsoleEntry {
+    Name: string;
+    Added?: string;
+    IpAddress?: string | null;
+}
+interface KitConsolesData {
+    DefaultConsole?: string | null;
+    Consoles?: KitConsoleEntry[];
+}
+
+function readKitConsoles(): KitConsolesData | undefined {
+    try {
+        return JSON.parse(fs.readFileSync(kitConsolesPath(), 'utf8')) as KitConsolesData;
+    } catch {
+        return undefined; // no store yet / unreadable / malformed
+    }
+}
+
+/** Default console (IP or hostname) from the tools' global store, if any. */
+export function readGlobalDefaultConsole(): string | undefined {
+    const data = readKitConsoles();
+    if (!data) {
+        return undefined;
+    }
+    const names = (data.Consoles ?? []).map((c) => (c?.Name ?? '').trim()).filter(Boolean);
+    const def = (data.DefaultConsole ?? '').trim();
+    if (def && names.some((n) => n.toLowerCase() === def.toLowerCase())) {
+        return def;
+    }
+    return names[0] || undefined;
+}
+
+/**
+ * Persist the IP/hostname as the default console in the tools' global store.
+ * The name is the address itself, so XbdmSession connects to it directly -- no
+ * probe, no address cache -- which lets the IP be set while the kit is offline.
+ * Keys are PascalCase because Rxdk.KitConfig deserializes case-sensitively.
+ */
+function writeGlobalDefaultConsole(address: string): void {
+    fs.mkdirSync(kitConfigDir(), { recursive: true });
+    const data = readKitConsoles() ?? {};
+    const consoles = Array.isArray(data.Consoles) ? data.Consoles : [];
+    if (!consoles.some((c) => (c?.Name ?? '').trim().toLowerCase() === address.toLowerCase())) {
+        consoles.push({ Name: address, Added: new Date().toISOString(), IpAddress: address });
+    }
+    data.Consoles = consoles;
+    data.DefaultConsole = address;
+    fs.writeFileSync(kitConsolesPath(), JSON.stringify(data, null, 2), 'utf8');
+}
+
+/**
+ * Remove the current default console from the global store. Mirrors the tool's
+ * RemoveConsole: drop the default entry and promote the next one (if any), so a
+ * user's other xbset-registered kits survive.
+ */
+function clearGlobalDefaultConsole(): void {
+    const data = readKitConsoles();
+    if (!data) {
+        return;
+    }
+    const def = (data.DefaultConsole ?? '').trim().toLowerCase();
+    let consoles = Array.isArray(data.Consoles) ? data.Consoles : [];
+    if (def) {
+        consoles = consoles.filter((c) => (c?.Name ?? '').trim().toLowerCase() !== def);
+    }
+    data.Consoles = consoles;
+    data.DefaultConsole = consoles[0]?.Name ?? null;
+    fs.writeFileSync(kitConsolesPath(), JSON.stringify(data, null, 2), 'utf8');
+}
 
 export interface XboxAddressInfo {
     address?: string;
@@ -58,8 +158,31 @@ export async function getActiveXboxAddress(): Promise<string | undefined> {
     if (isWindowsHost()) {
         return readRegistryXboxName();
     }
-    const fromSettings = getWorkspaceXboxAddress();
-    return fromSettings || undefined;
+    // Non-Windows: the tools' global console store is the source of truth. It's a
+    // plain file, so this resolves in the ext host and in the node deploy task
+    // alike. VS Code settings stay as a fallback so an IP set before this change
+    // still resolves until it's re-saved.
+    return readGlobalDefaultConsole() || getWorkspaceXboxAddress() || undefined;
+}
+
+/**
+ * Address to pass to a tool's `-x` switch, or undefined to omit it.
+ * An explicit override always wins. Otherwise: on Windows use the registry value
+ * (its source of truth); on macOS/Linux return undefined so the tool resolves the
+ * global default console itself. Passing `-x` on non-Windows would route through
+ * SetDefaultConsoleService, which re-probes the kit and rewrites the stored
+ * default to the kit's wire-name — we deliberately let the tools "just work" off
+ * the default console we wrote instead.
+ */
+export async function resolveConsoleSwitch(explicit?: string): Promise<string | undefined> {
+    const override = explicit?.trim();
+    if (override) {
+        return override;
+    }
+    if (isWindowsHost()) {
+        return readRegistryXboxName();
+    }
+    return undefined;
 }
 
 /** Sidebar / status: where the active Xbox address comes from. */
@@ -72,6 +195,10 @@ export async function getXboxAddressInfo(): Promise<XboxAddressInfo> {
         return { source: 'none' };
     }
 
+    const fromStore = readGlobalDefaultConsole();
+    if (fromStore) {
+        return { address: fromStore, source: 'global' };
+    }
     const fromSettings = getWorkspaceXboxAddress();
     if (fromSettings) {
         return { address: fromSettings, source: 'workspace' };
@@ -97,16 +224,33 @@ export async function setActiveXboxAddress(address: string): Promise<void> {
         return;
     }
 
-    // macOS/Linux: no registry — settings JSON is the source of truth.
+    // macOS/Linux: no registry — write the tools' global console store so every
+    // tool (xbcp, xbox-launch, debug) resolves the default console without -x,
+    // and the plain-node deploy/run task can read it (VS Code settings can't be
+    // read outside the extension host).
+    writeGlobalDefaultConsole(trimmed);
+}
+
+/**
+ * Clear the active Xbox target on macOS/Linux (global console store + the legacy
+ * settings-JSON fallback so it can't resurface). No-op on Windows, where the
+ * registry (XBSetIP / Neighborhood) owns the value.
+ */
+export async function clearActiveXboxAddress(): Promise<void> {
+    if (isWindowsHost()) {
+        return;
+    }
+    clearGlobalDefaultConsole();
     const vs = tryVscode();
     if (!vs) {
-        throw new Error('setActiveXboxAddress requires running inside the VS Code extension host.');
+        return;
     }
-    const target = vs.workspace.workspaceFolders?.length
-        ? vs.ConfigurationTarget.Workspace
-        : vs.ConfigurationTarget.Global;
-    await vs.workspace.getConfiguration('rxdk').update('defaultConsole', trimmed, target);
-    await vs.workspace.getConfiguration('xbox').update('defaultConsole', trimmed, target);
+    await vs.workspace.getConfiguration('rxdk').update('defaultConsole', '', vs.ConfigurationTarget.Global);
+    await vs.workspace.getConfiguration('xbox').update('defaultConsole', '', vs.ConfigurationTarget.Global);
+    if (vs.workspace.workspaceFolders?.length) {
+        await vs.workspace.getConfiguration('rxdk').update('defaultConsole', undefined, vs.ConfigurationTarget.Workspace);
+        await vs.workspace.getConfiguration('xbox').update('defaultConsole', undefined, vs.ConfigurationTarget.Workspace);
+    }
 }
 
 export async function promptSetXboxIp(): Promise<void> {
@@ -119,7 +263,7 @@ export async function promptSetXboxIp(): Promise<void> {
         title: 'Set Xbox IP / Hostname',
         prompt: isWindowsHost()
             ? 'IP or hostname for xbcp, xbox-launch, and debug. Saved to the Windows registry (XBSetIP / Neighborhood).'
-            : 'IP or hostname for xbcp, xbox-launch, and debug. Saved to VS Code settings JSON (workspace or user).',
+            : 'IP or hostname for xbcp, xbox-launch, and debug. Saved to the RXDK console store so every tool uses it (no -x needed).',
         value: current,
         placeHolder: 'e.g. 192.168.1.100 or xbox-devkit',
         validateInput: (v) => {
