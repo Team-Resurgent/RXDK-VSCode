@@ -29,10 +29,10 @@ export async function rebootConsole(opts: {
 }): Promise<LaunchResult> {
     try {
         const launcher = resolveHostTool('xbox-launch');
-        const args = ['/rebootonly'];
+        const args = ['-rebootonly'];
         const consoleAddr = opts.consoleName || (await getActiveXboxAddress());
         if (consoleAddr) {
-            args.push('/x', consoleAddr);
+            args.push('-x', consoleAddr);
         }
 
         const result = await runStreamed(launcher, args, { output: opts.output });
@@ -43,7 +43,7 @@ export async function rebootConsole(opts: {
             return { ok: false, noConsoleConfigured: true };
         }
         if (result.exitCode !== 0) {
-            return { ok: false, error: `xbox-launch.exe /rebootonly failed (exit ${result.exitCode})` };
+            return { ok: false, error: `xbox-launch.exe -rebootonly failed (exit ${result.exitCode})` };
         }
         return { ok: true };
     } catch (err) {
@@ -59,16 +59,16 @@ export async function launchProject(opts: LaunchProjectOptions): Promise<LaunchR
         const timeoutMs = opts.timeoutMs ?? 120000;
 
         const launcher = resolveHostTool('xbox-launch');
-        const args = ['/dir', remoteDir, '/title', title, '/timeout', String(timeoutMs)];
+        const args = ['-dir', remoteDir, '-title', title, '-timeout', String(timeoutMs)];
         if (opts.cmdLine) {
-            args.push('/cmd', opts.cmdLine);
+            args.push('-cmd', opts.cmdLine);
         }
         const consoleAddr = opts.consoleName || (await getActiveXboxAddress());
         if (consoleAddr) {
-            args.push('/x', consoleAddr);
+            args.push('-x', consoleAddr);
         }
         if (opts.reboot) {
-            args.push('/reboot');
+            args.push('-reboot');
         }
 
         const result = await runStreamed(launcher, args, { output: opts.output });

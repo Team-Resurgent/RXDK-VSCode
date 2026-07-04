@@ -30,10 +30,12 @@ export async function removeDxt(opts: {
         opts.output?.appendLine(
             consoleAddr ? `Removing ${remote} from '${consoleAddr}'` : `Removing ${remote} from default Xbox`
         );
-        // /f clears read-only; xbdel exits non-zero if the file wasn't there.
-        const args = ['/f', remote];
+        // -f clears read-only; xbdel exits non-zero if the file wasn't there.
+        // Use '-' switches, not '/': a POSIX absolute source path starts with '/'
+        // and would otherwise be misparsed as a switch bundle on Linux.
+        const args = ['-f', remote];
         if (consoleAddr) {
-            args.push('/x', consoleAddr);
+            args.push('-x', consoleAddr);
         }
         const result = await runStreamed(xbdel, args, { output: opts.output });
         if (result.exitCode !== 0) {
@@ -155,9 +157,11 @@ async function xbcpCopy(
     console: string | undefined,
     output?: OutputLike
 ): Promise<void> {
-    const args = ['/y', '/t', '/q'];
+    // '-' switches, not '/': the local source is a POSIX absolute path on Linux
+    // (leading '/'), which xbcp would otherwise treat as a legacy switch bundle.
+    const args = ['-y', '-t', '-q'];
     if (console) {
-        args.push('/x', console);
+        args.push('-x', console);
     }
     const result = await runStreamed(xbcp, [...args, localFile, remoteDest], { output });
     if (result.exitCode !== 0) {
