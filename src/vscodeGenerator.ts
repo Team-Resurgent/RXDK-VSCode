@@ -8,27 +8,18 @@ import {
     manifestUsesCpp,
     RxdkProjectManifest,
 } from './projectTypes';
-import { getSdkIncludeDir, getSdkLibDir } from './sdkPath';
+import { getSdkIncludeDir } from './sdkPath';
 import { stripBom } from './xboxSdkPaths';
 
 const EXTENSION_ID = 'rxdk-libs.rxdk-vscode';
 const EXTENSION_ROOT = `\${extensionInstallFolder:${EXTENSION_ID}}`;
 const SDK_ROOT = `${EXTENSION_ROOT}/sdk`;
-// The generated tasks.json shells out to this CLI (compiled alongside the rest of
-// the extension) instead of a PowerShell script, so build/deploy/run tasks -- and
-// therefore F5 debugging, which depends on the "rxdk: build+deploy" preLaunchTask
-// -- work on macOS/Linux with no pwsh prerequisite. See src/cli.ts.
-const CLI_PATH = `${EXTENSION_ROOT}/dist/extension/cli.js`;
-// The integrated-terminal shell has no guaranteed `node` on PATH -- notably
-// snap-packaged VS Code on Linux runs its own bundled Electron and the task's
-// bash sees no node, failing with "node: command not found". Instead run the CLI
-// on the very Electron binary VS Code itself is running (${execPath}) with
-// ELECTRON_RUN_AS_NODE=1 so it behaves as plain node. `type: process` (not shell)
-// spawns it directly, so a Code path containing spaces (e.g. C:\Program Files\...
-// on Windows, or the .app bundle on macOS) needs no shell quoting. This removes
-// the Node prerequisite entirely on every platform, F5 debugging included.
-const NODE_COMMAND = '${execPath}';
-const NODE_TASK_ENV = { ELECTRON_RUN_AS_NODE: '1' };
+// The generated tasks.json uses `type: "rxdk"` custom-execution tasks (see
+// rxdkTaskProvider.ts): build/deploy/run execute in the extension host itself, with
+// no external process. This deliberately avoids the old `${execPath}` +
+// ELECTRON_RUN_AS_NODE approach, which newer VS Code broke by stripping that env var
+// from task environments (silently failing the build and, with it, F5's
+// preLaunchTask). The cli.js entry point (src/cli.ts) remains for headless/CI use.
 
 function normalizeConfigPath(value: string): string {
     return path.normalize(value).replace(/\\/g, '/').toLowerCase();
@@ -233,60 +224,21 @@ export async function generateVscodeFolder(
     const vscodeDir = path.join(projectRoot, '.vscode');
     fs.mkdirSync(vscodeDir, { recursive: true });
 
-    const includeDir = getSdkIncludeDir(context).replace(/\\/g, '/');
-    const libDir = getSdkLibDir(context).replace(/\\/g, '/');
     const bridgePath = `${SDK_ROOT}/tools/xboxdbg-bridge.exe`;
 
     const tasks = {
         version: '2.0.0',
-        options: { env: NODE_TASK_ENV },
         tasks: [
             {
                 label: 'rxdk: build',
-                type: 'process',
-                command: NODE_COMMAND,
-                args: [
-                    CLI_PATH,
-                    'build',
-                    '--project-root',
-                    '${workspaceFolder}',
-                    '--sdk-include',
-                    includeDir,
-                    '--sdk-lib',
-                    libDir,
-                    '--optimize',
-                    '${config:rxdk.optimize}',
-                ],
+                type: 'rxdk',
+                action: 'build',
                 group: { kind: 'build', isDefault: true },
                 problemMatcher: ['$gcc'],
             },
-            {
-                label: 'rxdk: deploy',
-                type: 'process',
-                command: NODE_COMMAND,
-                args: [
-                    CLI_PATH,
-                    'deploy',
-                    '--project-root',
-                    '${workspaceFolder}',
-                    '--project-name',
-                    projectName,
-                ],
-                problemMatcher: [],
-            },
-            {
-                label: 'rxdk: build+deploy',
-                dependsOrder: 'sequence',
-                dependsOn: ['rxdk: build', 'rxdk: deploy'],
-                problemMatcher: [],
-            },
-            {
-                label: 'rxdk: run',
-                type: 'process',
-                command: NODE_COMMAND,
-                args: [CLI_PATH, 'run', '--project-name', projectName],
-                problemMatcher: [],
-            },
+            { label: 'rxdk: deploy', type: 'rxdk', action: 'deploy', problemMatcher: [] },
+            { label: 'rxdk: build+deploy', type: 'rxdk', action: 'buildDeploy', problemMatcher: [] },
+            { label: 'rxdk: run', type: 'rxdk', action: 'run', problemMatcher: [] },
         ],
     };
 
@@ -347,52 +299,24 @@ async function generateDxtVscodeFolder(
     const vscodeDir = path.join(projectRoot, '.vscode');
     fs.mkdirSync(vscodeDir, { recursive: true });
 
-    const includeDir = getSdkIncludeDir(context).replace(/\\/g, '/');
-    const libDir = getSdkLibDir(context).replace(/\\/g, '/');
-
     const tasks = {
         version: '2.0.0',
-        options: { env: NODE_TASK_ENV },
         tasks: [
             {
                 label: 'rxdk: build',
-                type: 'process',
-                command: NODE_COMMAND,
-                args: [
-                    CLI_PATH,
-                    'build',
-                    '--project-root',
-                    '${workspaceFolder}',
-                    '--sdk-include',
-                    includeDir,
-                    '--sdk-lib',
-                    libDir,
-                    '--optimize',
-                    '${config:rxdk.optimize}',
-                ],
+                type: 'rxdk',
+                action: 'build',
                 group: { kind: 'build', isDefault: true },
                 problemMatcher: ['$gcc'],
             },
-            {
-                label: 'rxdk: deploy',
-                type: 'process',
-                command: NODE_COMMAND,
-                args: [CLI_PATH, 'deploy', '--project-root', '${workspaceFolder}', '--project-name', projectName],
-                problemMatcher: [],
-            },
-            {
-                label: 'rxdk: reboot',
-                type: 'process',
-                command: NODE_COMMAND,
-                args: [CLI_PATH, 'reboot'],
-                problemMatcher: [],
-            },
+            { label: 'rxdk: deploy', type: 'rxdk', action: 'deploy', problemMatcher: [] },
+            { label: 'rxdk: reboot', type: 'rxdk', action: 'reboot', problemMatcher: [] },
             {
                 // The main action: build the .dxt, copy it to E:\dxt, then warm
                 // reboot so xbdm loads it at debug-monitor init.
                 label: 'rxdk: deploy & reboot',
-                dependsOrder: 'sequence',
-                dependsOn: ['rxdk: build', 'rxdk: deploy', 'rxdk: reboot'],
+                type: 'rxdk',
+                action: 'deployReboot',
                 problemMatcher: [],
             },
         ],
@@ -427,23 +351,13 @@ async function generatePrebuiltVscodeFolder(
     const p = manifest.prebuilt!;
     const xbeLeaf = path.basename(p.xbe);
 
-    const deployArgs = [CLI_PATH, 'deploy-prebuilt', '--xbe-path', p.xbe, '--remote-name', p.remoteName];
-    if (p.pdb) {
-        deployArgs.push('--pdb-path', p.pdb);
-    }
-    if (p.map) {
-        deployArgs.push('--map-path', p.map);
-    }
-
     const tasks = {
         version: '2.0.0',
-        options: { env: NODE_TASK_ENV },
         tasks: [
             {
                 label: 'rxdk: deploy',
-                type: 'process',
-                command: NODE_COMMAND,
-                args: deployArgs,
+                type: 'rxdk',
+                action: 'deployPrebuilt',
                 group: { kind: 'build', isDefault: true },
                 problemMatcher: [],
             },
