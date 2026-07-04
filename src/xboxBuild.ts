@@ -134,8 +134,8 @@ async function zigCompile(opts: ZigCompileOptions): Promise<void> {
         '-c', opts.source, `-o${opts.object}`,
     ];
     const toolArgs = opts.isCpp
-        ? ['c++', '-std=c++20', '-nostdinc++', '-fno-exceptions', '-frtti', ...common]
-        : ['cc', '-std=c17', ...common];
+        ? ['c++', '-std=c++23', '-nostdinc++', '-fno-exceptions', '-frtti', ...common]
+        : ['cc', '-std=c23', ...common];
 
     const result = await runStreamed(opts.zig, toolArgs, { output: opts.output });
     const combined = (result.stdout + result.stderr).split(/\r?\n/);
