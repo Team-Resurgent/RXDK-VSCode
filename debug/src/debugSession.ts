@@ -685,10 +685,13 @@ export class XboxDebugSession extends LoggingDebugSession {
         } catch {
             /* keep raw path */
         }
+        // The PDB stores source paths with Windows-style backslashes (clang emits CodeView for the
+        // x86-windows-gnu target), but the local files use the host OS's separator. Normalize both
+        // slash kinds to path.sep so the file resolves on Linux/macOS too, not just Windows.
         if (p.length >= 2 && p[1] === ':') {
-            return `${p[0].toUpperCase()}:${p.slice(2).replace(/\//g, '\\')}`;
+            return `${p[0].toUpperCase()}:${p.slice(2).replace(/[\\/]/g, path.sep)}`;
         }
-        return p.replace(/\//g, '\\');
+        return p.replace(/[\\/]/g, path.sep);
     }
 
     private async installBreakpoint(
