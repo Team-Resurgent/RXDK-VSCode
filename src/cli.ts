@@ -15,6 +15,7 @@ import { buildXboxProject } from './xboxBuild';
 import { deployProject, deployPrebuilt } from './xboxDeploy';
 import { launchProject, rebootConsole } from './xboxLaunch';
 import { isRxdkOptimizeMode } from './optimizeMode';
+import { applyManagedDotnetToProcess } from './dotnetEnv';
 
 interface OutputChannelLike {
     appendLine(value: string): void;
@@ -59,6 +60,10 @@ function stringArg(args: Map<string, string | boolean>, key: string): string | u
 }
 
 async function main(): Promise<number> {
+    // This process is spawned by a VS Code task, whose env (a plain shell) won't
+    // have DOTNET_ROOT — seed it so the framework-dependent host tools we invoke
+    // can locate the extension-managed .NET runtime.
+    applyManagedDotnetToProcess();
     const [command, ...rest] = process.argv.slice(2);
     const args = parseArgs(rest);
 

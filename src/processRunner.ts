@@ -1,4 +1,5 @@
 import { spawn } from 'child_process';
+import { withManagedDotnet } from './dotnetEnv';
 
 /**
  * The subset of vscode.OutputChannel every pipeline module actually uses. Kept
@@ -40,7 +41,13 @@ export function runStreamed(
             opts.output.appendLine(`$ ${command} ${shown.join(' ')}`);
         }
 
-        const proc = spawn(command, args, { cwd: opts.cwd, windowsHide: true });
+        // Host tools (imagebld, xbcp, …) are framework-dependent .NET apps; inject
+        // DOTNET_ROOT/PATH so their apphost finds the extension-managed runtime.
+        const proc = spawn(command, args, {
+            cwd: opts.cwd,
+            windowsHide: true,
+            env: withManagedDotnet(process.env),
+        });
         let stdout = '';
         let stderr = '';
 

@@ -6,6 +6,7 @@ import { promisify } from 'util';
 import * as vscode from 'vscode';
 import { downloadFileToPath, formatBytes, formatDownloadProgress, getDirectorySize } from './downloadFile';
 import { requireOneOf } from './platformDeps';
+import { managedDotnetRoot } from './dotnetEnv';
 
 const execFileAsync = promisify(execFile);
 
@@ -22,7 +23,9 @@ const DOTNET_INSTALL_URL =
         : 'https://dot.net/v1/dotnet-install.sh';
 
 export function getDotNetInstallDir(): string {
-    return path.join(os.homedir(), '.dotnet');
+    // Single source of truth shared with dotnetEnv.ts (which host tools use to
+    // locate this runtime); keep them from drifting.
+    return managedDotnetRoot();
 }
 
 function dotnetExecutableCandidates(): string[] {
