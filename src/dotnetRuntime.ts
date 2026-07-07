@@ -230,7 +230,7 @@ export async function installDotNetRuntime(
     const installDir = getDotNetInstallDir();
     // dotnet-install.sh downloads the runtime with curl or wget; fail early with a
     // clear message rather than deep inside the script if neither is present.
-    await requireOneOf(['curl', 'wget'], 'The .NET runtime installer', 'curl');
+    await requireOneOf(['curl', 'wget'], 'The .NET runtime installer', { apt: 'curl' });
     const scriptName = process.platform === 'win32' ? 'dotnet-install.ps1' : 'dotnet-install.sh';
     const scriptPath = path.join(os.tmpdir(), `rxdk-${scriptName}`);
 
