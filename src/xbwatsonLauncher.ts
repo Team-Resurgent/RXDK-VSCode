@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import { spawn } from 'child_process';
 import * as vscode from 'vscode';
 import { ensureDotNetRuntime } from './dotnetRuntime';
+import { withManagedDotnet } from './dotnetEnv';
 import { getXbwatsonPath } from './sdkPath';
 import { getActiveXboxAddress } from './xboxConsole';
 
@@ -29,6 +30,7 @@ export async function launchXbwatson(
             detached: true,
             stdio: 'ignore',
             windowsHide: false,
+            env: withManagedDotnet(process.env),
         });
         child.unref();
     } catch (err) {

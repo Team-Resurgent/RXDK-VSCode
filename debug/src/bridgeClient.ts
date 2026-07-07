@@ -2,6 +2,24 @@ import { spawn, ChildProcessWithoutNullStreams } from 'child_process';
 import { EventEmitter } from 'events';
 import * as readline from 'readline';
 import * as path from 'path';
+import * as os from 'os';
+import * as fs from 'fs';
+
+// Mirror of src/dotnetEnv.ts (this debug adapter compiles as an isolated tsc
+// project with its own rootDir, so it can't import from src/). The bridge is a
+// framework-dependent .NET app; without DOTNET_ROOT its apphost can't find the
+// runtime the extension installs into ~/.dotnet, so F5 debug fails on macOS/Linux.
+function withManagedDotnet(base: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
+    const root = path.join(os.homedir(), '.dotnet');
+    if (!fs.existsSync(path.join(root, 'shared', 'Microsoft.NETCore.App'))) {
+        return base;
+    }
+    const env: NodeJS.ProcessEnv = { ...base };
+    if (!env.DOTNET_ROOT) {
+        env.DOTNET_ROOT = root;
+    }
+    return env;
+}
 
 export interface BridgeEvent {
     type: 'event' | 'result';
@@ -75,7 +93,7 @@ export class BridgeClient extends EventEmitter {
             stdio: ['pipe', 'pipe', 'pipe'],
             windowsHide: true,
             cwd: bridgeDir,
-            env: { ...process.env, PATH: pathEnv },
+            env: { ...withManagedDotnet(process.env), PATH: pathEnv },
         });
         const rl = readline.createInterface({ input: this.proc.stdout });
         rl.on('line', (line) => this.onLine(line));

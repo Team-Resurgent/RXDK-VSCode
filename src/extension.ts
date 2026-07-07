@@ -9,6 +9,7 @@ import { openStagedSdkFolder, fetchLatestSdk } from './sdkStaging';
 import { getStagedToolsRoot } from './hostTools';
 import { getStagedDocsRoot } from './sdkDocsStaging';
 import { ensureDotNetRuntime, isDotNetRuntimeInstalled } from './dotnetRuntime';
+import { applyManagedDotnetToProcess } from './dotnetEnv';
 import { rebootConsole } from './xboxLaunch';
 import { ensureVscodeForWorkspace } from './vscodeGenerator';
 import { getActiveXboxAddress, promptSetXboxIp } from './xboxConsole';
@@ -58,6 +59,9 @@ async function revealStagedFolder(dir: string, label: string): Promise<void> {
 
 export function activate(context: vscode.ExtensionContext): void {
     extensionContext = context;
+    // Make the extension-managed .NET runtime discoverable to every child we spawn
+    // (host tools, xbwatson, …) by seeding DOTNET_ROOT/PATH into our own env.
+    applyManagedDotnetToProcess();
     rxdkOutput = vscode.window.createOutputChannel('RXDK');
     context.subscriptions.push(rxdkOutput);
 
