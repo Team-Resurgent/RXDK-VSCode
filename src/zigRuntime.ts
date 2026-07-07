@@ -217,6 +217,18 @@ async function extractArchive(
             timeout: 600_000,
             windowsHide: true,
         });
+    } catch (err) {
+        // macOS bsdtar (libarchive) decompresses .tar.xz natively, so nothing
+        // extra is needed there. Linux GNU tar instead shells out to the external
+        // `xz` binary; if it's missing, extraction fails here. Turn that into an
+        // actionable message rather than a raw tar error.
+        if (archivePath.endsWith('.xz')) {
+            await requireOneOf(['xz'], 'Unpacking the Zig archive', {
+                apt: 'xz-utils',
+                brew: 'xz',
+            });
+        }
+        throw err;
     } finally {
         finished = true;
         clearInterval(progressTimer);
@@ -232,9 +244,9 @@ export async function installZig(
     if (!archiveName || !archiveBase) {
         throw new Error(`Automatic Zig install is not supported on ${process.platform}/${process.arch}.`);
     }
-    // The Zig archive is .tar.xz on Linux/macOS; `tar -xf` needs xz to unpack it.
-    await requireOneOf(['xz'], 'Unpacking the Zig archive', 'xz-utils');
-
+    // The Zig archive is .tar.xz on Linux/macOS. We don't gate on `xz` up front:
+    // macOS bsdtar unpacks xz natively, and on Linux extractArchive() surfaces a
+    // clear "install xz" message if GNU tar can't find the binary.
     const url = `${ZIG_DOWNLOAD_PAGE}${ZIG_VERSION}/${archiveName}`;
     const installRoot = path.join(getZigInstallRoot(), ZIG_VERSION);
     const extractDir = path.join(installRoot, 'extract');
