@@ -49,19 +49,32 @@ export type XboxAddressSource = 'workspace' | 'registry' | 'global' | 'none';
 
 // --- RXDK global console store (non-Windows) -------------------------------
 // The managed tools (xbcp, xbox-launch, xbwatson, debug bridge) read their
-// default console from Rxdk.KitConfig's consoles.json, under the OS
-// "ApplicationData" directory. On Linux *and* macOS, .NET maps that to
-// $XDG_CONFIG_HOME (or ~/.config) -- NOT ~/Library. Persisting the IP here as
-// the default console means every tool resolves it on its own with no -x
-// switch, and -- crucially -- the plain-node deploy/run task can read it too
-// (VS Code settings are only visible inside the extension host).
+// default console from Rxdk.KitConfig's consoles.json, under the directory that
+// .NET's Environment.SpecialFolder.ApplicationData resolves to. That mapping is
+// PLATFORM-SPECIFIC and we must mirror it byte-for-byte, or we write one path
+// while the tools read another and every tool reports "No default Xbox console"
+// despite a saved IP:
+//   Linux : $XDG_CONFIG_HOME ?? ~/.config     (GetFolderPathCore.Unix.cs)
+//   macOS : ~/Library/Application Support      (GetFolderPathCore.OSX.cs — .NET
+//           does NOT use XDG on macOS, unlike Linux)
+// Persisting the IP here as the default console means every tool resolves it on
+// its own with no -x switch, and -- crucially -- the plain-node deploy/run task
+// can read it too (VS Code settings are only visible inside the extension host).
 const KIT_APP_FOLDER = 'Rxdk.XbNeighborhood';
 const KIT_LEGACY_APP_FOLDER = 'RXDKNeighborhood';
 const KIT_CONSOLES_FILE = 'consoles.json';
 
+/** Mirror of .NET Environment.SpecialFolder.ApplicationData, per platform. */
+function applicationDataDir(): string {
+    if (process.platform === 'darwin') {
+        return path.join(os.homedir(), 'Library', 'Application Support');
+    }
+    return process.env.XDG_CONFIG_HOME?.trim() || path.join(os.homedir(), '.config');
+}
+
 /** Mirror of Rxdk.KitConfig KitConfigPaths.GetConfigDirectory (non-Windows). */
 function kitConfigDir(): string {
-    const base = process.env.XDG_CONFIG_HOME?.trim() || path.join(os.homedir(), '.config');
+    const base = applicationDataDir();
     const dir = path.join(base, KIT_APP_FOLDER);
     const legacy = path.join(base, KIT_LEGACY_APP_FOLDER);
     if (!fs.existsSync(dir) && fs.existsSync(legacy)) {
