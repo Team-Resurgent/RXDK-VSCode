@@ -7,7 +7,7 @@ import { gitCloneRepo, gitPullLatest, isGitRepo, StagingProgress } from './gitSt
 // The documentation set ships as a git repository (RXDK-Docs), cloned like the SDK libraries rather
 // than downloaded as an archive. The repo contains two doc subsets and a VERSION file:
 //   <docs>/xboxsdk/   — Xbox SDK API reference (HTML)
-//   <docs>/rxdk/      — RXDK extension documentation (HTML)
+//   <docs>/rxdk-vscode/ — RXDK VS Code extension documentation (HTML)
 //   <docs>/VERSION    — installed docs version (tracked like the SDK's VERSION)
 
 export const DEFAULT_DOCS_GIT_URL = 'https://github.com/Team-Resurgent/RXDK-Docs.git';
@@ -20,7 +20,7 @@ export function getRxdkDataRoot(context?: vscode.ExtensionContext): string {
     return path.dirname(getStagedSdkRoot(context));
 }
 
-/** Root of the cloned RXDK-Docs repo (ProgramData/RXDK/docs), holding xboxsdk/ and rxdk/. */
+/** Root of the cloned RXDK-Docs repo (ProgramData/RXDK/docs), holding xboxsdk/ and rxdk-vscode/. */
 export function getStagedDocsRoot(context?: vscode.ExtensionContext): string {
     return path.join(getRxdkDataRoot(context), 'docs');
 }
@@ -30,9 +30,9 @@ export function getXboxSdkDocsRoot(context?: vscode.ExtensionContext): string {
     return path.join(getStagedDocsRoot(context), 'xboxsdk');
 }
 
-/** RXDK extension documentation subset. */
+/** RXDK VS Code extension documentation subset. */
 export function getExtensionDocsRoot(context?: vscode.ExtensionContext): string {
-    return path.join(getStagedDocsRoot(context), 'rxdk');
+    return path.join(getStagedDocsRoot(context), 'rxdk-vscode');
 }
 
 function getDocsGitUrl(context?: vscode.ExtensionContext): string {

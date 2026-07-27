@@ -137,7 +137,7 @@ async function loadDocPage(
     return transformDocHtml(raw, docsRoot, webview, safeName);
 }
 
-// The two doc sets use different encodings: the RXDK extension docs (rxdk/) are
+// The two doc sets use different encodings: the RXDK VS Code extension docs (rxdk-vscode/) are
 // UTF-8, while the legacy Xbox SDK reference (xboxsdk/) is Windows-1252 (declared
 // charset, with smart quotes/trademark bytes). Decode as UTF-8 when the bytes are
 // valid UTF-8 (covers the RXDK docs and any pure-ASCII file), otherwise fall back
