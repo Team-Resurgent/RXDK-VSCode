@@ -128,6 +128,21 @@ async function zigCompile(opts: ZigCompileOptions): Promise<void> {
         // Pin the retail path deterministically so titles link the same way on every
         // toolchain, regardless of whether the compiler predefines _DEBUG.
         '-U_DEBUG',
+        // Thread-local storage: emulated TLS (a per-thread table reached via
+        // __emutls_get_address, backed by libc tss/emutls.c) instead of the native
+        // Windows __tls_index/TEB %fs model, which the RXDK runtime never sets up.
+        // Without this, any title `__thread`/`thread_local` (e.g. stb_image's
+        // stbi__g_failure_reason / vertically_flip_on_load) reads a wild fixed address
+        // and bugchecks. Matches how libcpp is built (xbox_target.zig cppFlags).
+        '-femulated-tls',
+        // -femulated-tls still makes clang emit a CodeView S_*THREAD32 debug record per
+        // thread_local, pointing at the native per-var symbol emutls never defines ->
+        // undefined-symbol at link (xbox_target.zig cppFlags drops ALL debug via -g0 for
+        // this). Keep file/line tables for the PDB (F5 + crash symbolization) but omit
+        // the per-variable symbol records -- exactly -gline-tables-only. Overrides the -g
+        // the Debug/ReleaseSafe optimize modes add, at the cost of local-variable
+        // inspection there (title thread_locals then link cleanly; line debug still works).
+        '-gline-tables-only',
         ...opts.includeArgs,
         ...opts.defineArgs,
         ...XDK_CLANG_WARNINGS,
