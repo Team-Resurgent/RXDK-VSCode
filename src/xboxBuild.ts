@@ -257,10 +257,11 @@ function discoverRdfFiles(dir: string): string[] {
 }
 
 /**
- * Runs the bundler on the project's .rdf resource files. Uses the explicit manifest.resources
- * list if present, otherwise auto-discovers every *.rdf under the project root. The bundler
- * resolves out_header / out_packedresource paths relative to each .rdf, so outputs land in the
- * project tree (Resource.h next to the sources, the .xpr under the media/deploy path in the .rdf).
+ * Runs the bundler on the project's .rdf resource files, then xactbld on any .xap XACT projects.
+ * Uses the explicit manifest.resources list if present, otherwise auto-discovers every *.rdf
+ * under the project root. The bundler resolves out_header / out_packedresource paths relative to
+ * each .rdf, so outputs land in the project tree (Resource.h next to the sources, the .xpr under
+ * the media/deploy path in the .rdf). See compileXactProjects for the .xap step.
  */
 async function compileResources(
     projectRoot: string,
@@ -272,6 +273,9 @@ async function compileResources(
         rdfs = [];
         for (const rel of manifest.resources) {
             if (!rel || !rel.trim()) {
+                continue;
+            }
+            if (!rel.toLowerCase().endsWith('.rdf')) {
                 continue;
             }
             const p = path.join(projectRoot, rel.replace(/\//g, path.sep));
@@ -288,22 +292,94 @@ async function compileResources(
         rdfs = discoverRdfFiles(projectRoot);
     }
 
-    if (rdfs.length === 0) {
+    if (rdfs.length > 0) {
+        const bundler = resolveHostTool('bundler');
+        if (!fs.existsSync(bundler)) {
+            throw new Error(
+                `bundler host tool not found: ${bundler}. Update the RXDK tools (the resource pipeline needs the bundler).`
+            );
+        }
+
+        for (const rdf of rdfs) {
+            output?.appendLine(`Compiling resources: ${path.basename(rdf)}`);
+            const result = await runStreamed(bundler, [rdf, '-q'], { output, cwd: path.dirname(rdf) });
+            if (result.exitCode !== 0) {
+                throw new Error(`bundler failed on ${path.basename(rdf)} (exit ${result.exitCode})`);
+            }
+        }
+    }
+
+    await compileXactProjects(projectRoot, manifest, output);
+}
+
+/** Find every *.xap under a directory (recursive). */
+function discoverXapFiles(dir: string, recursive: boolean): string[] {
+    const out: string[] = [];
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+            if (recursive) {
+                out.push(...discoverXapFiles(full, true));
+            }
+        } else if (entry.name.toLowerCase().endsWith('.xap')) {
+            out.push(full);
+        }
+    }
+    return out;
+}
+
+/**
+ * Runs xactbld on the project's .xap XACT-project files. Each .xap produces the generated C
+ * header (XactSounds.h, next to the .xap so sources can #include it) plus a wave bank (.xwb)
+ * and sound bank (.xsb) written to the media paths named inside it. Uses the manifest's .xap
+ * resources if listed, otherwise auto-discovers *.xap under the project root and its immediate
+ * parent — XDK sound samples keep the .xap at the sample root next to the .cpp, one level above
+ * the .vcxproj/manifest directory.
+ */
+async function compileXactProjects(
+    projectRoot: string,
+    manifest: RxdkProjectManifest,
+    output?: OutputLike
+): Promise<void> {
+    const xaps: string[] = [];
+
+    for (const rel of manifest.resources ?? []) {
+        if (!rel || !rel.trim() || !rel.toLowerCase().endsWith('.xap')) {
+            continue;
+        }
+        const p = path.resolve(projectRoot, rel.replace(/\//g, path.sep));
+        if (fs.existsSync(p)) {
+            xaps.push(p);
+        }
+    }
+
+    for (const f of discoverXapFiles(projectRoot, true)) {
+        xaps.push(path.resolve(f));
+    }
+    const parent = path.dirname(projectRoot.replace(/[\\/]+$/, ''));
+    if (parent && fs.existsSync(parent)) {
+        for (const f of discoverXapFiles(parent, false)) {
+            xaps.push(path.resolve(f));
+        }
+    }
+
+    const unique = [...new Set(xaps.map((x) => path.normalize(x)))];
+    if (unique.length === 0) {
         return;
     }
 
-    const bundler = resolveHostTool('bundler');
-    if (!fs.existsSync(bundler)) {
+    const xactbld = resolveHostTool('xactbld');
+    if (!fs.existsSync(xactbld)) {
         throw new Error(
-            `bundler host tool not found: ${bundler}. Update the RXDK tools (the resource pipeline needs the bundler).`
+            `xactbld host tool not found: ${xactbld}. Update the RXDK tools (the XACT audio pipeline needs xactbld).`
         );
     }
 
-    for (const rdf of rdfs) {
-        output?.appendLine(`Compiling resources: ${path.basename(rdf)}`);
-        const result = await runStreamed(bundler, [rdf, '-q'], { output, cwd: path.dirname(rdf) });
+    for (const xap of unique) {
+        output?.appendLine(`Compiling XACT project: ${path.basename(xap)}`);
+        const result = await runStreamed(xactbld, [xap, '-q'], { output, cwd: path.dirname(xap) });
         if (result.exitCode !== 0) {
-            throw new Error(`bundler failed on ${path.basename(rdf)} (exit ${result.exitCode})`);
+            throw new Error(`xactbld failed on ${path.basename(xap)} (exit ${result.exitCode})`);
         }
     }
 }
