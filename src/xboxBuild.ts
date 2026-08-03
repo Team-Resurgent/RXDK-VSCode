@@ -276,7 +276,11 @@ async function compileResources(
             }
             const p = path.join(projectRoot, rel.replace(/\//g, path.sep));
             if (!fs.existsSync(p)) {
-                throw new Error(`resources: .rdf not found: ${p}`);
+                // Imported XDK vcprojs often list stale .rdf references (a shared
+                // Font.rdf/Gamepad.rdf not shipped with the sample). Skip rather than
+                // fail — a truly-needed resource surfaces as a missing-header compile error.
+                output?.appendLine(`Warning: resource .rdf not found, skipping: ${p}`);
+                continue;
             }
             rdfs.push(p);
         }
