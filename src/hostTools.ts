@@ -30,6 +30,7 @@ const XDVDFS_REPO = 'Team-Resurgent/xdvdfs';
  */
 export const REQUIRED_HOST_TOOLS = [
     'imagebld',
+    'bundler',
     'xbcp',
     'xbox-launch',
     'xboxdbg-bridge',

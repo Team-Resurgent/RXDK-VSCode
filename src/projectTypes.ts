@@ -74,6 +74,13 @@ export interface RxdkProjectManifest {
     /** Which SDK library variant to link (lib/debug or lib/release). Omitted = "release". */
     configuration?: RxdkConfiguration;
     sources?: string[];
+    /**
+     * Project-relative paths to .rdf resource-description files compiled by the bundler tool
+     * before the C/C++ sources (each produces a Resource.h consumed at compile time and a
+     * packed .xpr loaded at runtime, written to the paths named inside the .rdf). Omitted =
+     * auto-discover every *.rdf under the project root.
+     */
+    resources?: string[];
     libraries?: string[];
     /**
      * Project-relative paths to library projects (folders containing an rxdk.project.json with

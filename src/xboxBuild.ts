@@ -242,6 +242,68 @@ function getTransitivePublicIncludeArgs(projectRoot: string, manifest: RxdkProje
 interface CompiledSources { objs: string[]; usesCpp: boolean }
 
 /** Compile every source in a project to outDir. */
+/** Recursively find every *.rdf under a directory. */
+function discoverRdfFiles(dir: string): string[] {
+    const out: string[] = [];
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+            out.push(...discoverRdfFiles(full));
+        } else if (entry.name.toLowerCase().endsWith('.rdf')) {
+            out.push(full);
+        }
+    }
+    return out;
+}
+
+/**
+ * Runs the bundler on the project's .rdf resource files. Uses the explicit manifest.resources
+ * list if present, otherwise auto-discovers every *.rdf under the project root. The bundler
+ * resolves out_header / out_packedresource paths relative to each .rdf, so outputs land in the
+ * project tree (Resource.h next to the sources, the .xpr under the media/deploy path in the .rdf).
+ */
+async function compileResources(
+    projectRoot: string,
+    manifest: RxdkProjectManifest,
+    output?: OutputLike
+): Promise<void> {
+    let rdfs: string[];
+    if (manifest.resources && manifest.resources.length > 0) {
+        rdfs = [];
+        for (const rel of manifest.resources) {
+            if (!rel || !rel.trim()) {
+                continue;
+            }
+            const p = path.join(projectRoot, rel.replace(/\//g, path.sep));
+            if (!fs.existsSync(p)) {
+                throw new Error(`resources: .rdf not found: ${p}`);
+            }
+            rdfs.push(p);
+        }
+    } else {
+        rdfs = discoverRdfFiles(projectRoot);
+    }
+
+    if (rdfs.length === 0) {
+        return;
+    }
+
+    const bundler = resolveHostTool('bundler');
+    if (!fs.existsSync(bundler)) {
+        throw new Error(
+            `bundler host tool not found: ${bundler}. Update the RXDK tools (the resource pipeline needs the bundler).`
+        );
+    }
+
+    for (const rdf of rdfs) {
+        output?.appendLine(`Compiling resources: ${path.basename(rdf)}`);
+        const result = await runStreamed(bundler, [rdf, '-q'], { output, cwd: path.dirname(rdf) });
+        if (result.exitCode !== 0) {
+            throw new Error(`bundler failed on ${path.basename(rdf)} (exit ${result.exitCode})`);
+        }
+    }
+}
+
 async function compileProjectSources(
     projectRoot: string,
     manifest: RxdkProjectManifest,
@@ -334,6 +396,11 @@ export async function buildXboxProject(opts: BuildXboxProjectOptions): Promise<B
         const outDir = getXboxProjectOutDir(projectRoot, manifest);
         fs.mkdirSync(outDir, { recursive: true });
         const optimize: RxdkOptimizeMode = opts.optimize ?? 'Debug';
+
+        // Resource pipeline: compile any .rdf files with the bundler BEFORE the C/C++ sources,
+        // so the generated Resource.h exists at compile time and the packed .xpr is written
+        // (to the out_packedresource path named in the .rdf) for deploy.
+        await compileResources(projectRoot, manifest, opts.output);
 
         if (!fs.existsSync(opts.sdkInclude)) {
             throw new Error('Missing sdk/include - run RXDK prerequisites (SDK install)');
