@@ -128,8 +128,8 @@ export const TEMPLATE_DESCRIPTIONS: Record<RxdkTemplateId, string> = {
     'music-visualizer': 'Streams an Ogg track through DirectSound with a Direct3D 8 spectrum visualizer — references a vorbis library project.',
     'controller-input': 'Reads gamepad, mouse, IR remote, and keyboard input and shows every event on an on-screen scrolling terminal.',
     'video-player': 'Plays a bundled XMV video clip on a continuous loop.',
-    'font-scroller': 'Demoscene-style bitmap-font scroller using libxfont — sine bounce, stretch-blit scaling, rainbow color cycle, and a typing hacker-terminal background.',
-    'network-server': 'Brings up XNet + DHCP and hosts a tiny HTTP server — shows the URL to open on screen with libxfont.',
+    'font-scroller': 'Demoscene-style bitmap-font scroller using XFONT — sine bounce, stretch-blit scaling, rainbow color cycle, and a typing hacker-terminal background.',
+    'network-server': 'Brings up XNet + DHCP and hosts a tiny HTTP server — shows the URL to open on screen with XFONT.',
     dxt: 'An Xbox debug-monitor extension (.dxt) that xbdm loads from E:\\dxt at boot — an FPS/memory overlay drawn via the NV2A video overlay. Deploys to E:\\dxt and warm-reboots; not an XBE.',
     library: 'A standalone static library (.lib) that other projects link via projectReferences.',
 };
