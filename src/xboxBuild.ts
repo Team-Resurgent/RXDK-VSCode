@@ -384,6 +384,114 @@ async function compileXactProjects(
     }
 }
 
+/** Recursively find every *.vsh/*.psh under a dir, skipping build-output trees (out/obj/bin). */
+function discoverShaderFiles(dir: string): string[] {
+    const out: string[] = [];
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+            const lower = entry.name.toLowerCase();
+            if (lower === 'out' || lower === 'obj' || lower === 'bin') {
+                continue; // deployed shader copies live here — don't recompile them
+            }
+            out.push(...discoverShaderFiles(full));
+        } else {
+            const lower = entry.name.toLowerCase();
+            if (lower.endsWith('.vsh') || lower.endsWith('.psh')) {
+                out.push(full);
+            }
+        }
+    }
+    return out;
+}
+
+/**
+ * True when a .vsh/.psh begins (past comments/blank lines) with a shader version directive such
+ * as vs.1.1 / xvs.1.1 / xvss.1.1 / ps.1.1 / xps.1.1. Files without one are shared include
+ * fragments (#included by others), not standalone shaders.
+ */
+function hasShaderVersionLine(file: string): boolean {
+    let text: string;
+    try {
+        text = fs.readFileSync(file, 'utf8');
+    } catch {
+        return false;
+    }
+    for (const raw of text.split(/\r?\n/)) {
+        let line = raw;
+        const c = line.indexOf('//');
+        if (c >= 0) {
+            line = line.slice(0, c);
+        }
+        const s = line.indexOf(';');
+        if (s >= 0) {
+            line = line.slice(0, s);
+        }
+        line = line.trim();
+        if (line.length === 0 || line.startsWith('#')) {
+            continue;
+        }
+        return /^(xvss|xvsw|xvs|vs|xps|ps)\s*\.\s*\d/i.test(line);
+    }
+    return false;
+}
+
+/**
+ * Assembles the project's shader sources to NV2A microcode with xsasm: each *.vsh -> *.xvu and
+ * *.psh -> *.xpu, written next to the source so it deploys with the media tree (titles load e.g.
+ * "Shaders\\Foo.xvu" at runtime). Uses the manifest's .vsh/.psh resources if listed, otherwise
+ * auto-discovers under the project root (skipping build-output dirs). Files without a shader
+ * version line are include fragments and skipped. A shader that fails to assemble fails the build.
+ */
+async function compileShaders(
+    projectRoot: string,
+    manifest: RxdkProjectManifest,
+    output?: OutputLike
+): Promise<void> {
+    const isShaderSource = (p: string) => {
+        const l = p.toLowerCase();
+        return l.endsWith('.vsh') || l.endsWith('.psh');
+    };
+
+    let shaders: string[];
+    const listed = (manifest.resources ?? []).filter((r) => r && r.trim() && isShaderSource(r));
+    if (listed.length > 0) {
+        shaders = [];
+        for (const rel of listed) {
+            const p = path.resolve(projectRoot, rel.replace(/\//g, path.sep));
+            if (fs.existsSync(p)) {
+                shaders.push(p);
+            }
+        }
+    } else {
+        shaders = discoverShaderFiles(projectRoot);
+    }
+
+    const unique = [...new Set(shaders.map((s) => path.normalize(s)))].filter(hasShaderVersionLine);
+    if (unique.length === 0) {
+        return;
+    }
+
+    const xsasm = resolveHostTool('xsasm');
+    if (!fs.existsSync(xsasm)) {
+        throw new Error(
+            `xsasm host tool not found: ${xsasm}. Update the RXDK tools (the shader pipeline needs xsasm).`
+        );
+    }
+
+    for (const src of unique) {
+        const isPixel = src.toLowerCase().endsWith('.psh');
+        const outPath = src.slice(0, src.length - 4) + (isPixel ? '.xpu' : '.xvu');
+        const dir = path.dirname(src);
+        output?.appendLine(`Compiling shader: ${path.basename(src)} -> ${path.basename(outPath)}`);
+        // -I <dir>: fur/fin-style shaders #include sibling fragments from their own directory.
+        const result = await runStreamed(xsasm, [src, '-o', outPath, '-I', dir], { output, cwd: dir });
+        if (result.exitCode !== 0) {
+            throw new Error(`xsasm failed on ${path.basename(src)} (exit ${result.exitCode})`);
+        }
+    }
+}
+
 async function compileProjectSources(
     projectRoot: string,
     manifest: RxdkProjectManifest,
@@ -481,6 +589,10 @@ export async function buildXboxProject(opts: BuildXboxProjectOptions): Promise<B
         // so the generated Resource.h exists at compile time and the packed .xpr is written
         // (to the out_packedresource path named in the .rdf) for deploy.
         await compileResources(projectRoot, manifest, opts.output);
+
+        // Shader pipeline: assemble .vsh/.psh sources to .xvu/.xpu microcode with xsasm so titles
+        // that load precompiled shaders (e.g. "Shaders\\Foo.xvu") find them in the media tree.
+        await compileShaders(projectRoot, manifest, opts.output);
 
         if (!fs.existsSync(opts.sdkInclude)) {
             throw new Error('Missing sdk/include - run RXDK prerequisites (SDK install)');

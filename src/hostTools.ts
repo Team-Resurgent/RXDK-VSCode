@@ -32,6 +32,7 @@ export const REQUIRED_HOST_TOOLS = [
     'imagebld',
     'bundler',
     'xactbld',
+    'xsasm',
     'xbcp',
     'xbox-launch',
     'xboxdbg-bridge',
