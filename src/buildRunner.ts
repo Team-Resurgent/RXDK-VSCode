@@ -1,5 +1,7 @@
 import * as vscode from 'vscode';
-import { getSdkIncludeDir, getSdkLibDir } from './sdkPath';
+import * as path from 'path';
+import { getSdkIncludeDir, getSdkLibDir, getXboxProjectOutDir } from './sdkPath';
+import { launchXemu } from './xemuLaunch';
 import { isStagedSdkPresent, getStagedSdkRoot } from './sdkStaging';
 import { isDotNetRuntimeInstalled, ensureDotNetRuntime } from './dotnetRuntime';
 import { findProjectManifest } from './projectManager';
@@ -12,7 +14,7 @@ function configuredZigOverride(): string | undefined {
     return vscode.workspace.getConfiguration('rxdk').get<string>('zigPath')?.trim() || undefined;
 }
 
-export type RxdkTaskKind = 'build' | 'deploy' | 'run' | 'build+deploy' | 'remove-dxt';
+export type RxdkTaskKind = 'build' | 'deploy' | 'run' | 'build+deploy' | 'remove-dxt' | 'launch-xemu';
 
 export async function runRxdkTask(
     context: vscode.ExtensionContext,
@@ -50,7 +52,7 @@ export async function runRxdkTask(
     // isLibraryManifest projects are handled inside buildXboxProject itself (compiles + archives,
     // then returns without linking/deploying) -- but deploy/run on one is a user-facing no-op here,
     // since a library isn't something to deploy or launch on its own.
-    if (kind === 'deploy' || kind === 'run') {
+    if (kind === 'deploy' || kind === 'run' || kind === 'launch-xemu') {
         if (found.manifest.type === 'library') {
             vscode.window.showInformationMessage(
                 `Library project "${name}" builds a .lib and is not deployed/run — reference it from an executable via projectReferences.`
@@ -84,6 +86,17 @@ export async function runRxdkTask(
             return false;
         }
         return reportLaunchResult(await rebootConsole({ output }), output);
+    }
+
+    if (kind === 'launch-xemu') {
+        // Build a fresh ISO, then boot it in xemu (no debugging). xemu streams its console
+        // output back to the panel; it runs until the user closes the emulator window.
+        const buildResult = await runBuild(context, projectRoot, output);
+        if (!reportBuildResult(buildResult, output)) {
+            return false;
+        }
+        const isoPath = path.join(getXboxProjectOutDir(projectRoot, found.manifest), 'XISO', `${name}.iso`);
+        return reportLaunchResult(await launchXemu({ isoPath, output }), output);
     }
 
     // kind === 'build'

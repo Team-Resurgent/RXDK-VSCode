@@ -42,6 +42,7 @@
       { "command": "rxdk.build", "title": "Build", "category": "RXDK", "icon": "$(tools)" },
       { "command": "rxdk.deploy", "title": "Deploy", "category": "RXDK", "icon": "$(cloud-upload)" },
       { "command": "rxdk.run", "title": "Run", "category": "RXDK", "icon": "$(run)" },
+      { "command": "rxdk.launchXemu", "title": "Launch in xemu", "category": "RXDK", "icon": "$(vm)" },
       { "command": "rxdk.removeDxt", "title": "Remove DXT & Reboot", "category": "RXDK", "icon": "$(trash)" },
       { "command": "rxdk.rebootConsole", "title": "Warm Reboot Xbox", "category": "RXDK", "icon": "$(sync)" },
       { "command": "rxdk.debug", "title": "Debug", "category": "RXDK", "icon": "$(debug-alt)" },
@@ -93,6 +94,7 @@
         { "command": "rxdk.build", "when": "rxdk.prerequisitesReady && rxdk.hasProject" },
         { "command": "rxdk.deploy", "when": "rxdk.prerequisitesReady && rxdk.hasProject" },
         { "command": "rxdk.run", "when": "rxdk.prerequisitesReady && rxdk.hasProject" },
+        { "command": "rxdk.launchXemu", "when": "rxdk.prerequisitesReady && rxdk.hasProject && rxdk.xemuConfigured" },
         { "command": "rxdk.removeDxt", "when": "rxdk.prerequisitesReady && rxdk.hasProject" },
         { "command": "rxdk.rebootConsole", "when": "rxdk.prerequisitesReady" },
         { "command": "rxdk.debug", "when": "rxdk.prerequisitesReady && rxdk.hasProject" },
@@ -227,6 +229,16 @@
           "type": "string",
           "default": "",
           "description": "Path to xbwatson (default: the host-tools prerequisite download under …/RXDK/tools)."
+        },
+        "rxdk.xemuPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the xemu executable. When set to a valid path, 'Launch in xemu' becomes available (builds the ISO and boots it in xemu — no debugging)."
+        },
+        "rxdk.xemuParams": {
+          "type": "string",
+          "default": "-device lpc47m157 -serial stdio",
+          "description": "Parameters passed to xemu before '-dvd_path <iso>'. The default (-device lpc47m157 -serial stdio) routes the Xbox debug serial to the RXDK output panel so you see the title's console output."
         },
         "rxdk.defaultConsole": {
           "type": "string",

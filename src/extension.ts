@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import { RxdkSidebarProvider } from './sidebarProvider';
 import { createProject } from './projectManager';
 import { runRxdkTask } from './buildRunner';
+import { isXemuConfigured } from './xemuLaunch';
 import { getBridgePath } from './sdkPath';
 import { openStagedSdkFolder, fetchLatestSdk } from './sdkStaging';
 import { getStagedToolsRoot } from './hostTools';
@@ -95,13 +96,20 @@ export function activate(context: vscode.ExtensionContext): void {
     void hasProject().then((v) => {
         vscode.commands.executeCommand('setContext', 'rxdk.hasProject', v);
     });
+    // Gate the xemu launch UI on a valid, configured xemu path.
+    void vscode.commands.executeCommand('setContext', 'rxdk.xemuConfigured', isXemuConfigured());
     context.subscriptions.push(
         vscode.workspace.onDidChangeWorkspaceFolders(() => {
             void hasProject().then((v) => vscode.commands.executeCommand('setContext', 'rxdk.hasProject', v));
             sidebarProvider.refresh();
         }),
         vscode.workspace.onDidChangeConfiguration((e) => {
-            if (e.affectsConfiguration('rxdk.defaultConsole') || e.affectsConfiguration('xbox.defaultConsole')) {
+            if (
+                e.affectsConfiguration('rxdk.defaultConsole') ||
+                e.affectsConfiguration('xbox.defaultConsole') ||
+                e.affectsConfiguration('rxdk.xemuPath')
+            ) {
+                void vscode.commands.executeCommand('setContext', 'rxdk.xemuConfigured', isXemuConfigured());
                 sidebarProvider.refresh();
             }
         })
@@ -118,6 +126,7 @@ export function activate(context: vscode.ExtensionContext): void {
             await runRxdkTask(context, 'build+deploy', rxdkOutput);
             await runRxdkTask(context, 'run', rxdkOutput);
         })),
+        vscode.commands.registerCommand('rxdk.launchXemu', guardPrerequisites(() => runRxdkTask(context, 'launch-xemu', rxdkOutput))),
         vscode.commands.registerCommand('rxdk.removeDxt', guardPrerequisites(() => runRxdkTask(context, 'remove-dxt', rxdkOutput))),
         vscode.commands.registerCommand('rxdk.debug', guardPrerequisites(() => vscode.commands.executeCommand('workbench.action.debug.start'))),
         vscode.commands.registerCommand('rxdk.debugPrebuiltXbe', guardPrerequisites(() => openPrebuiltProjectSetup(context))),

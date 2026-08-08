@@ -7,6 +7,7 @@ import { sdkDocsAvailable, extensionDocsAvailable } from './sdkDocs';
 import { isPrebuiltManifest, isDxtManifest } from './projectTypes';
 import { isPrerequisitesReadySync } from './prerequisites';
 import { isXboxNeighborhoodShellRegistered } from './xboxNeighborhoodShell';
+import { isXemuConfigured } from './xemuLaunch';
 
 export class RxdkTreeItem extends vscode.TreeItem {
     constructor(
@@ -254,6 +255,10 @@ export class RxdkSidebarProvider implements vscode.TreeDataProvider<RxdkTreeItem
                 new RxdkTreeItem('Deploy', vscode.TreeItemCollapsibleState.None, 'rxdk.deploy', undefined, 'cloud-upload'),
                 new RxdkTreeItem('Run', vscode.TreeItemCollapsibleState.None, 'rxdk.run', undefined, 'play'),
                 new RxdkTreeItem('Debug', vscode.TreeItemCollapsibleState.None, 'rxdk.debug', undefined, 'bug'),
+                // Only offered once a valid xemu path is configured.
+                ...(isXemuConfigured()
+                    ? [new RxdkTreeItem('Launch in xemu', vscode.TreeItemCollapsibleState.None, 'rxdk.launchXemu', undefined, 'vm')]
+                    : []),
             ];
         }
 
