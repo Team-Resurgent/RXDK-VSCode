@@ -1,8 +1,10 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { RxdkProjectManifest, RxdkTemplateId, TEMPLATE_LABELS } from './projectTypes';
+import { RxdkProjectManifest, RxdkTemplateId, TEMPLATE_LABELS, resolveConfiguration } from './projectTypes';
 import { generateVscodeFolder } from './vscodeGenerator';
+import { getSelectedConfig } from './configSelection';
+import { setActiveConfiguration } from './activeConfig';
 import { getExtensionRoot } from './sdkPath';
 import { stripBom } from './xboxSdkPaths';
 import { openPrebuiltWorkspace, writePrebuiltWorkspaceFile } from './prebuiltWorkspace';
@@ -91,11 +93,14 @@ export async function scaffoldProjectFromTemplate(
     try {
         copyTree(templateDir, projectRoot);
         patchManifest(projectRoot, name);
-        const manifest = JSON.parse(
-            stripBom(fs.readFileSync(path.join(projectRoot, 'rxdk.project.json'), 'utf8'))
-        ) as RxdkProjectManifest;
+        const manifestPath = path.join(projectRoot, 'rxdk.project.json');
+        const raw = JSON.parse(stripBom(fs.readFileSync(manifestPath, 'utf8'))) as RxdkProjectManifest;
+        // Collapse a multi-config template to its default configuration for the initial .vscode.
+        const selectedConfig = getSelectedConfig(context, manifestPath, raw);
+        setActiveConfiguration(selectedConfig || undefined);
+        const manifest = resolveConfiguration(raw, selectedConfig);
 
-        await generateVscodeFolder(context, projectRoot, name, manifest);
+        await generateVscodeFolder(context, projectRoot, name, manifest, selectedConfig);
         const workspacePath = writePrebuiltWorkspaceFile(projectRoot, name);
         await openPrebuiltWorkspace(workspacePath);
         await vscode.commands.executeCommand('setContext', 'rxdk.hasProject', true);

@@ -248,6 +248,9 @@ export async function generateVscodeFolder(
     fs.mkdirSync(vscodeDir, { recursive: true });
 
     const bridgePath = `${SDK_ROOT}/tools/xboxdbg-bridge.exe`;
+    // Point the debugger at the resolved configuration's output directory (e.g. out/Debug) so F5
+    // finds the .exe/.pdb the active configuration actually builds -- not a hardcoded out/.
+    const outRel = (manifest.outputDir || 'out').replace(/\\/g, '/');
 
     const tasks = {
         version: '2.0.0',
@@ -273,8 +276,8 @@ export async function generateVscodeFolder(
                 request: 'launch',
                 name: `Debug ${projectName}`,
                 preLaunchTask: 'rxdk: build+deploy',
-                program: `\${workspaceFolder}/out/${projectName}.exe`,
-                pdb: `\${workspaceFolder}/out/${projectName}.pdb`,
+                program: `\${workspaceFolder}/${outRel}/${projectName}.exe`,
+                pdb: `\${workspaceFolder}/${outRel}/${projectName}.pdb`,
                 xbePath: `xe:\\${projectName}\\${projectName}.xbe`,
                 bridgePath,
                 consoleName: '${config:rxdk.defaultConsole}',
