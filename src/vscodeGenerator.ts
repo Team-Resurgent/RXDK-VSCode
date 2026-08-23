@@ -6,10 +6,17 @@ import {
     isPrebuiltManifest,
     manifestNeedsIntelliSense,
     manifestUsesCpp,
+    resolveConfiguration,
     RxdkProjectManifest,
 } from './projectTypes';
 import { getSdkIncludeDir } from './sdkPath';
 import { stripBom } from './xboxSdkPaths';
+import { getSelectedConfig } from './configSelection';
+import { setActiveConfiguration } from './activeConfig';
+
+// Settings-file marker recording which configuration the generated .vscode folder was built for,
+// so switching configuration is detected as "stale" and the IntelliSense config is regenerated.
+const ACTIVE_CONFIG_KEY = 'rxdk.activeConfiguration';
 
 const EXTENSION_ID = 'rxdk-libs.rxdk-vscode';
 const EXTENSION_ROOT = `\${extensionInstallFolder:${EXTENSION_ID}}`;
@@ -131,11 +138,11 @@ function applyIntelliSenseSettings(settings: Record<string, unknown>, config: In
     }
 }
 
-function writeCppProperties(vscodeDir: string, config: IntelliSenseConfig): void {
+function writeCppProperties(vscodeDir: string, config: IntelliSenseConfig, configName = ''): void {
     const cppProperties = {
         configurations: [
             {
-                name: 'Xbox',
+                name: configName ? `Xbox (${configName})` : 'Xbox',
                 includePath: config.includePath,
                 defines: config.defines,
                 windowsSdkVersion: '',
@@ -157,10 +164,25 @@ function writeCppProperties(vscodeDir: string, config: IntelliSenseConfig): void
 function intelliSenseConfigIsStale(
     projectRoot: string,
     context: vscode.ExtensionContext,
-    manifest: RxdkProjectManifest
+    manifest: RxdkProjectManifest,
+    configName = ''
 ): boolean {
     if (!manifestNeedsIntelliSense(manifest)) {
         return false;
+    }
+
+    // A switch to a different configuration means the generated IntelliSense (include paths, defines)
+    // may no longer match -- treat it as stale so it regenerates for the newly selected configuration.
+    const settingsMarkerPath = path.join(projectRoot, '.vscode', 'settings.json');
+    if (configName && fs.existsSync(settingsMarkerPath)) {
+        try {
+            const s = JSON.parse(fs.readFileSync(settingsMarkerPath, 'utf8')) as Record<string, unknown>;
+            if (s[ACTIVE_CONFIG_KEY] !== configName) {
+                return true;
+            }
+        } catch {
+            return true;
+        }
     }
 
     const expectedInclude = normalizeConfigPath(getSdkIncludeDir(context));
@@ -209,7 +231,8 @@ export async function generateVscodeFolder(
     context: vscode.ExtensionContext,
     projectRoot: string,
     projectName: string,
-    manifest: RxdkProjectManifest
+    manifest: RxdkProjectManifest,
+    configName = ''
 ): Promise<void> {
     if (isPrebuiltManifest(manifest)) {
         await generatePrebuiltVscodeFolder(projectRoot, projectName, manifest);
@@ -217,7 +240,7 @@ export async function generateVscodeFolder(
     }
 
     if (isDxtManifest(manifest)) {
-        await generateDxtVscodeFolder(context, projectRoot, projectName, manifest);
+        await generateDxtVscodeFolder(context, projectRoot, projectName, manifest, configName);
         return;
     }
 
@@ -274,11 +297,14 @@ export async function generateVscodeFolder(
             '*.xbe': 'binary',
         },
     };
+    if (configName) {
+        settings[ACTIVE_CONFIG_KEY] = configName;
+    }
 
     if (manifestNeedsIntelliSense(manifest)) {
         const intelliSense = buildIntelliSenseConfig(context, projectRoot, manifest);
         applyIntelliSenseSettings(settings, intelliSense);
-        writeCppProperties(vscodeDir, intelliSense);
+        writeCppProperties(vscodeDir, intelliSense, configName);
     }
 
     fs.writeFileSync(path.join(vscodeDir, 'tasks.json'), JSON.stringify(tasks, null, 4) + '\n', 'utf8');
@@ -294,7 +320,8 @@ async function generateDxtVscodeFolder(
     context: vscode.ExtensionContext,
     projectRoot: string,
     projectName: string,
-    manifest: RxdkProjectManifest
+    manifest: RxdkProjectManifest,
+    configName = ''
 ): Promise<void> {
     const vscodeDir = path.join(projectRoot, '.vscode');
     fs.mkdirSync(vscodeDir, { recursive: true });
@@ -328,11 +355,14 @@ async function generateDxtVscodeFolder(
             '*.dxt': 'binary',
         },
     };
+    if (configName) {
+        settings[ACTIVE_CONFIG_KEY] = configName;
+    }
 
     if (manifestNeedsIntelliSense(manifest)) {
         const intelliSense = buildIntelliSenseConfig(context, projectRoot, manifest);
         applyIntelliSenseSettings(settings, intelliSense);
-        writeCppProperties(vscodeDir, intelliSense);
+        writeCppProperties(vscodeDir, intelliSense, configName);
     }
 
     fs.writeFileSync(path.join(vscodeDir, 'tasks.json'), JSON.stringify(tasks, null, 4) + '\n', 'utf8');
@@ -405,17 +435,26 @@ async function generatePrebuiltVscodeFolder(
     fs.writeFileSync(path.join(vscodeDir, 'settings.json'), JSON.stringify(settings, null, 4) + '\n', 'utf8');
 }
 
-export async function ensureVscodeForWorkspace(context: vscode.ExtensionContext): Promise<void> {
+export async function ensureVscodeForWorkspace(
+    context: vscode.ExtensionContext,
+    force = false
+): Promise<void> {
     const found = await import('./projectManager').then((m) => m.findProjectManifest());
     if (!found) {
         return;
     }
     const projectRoot = found.folder.uri.fsPath;
+    // Collapse a multi-config manifest to the selected configuration (Debug/Release/…) and make the
+    // low-level loader resolve the same one, so generated IntelliSense matches what a build produces.
+    const selectedConfig = getSelectedConfig(context, found.manifestPath, found.manifest);
+    setActiveConfiguration(selectedConfig || undefined);
+    const manifest = resolveConfiguration(found.manifest, selectedConfig);
     const needsRefresh =
+        force ||
         vscodeConfigIsStale(projectRoot) ||
-        intelliSenseConfigIsStale(projectRoot, context, found.manifest);
+        intelliSenseConfigIsStale(projectRoot, context, manifest, selectedConfig);
     if (!needsRefresh) {
         return;
     }
-    await generateVscodeFolder(context, projectRoot, found.manifest.name, found.manifest);
+    await generateVscodeFolder(context, projectRoot, manifest.name, manifest, selectedConfig);
 }

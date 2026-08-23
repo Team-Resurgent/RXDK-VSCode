@@ -13,6 +13,7 @@ import { ensureDotNetRuntime, isDotNetRuntimeInstalled } from './dotnetRuntime';
 import { applyManagedDotnetToProcess } from './dotnetEnv';
 import { rebootConsole } from './xboxLaunch';
 import { ensureVscodeForWorkspace } from './vscodeGenerator';
+import { initConfigSelection } from './configSelection';
 import { getActiveXboxAddress, promptSetXboxIp } from './xboxConsole';
 import { RxdkTaskProvider, RXDK_TASK_TYPE } from './rxdkTaskProvider';
 import { openSdkDocs, openExtensionDocs } from './sdkDocs';
@@ -178,6 +179,13 @@ export function activate(context: vscode.ExtensionContext): void {
         vscode.commands.registerCommand('rxdk.setBuildType', () => promptSetBuildType()),
         vscode.commands.registerCommand('rxdk.openSettings', () => openSettingsPanel(context))
     );
+
+    // Configuration (Debug/Release/…) selection: status-bar item + rxdk.selectConfiguration command.
+    // Switching configuration regenerates the .vscode IntelliSense so squiggles track the selection.
+    initConfigSelection(context, async () => {
+        await ensureVscodeForWorkspace(context, true);
+        sidebarProvider.refresh();
+    });
 
     void ensureVscodeForWorkspace(context);
 

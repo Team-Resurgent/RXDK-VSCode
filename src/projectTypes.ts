@@ -107,6 +107,81 @@ export interface RxdkProjectManifest {
     publicIncludePaths?: string[];
     /** Extra preprocessor defines (cl /D), appended after RXDK defaults. */
     defines?: string[];
+    /**
+     * Per-configuration overrides keyed by config name (e.g. "Debug", "Release"). When present the
+     * build resolves one configuration (see {@link resolveConfiguration}): the chosen config's
+     * fields win, falling back to this (top-level) manifest for anything the config omits. A flat
+     * manifest with no `configurations` is a single implicit configuration — existing single-config
+     * manifests keep working unchanged. This mirrors RXDK-VS20XX's RxdkProjectManifest.
+     */
+    configurations?: Record<string, RxdkProjectManifest>;
+    /** Configuration to build when the caller doesn't name one (else the first key). */
+    defaultConfiguration?: string;
+}
+
+/** Configuration names a manifest offers (empty for a flat single-config manifest). */
+export function configurationNames(manifest: RxdkProjectManifest): string[] {
+    return manifest.configurations ? Object.keys(manifest.configurations) : [];
+}
+
+/** Convert Windows-style `\` separators in path fields to `/` so generated (Windows-authored)
+ *  manifests resolve on Linux/macOS too. Returns a shallow-normalized copy. */
+function normalizeManifestPaths(m: RxdkProjectManifest): RxdkProjectManifest {
+    const fix = (s?: string) => (typeof s === 'string' ? s.replace(/\\/g, '/') : s);
+    const fixArr = (a?: string[]) => (a ? a.map((s) => s.replace(/\\/g, '/')) : a);
+    const out: RxdkProjectManifest = { ...m };
+    out.sources = fixArr(m.sources);
+    out.resources = fixArr(m.resources);
+    out.includePaths = fixArr(m.includePaths);
+    out.publicIncludePaths = fixArr(m.publicIncludePaths);
+    out.deployPaths = fixArr(m.deployPaths);
+    out.projectReferences = fixArr(m.projectReferences);
+    out.outputDir = fix(m.outputDir);
+    if (m.embed) out.embed = m.embed.map((e) => ({ ...e, path: e.path.replace(/\\/g, '/') }));
+    if (m.prebuilt) {
+        out.prebuilt = {
+            ...m.prebuilt,
+            xbe: fix(m.prebuilt.xbe)!,
+            pdb: fix(m.prebuilt.pdb),
+            map: fix(m.prebuilt.map),
+            exe: fix(m.prebuilt.exe),
+            srcRoot: fix(m.prebuilt.srcRoot),
+        };
+    }
+    return out;
+}
+
+/**
+ * Collapse a (possibly multi-config) manifest to a single effective manifest for `configName`.
+ * Flat manifests just get path normalization. Otherwise the named config (or `defaultConfiguration`,
+ * or the first key) is merged over the shared top-level fields (config value wins per field).
+ * Config-name match is case-insensitive. The result carries no nested `configurations`.
+ */
+export function resolveConfiguration(
+    manifest: RxdkProjectManifest,
+    configName?: string,
+): RxdkProjectManifest {
+    const configs = manifest.configurations;
+    if (!configs || Object.keys(configs).length === 0) {
+        return normalizeManifestPaths(manifest);
+    }
+    const keys = Object.keys(configs);
+    const ci = (want?: string) =>
+        want ? keys.find((k) => k.toLowerCase() === want.toLowerCase()) : undefined;
+    const key = ci(configName) ?? ci(manifest.defaultConfiguration) ?? keys[0];
+    const over = configs[key];
+
+    // Field-wise override: start from the shared top-level (minus multi-config keys), overlay every
+    // defined field of the chosen config. Preserves fields not modeled in this interface, too.
+    const { configurations: _c, defaultConfiguration: _d, ...base } = manifest;
+    const merged: Record<string, unknown> = { ...base };
+    for (const [k, v] of Object.entries(over)) {
+        if (v !== undefined && v !== null && k !== 'configurations' && k !== 'defaultConfiguration') {
+            merged[k] = v;
+        }
+    }
+    if (!merged.name) merged.name = manifest.name;
+    return normalizeManifestPaths(merged as unknown as RxdkProjectManifest);
 }
 
 export const TEMPLATE_LABELS: Record<RxdkTemplateId, string> = {

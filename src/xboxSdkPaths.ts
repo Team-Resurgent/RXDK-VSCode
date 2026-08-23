@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { RxdkProjectManifest } from './projectTypes';
+import { RxdkProjectManifest, resolveConfiguration } from './projectTypes';
+import { getActiveConfiguration } from './activeConfig';
 
 /** Strip a UTF-8 BOM if present -- PowerShell's ConvertFrom-Json (used before this
  * pipeline was ported to TS) silently tolerated one; JSON.parse does not, and at
@@ -21,5 +22,9 @@ export function readProjectManifestAt(projectRoot: string): RxdkProjectManifest 
         throw new Error(`Missing rxdk.project.json in ${projectRoot}`);
     }
     const raw = stripBom(fs.readFileSync(manifestPath, 'utf8'));
-    return JSON.parse(raw) as RxdkProjectManifest;
+    const parsed = JSON.parse(raw) as RxdkProjectManifest;
+    // Collapse a multi-config manifest to the active configuration (and normalize path separators).
+    // A flat manifest is returned as-is (bar normalization). This is what makes the whole build
+    // path — including recursive projectReferences — build one consistent configuration.
+    return resolveConfiguration(parsed, getActiveConfiguration());
 }

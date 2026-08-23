@@ -5,7 +5,9 @@ import { launchXemu } from './xemuLaunch';
 import { isStagedSdkPresent, getStagedSdkRoot } from './sdkStaging';
 import { isDotNetRuntimeInstalled, ensureDotNetRuntime } from './dotnetRuntime';
 import { findProjectManifest } from './projectManager';
-import { isPrebuiltManifest, RxdkProjectManifest } from './projectTypes';
+import { isPrebuiltManifest, resolveConfiguration, RxdkProjectManifest } from './projectTypes';
+import { getSelectedConfig } from './configSelection';
+import { setActiveConfiguration } from './activeConfig';
 import { deployProject, deployPrebuilt, removeDxt, DeployResult } from './xboxDeploy';
 import { launchProject, rebootConsole, LaunchResult } from './xboxLaunch';
 import { buildXboxProject, BuildProjectResult } from './xboxBuild';
@@ -27,7 +29,14 @@ export async function runRxdkTask(
         return false;
     }
 
-    if (!isPrebuiltManifest(found.manifest) && !isStagedSdkPresent(context)) {
+    // Collapse a multi-config manifest to the selected configuration for this whole operation:
+    // `manifest` drives the top-level checks here, and setActiveConfiguration makes the low-level
+    // readProjectManifestAt (used by the build + projectReferences) resolve the same configuration.
+    const selectedConfig = getSelectedConfig(context, found.manifestPath, found.manifest);
+    setActiveConfiguration(selectedConfig || undefined);
+    const manifest = resolveConfiguration(found.manifest, selectedConfig);
+
+    if (!isPrebuiltManifest(manifest) && !isStagedSdkPresent(context)) {
         const sdkPath = getStagedSdkRoot(context);
         vscode.window.showErrorMessage(
             `RXDK SDK not installed. Reload the window to trigger clone, or: git clone --depth 1 https://github.com/Team-Resurgent/RXDK-SDK.git "${sdkPath}"`
@@ -43,17 +52,17 @@ export async function runRxdkTask(
     }
 
     const projectRoot = found.folder.uri.fsPath;
-    const name = found.manifest.name;
+    const name = manifest.name;
 
-    if (isPrebuiltManifest(found.manifest)) {
-        return runPrebuiltTask(found.manifest, kind, output);
+    if (isPrebuiltManifest(manifest)) {
+        return runPrebuiltTask(manifest, kind, output);
     }
 
     // isLibraryManifest projects are handled inside buildXboxProject itself (compiles + archives,
     // then returns without linking/deploying) -- but deploy/run on one is a user-facing no-op here,
     // since a library isn't something to deploy or launch on its own.
     if (kind === 'deploy' || kind === 'run' || kind === 'launch-xemu') {
-        if (found.manifest.type === 'library') {
+        if (manifest.type === 'library') {
             vscode.window.showInformationMessage(
                 `Library project "${name}" builds a .lib and is not deployed/run — reference it from an executable via projectReferences.`
             );
@@ -67,7 +76,7 @@ export async function runRxdkTask(
     if (kind === 'run') {
         // A DXT isn't launched as a title -- it loads at boot from E:\dxt, so
         // "run" warm-reboots the console to (re)load it.
-        if (found.manifest.type === 'dxt') {
+        if (manifest.type === 'dxt') {
             return reportLaunchResult(await rebootConsole({ output }), output);
         }
         return reportLaunchResult(await launchProject({ projectName: name, output }), output);
@@ -95,7 +104,7 @@ export async function runRxdkTask(
         if (!reportBuildResult(buildResult, output)) {
             return false;
         }
-        const isoPath = path.join(getXboxProjectOutDir(projectRoot, found.manifest), 'XISO', `${name}.iso`);
+        const isoPath = path.join(getXboxProjectOutDir(projectRoot, manifest), 'XISO', `${name}.iso`);
         return reportLaunchResult(await launchXemu({ isoPath, output }), output);
     }
 
