@@ -1,13 +1,11 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { buildXboxProject } from './xboxBuild';
+import { runBuild } from './buildRunner';
 import { deployProject, deployPrebuilt } from './xboxDeploy';
 import { launchProject, rebootConsole } from './xboxLaunch';
-import { getSdkIncludeDir, getSdkLibDir } from './sdkPath';
 import { readProjectManifestAt } from './xboxSdkPaths';
 import { OutputLike } from './processRunner';
-import { isRxdkOptimizeMode, RxdkOptimizeMode } from './optimizeMode';
 
 // The RXDK build/deploy/run pipeline runs as VS Code "custom execution" tasks: the work happens
 // in the extension host (which is already Node) and streams to a pseudoterminal. This replaces the
@@ -145,11 +143,6 @@ class RxdkTaskTerminal implements vscode.Pseudoterminal {
     }
 }
 
-function getOptimize(): RxdkOptimizeMode {
-    const value = vscode.workspace.getConfiguration('rxdk').get<string>('optimize')?.trim();
-    return value && isRxdkOptimizeMode(value) ? value : 'Debug';
-}
-
 /** Run one action, returning a process-style exit code (0 = success). */
 async function runRxdkAction(
     context: vscode.ExtensionContext,
@@ -160,13 +153,7 @@ async function runRxdkAction(
     const projectRoot = folder.uri.fsPath;
 
     const build = async (): Promise<number> => {
-        const result = await buildXboxProject({
-            projectRoot,
-            sdkInclude: getSdkIncludeDir(context),
-            sdkLib: getSdkLibDir(context),
-            optimize: getOptimize(),
-            output,
-        });
+        const result = await runBuild(context, projectRoot, output);
         if (!result.ok) {
             output.appendLine(result.error);
             return 1;

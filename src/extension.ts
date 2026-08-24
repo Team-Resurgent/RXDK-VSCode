@@ -9,6 +9,7 @@ import { getBridgePath } from './sdkPath';
 import { openStagedSdkFolder, fetchLatestSdk } from './sdkStaging';
 import { getStagedToolsRoot } from './hostTools';
 import { getStagedDocsRoot } from './sdkDocsStaging';
+import { getStagedSamplesRoot } from './samplesStaging';
 import { ensureDotNetRuntime, isDotNetRuntimeInstalled } from './dotnetRuntime';
 import { applyManagedDotnetToProcess } from './dotnetEnv';
 import { rebootConsole } from './xboxLaunch';
@@ -27,6 +28,7 @@ import {
     refreshPrerequisitesContext,
 } from './prerequisites';
 import { openPrerequisitesSetup } from './prerequisitesSetup';
+import { openSampleBrowser } from './openSample';
 import { openSettingsPanel } from './settingsPanel';
 import { RXDK_OPTIMIZE_MODES, RxdkOptimizeMode } from './optimizeMode';
 let titleOutputChannel: vscode.OutputChannel | undefined;
@@ -120,6 +122,7 @@ export function activate(context: vscode.ExtensionContext): void {
         vscode.commands.registerCommand('rxdk.setupPrerequisites', () =>
             openPrerequisitesSetup(context, rxdkOutput)
         ),
+        vscode.commands.registerCommand('rxdk.openSample', () => openSampleBrowser(context)),
         vscode.commands.registerCommand('rxdk.newProject', guardPrerequisites(() => createProject(context))),
         vscode.commands.registerCommand('rxdk.build', guardPrerequisites(() => runRxdkTask(context, 'build', rxdkOutput))),
         vscode.commands.registerCommand('rxdk.deploy', guardPrerequisites(() => runRxdkTask(context, 'deploy', rxdkOutput))),
@@ -157,6 +160,7 @@ export function activate(context: vscode.ExtensionContext): void {
         vscode.commands.registerCommand('rxdk.openSdkFolder', guardPrerequisites(() => openStagedSdkFolder(context))),
         vscode.commands.registerCommand('rxdk.openToolsFolder', guardPrerequisites(() => revealStagedFolder(getStagedToolsRoot(), 'host tools'))),
         vscode.commands.registerCommand('rxdk.openDocsFolder', guardPrerequisites(() => revealStagedFolder(getStagedDocsRoot(context), 'documentation'))),
+        vscode.commands.registerCommand('rxdk.openSamplesFolder', () => revealStagedFolder(getStagedSamplesRoot(context), 'samples')),
         vscode.commands.registerCommand('rxdk.fetchLatestSdk', guardPrerequisites(async () => {
             const ok = await fetchLatestSdk(context, rxdkOutput);
             if (ok) {

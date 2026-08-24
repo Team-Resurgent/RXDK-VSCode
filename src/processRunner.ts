@@ -20,6 +20,8 @@ export interface RunResult {
 export interface RunStreamedOptions {
     cwd?: string;
     output?: OutputLike;
+    /** Extra environment variables merged over the process env (e.g. RXDK_STAGED_* for the engine). */
+    env?: NodeJS.ProcessEnv;
 }
 
 /**
@@ -46,7 +48,7 @@ export function runStreamed(
         const proc = spawn(command, args, {
             cwd: opts.cwd,
             windowsHide: true,
-            env: withManagedDotnet(process.env),
+            env: withManagedDotnet({ ...process.env, ...opts.env }),
         });
         let stdout = '';
         let stderr = '';

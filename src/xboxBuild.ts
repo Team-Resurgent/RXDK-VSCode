@@ -96,11 +96,31 @@ interface ZigCompileOptions {
     zig: string;
     source: string;
     object: string;
+    sdkInclude: string;
     includeArgs: string[];
     defineArgs: string[];
     isCpp: boolean;
     optimize: RxdkOptimizeMode;
     output?: OutputLike;
+}
+
+// libc++ headers ship at <sdk>/include/c++/v1 and must be added explicitly under -nostdinc++, along
+// with the flags libc++ was built with (MSVC-compat version for char16/32; _WIN32/__MINGW32__
+// undefined so it uses the newlib locale backend; _GNU_SOURCE for the *_l locale functions). Mirrors
+// the VS20XX engine -- without this, any TU including a C++ stdlib header (e.g. <cstdio>) fails.
+function cxxLibArgs(sdkInclude: string): string[] {
+    const cxxInc = path.join(sdkInclude, 'c++', 'v1');
+    if (!fs.existsSync(cxxInc)) {
+        return [];
+    }
+    return [
+        '-D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR',
+        '-I' + cxxInc,
+        '-fms-compatibility-version=19.20',
+        '-U_WIN32',
+        '-U__MINGW32__',
+        '-D_GNU_SOURCE',
+    ];
 }
 
 async function zigCompile(opts: ZigCompileOptions): Promise<void> {
@@ -154,7 +174,7 @@ async function zigCompile(opts: ZigCompileOptions): Promise<void> {
         common.push('-gline-tables-only');
     }
     const toolArgs = opts.isCpp
-        ? ['c++', '-std=c++23', '-nostdinc++', '-fno-exceptions', '-frtti', ...common]
+        ? ['c++', '-std=c++23', '-nostdinc++', '-fno-exceptions', '-frtti', ...cxxLibArgs(opts.sdkInclude), ...common]
         : ['cc', '-std=c23', ...common];
 
     let result = await runStreamed(opts.zig, toolArgs, { output: opts.output });
@@ -165,10 +185,15 @@ async function zigCompile(opts: ZigCompileOptions): Promise<void> {
         result = await runStreamed(opts.zig, [...toolArgs, '-gline-tables-only'], { output: opts.output });
     }
     const combined = (result.stdout + result.stderr).split(/\r?\n/);
+    // Surface (but don't fail on) warnings in the title's own source. Clean RXDK template code
+    // produces none, but imported/legacy XDK code warns heavily -- e.g. -Wdeprecated-enum-enum-
+    // conversion in the shared xbfont.cpp -- while still compiling correctly. Failing the build on
+    // those would make the samples (and any real imported project) impossible to build, and diverges
+    // from the VS20XX engine, which treats these as non-fatal. Only a non-zero exit fails the build.
     const sourcePattern = new RegExp(escapeRegExp(path.resolve(opts.source)));
     const warnLines = combined.filter((line) => line.includes(': warning:') && sourcePattern.test(line));
     if (warnLines.length > 0 && opts.isCpp) {
-        throw new Error(`Compile reported ${warnLines.length} warning(s) in ${opts.source}`);
+        opts.output?.appendLine(`Note: ${warnLines.length} warning(s) in ${path.basename(opts.source)} (not fatal)`);
     }
     if (result.exitCode !== 0) {
         throw new Error(`Zig compile failed on ${opts.source} (exit ${result.exitCode})`);
@@ -524,6 +549,7 @@ async function compileProjectSources(
     manifest: RxdkProjectManifest,
     zig: string,
     outDir: string,
+    sdkInclude: string,
     includeArgs: string[],
     defineArgs: string[],
     optimize: RxdkOptimizeMode,
@@ -542,7 +568,7 @@ async function compileProjectSources(
         if (isCpp) {
             usesCpp = true;
         }
-        await zigCompile({ zig, source: src, object: obj, includeArgs, defineArgs, isCpp, optimize, output });
+        await zigCompile({ zig, source: src, object: obj, sdkInclude, includeArgs, defineArgs, isCpp, optimize, output });
         output?.appendLine(`Compiled ${obj}`);
         objs.push(obj);
     }
@@ -573,7 +599,7 @@ async function buildXboxLibrary(
     const defineArgs = projectDefineArgs(manifest);
 
     output?.appendLine(`== Building library ${manifest.name} ==`);
-    const compiled = await compileProjectSources(libRoot, manifest, zig, outDir, includeArgs, defineArgs, optimize, output);
+    const compiled = await compileProjectSources(libRoot, manifest, zig, outDir, sdkInclude, includeArgs, defineArgs, optimize, output);
     if (compiled.objs.length === 0) {
         throw new Error(`Library ${manifest.name} has no sources to archive`);
     }
@@ -671,7 +697,7 @@ export async function buildXboxProject(opts: BuildXboxProjectOptions): Promise<B
 
         opts.output?.appendLine(`== Building executable ${projectName} ==`);
         const compiled = await compileProjectSources(
-            projectRoot, manifest, zig, outDir, projectIncludeArgs, projectDefines, optimize, opts.output
+            projectRoot, manifest, zig, outDir, opts.sdkInclude, projectIncludeArgs, projectDefines, optimize, opts.output
         );
         const objs = compiled.objs;
 

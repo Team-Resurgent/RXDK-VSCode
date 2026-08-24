@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
+import * as fs from 'fs';
 import * as path from 'path';
-import { getSdkIncludeDir, getSdkLibDir, getXboxProjectOutDir } from './sdkPath';
+import { getXboxProjectOutDir } from './sdkPath';
 import { launchXemu } from './xemuLaunch';
 import { isStagedSdkPresent, getStagedSdkRoot } from './sdkStaging';
 import { isDotNetRuntimeInstalled, ensureDotNetRuntime } from './dotnetRuntime';
@@ -10,7 +11,14 @@ import { getSelectedConfig } from './configSelection';
 import { setActiveConfiguration } from './activeConfig';
 import { deployProject, deployPrebuilt, removeDxt, DeployResult } from './xboxDeploy';
 import { launchProject, rebootConsole, LaunchResult } from './xboxLaunch';
-import { buildXboxProject, BuildProjectResult } from './xboxBuild';
+import { getStagedToolsRoot, resolveHostTool } from './hostTools';
+import { runStreamed, OutputLike } from './processRunner';
+import { readProjectManifestAt } from './xboxSdkPaths';
+
+// The build/link/image pipeline is the shared C# engine (Rxdk.Cli), delivered in the RXDK-Tools
+// host-tools bundle -- the same engine VS20XX uses -- rather than a parallel TypeScript
+// reimplementation. This keeps both IDEs byte-for-byte identical.
+export type BuildProjectResult = { ok: true; outDir: string } | { ok: false; error: string };
 
 function configuredZigOverride(): string | undefined {
     return vscode.workspace.getConfiguration('rxdk').get<string>('zigPath')?.trim() || undefined;
@@ -112,18 +120,55 @@ export async function runRxdkTask(
     return reportBuildResult(await runBuild(context, projectRoot, output), output);
 }
 
-function runBuild(
+/**
+ * Build a project via the shared C# engine (Rxdk.Cli), delivered in the RXDK-Tools host-tools
+ * bundle. Self-contained (resolves the selected configuration + optimize mode itself) so every
+ * build entry point -- the command runner, the `rxdk:` task provider, and the node CLI -- shares
+ * exactly one code path and stays identical to VS20XX.
+ */
+export async function runBuild(
     context: vscode.ExtensionContext,
     projectRoot: string,
-    output: vscode.OutputChannel
+    output: OutputLike
 ): Promise<BuildProjectResult> {
-    return buildXboxProject({
-        projectRoot,
-        sdkInclude: getSdkIncludeDir(context),
-        sdkLib: getSdkLibDir(context),
-        zigExecutable: configuredZigOverride(),
-        output,
-    });
+    const cli = resolveHostTool('Rxdk.Cli');
+    if (!fs.existsSync(cli)) {
+        return {
+            ok: false,
+            error: `Build engine not found: ${cli}. Update the RXDK host tools (Complete Setup / Update All).`,
+        };
+    }
+    let selectedConfig: string | undefined;
+    try {
+        const manifest = readProjectManifestAt(projectRoot);
+        selectedConfig = getSelectedConfig(context, path.join(projectRoot, 'rxdk.project.json'), manifest) || undefined;
+    } catch {
+        /* single-config or unreadable manifest -- the engine uses the manifest's default config. */
+    }
+    // We pass only the configuration to select -- NOT --optimize. The engine derives the optimize
+    // level from that config's debug/release flag (`configuration`), the single source of truth shared
+    // with VS20XX, so the compiler opt level and the linked SDK lib variant always agree.
+    const args = ['build', '--project-root', projectRoot];
+    if (selectedConfig) {
+        args.push('--configuration', selectedConfig);
+    }
+    // Point the engine at the extension's staged SDK/tools (per-platform), overriding its own
+    // %ProgramData% defaults; a configured zigPath overrides the engine's Zig resolution.
+    const env: NodeJS.ProcessEnv = {
+        RXDK_STAGED_SDK: getStagedSdkRoot(context),
+        RXDK_STAGED_TOOLS: getStagedToolsRoot(),
+    };
+    const zig = configuredZigOverride();
+    if (zig) {
+        env.RXDK_ZIG = zig;
+    }
+    const result = await runStreamed(cli, args, { output, env });
+    if (result.exitCode !== 0) {
+        return { ok: false, error: `Build failed (exit code ${result.exitCode}).` };
+    }
+    const match = (result.stdout + result.stderr).match(/build OK -> (.+)/);
+    const outDir = match ? match[1].trim() : path.join(projectRoot, 'out');
+    return { ok: true, outDir };
 }
 
 function reportBuildResult(result: BuildProjectResult, output: vscode.OutputChannel): boolean {

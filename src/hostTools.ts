@@ -80,6 +80,19 @@ export function isHostToolsInstalled(): boolean {
     );
 }
 
+/** Installed host-tools version (the VERSION file the release ships), or 'not installed'. */
+export function readToolsVersion(): string {
+    const root = getStagedToolsRoot();
+    for (const name of ['VERSION', 'VERSION.txt']) {
+        try {
+            return fs.readFileSync(path.join(root, name), 'utf8').trim();
+        } catch {
+            /* try next */
+        }
+    }
+    return 'not installed';
+}
+
 function readConfig(key: string): string | undefined {
     try {
         return tryVscode()?.workspace.getConfiguration('rxdk').get<string>(key)?.trim() || undefined;

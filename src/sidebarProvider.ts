@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { readSdkVersion } from './sdkPath';
 import { readDocsVersion } from './sdkDocsStaging';
+import { isSamplesPresent, readSamplesVersion } from './samplesStaging';
 import { findProjectManifest } from './projectManager';
 import { getXboxAddressInfo } from './xboxConsole';
 import { sdkDocsAvailable, extensionDocsAvailable } from './sdkDocs';
@@ -266,14 +267,16 @@ export class RxdkSidebarProvider implements vscode.TreeDataProvider<RxdkTreeItem
         if (label === 'Components') {
             const sdkVersion = readSdkVersion(this.context).split('\n')[0]?.trim() || '';
             const docsVersion = readDocsVersion(this.context).split('\n')[0]?.trim() || '';
-            return [
-                // The setup page manages/updates every component (SDK, docs, tools,
-                // Zig, .NET) in one place -- more sensible than a lone "fetch SDK".
+            const samplesReady = isSamplesPresent(this.context);
+            const samplesVersion = samplesReady ? readSamplesVersion(this.context).split('\n')[0]?.trim() || '' : '';
+            const items = [
+                // The setup page manages/updates every component (SDK, docs, samples,
+                // tools, Zig, .NET) in one place -- more sensible than a lone "fetch SDK".
                 new RxdkTreeItem(
                     'Check for updates…',
                     vscode.TreeItemCollapsibleState.None,
                     'rxdk.setupPrerequisites',
-                    'SDK, docs & tools',
+                    'SDK, docs, samples & tools',
                     'cloud-download'
                 ),
                 new RxdkTreeItem(
@@ -298,6 +301,26 @@ export class RxdkSidebarProvider implements vscode.TreeDataProvider<RxdkTreeItem
                     'folder-opened'
                 ),
             ];
+            // Samples are optional: show the folder + browser only once installed.
+            if (samplesReady) {
+                items.push(
+                    new RxdkTreeItem(
+                        'Open samples folder',
+                        vscode.TreeItemCollapsibleState.None,
+                        'rxdk.openSamplesFolder',
+                        samplesVersion || 'Xbox sample projects',
+                        'folder-opened'
+                    ),
+                    new RxdkTreeItem(
+                        'Sample Browser',
+                        vscode.TreeItemCollapsibleState.None,
+                        'rxdk.openSample',
+                        'Browse & open a sample',
+                        'library'
+                    )
+                );
+            }
+            return items;
         }
 
         if (element.label === 'Documentation') {

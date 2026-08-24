@@ -49,58 +49,35 @@ export async function openPrerequisitesSetup(
                 break;
             case 'install': {
                 const id = String(msg.id ?? '') as PrerequisiteId;
-                if (
-                    !['dotnet', 'sdk', 'docs', 'zig', 'tools', 'xbneighborhood'].includes(id) ||
-                    installing
-                ) {
+                if (!ALLOWED_IDS.includes(id) || installing) {
                     return;
                 }
                 installing = true;
-                panel.webview.postMessage({ type: 'installStarted', id });
                 try {
-                    const ok = await vscode.window.withProgress(
-                        {
-                            location: vscode.ProgressLocation.Notification,
-                            title: 'RXDK',
-                            cancellable: false,
-                        },
-                        async (progress) => {
-                            return installPrerequisite(context, id, output, {
-                                report: (update) => {
-                                    progress.report({ message: update.message });
-                                    panel.webview.postMessage({
-                                        type: 'installProgress',
-                                        id,
-                                        message: update.message,
-                                        percent: update.percent,
-                                    });
-                                },
-                            });
-                        }
-                    );
-                    if (!ok) {
-                        panel.webview.postMessage({
-                            type: 'installFailed',
-                            id,
-                            message: `${id} installation did not complete.`,
-                        });
-                    }
-                } catch (err) {
-                    const message = err instanceof Error ? err.message : String(err);
-                    output.appendLine(`RXDK: prerequisite install failed (${id}): ${message}`);
-                    panel.webview.postMessage({ type: 'installFailed', id, message });
+                    await installOne(context, panel, output, id);
                 } finally {
                     installing = false;
-                    const ready = await refreshPrerequisitesContext(context);
-                    await postStatuses(context, panel);
-                    void vscode.commands.executeCommand('rxdk.refreshSidebar');
-                    if (ready) {
-                        panel.webview.postMessage({ type: 'allReady' });
-                        await ensureVscodeForWorkspace(context);
-                        vscode.window.showInformationMessage(
-                            'RXDK setup complete. Reload the window if tools are still missing from PATH.'
-                        );
+                    await finishInstall(context, panel);
+                }
+                break;
+            }
+            case 'installAll': {
+                if (installing) {
+                    return;
+                }
+                installing = true;
+                try {
+                    // Everything installable that's missing or has an update, in list order.
+                    const statuses = await getPrerequisiteStatuses(context);
+                    const todo = statuses.filter(
+                        (s) => ALLOWED_IDS.includes(s.id) && s.canInstall && (!s.ready || s.updateAvailable)
+                    );
+                    for (const s of todo) {
+                        await installOne(context, panel, output, s.id);
                     }
+                } finally {
+                    installing = false;
+                    await finishInstall(context, panel);
                 }
                 break;
             }
@@ -148,7 +125,60 @@ function serializeStatus(item: PrerequisiteStatus): Record<string, unknown> {
         detail: item.detail ?? '',
         canInstall: item.canInstall,
         downloadUrl: item.downloadUrl ?? '',
+        version: item.version ?? '',
+        latestVersion: item.latestVersion ?? '',
+        updateAvailable: Boolean(item.updateAvailable),
     };
+}
+
+const ALLOWED_IDS: PrerequisiteId[] = ['dotnet', 'sdk', 'docs', 'zig', 'tools', 'samples', 'xbneighborhood'];
+
+async function installOne(
+    context: vscode.ExtensionContext,
+    panel: vscode.WebviewPanel,
+    output: vscode.OutputChannel,
+    id: PrerequisiteId
+): Promise<boolean> {
+    panel.webview.postMessage({ type: 'installStarted', id });
+    try {
+        const ok = await vscode.window.withProgress(
+            { location: vscode.ProgressLocation.Notification, title: 'RXDK', cancellable: false },
+            async (progress) =>
+                installPrerequisite(context, id, output, {
+                    report: (update) => {
+                        progress.report({ message: update.message });
+                        panel.webview.postMessage({
+                            type: 'installProgress',
+                            id,
+                            message: update.message,
+                            percent: update.percent,
+                        });
+                    },
+                })
+        );
+        if (!ok) {
+            panel.webview.postMessage({ type: 'installFailed', id, message: `${id} installation did not complete.` });
+        }
+        return ok;
+    } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        output.appendLine(`RXDK: prerequisite install failed (${id}): ${message}`);
+        panel.webview.postMessage({ type: 'installFailed', id, message });
+        return false;
+    }
+}
+
+async function finishInstall(context: vscode.ExtensionContext, panel: vscode.WebviewPanel): Promise<void> {
+    const ready = await refreshPrerequisitesContext(context);
+    await postStatuses(context, panel);
+    void vscode.commands.executeCommand('rxdk.refreshSidebar');
+    if (ready) {
+        panel.webview.postMessage({ type: 'allReady' });
+        await ensureVscodeForWorkspace(context);
+        vscode.window.showInformationMessage(
+            'RXDK setup complete. Reload the window if tools are still missing from PATH.'
+        );
+    }
 }
 
 function buildHtml(webview: vscode.Webview): string {
@@ -214,6 +244,8 @@ function buildHtml(webview: vscode.Webview): string {
       color: var(--muted);
     }
     .badge.ok { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 40%, var(--border)); }
+    .badge.warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 45%, var(--border)); }
+    .ver { font-weight: 500; color: var(--muted); font-size: .9em; }
     .desc, .detail { color: var(--muted); margin: 0; line-height: 1.45; }
     .detail { font-size: .85em; margin-top: 6px; word-break: break-word; }
     .actions { display: flex; flex-direction: column; gap: 8px; min-width: 120px; }
@@ -235,6 +267,7 @@ function buildHtml(webview: vscode.Webview): string {
     }
     button.primary:hover:not(:disabled) { background: var(--vscode-button-hoverBackground, var(--vscode-button-background)); }
     button:disabled { opacity: .55; cursor: default; }
+    button.hidden { display: none; }
     .footer { display: flex; gap: 10px; margin-top: 18px; align-items: center; }
     .status {
       flex: 1;
@@ -289,6 +322,7 @@ function buildHtml(webview: vscode.Webview): string {
 
     <div class="footer">
       <p class="status" id="status"></p>
+      <button id="updateAll" type="button" class="hidden">Update All</button>
       <button id="refresh" type="button">Refresh</button>
       <button class="primary" id="continue" type="button">Close</button>
     </div>
@@ -328,25 +362,34 @@ function buildHtml(webview: vscode.Webview): string {
       items.forEach((item) => {
         const row = document.createElement('div');
         row.className = 'item' + (item.ready ? ' ready' : '');
+        // Badge: up to date / update available (vX) / Ready / Required|Optional.
+        var badgeClass = item.ready ? (item.updateAvailable ? 'warn' : 'ok') : '';
+        var badgeText = item.ready
+          ? (item.updateAvailable
+              ? ('Update available' + (item.latestVersion ? ' (' + item.latestVersion + ')' : ''))
+              : (item.version ? 'Up to date' : 'Ready'))
+          : (item.required === false ? 'Optional' : 'Required');
+        var versionHtml = item.version ? ' <span class="ver">' + escapeHtml(item.version) + '</span>' : '';
+        // Actions: Install (missing) / Update (outdated); nothing when installed & current.
+        var actionBtn = !item.ready
+          ? '<button type="button" data-action="install" data-id="' + escapeHtml(item.id) + '"' +
+              (item.canInstall ? '' : ' disabled') + '>Install</button>'
+          : (item.updateAvailable
+              ? '<button type="button" data-action="install" data-id="' + escapeHtml(item.id) + '"' +
+                  (item.canInstall ? '' : ' disabled') + '>Update</button>'
+              : '');
+        var downloadBtn = (!item.ready && item.downloadUrl)
+          ? '<button type="button" data-action="open" data-url="' + escapeHtml(item.downloadUrl) + '">Open download page</button>'
+          : '';
         row.innerHTML =
           '<div>' +
-            '<p class="title">' + escapeHtml(item.label) +
-              ' <span class="badge ' + (item.ready ? 'ok' : '') + '">' +
-                (item.ready ? 'Ready' : (item.required === false ? 'Optional' : 'Required')) +
-              '</span>' +
+            '<p class="title">' + escapeHtml(item.label) + versionHtml +
+              ' <span class="badge ' + badgeClass + '">' + escapeHtml(badgeText) + '</span>' +
             '</p>' +
             '<p class="desc">' + escapeHtml(item.description) + '</p>' +
             (item.detail ? '<p class="detail">' + escapeHtml(item.detail) + '</p>' : '') +
           '</div>' +
-          '<div class="actions">' +
-            // Ready components stay updatable: re-running install fetches the latest
-            // (sdk/docs git-pull, tools re-download) or repairs the pinned Zig.
-            '<button type="button" data-action="install" data-id="' + escapeHtml(item.id) + '"' +
-              (item.canInstall ? '' : ' disabled') + '>' + (item.ready ? 'Update' : 'Install') + '</button>' +
-            (item.downloadUrl
-              ? '<button type="button" data-action="open" data-url="' + escapeHtml(item.downloadUrl) + '">Open download page</button>'
-              : '') +
-          '</div>';
+          '<div class="actions">' + actionBtn + downloadBtn + '</div>';
         root.appendChild(row);
       });
 
@@ -370,6 +413,13 @@ function buildHtml(webview: vscode.Webview): string {
       banner.textContent = allReady
         ? 'All prerequisites are installed. RXDK is ready to use.'
         : 'Complete each item below to enable RXDK.';
+
+      // "Update All" appears only when something is installable that's missing or outdated.
+      const pending = items.filter((item) => item.canInstall && (!item.ready || item.updateAvailable));
+      const updateAll = el('updateAll');
+      updateAll.textContent = pending.every((item) => item.ready) && pending.length > 0
+        ? 'Update All' : (allReady ? 'Update All' : 'Install All');
+      updateAll.classList.toggle('hidden', pending.length === 0);
     }
 
     function escapeHtml(value) {
@@ -383,6 +433,10 @@ function buildHtml(webview: vscode.Webview): string {
     el('refresh').addEventListener('click', () => {
       setStatus('');
       vscode.postMessage({ type: 'refresh' });
+    });
+    el('updateAll').addEventListener('click', () => {
+      setStatus('');
+      vscode.postMessage({ type: 'installAll' });
     });
     el('continue').addEventListener('click', () => vscode.postMessage({ type: 'continue' }));
 
