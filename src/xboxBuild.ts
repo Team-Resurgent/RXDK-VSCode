@@ -135,24 +135,35 @@ async function zigCompile(opts: ZigCompileOptions): Promise<void> {
         // stbi__g_failure_reason / vertically_flip_on_load) reads a wild fixed address
         // and bugchecks. Matches how libcpp is built (xbox_target.zig cppFlags).
         '-femulated-tls',
-        // -femulated-tls still makes clang emit a CodeView S_*THREAD32 debug record per
-        // thread_local, pointing at the native per-var symbol emutls never defines ->
-        // undefined-symbol at link (xbox_target.zig cppFlags drops ALL debug via -g0 for
-        // this). Keep file/line tables for the PDB (F5 + crash symbolization) but omit
-        // the per-variable symbol records -- exactly -gline-tables-only. Overrides the -g
-        // the Debug/ReleaseSafe optimize modes add, at the cost of local-variable
-        // inspection there (title thread_locals then link cleanly; line debug still works).
-        '-gline-tables-only',
         ...opts.includeArgs,
         ...opts.defineArgs,
         ...XDK_CLANG_WARNINGS,
         '-c', opts.source, `-o${opts.object}`,
     ];
+    // TLS debug-info handling. -femulated-tls makes clang emit a CodeView S_*THREAD32
+    // record per thread_local pointing at the native per-var symbol emutls never defines
+    // -> undefined-symbol at link. Blanket -gline-tables-only used to dodge that, but it
+    // also stripped ALL local-variable and `this` records, leaving the debugger's
+    // Locals/Autos empty in Debug builds. Only TUs that actually use TLS hit the link
+    // problem, so: Debug/ReleaseSafe compile with full -g (locals + `this` inspectable),
+    // then recompile just the TUs whose object uses emulated TLS (objUsesEmulatedTls)
+    // with -gline-tables-only to keep their link clean. ReleaseFast/ReleaseSmall have no
+    // -g and just get line tables (stepping + crash symbolization, no locals expected).
+    const keepsDebug = optimizeKeepsDebugInfo(opts.optimize);
+    if (!keepsDebug) {
+        common.push('-gline-tables-only');
+    }
     const toolArgs = opts.isCpp
         ? ['c++', '-std=c++23', '-nostdinc++', '-fno-exceptions', '-frtti', ...common]
         : ['cc', '-std=c23', ...common];
 
-    const result = await runStreamed(opts.zig, toolArgs, { output: opts.output });
+    let result = await runStreamed(opts.zig, toolArgs, { output: opts.output });
+    if (keepsDebug && result.exitCode === 0 && objUsesEmulatedTls(opts.object)) {
+        opts.output?.appendLine(
+            `${path.basename(opts.source)}: uses thread_local; rebuilding with line-tables-only ` +
+            'debug info (locals unavailable in this file) to keep the emulated-TLS link clean.');
+        result = await runStreamed(opts.zig, [...toolArgs, '-gline-tables-only'], { output: opts.output });
+    }
     const combined = (result.stdout + result.stderr).split(/\r?\n/);
     const sourcePattern = new RegExp(escapeRegExp(path.resolve(opts.source)));
     const warnLines = combined.filter((line) => line.includes(': warning:') && sourcePattern.test(line));
@@ -161,6 +172,22 @@ async function zigCompile(opts: ZigCompileOptions): Promise<void> {
     }
     if (result.exitCode !== 0) {
         throw new Error(`Zig compile failed on ${opts.source} (exit ${result.exitCode})`);
+    }
+}
+
+// True if a compiled object references emulated-TLS runtime symbols (___emutls_v.*,
+// __emutls_get_address). -femulated-tls only emits these for TUs that actually use
+// thread_local, and the names appear as plain ASCII in the COFF symbol/string table, so a
+// substring scan detects TLS usage without parsing the object -- and it catches TLS pulled
+// in through headers (e.g. stb_image), which a source-text scan would miss.
+function objUsesEmulatedTls(objPath: string): boolean {
+    try {
+        if (!fs.existsSync(objPath)) {
+            return false;
+        }
+        return fs.readFileSync(objPath).includes(Buffer.from('emutls', 'ascii'));
+    } catch {
+        return false;
     }
 }
 
