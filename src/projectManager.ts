@@ -7,7 +7,6 @@ import { getSelectedConfig } from './configSelection';
 import { setActiveConfiguration } from './activeConfig';
 import { getExtensionRoot } from './sdkPath';
 import { stripBom } from './xboxSdkPaths';
-import { openPrebuiltWorkspace, writePrebuiltWorkspaceFile } from './prebuiltWorkspace';
 import { openNewProjectWizard } from './newProjectWizard';
 
 export async function findProjectManifest(
@@ -101,8 +100,9 @@ export async function scaffoldProjectFromTemplate(
         const manifest = resolveConfiguration(raw, selectedConfig);
 
         await generateVscodeFolder(context, projectRoot, name, manifest, selectedConfig);
-        const workspacePath = writePrebuiltWorkspaceFile(projectRoot, name);
-        await openPrebuiltWorkspace(workspacePath);
+        await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(projectRoot), {
+            forceNewWindow: false,
+        });
         await vscode.commands.executeCommand('setContext', 'rxdk.hasProject', true);
         vscode.window.showInformationMessage(
             `Created Xbox project "${name}" (${TEMPLATE_LABELS[template]}).`

@@ -3,7 +3,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import {
     isDxtManifest,
-    isPrebuiltManifest,
     manifestNeedsIntelliSense,
     manifestUsesCpp,
     resolveConfiguration,
@@ -250,11 +249,6 @@ export async function generateVscodeFolder(
     manifest: RxdkProjectManifest,
     configName = ''
 ): Promise<void> {
-    if (isPrebuiltManifest(manifest)) {
-        await generatePrebuiltVscodeFolder(projectRoot, projectName, manifest);
-        return;
-    }
-
     if (isDxtManifest(manifest)) {
         await generateDxtVscodeFolder(context, projectRoot, projectName, manifest, configName);
         return;
@@ -388,72 +382,6 @@ async function generateDxtVscodeFolder(
     }
 
     fs.writeFileSync(path.join(vscodeDir, 'tasks.json'), JSON.stringify(tasks, null, 4) + '\n', 'utf8');
-    fs.writeFileSync(path.join(vscodeDir, 'settings.json'), JSON.stringify(settings, null, 4) + '\n', 'utf8');
-}
-
-async function generatePrebuiltVscodeFolder(
-    projectRoot: string,
-    projectName: string,
-    manifest: RxdkProjectManifest
-): Promise<void> {
-    const vscodeDir = path.join(projectRoot, '.vscode');
-    fs.mkdirSync(vscodeDir, { recursive: true });
-
-    const bridgePath = `${SDK_ROOT}/tools/xboxdbg-bridge.exe`;
-    const p = manifest.prebuilt!;
-    const xbeLeaf = path.basename(p.xbe);
-
-    const tasks = {
-        version: '2.0.0',
-        tasks: [
-            {
-                label: 'rxdk: deploy',
-                type: 'rxdk',
-                action: 'deployPrebuilt',
-                group: { kind: 'build', isDefault: true },
-                problemMatcher: [],
-            },
-        ],
-    };
-
-    const launchConfig: Record<string, unknown> = {
-        type: 'xbox',
-        request: 'launch',
-        name: `Debug ${projectName}`,
-        preLaunchTask: 'rxdk: deploy',
-        xbe: p.xbe,
-        xbePath: `xe:\\${p.remoteName}\\${xbeLeaf}`,
-        bridgePath,
-        consoleName: '${config:rxdk.defaultConsole}',
-        reboot: true,
-    };
-    if (p.exe) {
-        launchConfig.program = p.exe;
-    }
-    if (p.pdb) {
-        launchConfig.pdb = p.pdb;
-    }
-    if (p.map) {
-        launchConfig.map = p.map;
-    }
-    if (p.srcRoot) {
-        launchConfig.srcRoot = p.srcRoot;
-    }
-
-    const launch = {
-        version: '0.2.0',
-        configurations: [launchConfig],
-    };
-
-    const settings: Record<string, unknown> = {
-        'rxdk.defaultConsole': '',
-        'files.associations': {
-            '*.xbe': 'binary',
-        },
-    };
-
-    fs.writeFileSync(path.join(vscodeDir, 'tasks.json'), JSON.stringify(tasks, null, 4) + '\n', 'utf8');
-    fs.writeFileSync(path.join(vscodeDir, 'launch.json'), JSON.stringify(launch, null, 4) + '\n', 'utf8');
     fs.writeFileSync(path.join(vscodeDir, 'settings.json'), JSON.stringify(settings, null, 4) + '\n', 'utf8');
 }
 

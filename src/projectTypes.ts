@@ -30,22 +30,6 @@ export interface RxdkImageBuildOptions {
     noPreload?: string[];
 }
 
-/** A prebuilt-XBE project references existing artifacts in place (no compile step). */
-export interface RxdkPrebuiltConfig {
-    /** Absolute local path to the .xbe. */
-    xbe: string;
-    /** Absolute local path to the .pdb (symbols). */
-    pdb?: string;
-    /** Absolute local path to the .map (globals). */
-    map?: string;
-    /** Optional host PE .exe; used for image size, falls back to the XBE header. */
-    exe?: string;
-    /** Optional source root for PDBs built on another machine. */
-    srcRoot?: string;
-    /** Remote folder name under xe:\\ for deploy/launch. */
-    remoteName: string;
-}
-
 /**
  * "executable" (default) builds an .xbe; "library" builds a static .lib that other projects
  * reference via <see cref="RxdkProjectManifest.projectReferences"/> and is not deployed/run.
@@ -89,8 +73,6 @@ export interface RxdkProjectManifest {
      * publicIncludePaths are added to this project's compile include path automatically.
      */
     projectReferences?: string[];
-    /** When set, this is a prebuilt-XBE project (deploy + debug, no build). */
-    prebuilt?: RxdkPrebuiltConfig;
     outputDir?: string;
     /** Project-relative directories copied recursively on deploy (e.g. "media" -> xe:\\<name>\\media). */
     deployPaths?: string[];
@@ -138,16 +120,6 @@ function normalizeManifestPaths(m: RxdkProjectManifest): RxdkProjectManifest {
     out.projectReferences = fixArr(m.projectReferences);
     out.outputDir = fix(m.outputDir);
     if (m.embed) out.embed = m.embed.map((e) => ({ ...e, path: e.path.replace(/\\/g, '/') }));
-    if (m.prebuilt) {
-        out.prebuilt = {
-            ...m.prebuilt,
-            xbe: fix(m.prebuilt.xbe)!,
-            pdb: fix(m.prebuilt.pdb),
-            map: fix(m.prebuilt.map),
-            exe: fix(m.prebuilt.exe),
-            srcRoot: fix(m.prebuilt.srcRoot),
-        };
-    }
     return out;
 }
 
@@ -215,14 +187,7 @@ export function manifestUsesCpp(manifest: RxdkProjectManifest): boolean {
 
 /** True when the project has compilable sources that need C/C++ IntelliSense. */
 export function manifestNeedsIntelliSense(manifest: RxdkProjectManifest): boolean {
-    if (isPrebuiltManifest(manifest)) {
-        return false;
-    }
     return (manifest.sources ?? []).some((s) => /\.(c|cpp|cxx|cc|h|hpp)$/i.test(s));
-}
-
-export function isPrebuiltManifest(manifest: RxdkProjectManifest): boolean {
-    return !!manifest.prebuilt && !!manifest.prebuilt.xbe;
 }
 
 /** True for a static-library project (builds a .lib, never deployed/run). */

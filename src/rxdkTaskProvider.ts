@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { runBuild } from './buildRunner';
-import { deployProject, deployPrebuilt } from './xboxDeploy';
+import { deployProject } from './xboxDeploy';
 import { launchProject, rebootConsole } from './xboxLaunch';
 import { readProjectManifestAt } from './xboxSdkPaths';
 import { OutputLike } from './processRunner';
@@ -21,8 +21,7 @@ export type RxdkTaskAction =
     | 'buildDeploy'
     | 'run'
     | 'reboot'
-    | 'deployReboot'
-    | 'deployPrebuilt';
+    | 'deployReboot';
 
 interface RxdkTaskDefinition extends vscode.TaskDefinition {
     action: RxdkTaskAction;
@@ -36,7 +35,6 @@ const ACTION_LABEL: Record<RxdkTaskAction, string> = {
     run: 'rxdk: run',
     reboot: 'rxdk: reboot',
     deployReboot: 'rxdk: deploy & reboot',
-    deployPrebuilt: 'rxdk: deploy',
 };
 
 export class RxdkTaskProvider implements vscode.TaskProvider {
@@ -170,27 +168,6 @@ async function runRxdkAction(
         return 0;
     };
 
-    const deployPrebuiltAction = async (): Promise<number> => {
-        const manifest = readProjectManifestAt(projectRoot);
-        const p = manifest.prebuilt;
-        if (!p) {
-            output.appendLine('RXDK: this project has no prebuilt configuration.');
-            return 1;
-        }
-        const result = await deployPrebuilt({
-            xbePath: p.xbe,
-            remoteName: p.remoteName,
-            pdbPath: p.pdb,
-            mapPath: p.map,
-            output,
-        });
-        if (!result.ok) {
-            output.appendLine(result.error);
-            return 1;
-        }
-        return 0;
-    };
-
     const run = async (): Promise<number> => {
         const manifest = readProjectManifestAt(projectRoot);
         const result = await launchProject({ projectName: manifest.name, output });
@@ -234,8 +211,6 @@ async function runRxdkAction(
             return build();
         case 'deploy':
             return deploy();
-        case 'deployPrebuilt':
-            return deployPrebuiltAction();
         case 'buildDeploy':
             return sequence(build, deploy);
         case 'run':

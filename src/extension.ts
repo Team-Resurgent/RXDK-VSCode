@@ -18,8 +18,6 @@ import { initConfigSelection } from './configSelection';
 import { getActiveXboxAddress, promptSetXboxIp } from './xboxConsole';
 import { RxdkTaskProvider, RXDK_TASK_TYPE } from './rxdkTaskProvider';
 import { openSdkDocs, openExtensionDocs } from './sdkDocs';
-import { openPrebuiltProjectSetup } from './prebuiltDebug';
-import { refreshPrebuiltSourceFolder } from './prebuiltWorkspace';
 import { launchXbwatson } from './xbwatsonLauncher';
 import { launchXbNeighborhood } from './xbNeighborhoodLauncher';
 import { openXboxNeighborhood } from './xboxNeighborhoodShell';
@@ -135,10 +133,6 @@ export function activate(context: vscode.ExtensionContext): void {
         vscode.commands.registerCommand('rxdk.launchXemu', guardPrerequisites(() => runRxdkTask(context, 'launch-xemu', rxdkOutput))),
         vscode.commands.registerCommand('rxdk.removeDxt', guardPrerequisites(() => runRxdkTask(context, 'remove-dxt', rxdkOutput))),
         vscode.commands.registerCommand('rxdk.debug', guardPrerequisites(() => vscode.commands.executeCommand('workbench.action.debug.start'))),
-        vscode.commands.registerCommand('rxdk.debugPrebuiltXbe', guardPrerequisites(() => openPrebuiltProjectSetup(context))),
-        vscode.commands.registerCommand('rxdk.refreshPrebuiltSource', guardPrerequisites(() =>
-            refreshPrebuiltSourceFolder(context).then(() => sidebarProvider.refresh())
-        )),
         vscode.commands.registerCommand('rxdk.setXboxIp', guardPrerequisites(() => promptSetXboxIp().then(() => sidebarProvider.refresh()))),
         vscode.commands.registerCommand('rxdk.rebootConsole', guardPrerequisites(async () => {
             if (!(await ensureDotNetRuntime(context, rxdkOutput))) {

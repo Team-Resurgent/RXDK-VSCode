@@ -6,10 +6,10 @@ import { launchXemu } from './xemuLaunch';
 import { isStagedSdkPresent, getStagedSdkRoot } from './sdkStaging';
 import { isDotNetRuntimeInstalled, ensureDotNetRuntime } from './dotnetRuntime';
 import { findProjectManifest } from './projectManager';
-import { isPrebuiltManifest, resolveConfiguration, RxdkProjectManifest } from './projectTypes';
+import { resolveConfiguration } from './projectTypes';
 import { getSelectedConfig } from './configSelection';
 import { setActiveConfiguration } from './activeConfig';
-import { deployProject, deployPrebuilt, removeDxt, DeployResult } from './xboxDeploy';
+import { deployProject, removeDxt, DeployResult } from './xboxDeploy';
 import { launchProject, rebootConsole, LaunchResult } from './xboxLaunch';
 import { getStagedToolsRoot, resolveHostTool } from './hostTools';
 import { runStreamed, OutputLike } from './processRunner';
@@ -44,7 +44,7 @@ export async function runRxdkTask(
     setActiveConfiguration(selectedConfig || undefined);
     const manifest = resolveConfiguration(found.manifest, selectedConfig);
 
-    if (!isPrebuiltManifest(manifest) && !isStagedSdkPresent(context)) {
+    if (!isStagedSdkPresent(context)) {
         const sdkPath = getStagedSdkRoot(context);
         vscode.window.showErrorMessage(
             `RXDK SDK not installed. Reload the window to trigger clone, or: git clone --depth 1 https://github.com/Team-Resurgent/RXDK-SDK.git "${sdkPath}"`
@@ -61,10 +61,6 @@ export async function runRxdkTask(
 
     const projectRoot = found.folder.uri.fsPath;
     const name = manifest.name;
-
-    if (isPrebuiltManifest(manifest)) {
-        return runPrebuiltTask(manifest, kind, output);
-    }
 
     // isLibraryManifest projects are handled inside buildXboxProject itself (compiles + archives,
     // then returns without linking/deploying) -- but deploy/run on one is a user-facing no-op here,
@@ -202,26 +198,4 @@ function reportLaunchResult(result: LaunchResult, output: vscode.OutputChannel):
     output.appendLine(`RXDK Run failed: ${result.error}`);
     vscode.window.showErrorMessage(`RXDK Run failed: ${result.error}`);
     return false;
-}
-
-async function runPrebuiltTask(
-    manifest: RxdkProjectManifest,
-    kind: RxdkTaskKind,
-    output: vscode.OutputChannel
-): Promise<boolean> {
-    if (kind === 'build') {
-        vscode.window.showInformationMessage('Prebuilt-XBE project: nothing to build (deploy and debug only).');
-        return true;
-    }
-    const p = manifest.prebuilt!;
-    // 'deploy', 'run', and 'build+deploy' all reduce to a deploy for prebuilt projects;
-    // launching is handled by the debugger (F5) via the generated launch config.
-    const result = await deployPrebuilt({
-        xbePath: p.xbe,
-        pdbPath: p.pdb,
-        mapPath: p.map,
-        remoteName: p.remoteName,
-        output,
-    });
-    return reportDeployResult(result, output);
 }

@@ -5,7 +5,7 @@ import { isSamplesPresent, readSamplesVersion } from './samplesStaging';
 import { findProjectManifest } from './projectManager';
 import { getXboxAddressInfo } from './xboxConsole';
 import { sdkDocsAvailable, extensionDocsAvailable } from './sdkDocs';
-import { isPrebuiltManifest, isDxtManifest } from './projectTypes';
+import { isDxtManifest } from './projectTypes';
 import { isPrerequisitesReadySync } from './prerequisites';
 import { isXboxNeighborhoodShellRegistered } from './xboxNeighborhoodShell';
 import { isXemuConfigured } from './xemuLaunch';
@@ -213,19 +213,6 @@ export class RxdkSidebarProvider implements vscode.TreeDataProvider<RxdkTreeItem
 
         if (element.label === 'Build / run') {
             const project = await findProjectManifest();
-            if (project && isPrebuiltManifest(project.manifest)) {
-                return [
-                    new RxdkTreeItem('Deploy', vscode.TreeItemCollapsibleState.None, 'rxdk.deploy', undefined, 'cloud-upload'),
-                    new RxdkTreeItem('Debug', vscode.TreeItemCollapsibleState.None, 'rxdk.debug', undefined, 'bug'),
-                    new RxdkTreeItem(
-                        'Refresh source folder',
-                        vscode.TreeItemCollapsibleState.None,
-                        'rxdk.refreshPrebuiltSource',
-                        undefined,
-                        'folder-opened'
-                    ),
-                ];
-            }
             if (project && isDxtManifest(project.manifest)) {
                 // A DXT deploys to E:\dxt and loads on a warm reboot; there's no
                 // title to launch and it can't be attached to (it runs inside the
@@ -351,13 +338,6 @@ export class RxdkSidebarProvider implements vscode.TreeDataProvider<RxdkTreeItem
                     'rxdk.newProject',
                     'template wizard',
                     'add'
-                ),
-                new RxdkTreeItem(
-                    'New Prebuilt XBE Project',
-                    vscode.TreeItemCollapsibleState.None,
-                    'rxdk.debugPrebuiltXbe',
-                    undefined,
-                    'file-binary'
                 ),
                 new RxdkTreeItem(
                     'Import VS2003 Project…',

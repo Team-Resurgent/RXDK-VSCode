@@ -31,7 +31,7 @@
           "action": {
             "type": "string",
             "description": "The RXDK pipeline step to run.",
-            "enum": ["build", "deploy", "buildDeploy", "run", "reboot", "deployReboot", "deployPrebuilt"]
+            "enum": ["build", "deploy", "buildDeploy", "run", "reboot", "deployReboot"]
           }
         }
       }
@@ -48,8 +48,6 @@
       { "command": "rxdk.removeDxt", "title": "Remove DXT & Reboot", "category": "RXDK", "icon": "$(trash)" },
       { "command": "rxdk.rebootConsole", "title": "Warm Reboot Xbox", "category": "RXDK", "icon": "$(sync)" },
       { "command": "rxdk.debug", "title": "Debug", "category": "RXDK", "icon": "$(debug-alt)" },
-      { "command": "rxdk.debugPrebuiltXbe", "title": "New Prebuilt XBE Project", "category": "RXDK", "icon": "$(file-binary)" },
-      { "command": "rxdk.refreshPrebuiltSource", "title": "Refresh Source Folder", "category": "RXDK", "icon": "$(folder-opened)" },
       { "command": "rxdk.setXboxIp", "title": "Set Xbox IP / Hostname", "category": "RXDK" },
       { "command": "rxdk.showSidebar", "title": "Show RXDK Sidebar", "category": "RXDK", "icon": "$(list-tree)" },
       { "command": "rxdk.refreshSidebar", "title": "Refresh", "category": "RXDK", "icon": "$(refresh)" },
@@ -101,7 +99,6 @@
         { "command": "rxdk.removeDxt", "when": "rxdk.prerequisitesReady && rxdk.hasProject" },
         { "command": "rxdk.rebootConsole", "when": "rxdk.prerequisitesReady" },
         { "command": "rxdk.debug", "when": "rxdk.prerequisitesReady && rxdk.hasProject" },
-        { "command": "rxdk.debugPrebuiltXbe", "when": "rxdk.prerequisitesReady" },
         { "command": "rxdk.newProject", "when": "rxdk.prerequisitesReady" },
         { "command": "rxdk.importProject", "when": "rxdk.prerequisitesReady" },
         { "command": "rxdk.showSidebar", "when": "rxdk.prerequisitesReady" },
@@ -119,8 +116,7 @@
         { "command": "rxdk.setBuildType", "when": "rxdk.prerequisitesReady && rxdk.hasProject" },
         { "command": "rxdk.selectConfiguration", "when": "rxdk.prerequisitesReady && rxdk.hasProject" },
         { "command": "rxdk.openSettings", "when": "true" },
-        { "command": "rxdk.refreshSidebar", "when": "false" },
-        { "command": "rxdk.refreshPrebuiltSource", "when": "false" }
+        { "command": "rxdk.refreshSidebar", "when": "false" }
       ]
     },
     "debuggers": [
@@ -136,24 +132,11 @@
             "properties": {
               "program": { "type": "string", "description": "Local Win32 .exe path (for PDB symbols). Optional; falls back to the XBE header when omitted." },
               "xbePath": { "type": "string", "description": "Remote Xbox path to .xbe" },
-              "xbeDir": { "type": "string", "description": "Remote directory for DmSetTitle" },
-              "xbeTitle": { "type": "string", "description": "Remote .xbe file name" },
-              "xbe": { "type": "string", "description": "Local .xbe path used for symbol image size when no program (.exe) is provided" },
               "pdb": { "type": "string", "description": "Local .pdb path" },
-              "map": { "type": "string", "description": "Local .map path (for globals)" },
-              "srcRoot": { "type": "string", "description": "Source root for mapping PDB paths (defaults to the workspace folder)" },
               "consoleName": { "type": "string", "description": "Target Xbox console name" },
               "bridgePath": { "type": "string", "description": "Path to xboxdbg-bridge (managed Rxdk.XboxDbgBridge host)" },
               "reboot": { "type": "boolean", "default": false },
               "buildOnly": { "type": "boolean", "default": false, "description": "Run only preLaunchTask (build), then end the session immediately -- no deploy, no hardware launch, no attach." }
-            }
-          },
-          "attach": {
-            "properties": {
-              "program": { "type": "string" },
-              "pdb": { "type": "string" },
-              "consoleName": { "type": "string" },
-              "bridgePath": { "type": "string" }
             }
           }
         },

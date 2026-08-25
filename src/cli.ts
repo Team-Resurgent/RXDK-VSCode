@@ -12,7 +12,7 @@
 // them live, same as the old `powershell -File ...` tasks did); the process exit
 // code is what the task/problem-matcher machinery actually reacts to.
 import { buildXboxProject } from './xboxBuild';
-import { deployProject, deployPrebuilt } from './xboxDeploy';
+import { deployProject } from './xboxDeploy';
 import { launchProject, rebootConsole } from './xboxLaunch';
 import { isRxdkOptimizeMode } from './optimizeMode';
 import { applyManagedDotnetToProcess } from './dotnetEnv';
@@ -102,21 +102,6 @@ async function main(): Promise<number> {
             }
             return 0;
         }
-        case 'deploy-prebuilt': {
-            const result = await deployPrebuilt({
-                xbePath: requireArg(args, 'xbe-path'),
-                remoteName: stringArg(args, 'remote-name'),
-                pdbPath: stringArg(args, 'pdb-path'),
-                mapPath: stringArg(args, 'map-path'),
-                consoleName: stringArg(args, 'console-name'),
-                output: consoleOutput,
-            });
-            if (!result.ok) {
-                console.error(result.error);
-                return 1;
-            }
-            return 0;
-        }
         case 'run': {
             const result = await launchProject({
                 projectName: requireArg(args, 'project-name'),
@@ -155,7 +140,7 @@ async function main(): Promise<number> {
             return 0;
         }
         default:
-            console.error(`Unknown command: ${command ?? '(none)'}. Expected build|deploy|deploy-prebuilt|run|reboot.`);
+            console.error(`Unknown command: ${command ?? '(none)'}. Expected build|deploy|run|reboot.`);
             return 1;
     }
 }
