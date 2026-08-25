@@ -104,7 +104,7 @@ export class RxdkSidebarProvider implements vscode.TreeDataProvider<RxdkTreeItem
                 root.push(
                     new RxdkTreeItem(
                         'Components',
-                        vscode.TreeItemCollapsibleState.Collapsed,
+                        vscode.TreeItemCollapsibleState.Expanded,
                         undefined,
                         undefined,
                         'package'

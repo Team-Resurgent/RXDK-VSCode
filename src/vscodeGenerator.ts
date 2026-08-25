@@ -32,10 +32,26 @@ function normalizeConfigPath(value: string): string {
     return path.normalize(value).replace(/\\/g, '/').toLowerCase();
 }
 
-function vscodeConfigIsStale(projectRoot: string): boolean {
+function vscodeConfigIsStale(projectRoot: string, projectName = '', configName = ''): boolean {
     const tasksPath = path.join(projectRoot, '.vscode', 'tasks.json');
     if (!fs.existsSync(tasksPath)) {
         return true;
+    }
+    // Launch entry names carry the active build config, e.g. "Debug Foo [Debug]"; if a multi-config
+    // project's launch.json still has the un-suffixed name (or the wrong config), regenerate so the
+    // Run and Debug dropdown tracks the selected configuration on reload -- not only after a switch.
+    if (configName && projectName) {
+        const launchPath = path.join(projectRoot, '.vscode', 'launch.json');
+        if (fs.existsSync(launchPath)) {
+            try {
+                const launchContent = fs.readFileSync(launchPath, 'utf8');
+                if (launchContent.includes(`"Debug ${projectName}"`) || !launchContent.includes(`[${configName}]`)) {
+                    return true;
+                }
+            } catch {
+                return true;
+            }
+        }
     }
     const content = fs.readFileSync(tasksPath, 'utf8');
     return (
@@ -268,13 +284,16 @@ export async function generateVscodeFolder(
         ],
     };
 
+    // Reflect the active build configuration in the launch entry names, e.g. "Debug AlphaFog [Debug]",
+    // so the Run and Debug dropdown shows which config F5 will build. Regenerated on config switch.
+    const configSuffix = configName ? ` [${configName}]` : '';
     const launch = {
         version: '0.2.0',
         configurations: [
             {
                 type: 'xbox',
                 request: 'launch',
-                name: `Debug ${projectName}`,
+                name: `Debug ${projectName}${configSuffix}`,
                 preLaunchTask: 'rxdk: build+deploy',
                 program: `\${workspaceFolder}/${outRel}/${projectName}.exe`,
                 pdb: `\${workspaceFolder}/${outRel}/${projectName}.pdb`,
@@ -286,7 +305,7 @@ export async function generateVscodeFolder(
             {
                 type: 'xbox',
                 request: 'launch',
-                name: `Build ${projectName}`,
+                name: `Build ${projectName}${configSuffix}`,
                 preLaunchTask: 'rxdk: build',
                 buildOnly: true,
                 xbePath: `xe:\\${projectName}\\${projectName}.xbe`,
@@ -454,7 +473,7 @@ export async function ensureVscodeForWorkspace(
     const manifest = resolveConfiguration(found.manifest, selectedConfig);
     const needsRefresh =
         force ||
-        vscodeConfigIsStale(projectRoot) ||
+        vscodeConfigIsStale(projectRoot, manifest.name, selectedConfig) ||
         intelliSenseConfigIsStale(projectRoot, context, manifest, selectedConfig);
     if (!needsRefresh) {
         return;

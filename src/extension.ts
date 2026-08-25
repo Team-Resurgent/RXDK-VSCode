@@ -6,12 +6,12 @@ import { createProject } from './projectManager';
 import { runRxdkTask } from './buildRunner';
 import { isXemuConfigured } from './xemuLaunch';
 import { getBridgePath } from './sdkPath';
-import { openStagedSdkFolder, fetchLatestSdk } from './sdkStaging';
-import { getStagedToolsRoot } from './hostTools';
+import { openStagedSdkFolder, fetchLatestSdk, getStagedSdkRoot } from './sdkStaging';
+import { getStagedToolsRoot, resolveHostTool } from './hostTools';
 import { getStagedDocsRoot } from './sdkDocsStaging';
 import { getStagedSamplesRoot } from './samplesStaging';
 import { ensureDotNetRuntime, isDotNetRuntimeInstalled } from './dotnetRuntime';
-import { applyManagedDotnetToProcess } from './dotnetEnv';
+import { applyManagedDotnetToProcess, withManagedDotnet } from './dotnetEnv';
 import { rebootConsole } from './xboxLaunch';
 import { ensureVscodeForWorkspace } from './vscodeGenerator';
 import { initConfigSelection } from './configSelection';
@@ -315,6 +315,31 @@ function registerDebugIntegration(context: vscode.ExtensionContext): void {
         vscode.debug.registerDebugConfigurationProvider('xbox', {
             resolveDebugConfigurationWithSubstitutedVariables: async (folder, config) => {
                 return resolveXboxLaunchConfig(context, folder, config);
+            },
+        })
+    );
+
+    // Debug through the shared C# Rxdk.Dap (the exact adapter VS20XX uses, delivered in the RXDK-Tools
+    // host-tools bundle) so both IDEs share one debug codebase instead of a parallel TypeScript adapter.
+    // Rxdk.Dap reads the same launch fields resolveXboxLaunchConfig sets (program/pdb/xbePath/
+    // bridgePath/consoleName/reboot/buildOnly, __globalsFilter, __titleOutputFile) and drives the same
+    // xboxdbg-bridge; framework-dependent, so inject DOTNET_ROOT + the staged roots. Registering a
+    // factory overrides the static "program" (the legacy TS adapter) still declared in package.json.
+    context.subscriptions.push(
+        vscode.debug.registerDebugAdapterDescriptorFactory('xbox', {
+            createDebugAdapterDescriptor: () => {
+                const dap = resolveHostTool('Rxdk.Dap');
+                if (!fs.existsSync(dap)) {
+                    throw new Error(
+                        `Xbox debug adapter not found: ${dap}. Update the RXDK host tools (Complete Setup / Update All).`
+                    );
+                }
+                const env = withManagedDotnet({
+                    ...process.env,
+                    RXDK_STAGED_TOOLS: getStagedToolsRoot(),
+                    RXDK_STAGED_SDK: getStagedSdkRoot(context),
+                }) as { [key: string]: string };
+                return new vscode.DebugAdapterExecutable(dap, [], { env });
             },
         })
     );
