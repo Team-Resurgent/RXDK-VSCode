@@ -5,6 +5,55 @@ import { resolveHostTool, getStagedToolsRoot } from './hostTools';
 import { getStagedSdkRoot } from './sdkStaging';
 import { runStreamed } from './processRunner';
 
+// Problems-panel entries for the importer's per-file hazard diagnostics (inline asm, legacy
+// for-scope, ...). Parsed from the CLI's gcc-style `path:line:col: warning: msg` output — the same
+// format VS20XX's Error List consumes — so they're clickable and jump to the flagged line.
+let importDiagnostics: vscode.DiagnosticCollection | undefined;
+function getImportDiagnostics(context: vscode.ExtensionContext): vscode.DiagnosticCollection {
+    if (!importDiagnostics) {
+        importDiagnostics = vscode.languages.createDiagnosticCollection('rxdk-import');
+        context.subscriptions.push(importDiagnostics);
+    }
+    return importDiagnostics;
+}
+
+const GCC_DIAG = /^(?<file>(?:[A-Za-z]:)?[^:]*):(?<line>\d+):(?<col>\d+):\s*(?<sev>error|warning|note):\s*(?<msg>.*)$/i;
+
+/** Parse the importer's gcc-style diagnostic lines from stdout into the Problems panel. */
+function publishImportDiagnostics(context: vscode.ExtensionContext, stdout: string): number {
+    const byFile = new Map<string, vscode.Diagnostic[]>();
+    for (const raw of stdout.split(/\r?\n/)) {
+        const m = GCC_DIAG.exec(raw.trim());
+        if (!m || !m.groups) {
+            continue;
+        }
+        const line = Math.max(0, parseInt(m.groups.line, 10) - 1);
+        const col = Math.max(0, parseInt(m.groups.col, 10) - 1);
+        const sev = m.groups.sev.toLowerCase();
+        const severity =
+            sev === 'error' ? vscode.DiagnosticSeverity.Error :
+            sev === 'note' ? vscode.DiagnosticSeverity.Information :
+            vscode.DiagnosticSeverity.Warning;
+        const diag = new vscode.Diagnostic(new vscode.Range(line, col, line, col + 1), m.groups.msg, severity);
+        diag.source = 'RXDK import';
+        const list = byFile.get(m.groups.file) ?? [];
+        list.push(diag);
+        byFile.set(m.groups.file, list);
+    }
+    const collection = getImportDiagnostics(context);
+    collection.clear();
+    let total = 0;
+    for (const [file, diags] of byFile) {
+        try {
+            collection.set(vscode.Uri.file(file), diags);
+            total += diags.length;
+        } catch {
+            /* not a real file path — skip */
+        }
+    }
+    return total;
+}
+
 /**
  * Import a Visual Studio .NET 2003 XDK project (.vcproj) or solution (.sln) into an RXDK project,
  * via the shared C# engine (Rxdk.Cli import-vcproj / import-sln -- the same importer VS20XX uses).
@@ -85,10 +134,15 @@ export async function importVs2003Project(
         return;
     }
 
+    // Surface the importer's per-file hazard diagnostics (inline asm, legacy for-scope, ...) in the
+    // Problems panel so they're clickable, not just buried in the output channel.
+    const warnCount = publishImportDiagnostics(context, result.stdout);
+    const warnSuffix = warnCount > 0 ? ` (${warnCount} warning(s) — see Problems)` : '';
+
     // A single .vcproj writes rxdk.project.json directly into dest; a .sln writes one per project
     // into subfolders (open the dest folder to browse them).
     const choice = await vscode.window.showInformationMessage(
-        `Imported ${path.basename(input)} into ${dest}.`,
+        `Imported ${path.basename(input)} into ${dest}.${warnSuffix}`,
         'Open in New Window',
         'Open Here'
     );
