@@ -18,7 +18,7 @@ import { setActiveConfiguration } from './activeConfig';
 // so switching configuration is detected as "stale" and the IntelliSense config is regenerated.
 const ACTIVE_CONFIG_KEY = 'rxdk.activeConfiguration';
 
-const EXTENSION_ID = 'rxdk-libs.rxdk-vscode';
+const EXTENSION_ID = 'TeamResurgent.rxdk-vscode';
 const EXTENSION_ROOT = `\${extensionInstallFolder:${EXTENSION_ID}}`;
 const SDK_ROOT = `${EXTENSION_ROOT}/sdk`;
 // The generated tasks.json uses `type: "rxdk"` custom-execution tasks (see
@@ -55,11 +55,11 @@ function vscodeConfigIsStale(projectRoot: string, projectName = '', configName =
     }
     const content = fs.readFileSync(tasksPath, 'utf8');
     return (
-        content.includes('.vscode/extensions/rxdk-libs.rxdk-vscode-') ||
-        content.includes('.cursor/extensions/rxdk-libs.rxdk-vscode-') ||
-        !content.includes('extensionInstallFolder:rxdk-libs.rxdk-vscode') ||
+        content.includes('.vscode/extensions/TeamResurgent.rxdk-vscode-') ||
+        content.includes('.cursor/extensions/TeamResurgent.rxdk-vscode-') ||
+        !content.includes('extensionInstallFolder:TeamResurgent.rxdk-vscode') ||
         content.includes('rxdk-vscode}/out/sdk') ||
-        (content.includes('rxdk-vscode}/sdk') && !content.includes('extensionInstallFolder:rxdk-libs.rxdk-vscode')) ||
+        (content.includes('rxdk-vscode}/sdk') && !content.includes('extensionInstallFolder:TeamResurgent.rxdk-vscode')) ||
         // Pre-CLI-migration tasks.json shelled out to PowerShell scripts directly.
         content.includes('"command": "powershell"') ||
         content.includes('.ps1') ||

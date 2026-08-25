@@ -7,7 +7,7 @@
 
 VS Code activity bar icons are always shown at **~24×24 CSS pixels** on screen — a 128×128 source is scaled down to that slot. Inactive icons also render at **60% opacity**. Use artwork that fills the square edge-to-edge; thin line art tends to look tiny.
 
-After replacing icons: `install-extension.cmd -Build` or commit an updated `rxdk-vscode-*.vsix`.
+After replacing icons: `npm run package` (then `code --install-extension rxdk-vscode-*.vsix` to test).
 
 ## Codicons (not in this folder)
 

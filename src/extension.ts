@@ -237,8 +237,8 @@ async function resolveXboxLaunchConfig(
     const bridge = String(config.bridgePath ?? '').trim();
     if (
         !bridge ||
-        bridge.includes('.vscode/extensions/rxdk-libs.') ||
-        bridge.includes('.cursor/extensions/rxdk-libs.') ||
+        bridge.includes('.vscode/extensions/TeamResurgent.') ||
+        bridge.includes('.cursor/extensions/TeamResurgent.') ||
         bridge.includes('/out/sdk/tools/') ||
         (bridge.includes('/sdk/tools/') && !bridge.includes('extensionInstallFolder'))
     ) {

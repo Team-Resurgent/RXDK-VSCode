@@ -1,5 +1,12 @@
 name: Build VSIX
 
+# Builds the RXDK VS Code extension (.vsix) on every push to main and republishes it
+# as the repo's moving "latest" GitHub Release, so .../RXDK-VSCode/releases/latest always
+# serves the newest build. A v* tag instead makes a permanent, versioned release.
+# Host tools are NOT bundled — the extension downloads them per-platform at runtime
+# (src/hostTools.ts) — so the workflow just produces and publishes the .vsix. Mirrors
+# RXDK-VS20XX's build-vsix.yml.
+
 on:
   push:
     branches: [main]
@@ -22,19 +29,11 @@ concurrency:
 
 env:
   NODE_VERSION: '22'
-  # Authenticated GitHub API (5000/hr) vs unauthenticated (60/hr per shared runner IP);
-  # used by the Publish GitHub Release job. Host tools are no longer bundled — the
-  # extension downloads them at runtime (src/hostTools.ts) / scripts/setup.ps1.
-  GH_TOKEN: ${{ github.token }}
-  GITHUB_TOKEN: ${{ github.token }}
 
 jobs:
   build:
-    name: Build cross-platform VSIX
-    runs-on: windows-latest
-    defaults:
-      run:
-        shell: pwsh
+    name: Build VSIX
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -48,8 +47,30 @@ jobs:
       - name: Install npm dependencies
         run: npm ci
 
-      - name: Build VSIX
-        run: ./scripts/build-vsix.ps1 -ExtensionRoot $env:GITHUB_WORKSPACE
+      - name: Compile
+        run: npm run compile
+
+      - name: Package VSIX
+        run: npx --yes @vscode/vsce package --allow-star-activation
+
+      - name: Locate VSIX
+        id: vsix
+        run: |
+          set -euo pipefail
+          vsix="$(ls rxdk-vscode-*.vsix | head -n1)"
+          [ -n "$vsix" ] || { echo 'VSIX not found after build' >&2; exit 1; }
+          echo "name=${vsix}" >> "$GITHUB_OUTPUT"
+          mb=$(awk "BEGIN{printf \"%.2f\", $(stat -c%s "$vsix")/1048576}")
+          {
+            echo '### RXDK for VS Code -- VSIX build'
+            echo ''
+            echo '| Artifact | Size |'
+            echo '|----------|------|'
+            echo "| \`${vsix}\` | ${mb} MB |"
+            echo ''
+            echo 'Install: download the `.vsix` and use **Extensions -> ... -> Install from VSIX...**, or `code --install-extension <file>`.'
+            echo 'Host tools are downloaded per-platform at runtime; Xbox headers/libs come from RXDK-SDK.'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload VSIX artifact
         uses: actions/upload-artifact@v5
@@ -58,55 +79,6 @@ jobs:
           path: rxdk-vscode-*.vsix
           if-no-files-found: error
           compression-level: 0
-
-      - name: Upload release zip artifact
-        uses: actions/upload-artifact@v5
-        with:
-          name: rxdk-vscode-release-zip
-          path: release/rxdk-vscode-*.zip
-          if-no-files-found: error
-          compression-level: 0
-
-      - name: Write job summary
-        run: |
-          $ErrorActionPreference = 'Stop'
-          $vsix = Get-ChildItem -Path $env:GITHUB_WORKSPACE -Filter 'rxdk-vscode-*.vsix' |
-            Sort-Object LastWriteTime -Descending |
-            Select-Object -First 1
-          $zip = Get-ChildItem -Path (Join-Path $env:GITHUB_WORKSPACE 'release') -Filter 'rxdk-vscode-*.zip' |
-            Sort-Object LastWriteTime -Descending |
-            Select-Object -First 1
-          if (-not $vsix) {
-            throw 'VSIX not found after build'
-          }
-          if (-not $zip) {
-            throw 'Release zip not found after build'
-          }
-          $sizeMb = [math]::Round($vsix.Length / 1MB, 2)
-          $zipMb = [math]::Round($zip.Length / 1MB, 2)
-          @(
-            '### RXDK VSIX build',
-            '',
-            '| Artifact | Size |',
-            '|----------|------|',
-            "| ``$($vsix.Name)`` | ${sizeMb} MB |",
-            "| ``$($zip.Name)`` (VSIX + install scripts) | ${zipMb} MB |",
-            '',
-            'Host tools are bundled for `win-x64`, `linux-x64`, `osx-x64`, and `osx-arm64` under `sdk/tools/<rid>/`.',
-            '`xdvdfs` is downloaded from [Team-Resurgent/xdvdfs releases](https://github.com/Team-Resurgent/xdvdfs/releases/latest).',
-            'Xbox headers/libs are cloned from [RXDK-SDK](https://github.com/Team-Resurgent/RXDK-SDK) on first extension launch.',
-            'Compiling Xbox titles uses **Zig** (RXDK prerequisites) on Windows, macOS, and Linux.',
-            '',
-            'Install from release zip:',
-            '```powershell',
-            '# Windows: extract zip, then',
-            '.\install-extension.cmd',
-            '```',
-            '```bash',
-            '# macOS / Linux: extract zip, then',
-            'chmod +x install-extension.sh && ./install-extension.sh',
-            '```'
-          ) | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8
 
   release:
     name: Publish GitHub Release
@@ -126,48 +98,25 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Download release zip artifact
+      - name: Download VSIX artifact
         uses: actions/download-artifact@v5
         with:
-          name: rxdk-vscode-release-zip
+          name: rxdk-vscode-vsix
           path: dist
-
-      - name: Make install-extension.sh executable in the release zip
-        shell: bash
-        run: |
-          set -euo pipefail
-          shopt -s nullglob
-          root="$(pwd)"
-          for z in dist/*.zip; do
-            abs="${root}/${z}"
-            tmp="$(mktemp -d)"
-            unzip -q "$abs" -d "$tmp"
-            # The Windows build runner packs with Compress-Archive, which can't record
-            # a Unix exec bit. Re-pack with Info-ZIP (host=Unix) so install-extension.sh
-            # extracts as executable and users don't have to chmod +x it.
-            [[ -f "$tmp/install-extension.sh" ]] && chmod 0755 "$tmp/install-extension.sh"
-            rm -f "$abs"
-            ( cd "$tmp" && zip -q -X -r "$abs" . )
-            rm -rf "$tmp"
-          done
 
       - name: Resolve release tag
         id: meta
-        shell: bash
         run: |
           set -euo pipefail
           if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
             # An explicit v* tag makes a permanent, versioned release.
-            tag="${GITHUB_REF#refs/tags/}"
-            moving=false
+            tag="${GITHUB_REF#refs/tags/}"; moving=false
           else
             # Push to main (or a manual publish): move a single "latest" release to
-            # this build so .../RXDK-VSCode/releases/latest always serves the newest
-            # VSIX, mirroring how RXDK-Tools publishes its moving "latest".
-            tag="latest"
-            moving=true
+            # this build so /releases/latest always serves the newest VSIX.
+            tag="latest"; moving=true
           fi
-          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "tag=${tag}"       >> "$GITHUB_OUTPUT"
           echo "moving=${moving}" >> "$GITHUB_OUTPUT"
           echo "Release tag: ${tag} (moving=${moving})"
 
@@ -175,42 +124,35 @@ jobs:
         if: steps.meta.outputs.moving == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
-        run: |
-          # Delete any prior "latest" release AND its git tag so the create step
-          # recreates both pointing at this commit (gh won't move an existing tag).
-          # Non-fatal on the first run when nothing exists yet.
-          gh release delete latest --repo "${{ github.repository }}" --cleanup-tag --yes || true
+        # Delete any prior "latest" release AND its git tag so the create step recreates
+        # both at this commit (gh won't move an existing tag). Non-fatal on first run.
+        run: gh release delete latest --repo "${{ github.repository }}" --cleanup-tag --yes || true
 
       - name: Create GitHub Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
         run: |
           set -euo pipefail
           shopt -s nullglob
-          files=(dist/*.zip)
+          files=(dist/*.vsix)
           if [[ ${#files[@]} -eq 0 ]]; then
-            echo "No release zip in dist/" >&2
+            echo "No VSIX in dist/" >&2
             exit 1
           fi
-          # Both the moving "latest" and any v* tag are the repo's Latest release, so
-          # /releases/latest resolves to them.
           gh release create "${{ steps.meta.outputs.tag }}" \
             --repo "${{ github.repository }}" \
             --target "${GITHUB_SHA}" \
-            --title "RXDK VSCode ${{ steps.meta.outputs.tag }}" \
+            --title "RXDK for VS Code ${{ steps.meta.outputs.tag }}" \
             --generate-notes \
             --latest \
             "${files[@]}"
 
       - name: Write release summary
-        shell: bash
         run: |
           {
             echo "### GitHub Release"
             echo ""
             echo "- Tag: \`${{ steps.meta.outputs.tag }}\`"
             echo "- Moving latest: \`${{ steps.meta.outputs.moving }}\`"
-            echo "- Artifact: \`rxdk-vscode-*.zip\` (VSIX + install scripts; VSIX is not attached separately)"
+            echo "- Asset: \`*.vsix\` (Install from VSIX in VS Code / Cursor)"
           } >> "$GITHUB_STEP_SUMMARY"
