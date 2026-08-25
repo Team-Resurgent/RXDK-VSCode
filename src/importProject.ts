@@ -34,30 +34,52 @@ export async function importVs2003Project(
     }
     const input = picked[0].fsPath;
     const isSln = input.toLowerCase().endsWith('.sln');
+    const sourceDir = path.dirname(input);
 
-    const destPick = await vscode.window.showOpenDialog({
-        canSelectFiles: false,
-        canSelectFolders: true,
-        canSelectMany: false,
-        openLabel: 'Import here',
-        title: 'Choose the destination folder for the imported RXDK project',
-    });
-    if (!destPick || destPick.length === 0) {
+    // In place vs copy. In place writes rxdk.project.json next to the project and references sources
+    // where they are (relative paths, nothing left behind) -- the safe default. Copy mirrors only the
+    // sources the project lists into a folder you choose (auxiliary files not in the .vcproj won't come
+    // along). Either way source paths in the manifest stay relative; a cross-folder import without a
+    // copy would otherwise fall back to absolute paths.
+    const mode = await vscode.window.showQuickPick(
+        [
+            { label: '$(check) Import in place', description: 'Write rxdk.project.json next to the project (recommended)', id: 'inplace' },
+            { label: '$(files) Copy into a new folder…', description: 'Mirror the project sources into a folder you choose', id: 'copy' },
+        ],
+        { title: `Import ${path.basename(input)}`, placeHolder: 'Where should the imported RXDK project go?' }
+    );
+    if (!mode) {
         return;
     }
-    const dest = destPick[0].fsPath;
+
+    let dest = sourceDir;
+    let copySources = false;
+    if (mode.id === 'copy') {
+        const destPick = await vscode.window.showOpenDialog({
+            canSelectFiles: false,
+            canSelectFolders: true,
+            canSelectMany: false,
+            openLabel: 'Import here',
+            title: 'Choose the destination folder for the imported RXDK project',
+        });
+        if (!destPick || destPick.length === 0) {
+            return;
+        }
+        dest = destPick[0].fsPath;
+        copySources = path.resolve(dest) !== path.resolve(sourceDir);
+    }
 
     const env: NodeJS.ProcessEnv = {
         RXDK_STAGED_TOOLS: getStagedToolsRoot(),
         RXDK_STAGED_SDK: getStagedSdkRoot(context),
     };
+    const args = [isSln ? 'import-sln' : 'import-vcproj', '--in', input, '--out', dest];
+    if (copySources) {
+        args.push('--copy-sources');
+    }
     output.show(true);
-    output.appendLine(`RXDK: importing ${input} -> ${dest}`);
-    const result = await runStreamed(
-        cli,
-        [isSln ? 'import-sln' : 'import-vcproj', '--in', input, '--out', dest],
-        { output, env }
-    );
+    output.appendLine(`RXDK: importing ${input} -> ${dest}${copySources ? ' (copying sources)' : ' (in place)'}`);
+    const result = await runStreamed(cli, args, { output, env });
     if (result.exitCode !== 0) {
         vscode.window.showErrorMessage(`RXDK import failed (exit code ${result.exitCode}). See the RXDK output.`);
         return;
