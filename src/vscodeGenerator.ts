@@ -72,6 +72,7 @@ interface IntelliSenseConfig {
     includePath: string[];
     defines: string[];
     usesCpp: boolean;
+    forcedInclude: string[];
 }
 
 // Transitive publicIncludePaths of a manifest's projectReferences (absolute, forward-slash),
@@ -116,7 +117,12 @@ function buildIntelliSenseConfig(
     manifest: RxdkProjectManifest
 ): IntelliSenseConfig {
     const includeDir = getSdkIncludeDir(context).replace(/\\/g, '/');
-    const includePath = [includeDir, '${workspaceFolder}/**'];
+    // IntelliSense-only shim headers (sibling of the SDK include dir) that let the MSVC IntelliSense
+    // front-end parse the clang-built SDK headers; the rxdk_intellisense.h prelude + picolibc.h are
+    // force-included ahead of the SDK headers (see forcedInclude below).
+    const intelliSenseDir = path.join(path.dirname(includeDir), 'intellisense').replace(/\\/g, '/');
+    const forcedInclude = [`${intelliSenseDir}/rxdk_intellisense.h`, `${includeDir}/picolibc.h`];
+    const includePath = [includeDir, intelliSenseDir, '${workspaceFolder}/**'];
     const pushDir = (root: string, rel: string): void => {
         if (rel.trim()) {
             const dir = path.join(root, rel).replace(/\\/g, '/');
@@ -139,12 +145,13 @@ function buildIntelliSenseConfig(
         }
     }
     const defines = ['_XBOX', '_WIN32', '_WINNT', '_X86_', ...(manifest.defines ?? [])];
-    return { includePath, defines, usesCpp: manifestUsesCpp(manifest) };
+    return { includePath, defines, usesCpp: manifestUsesCpp(manifest), forcedInclude };
 }
 
 function applyIntelliSenseSettings(settings: Record<string, unknown>, config: IntelliSenseConfig): void {
     settings['C_Cpp.default.includePath'] = config.includePath;
     settings['C_Cpp.default.defines'] = config.defines;
+    settings['C_Cpp.default.forcedInclude'] = config.forcedInclude;
     settings['C_Cpp.default.intelliSenseMode'] = 'windows-msvc-x86';
     settings['C_Cpp.default.compilerPath'] = '';
     settings['C_Cpp.default.cStandard'] = 'c23';
@@ -160,6 +167,7 @@ function writeCppProperties(vscodeDir: string, config: IntelliSenseConfig, confi
                 name: configName ? `Xbox (${configName})` : 'Xbox',
                 includePath: config.includePath,
                 defines: config.defines,
+                forcedInclude: config.forcedInclude,
                 windowsSdkVersion: '',
                 compilerPath: '',
                 cStandard: 'c23',
@@ -213,10 +221,16 @@ function intelliSenseConfigIsStale(
 
     try {
         const props = JSON.parse(fs.readFileSync(cppPropsPath, 'utf8')) as {
-            configurations?: Array<{ includePath?: string[] }>;
+            configurations?: Array<{ includePath?: string[]; forcedInclude?: string[] }>;
         };
         const includes = props.configurations?.[0]?.includePath ?? [];
         if (!includes.some((entry) => normalizeConfigPath(entry) === expectedInclude)) {
+            return true;
+        }
+        // Regenerate configs written before the IntelliSense shim/prelude forcedInclude existed,
+        // otherwise the MSVC front-end can't parse the SDK headers (macro hover = "symbol not found").
+        const forced = props.configurations?.[0]?.forcedInclude ?? [];
+        if (!forced.some((entry) => /rxdk_intellisense\.h$/i.test(entry))) {
             return true;
         }
     } catch {
