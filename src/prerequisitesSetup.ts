@@ -70,7 +70,7 @@ export async function openPrerequisitesSetup(
                     // Everything installable that's missing or has an update, in list order.
                     const statuses = await getPrerequisiteStatuses(context);
                     const todo = statuses.filter(
-                        (s) => ALLOWED_IDS.includes(s.id) && s.canInstall && (!s.ready || s.updateAvailable)
+                        (s) => ALLOWED_IDS.includes(s.id) && s.canInstall && !s.blockedByExtension && (!s.ready || s.updateAvailable)
                     );
                     for (const s of todo) {
                         await installOne(context, panel, output, s.id);
@@ -128,8 +128,14 @@ function serializeStatus(item: PrerequisiteStatus): Record<string, unknown> {
         version: item.version ?? '',
         latestVersion: item.latestVersion ?? '',
         updateAvailable: Boolean(item.updateAvailable),
+        blockedByExtension: Boolean(item.blockedByExtension),
+        requiredExtensionVersion: item.requiredExtensionVersion ?? '',
     };
 }
+
+// The RXDK for VS Code marketplace page — offered when a component update is gated on the extension.
+const EXTENSION_MARKETPLACE_URL =
+    'https://marketplace.visualstudio.com/items?itemName=TeamResurgent.rxdk-vscode';
 
 const ALLOWED_IDS: PrerequisiteId[] = ['dotnet', 'sdk', 'docs', 'zig', 'tools', 'samples', 'xbneighborhood'];
 
@@ -362,24 +368,36 @@ function buildHtml(webview: vscode.Webview): string {
       items.forEach((item) => {
         const row = document.createElement('div');
         row.className = 'item' + (item.ready ? ' ready' : '');
-        // Badge: up to date / update available (vX) / Ready / Required|Optional.
-        var badgeClass = item.ready ? (item.updateAvailable ? 'warn' : 'ok') : '';
-        var badgeText = item.ready
-          ? (item.updateAvailable
-              ? ('Update available' + (item.latestVersion ? ' (' + item.latestVersion + ')' : ''))
-              : (item.version ? 'Up to date' : 'Ready'))
-          : (item.required === false ? 'Optional' : 'Required');
+        // Badge: gated (needs newer extension) / up to date / update available (vX) / Ready / Required|Optional.
+        var badgeClass = item.blockedByExtension ? 'warn' : (item.ready ? (item.updateAvailable ? 'warn' : 'ok') : '');
+        var badgeText = item.blockedByExtension
+          ? ('Needs extension ' + (item.requiredExtensionVersion || 'update'))
+          : (item.ready
+              ? (item.updateAvailable
+                  ? ('Update available' + (item.latestVersion ? ' (' + item.latestVersion + ')' : ''))
+                  : (item.version ? 'Up to date' : 'Ready'))
+              : (item.required === false ? 'Optional' : 'Required'));
         var versionHtml = item.version ? ' <span class="ver">' + escapeHtml(item.version) + '</span>' : '';
-        // Actions: Install (missing) / Update (outdated); nothing when installed & current.
-        var actionBtn = !item.ready
-          ? '<button type="button" data-action="install" data-id="' + escapeHtml(item.id) + '"' +
-              (item.canInstall ? '' : ' disabled') + '>Install</button>'
-          : (item.updateAvailable
-              ? '<button type="button" data-action="install" data-id="' + escapeHtml(item.id) + '"' +
-                  (item.canInstall ? '' : ' disabled') + '>Update</button>'
-              : '');
-        var downloadBtn = (!item.ready && item.downloadUrl)
+        // Actions: when gated, offer only "Update extension" (opens the marketplace); otherwise
+        // Install (missing) / Update (outdated); nothing when installed & current.
+        var actionBtn;
+        if (item.blockedByExtension) {
+          actionBtn = '<button type="button" data-action="open" data-url="' + escapeHtml(EXTENSION_MARKETPLACE_URL) + '">Update extension</button>';
+        } else if (!item.ready) {
+          actionBtn = '<button type="button" data-action="install" data-id="' + escapeHtml(item.id) + '"' +
+              (item.canInstall ? '' : ' disabled') + '>Install</button>';
+        } else if (item.updateAvailable) {
+          actionBtn = '<button type="button" data-action="install" data-id="' + escapeHtml(item.id) + '"' +
+              (item.canInstall ? '' : ' disabled') + '>Update</button>';
+        } else {
+          actionBtn = '';
+        }
+        var downloadBtn = (!item.ready && !item.blockedByExtension && item.downloadUrl)
           ? '<button type="button" data-action="open" data-url="' + escapeHtml(item.downloadUrl) + '">Open download page</button>'
+          : '';
+        var gatedNote = item.blockedByExtension
+          ? '<p class="detail">A newer ' + escapeHtml(item.label) + ' (' + escapeHtml(item.latestVersion || '') +
+            ') needs a newer RXDK extension than the one loaded — update the extension first to keep everything compatible.</p>'
           : '';
         row.innerHTML =
           '<div>' +
@@ -388,6 +406,7 @@ function buildHtml(webview: vscode.Webview): string {
             '</p>' +
             '<p class="desc">' + escapeHtml(item.description) + '</p>' +
             (item.detail ? '<p class="detail">' + escapeHtml(item.detail) + '</p>' : '') +
+            gatedNote +
           '</div>' +
           '<div class="actions">' + actionBtn + downloadBtn + '</div>';
         root.appendChild(row);
@@ -414,8 +433,9 @@ function buildHtml(webview: vscode.Webview): string {
         ? 'All prerequisites are installed. RXDK is ready to use.'
         : 'Complete each item below to enable RXDK.';
 
-      // "Update All" appears only when something is installable that's missing or outdated.
-      const pending = items.filter((item) => item.canInstall && (!item.ready || item.updateAvailable));
+      // "Update All" appears only when something is installable that's missing or outdated —
+      // gated components (blockedByExtension) are excluded until the extension is updated.
+      const pending = items.filter((item) => item.canInstall && !item.blockedByExtension && (!item.ready || item.updateAvailable));
       const updateAll = el('updateAll');
       updateAll.textContent = pending.every((item) => item.ready) && pending.length > 0
         ? 'Update All' : (allReady ? 'Update All' : 'Install All');

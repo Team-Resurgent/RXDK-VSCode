@@ -64,3 +64,35 @@ export function versionsMatch(a?: string, b?: string): boolean {
     const norm = (s: string) => s.trim().replace(/^v/i, '');
     return norm(a) === norm(b);
 }
+
+/** Parse a dotted-numeric version (tolerating a leading 'v' and a -prerelease/+build tail). */
+function parseVersion(s?: string): number[] | undefined {
+    if (!s) {
+        return undefined;
+    }
+    const core = s.trim().replace(/^v/i, '').match(/^\d+(?:\.\d+)*/)?.[0];
+    if (!core) {
+        return undefined;
+    }
+    return core.split('.').map((n) => parseInt(n, 10));
+}
+
+/**
+ * True only when both parse and `a` is strictly newer than `b`. Fails safe: an unparseable input
+ * never reads as newer, so a garbled version can't wrongly gate a component update.
+ */
+export function isVersionNewer(a?: string, b?: string): boolean {
+    const va = parseVersion(a);
+    const vb = parseVersion(b);
+    if (!va || !vb) {
+        return false;
+    }
+    const len = Math.max(va.length, vb.length);
+    for (let i = 0; i < len; i++) {
+        const d = (va[i] ?? 0) - (vb[i] ?? 0);
+        if (d !== 0) {
+            return d > 0;
+        }
+    }
+    return false;
+}
