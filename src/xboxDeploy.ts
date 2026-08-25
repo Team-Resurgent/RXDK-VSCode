@@ -156,11 +156,17 @@ async function xbcpCopy(
     localFile: string,
     remoteDest: string,
     console: string | undefined,
+    incremental: boolean,
     output?: OutputLike
 ): Promise<void> {
     // '-' switches, not '/': the local source is a POSIX absolute path on Linux
     // (leading '/'), which xbcp would otherwise treat as a legacy switch bundle.
+    // -y overwrite, -t create dest dir, -q quiet; -d = copy only if the source is newer than the
+    // console copy (skips up-to-date files) — omitted for a forced full copy.
     const args = ['-y', '-t', '-q'];
+    if (incremental) {
+        args.push('-d');
+    }
     if (console) {
         args.push('-x', console);
     }
@@ -203,6 +209,13 @@ export async function deployProject(opts: DeployProjectOptions): Promise<DeployR
             displayAddr ? `Deploying to Xbox '${displayAddr}' -> ${remoteDir}` : `Deploying to default Xbox -> ${remoteDir}`
         );
 
+        // ForceCopy (default false): incremental deploy sends only files newer than the console copy
+        // (xbcp -d); the freshly built .xbe/.pdb always go, unchanged media is skipped. True re-sends all.
+        const incremental = manifest.forceCopy !== true;
+        if (incremental && !opts.quiet) {
+            opts.output?.appendLine('Incremental deploy (only new/changed files; set Force Copy to override).');
+        }
+
         const defaultPatterns = isDxt ? ['*.dxt'] : ['*.xbe', '*.pdb', '*.map'];
         const patterns = opts.files && opts.files.length > 0 ? opts.files : defaultPatterns;
         const sent: string[] = [];
@@ -212,7 +225,7 @@ export async function deployProject(opts: DeployProjectOptions): Promise<DeployR
                 if (!opts.quiet) {
                     opts.output?.appendLine(`${name} -> ${dest}`);
                 }
-                await xbcpCopy(xbcp, path.join(localDir, name), dest, consoleSwitch, opts.output);
+                await xbcpCopy(xbcp, path.join(localDir, name), dest, consoleSwitch, incremental, opts.output);
                 sent.push(name);
             }
         }
@@ -236,7 +249,7 @@ export async function deployProject(opts: DeployProjectOptions): Promise<DeployR
             if (!opts.quiet) {
                 opts.output?.appendLine(`${entry.source} -> ${dest}`);
             }
-            await xbcpCopy(xbcp, entry.source, dest, consoleSwitch, opts.output);
+            await xbcpCopy(xbcp, entry.source, dest, consoleSwitch, incremental, opts.output);
         }
 
         let summary = `Deployed: ${sent.join(', ')} -> ${remoteDir}`;

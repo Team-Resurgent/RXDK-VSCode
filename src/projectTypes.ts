@@ -78,6 +78,11 @@ export interface RxdkProjectManifest {
     deployPaths?: string[];
     /** Files embedded into the XBE at build time (imagebld /insertfile). */
     embed?: RxdkEmbedFile[];
+    /** Pack the build output into an .iso via xdvdfs (default true). */
+    createIso?: boolean;
+    /** Force every file to be re-copied on deploy. Default false: deploy only sends files that are
+     *  new or newer than the console copy (xbcp -d). True always overwrites regardless of timestamp. */
+    forceCopy?: boolean;
     /** imagebld.exe switches for the PE -> XBE step. */
     imageBuild?: RxdkImageBuildOptions;
     /** Extra project-relative include directories (passed as cl /I after sdk/include). */
