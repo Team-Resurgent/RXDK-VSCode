@@ -271,6 +271,16 @@ export async function installHostTools(
         phase: [5, 55],
     });
 
+    // The release also carries the repo's VERSION as a plain top-level asset (not inside
+    // the tools zip) so readToolsVersion() can report what's actually installed.
+    const versionAsset = toolsRelease.assets.find((asset) => asset.name === 'VERSION');
+    if (versionAsset) {
+        const res = await fetch(versionAsset.browser_download_url);
+        if (res.ok) {
+            fs.writeFileSync(path.join(root, 'VERSION'), (await res.text()).trim());
+        }
+    }
+
     // 2. xdvdfs (separate repo).
     onProgress?.({ message: 'Resolving xdvdfs release…', percent: 58 });
     const xdvdfsRelease = await fetchRelease(XDVDFS_REPO, readConfig('xdvdfsTag'));
