@@ -346,6 +346,13 @@ export class RxdkSidebarProvider implements vscode.TreeDataProvider<RxdkTreeItem
                     'from .vcproj / .sln',
                     'arrow-circle-up'
                 ),
+                new RxdkTreeItem(
+                    'Import VS20XX Project…',
+                    vscode.TreeItemCollapsibleState.None,
+                    'rxdk.importVs20xxProject',
+                    'from .vcxproj',
+                    'arrow-circle-up'
+                ),
             ];
         }
 

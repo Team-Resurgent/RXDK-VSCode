@@ -27,7 +27,7 @@ import {
 } from './prerequisites';
 import { openPrerequisitesSetup } from './prerequisitesSetup';
 import { openSampleBrowser } from './openSample';
-import { importVs2003Project } from './importProject';
+import { importVs2003Project, importVs20xxProject } from './importProject';
 import { openSettingsPanel } from './settingsPanel';
 import { RXDK_OPTIMIZE_MODES, RxdkOptimizeMode } from './optimizeMode';
 let titleOutputChannel: vscode.OutputChannel | undefined;
@@ -124,6 +124,7 @@ export function activate(context: vscode.ExtensionContext): void {
         vscode.commands.registerCommand('rxdk.openSample', () => openSampleBrowser(context)),
         vscode.commands.registerCommand('rxdk.newProject', guardPrerequisites(() => createProject(context))),
         vscode.commands.registerCommand('rxdk.importProject', guardPrerequisites(() => importVs2003Project(context, rxdkOutput))),
+        vscode.commands.registerCommand('rxdk.importVs20xxProject', guardPrerequisites(() => importVs20xxProject(rxdkOutput))),
         vscode.commands.registerCommand('rxdk.build', guardPrerequisites(() => runRxdkTask(context, 'build', rxdkOutput))),
         vscode.commands.registerCommand('rxdk.deploy', guardPrerequisites(() => runRxdkTask(context, 'deploy', rxdkOutput))),
         vscode.commands.registerCommand('rxdk.run', guardPrerequisites(async () => {

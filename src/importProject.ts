@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import { execFile } from 'child_process';
 import { resolveHostTool, getStagedToolsRoot } from './hostTools';
 import { getStagedSdkRoot } from './sdkStaging';
 import { runStreamed } from './processRunner';
@@ -150,6 +151,143 @@ export async function importVs2003Project(
         return;
     }
     await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(dest), {
+        forceNewWindow: choice === 'Open in New Window',
+    });
+}
+
+/**
+ * Locate MSBuild.exe for the newest installed Visual Studio via vswhere. Windows-only --
+ * RxdkGenerateProjectJson is an MSBuild target defined in RXDK-VS20XX's Xbox platform
+ * (Platform.targets), so generating rxdk.project.json from a .vcxproj needs a real MSBuild,
+ * the same thing the VS20XX "Import VS20XX Project" command shells out to.
+ */
+async function findMsBuildExe(): Promise<string | undefined> {
+    if (process.platform !== 'win32') {
+        return undefined;
+    }
+    const pf86 = process.env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)';
+    const vswhere = path.join(pf86, 'Microsoft Visual Studio', 'Installer', 'vswhere.exe');
+    if (!fs.existsSync(vswhere)) {
+        return undefined;
+    }
+    const installPath = await new Promise<string>((resolve) => {
+        execFile(
+            vswhere,
+            ['-latest', '-prerelease', '-requires', 'Microsoft.Component.MSBuild', '-property', 'installationPath'],
+            (err, stdout) => resolve(err ? '' : stdout.trim())
+        );
+    });
+    if (!installPath) {
+        return undefined;
+    }
+    const msbuild = path.join(installPath, 'MSBuild', 'Current', 'Bin', 'MSBuild.exe');
+    return fs.existsSync(msbuild) ? msbuild : undefined;
+}
+
+/**
+ * Cheap textual check: does the .vcxproj declare at least one ProjectConfiguration whose Platform
+ * is "Xbox"? Only the RXDK "Xbox" platform (installed by RXDK for Visual Studio) uses that name, so
+ * this is a reliable signal that doesn't require MSBuild or the platform to be installed just to
+ * check -- mirrors VcxprojDeclaresXboxPlatform in RxdkVs.Package/Commands/RxdkCommands.cs.
+ */
+function vcxprojDeclaresXboxPlatform(vcxprojText: string): boolean {
+    const group = /<ItemGroup[^>]*Label="ProjectConfigurations"[^>]*>[\s\S]*?<\/ItemGroup>/i.exec(vcxprojText);
+    const scope = group ? group[0] : vcxprojText;
+    return /<Platform>\s*Xbox\s*<\/Platform>/i.test(scope);
+}
+
+/**
+ * Generate (or regenerate) rxdk.project.json from an existing RXDK VS20XX project's .vcxproj --
+ * e.g. one freshly cloned from git that has never been built in Visual Studio, so it has no
+ * manifest yet. VS Code's Open Folder flow reads rxdk.project.json directly and has no MSBuild of
+ * its own, so this runs the same RxdkGenerateProjectJson target VS20XX's build (and its own
+ * "Import VS20XX Project" command) use, via MSBuild.exe.
+ */
+export async function importVs20xxProject(output: vscode.OutputChannel): Promise<void> {
+    const picked = await vscode.window.showOpenDialog({
+        canSelectMany: false,
+        openLabel: 'Import',
+        filters: { 'Visual C++ project': ['vcxproj'] },
+        title: 'Select the RXDK VS20XX project (.vcxproj)',
+    });
+    if (!picked || picked.length === 0) {
+        return;
+    }
+    const vcxprojPath = picked[0].fsPath;
+    const projectRoot = path.dirname(vcxprojPath);
+    const projectName = path.basename(vcxprojPath, path.extname(vcxprojPath));
+
+    let vcxprojText: string;
+    try {
+        vcxprojText = fs.readFileSync(vcxprojPath, 'utf8');
+    } catch (err) {
+        vscode.window.showErrorMessage(`Could not read ${vcxprojPath}: ${err instanceof Error ? err.message : err}`);
+        return;
+    }
+    if (!vcxprojDeclaresXboxPlatform(vcxprojText)) {
+        vscode.window.showErrorMessage(
+            `${path.basename(vcxprojPath)} doesn't look like an RXDK VS20XX project (no Debug|Xbox / ` +
+                `Release|Xbox configuration found). RXDK Xbox projects declare that platform in ` +
+                `Configuration Manager -- if this is meant to be one, re-add it from an RXDK project template.`
+        );
+        return;
+    }
+
+    const manifestPath = path.join(projectRoot, 'rxdk.project.json');
+    if (fs.existsSync(manifestPath)) {
+        const regen = await vscode.window.showWarningMessage(
+            `rxdk.project.json already exists for ${projectName}. Regenerate it from the .vcxproj now? ` +
+                `This overwrites the existing file with the current build settings (any hand edits to it will be lost).`,
+            { modal: true },
+            'Regenerate'
+        );
+        if (regen !== 'Regenerate') {
+            return;
+        }
+    }
+
+    const msbuild = await findMsBuildExe();
+    if (!msbuild) {
+        vscode.window.showErrorMessage(
+            'Could not find MSBuild.exe (checked via vswhere). This import needs a Visual Studio ' +
+                'install with MSBuild -- or use RXDK for Visual Studio\'s "Import VS20XX Project" instead.'
+        );
+        return;
+    }
+
+    output.show(true);
+    output.appendLine(`RXDK: generating rxdk.project.json for ${projectName} from ${vcxprojPath}`);
+    const result = await runStreamed(
+        msbuild,
+        [vcxprojPath, '/t:RxdkGenerateProjectJson', '/p:Platform=Xbox', '/p:Configuration=Release', '/nologo', '/v:minimal'],
+        { output, cwd: projectRoot }
+    );
+    if (result.exitCode !== 0 || !fs.existsSync(manifestPath)) {
+        vscode.window.showErrorMessage(
+            `Could not generate rxdk.project.json for ${projectName} (MSBuild exit ${result.exitCode}). ` +
+                `If the "Xbox" platform isn't installed, install RXDK for Visual Studio and run its ` +
+                `Install Xbox Platform command first, then retry. See the RXDK output for details.`
+        );
+        return;
+    }
+
+    const doc = await vscode.workspace.openTextDocument(manifestPath);
+    await vscode.window.showTextDocument(doc);
+
+    const currentFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    if (currentFolder && path.resolve(currentFolder) === path.resolve(projectRoot)) {
+        vscode.window.showInformationMessage(`Generated rxdk.project.json for ${projectName}.`);
+        return;
+    }
+    const choice = await vscode.window.showInformationMessage(
+        `Generated rxdk.project.json for ${projectName}.`,
+        'Open in New Window',
+        'Open Here'
+    );
+    if (!choice) {
+        return;
+    }
+    await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(projectRoot), {
         forceNewWindow: choice === 'Open in New Window',
     });
 }
