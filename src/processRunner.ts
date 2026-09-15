@@ -29,7 +29,7 @@ export interface RunStreamedOptions {
  * while also buffering the full text for the caller. Resolves (never rejects) with
  * the exit code on close -- interpreting the code is the caller's job, since some
  * of the tools this drives use non-zero exit codes for non-fatal conditions (e.g.
- * xbox-launch.exe returns 2 for "no console configured", not a real failure).
+ * xbox-launch returns 2 for "no console configured", not a real failure).
  * Rejects only if the process itself could not be spawned (e.g. ENOENT).
  */
 export function runStreamed(

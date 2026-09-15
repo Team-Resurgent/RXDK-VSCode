@@ -1,6 +1,20 @@
+import * as fs from 'fs';
+import * as path from 'path';
 import { resolveConsoleSwitch } from './xboxConsole';
 import { resolveHostTool } from './hostTools';
 import { OutputLike, runStreamed } from './processRunner';
+
+function resolveXboxLaunchTool(): { ok: true; launcher: string; name: string } | { ok: false; error: string } {
+    const launcher = resolveHostTool('xbox-launch');
+    const name = path.basename(launcher);
+    if (!fs.existsSync(launcher)) {
+        return {
+            ok: false,
+            error: `${name} not found at ${launcher}. Update the RXDK host tools (Complete Setup / Update All).`,
+        };
+    }
+    return { ok: true, launcher, name };
+}
 
 export type LaunchResult =
     | { ok: true }
@@ -28,14 +42,17 @@ export async function rebootConsole(opts: {
     output?: OutputLike;
 }): Promise<LaunchResult> {
     try {
-        const launcher = resolveHostTool('xbox-launch');
+        const tool = resolveXboxLaunchTool();
+        if (!tool.ok) {
+            return tool;
+        }
         const args = ['-rebootonly'];
         const consoleSwitch = await resolveConsoleSwitch(opts.consoleName);
         if (consoleSwitch) {
             args.push('-x', consoleSwitch);
         }
 
-        const result = await runStreamed(launcher, args, { output: opts.output });
+        const result = await runStreamed(tool.launcher, args, { output: opts.output });
         if (result.exitCode === 2) {
             opts.output?.appendLine(
                 'Warning: No Xbox console configured (set rxdk.defaultConsole or Xbox Neighborhood).'
@@ -43,7 +60,7 @@ export async function rebootConsole(opts: {
             return { ok: false, noConsoleConfigured: true };
         }
         if (result.exitCode !== 0) {
-            return { ok: false, error: `xbox-launch.exe -rebootonly failed (exit ${result.exitCode})` };
+            return { ok: false, error: `${tool.name} -rebootonly failed (exit ${result.exitCode})` };
         }
         return { ok: true };
     } catch (err) {
@@ -51,14 +68,17 @@ export async function rebootConsole(opts: {
     }
 }
 
-/** Launch a deployed Xbox title via xbox-launch.exe. */
+/** Launch a deployed Xbox title via xbox-launch. */
 export async function launchProject(opts: LaunchProjectOptions): Promise<LaunchResult> {
     try {
         const remoteDir = opts.remoteDir || `xe:\\${opts.projectName}`;
         const title = opts.title || `${opts.projectName}.xbe`;
         const timeoutMs = opts.timeoutMs ?? 120000;
 
-        const launcher = resolveHostTool('xbox-launch');
+        const tool = resolveXboxLaunchTool();
+        if (!tool.ok) {
+            return tool;
+        }
         const args = ['-dir', remoteDir, '-title', title, '-timeout', String(timeoutMs)];
         if (opts.cmdLine) {
             args.push('-cmd', opts.cmdLine);
@@ -71,7 +91,7 @@ export async function launchProject(opts: LaunchProjectOptions): Promise<LaunchR
             args.push('-reboot');
         }
 
-        const result = await runStreamed(launcher, args, { output: opts.output });
+        const result = await runStreamed(tool.launcher, args, { output: opts.output });
         if (result.exitCode === 2) {
             opts.output?.appendLine(
                 'Warning: No Xbox console configured (set rxdk.defaultConsole or Xbox Neighborhood).'
@@ -79,7 +99,7 @@ export async function launchProject(opts: LaunchProjectOptions): Promise<LaunchR
             return { ok: false, noConsoleConfigured: true };
         }
         if (result.exitCode !== 0) {
-            return { ok: false, error: `xbox-launch.exe failed (exit ${result.exitCode})` };
+            return { ok: false, error: `${tool.name} failed (exit ${result.exitCode})` };
         }
         return { ok: true };
     } catch (err) {

@@ -14,6 +14,7 @@ import { launchProject, rebootConsole, LaunchResult } from './xboxLaunch';
 import { getStagedToolsRoot, resolveHostTool } from './hostTools';
 import { runStreamed, OutputLike } from './processRunner';
 import { readProjectManifestAt } from './xboxSdkPaths';
+import { resolveZigExecutable } from './zigRuntime';
 
 // The build/link/image pipeline is the shared C# engine (Rxdk.Cli), delivered in the RXDK-Tools
 // host-tools bundle -- the same engine VS20XX uses -- rather than a parallel TypeScript
@@ -149,13 +150,14 @@ export async function runBuild(
         args.push('--configuration', selectedConfig);
     }
     // Point the engine at the extension's staged SDK/tools (per-platform), overriding its own
-    // %ProgramData% defaults; a configured zigPath overrides the engine's Zig resolution.
+    // defaults. Pass an absolute Zig path when we have one so the engine does not have to
+    // re-discover it (and so a PATH probe cannot throw when zig is not installed).
     const env: NodeJS.ProcessEnv = {
         RXDK_STAGED_SDK: getStagedSdkRoot(context),
         RXDK_STAGED_TOOLS: getStagedToolsRoot(),
     };
-    const zig = configuredZigOverride();
-    if (zig) {
+    const zig = configuredZigOverride() ?? (await resolveZigExecutable());
+    if (zig && zig !== 'zig') {
         env.RXDK_ZIG = zig;
     }
     const result = await runStreamed(cli, args, { output, env });

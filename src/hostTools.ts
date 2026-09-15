@@ -68,9 +68,30 @@ export function getStagedToolsRoot(): string {
     return getDefaultStagedToolsRoot();
 }
 
+/**
+ * GitHub release zips and writeFileSync extracts often land as 644. Linux/macOS then
+ * fail with EACCES at spawn. Restore +x on first resolve; missing files are left to
+ * the caller.
+ */
+function ensureUnixExecutable(filePath: string): void {
+    if (process.platform === 'win32') {
+        return;
+    }
+    try {
+        const st = fs.statSync(filePath);
+        if (st.isFile() && (st.mode & 0o111) === 0) {
+            fs.chmodSync(filePath, st.mode | 0o755);
+        }
+    } catch {
+        /* not there yet */
+    }
+}
+
 /** Absolute path to a host tool in the staged tools root (may not exist yet). */
 export function resolveHostTool(baseName: string): string {
-    return path.join(getStagedToolsRoot(), hostToolExecutableName(baseName));
+    const filePath = path.join(getStagedToolsRoot(), hostToolExecutableName(baseName));
+    ensureUnixExecutable(filePath);
+    return filePath;
 }
 
 export function isHostToolsInstalled(): boolean {
@@ -203,9 +224,7 @@ async function downloadAndExtract(url: string, destRoot: string, opts: ExtractOp
             }
             const target = path.join(destRoot, path.posix.basename(entry.name));
             fs.writeFileSync(target, entry.data);
-            if (process.platform !== 'win32') {
-                fs.chmodSync(target, 0o755);
-            }
+            ensureUnixExecutable(target);
             wrote++;
         }
         if (wrote === 0) {

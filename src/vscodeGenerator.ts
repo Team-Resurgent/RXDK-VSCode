@@ -8,6 +8,7 @@ import {
     resolveConfiguration,
     RxdkProjectManifest,
 } from './projectTypes';
+import { hostToolExecutableName } from './bridgePath';
 import { getSdkIncludeDir } from './sdkPath';
 import { stripBom } from './xboxSdkPaths';
 import { getSelectedConfig } from './configSelection';
@@ -36,20 +37,26 @@ function vscodeConfigIsStale(projectRoot: string, projectName = '', configName =
     if (!fs.existsSync(tasksPath)) {
         return true;
     }
-    // Launch entry names carry the active build config, e.g. "Debug Foo [Debug]"; if a multi-config
-    // project's launch.json still has the un-suffixed name (or the wrong config), regenerate so the
-    // Run and Debug dropdown tracks the selected configuration on reload -- not only after a switch.
-    if (configName && projectName) {
-        const launchPath = path.join(projectRoot, '.vscode', 'launch.json');
-        if (fs.existsSync(launchPath)) {
-            try {
-                const launchContent = fs.readFileSync(launchPath, 'utf8');
+    const launchPath = path.join(projectRoot, '.vscode', 'launch.json');
+    if (fs.existsSync(launchPath)) {
+        try {
+            const launchContent = fs.readFileSync(launchPath, 'utf8');
+            // Host tools are extensionless on Linux/macOS; regenerate configs that still
+            // hardcode the Windows xboxdbg-bridge.exe name.
+            if (process.platform !== 'win32' && launchContent.includes('xboxdbg-bridge.exe')) {
+                return true;
+            }
+            // Launch entry names carry the active build config, e.g. "Debug Foo [Debug]"; if a
+            // multi-config project's launch.json still has the un-suffixed name (or the wrong
+            // config), regenerate so the Run and Debug dropdown tracks the selected configuration
+            // on reload -- not only after a switch.
+            if (configName && projectName) {
                 if (launchContent.includes(`"Debug ${projectName}"`) || !launchContent.includes(`[${configName}]`)) {
                     return true;
                 }
-            } catch {
-                return true;
             }
+        } catch {
+            return true;
         }
     }
     const content = fs.readFileSync(tasksPath, 'utf8');
@@ -271,7 +278,7 @@ export async function generateVscodeFolder(
     const vscodeDir = path.join(projectRoot, '.vscode');
     fs.mkdirSync(vscodeDir, { recursive: true });
 
-    const bridgePath = `${SDK_ROOT}/tools/xboxdbg-bridge.exe`;
+    const bridgePath = `${SDK_ROOT}/tools/${hostToolExecutableName('xboxdbg-bridge')}`;
     // Point the debugger at the resolved configuration's output directory (e.g. out/Debug) so F5
     // finds the .exe/.pdb the active configuration actually builds -- not a hardcoded out/.
     const outRel = (manifest.outputDir || 'out').replace(/\\/g, '/');
