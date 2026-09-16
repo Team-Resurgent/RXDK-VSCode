@@ -677,9 +677,9 @@ export async function buildXboxProject(opts: BuildXboxProjectOptions): Promise<B
             const depManifest = readProjectManifestAt(dep);
             for (const n of depManifest.libraries ?? []) { addLibName(n); }
         }
-        if (libNames.includes('libkernel')) {
-            libNames.splice(libNames.indexOf('libkernel'), 1);
-            libNames.push('libkernel');
+        if (libNames.includes('libkernel.lib')) {
+            libNames.splice(libNames.indexOf('libkernel.lib'), 1);
+            libNames.push('libkernel.lib');
         }
 
         // A DXT is entered at DxtEntry by xbdm's loader. Otherwise: any title that
@@ -688,7 +688,7 @@ export async function buildXboxProject(opts: BuildXboxProjectOptions): Promise<B
         const isDxt = manifest.type === 'dxt';
         const entry = isDxt
             ? 'DxtEntry'
-            : libNames.includes('libxapi')
+            : libNames.includes('libxapi.lib')
               ? 'XapiTitleStartup'
               : 'start';
 
@@ -704,9 +704,9 @@ export async function buildXboxProject(opts: BuildXboxProjectOptions): Promise<B
             linkLibs.push('-Wl,--start-group', ...userLibs, '-Wl,--end-group');
         }
         for (const libName of libNames) {
-            const resolved = resolveLib(`${libName}.lib`) ?? (libName === 'libkernel' ? resolveLib('xboxkrnl.lib') : undefined);
+            const resolved = resolveLib(libName) ?? (libName === 'libkernel.lib' ? resolveLib('xboxkrnl.lib') : undefined);
             if (!resolved) {
-                throw new Error(`Missing library: ${libName}.lib under sdk/lib - run RXDK SDK install`);
+                throw new Error(`Missing library: ${libName} under sdk/lib - run RXDK SDK install`);
             }
             if (isWholeArchiveLib(resolved)) {
                 linkLibs.push('-Wl,--whole-archive', resolved, '-Wl,--no-whole-archive');
