@@ -197,23 +197,40 @@ function vcxprojDeclaresXboxPlatform(vcxprojText: string): boolean {
 }
 
 /**
- * Generate (or regenerate) rxdk.project.json from an existing RXDK VS20XX project's .vcxproj --
- * e.g. one freshly cloned from git that has never been built in Visual Studio, so it has no
- * manifest yet. VS Code's Open Folder flow reads rxdk.project.json directly and has no MSBuild of
- * its own, so this runs the same RxdkGenerateProjectJson target VS20XX's build (and its own
- * "Import VS20XX Project" command) use, via MSBuild.exe.
+ * Every .vcxproj a solution references, resolved to absolute paths (deduped). Understands both the
+ * classic text .sln (`Project("{guid}") = "Name", "relPath.vcxproj", "{guid}"` lines) and the modern
+ * XML .slnx (`<Project Path="relPath.vcxproj" .../>`, possibly nested under `<Folder>`) -- VS20XX
+ * itself now generates .slnx, but existing solutions may still be either.
  */
-export async function importVs20xxProject(output: vscode.OutputChannel): Promise<void> {
-    const picked = await vscode.window.showOpenDialog({
-        canSelectMany: false,
-        openLabel: 'Import',
-        filters: { 'Visual C++ project': ['vcxproj'] },
-        title: 'Select the RXDK VS20XX project (.vcxproj)',
-    });
-    if (!picked || picked.length === 0) {
-        return;
+function parseSolutionProjects(solutionPath: string, solutionText: string): string[] {
+    const dir = path.dirname(solutionPath);
+    const rels: string[] = [];
+    if (solutionPath.toLowerCase().endsWith('.slnx')) {
+        const re = /<Project\s+[^>]*\bPath="([^"]+\.vcxproj)"/gi;
+        let m: RegExpExecArray | null;
+        while ((m = re.exec(solutionText))) {
+            rels.push(m[1]);
+        }
+    } else {
+        const re = /^Project\("\{[^}]+\}"\)\s*=\s*"[^"]*",\s*"([^"]+\.vcxproj)"/gim;
+        let m: RegExpExecArray | null;
+        while ((m = re.exec(solutionText))) {
+            rels.push(m[1]);
+        }
     }
-    const vcxprojPath = picked[0].fsPath;
+    const abs = rels.map((r) => path.resolve(dir, r.replace(/\\/g, path.sep)));
+    return Array.from(new Set(abs));
+}
+
+type GenerateOutcome = 'generated' | 'not-rxdk' | 'declined' | 'failed';
+
+/** Generate (or regenerate) rxdk.project.json from one .vcxproj via MSBuild's RxdkGenerateProjectJson. */
+async function generateOne(
+    vcxprojPath: string,
+    msbuild: string,
+    output: vscode.OutputChannel,
+    overwrite: 'ask' | 'always' | 'skip'
+): Promise<GenerateOutcome> {
     const projectRoot = path.dirname(vcxprojPath);
     const projectName = path.basename(vcxprojPath, path.extname(vcxprojPath));
 
@@ -221,41 +238,31 @@ export async function importVs20xxProject(output: vscode.OutputChannel): Promise
     try {
         vcxprojText = fs.readFileSync(vcxprojPath, 'utf8');
     } catch (err) {
-        vscode.window.showErrorMessage(`Could not read ${vcxprojPath}: ${err instanceof Error ? err.message : err}`);
-        return;
+        output.appendLine(`RXDK: could not read ${vcxprojPath}: ${err instanceof Error ? err.message : err}`);
+        return 'failed';
     }
     if (!vcxprojDeclaresXboxPlatform(vcxprojText)) {
-        vscode.window.showErrorMessage(
-            `${path.basename(vcxprojPath)} doesn't look like an RXDK VS20XX project (no Debug|Xbox / ` +
-                `Release|Xbox configuration found). RXDK Xbox projects declare that platform in ` +
-                `Configuration Manager -- if this is meant to be one, re-add it from an RXDK project template.`
-        );
-        return;
+        return 'not-rxdk';
     }
 
     const manifestPath = path.join(projectRoot, 'rxdk.project.json');
     if (fs.existsSync(manifestPath)) {
-        const regen = await vscode.window.showWarningMessage(
-            `rxdk.project.json already exists for ${projectName}. Regenerate it from the .vcxproj now? ` +
-                `This overwrites the existing file with the current build settings (any hand edits to it will be lost).`,
-            { modal: true },
-            'Regenerate'
-        );
-        if (regen !== 'Regenerate') {
-            return;
+        if (overwrite === 'skip') {
+            return 'declined';
+        }
+        if (overwrite === 'ask') {
+            const regen = await vscode.window.showWarningMessage(
+                `rxdk.project.json already exists for ${projectName}. Regenerate it from the .vcxproj now? ` +
+                    `This overwrites the existing file with the current build settings (any hand edits to it will be lost).`,
+                { modal: true },
+                'Regenerate'
+            );
+            if (regen !== 'Regenerate') {
+                return 'declined';
+            }
         }
     }
 
-    const msbuild = await findMsBuildExe();
-    if (!msbuild) {
-        vscode.window.showErrorMessage(
-            'Could not find MSBuild.exe (checked via vswhere). This import needs a Visual Studio ' +
-                'install with MSBuild -- or use RXDK for Visual Studio\'s "Import VS20XX Project" instead.'
-        );
-        return;
-    }
-
-    output.show(true);
     output.appendLine(`RXDK: generating rxdk.project.json for ${projectName} from ${vcxprojPath}`);
     const result = await runStreamed(
         msbuild,
@@ -263,31 +270,139 @@ export async function importVs20xxProject(output: vscode.OutputChannel): Promise
         { output, cwd: projectRoot }
     );
     if (result.exitCode !== 0 || !fs.existsSync(manifestPath)) {
+        output.appendLine(`RXDK: generate failed for ${projectName} (MSBuild exit ${result.exitCode})`);
+        return 'failed';
+    }
+    return 'generated';
+}
+
+/**
+ * Generate (or regenerate) rxdk.project.json from an existing RXDK VS20XX project -- e.g. one
+ * freshly cloned from git that has never been built in Visual Studio, so it has no manifest yet.
+ * VS Code's Open Folder flow reads rxdk.project.json directly and has no MSBuild of its own, so
+ * this runs the same RxdkGenerateProjectJson target VS20XX's build uses, via MSBuild.exe. Accepts a
+ * single .vcxproj, or a .sln/.slnx solution to import every RXDK project it references at once.
+ */
+export async function importVs20xxProject(output: vscode.OutputChannel): Promise<void> {
+    const picked = await vscode.window.showOpenDialog({
+        canSelectMany: false,
+        openLabel: 'Import',
+        filters: { 'Visual C++ project or solution': ['vcxproj', 'sln', 'slnx'] },
+        title: 'Select the RXDK VS20XX project (.vcxproj) or solution (.sln / .slnx)',
+    });
+    if (!picked || picked.length === 0) {
+        return;
+    }
+    const selected = picked[0].fsPath;
+    const isSolution = /\.(sln|slnx)$/i.test(selected);
+
+    const msbuild = await findMsBuildExe();
+    if (!msbuild) {
         vscode.window.showErrorMessage(
-            `Could not generate rxdk.project.json for ${projectName} (MSBuild exit ${result.exitCode}). ` +
-                `If the "Xbox" platform isn't installed, install RXDK for Visual Studio and run its ` +
-                `Install Xbox Platform command first, then retry. See the RXDK output for details.`
+            'Could not find MSBuild.exe (checked via vswhere). This import needs a Visual Studio ' +
+                'install with MSBuild -- or use RXDK for Visual Studio\'s "Import VSCode Project" instead.'
         );
         return;
     }
 
-    const doc = await vscode.workspace.openTextDocument(manifestPath);
-    await vscode.window.showTextDocument(doc);
+    output.show(true);
 
-    const currentFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-    if (currentFolder && path.resolve(currentFolder) === path.resolve(projectRoot)) {
-        vscode.window.showInformationMessage(`Generated rxdk.project.json for ${projectName}.`);
+    if (!isSolution) {
+        const projectRoot = path.dirname(selected);
+        const projectName = path.basename(selected, path.extname(selected));
+        const outcome = await generateOne(selected, msbuild, output, 'ask');
+        if (outcome === 'not-rxdk') {
+            vscode.window.showErrorMessage(
+                `${path.basename(selected)} doesn't look like an RXDK VS20XX project (no Debug|Xbox / ` +
+                    `Release|Xbox configuration found). RXDK Xbox projects declare that platform in ` +
+                    `Configuration Manager -- if this is meant to be one, re-add it from an RXDK project template.`
+            );
+            return;
+        }
+        if (outcome === 'declined') {
+            return;
+        }
+        if (outcome === 'failed') {
+            vscode.window.showErrorMessage(
+                `Could not generate rxdk.project.json for ${projectName}. If the "Xbox" platform isn't ` +
+                    `installed, install RXDK for Visual Studio and run its Install Xbox Platform command ` +
+                    `first, then retry. See the RXDK output for details.`
+            );
+            return;
+        }
+
+        const manifestPath = path.join(projectRoot, 'rxdk.project.json');
+        const doc = await vscode.workspace.openTextDocument(manifestPath);
+        await vscode.window.showTextDocument(doc);
+
+        const currentFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+        if (currentFolder && path.resolve(currentFolder) === path.resolve(projectRoot)) {
+            vscode.window.showInformationMessage(`Generated rxdk.project.json for ${projectName}.`);
+            return;
+        }
+        const choice = await vscode.window.showInformationMessage(
+            `Generated rxdk.project.json for ${projectName}.`,
+            'Open in New Window',
+            'Open Here'
+        );
+        if (!choice) {
+            return;
+        }
+        await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(projectRoot), {
+            forceNewWindow: choice === 'Open in New Window',
+        });
         return;
     }
-    const choice = await vscode.window.showInformationMessage(
-        `Generated rxdk.project.json for ${projectName}.`,
-        'Open in New Window',
-        'Open Here'
-    );
-    if (!choice) {
+
+    // Solution: walk every .vcxproj it references.
+    let solutionText: string;
+    try {
+        solutionText = fs.readFileSync(selected, 'utf8');
+    } catch (err) {
+        vscode.window.showErrorMessage(`Could not read ${selected}: ${err instanceof Error ? err.message : err}`);
         return;
     }
-    await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(projectRoot), {
-        forceNewWindow: choice === 'Open in New Window',
-    });
+    const vcxprojPaths = parseSolutionProjects(selected, solutionText);
+    if (vcxprojPaths.length === 0) {
+        vscode.window.showErrorMessage(`${path.basename(selected)} doesn't reference any .vcxproj projects.`);
+        return;
+    }
+
+    const existingCount = vcxprojPaths.filter((p) => fs.existsSync(path.join(path.dirname(p), 'rxdk.project.json'))).length;
+    let overwrite: 'always' | 'skip' = 'skip';
+    if (existingCount > 0) {
+        const choice = await vscode.window.showWarningMessage(
+            `${existingCount} of ${vcxprojPaths.length} project(s) in ${path.basename(selected)} already have an ` +
+                `rxdk.project.json. Regenerate those too, or only fill in the ones missing a manifest?`,
+            { modal: true },
+            'Regenerate All',
+            'Only Missing'
+        );
+        if (!choice) {
+            return;
+        }
+        overwrite = choice === 'Regenerate All' ? 'always' : 'skip';
+    }
+
+    const results = { generated: 0, notRxdk: 0, declined: 0, failed: 0 };
+    for (const vcxprojPath of vcxprojPaths) {
+        const outcome = await generateOne(vcxprojPath, msbuild, output, overwrite);
+        switch (outcome) {
+            case 'generated': results.generated++; break;
+            case 'not-rxdk': results.notRxdk++; break;
+            case 'declined': results.declined++; break;
+            case 'failed': results.failed++; break;
+        }
+    }
+
+    const parts = [`${results.generated} generated`];
+    if (results.declined > 0) parts.push(`${results.declined} skipped (already had a manifest)`);
+    if (results.notRxdk > 0) parts.push(`${results.notRxdk} skipped (not an RXDK project)`);
+    if (results.failed > 0) parts.push(`${results.failed} failed`);
+    const summary = `Imported ${path.basename(selected)}: ${parts.join(', ')}.`;
+    if (results.failed > 0) {
+        vscode.window.showWarningMessage(`${summary} See the RXDK output for details.`);
+    } else {
+        vscode.window.showInformationMessage(summary);
+    }
 }
