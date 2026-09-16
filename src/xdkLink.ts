@@ -1,4 +1,3 @@
-import * as fs from 'fs';
 import * as path from 'path';
 import { OutputLike, runStreamed } from './processRunner';
 
@@ -11,8 +10,13 @@ import { OutputLike, runStreamed } from './processRunner';
 // the XapiTitleStartup entry are baked into libc.lib / libxapi.lib respectively, so
 // they need no loose object on the command line.
 //
-// libcompat.lib (staged in libDir alongside the other .lib archives) is the one
-// exception and is ALWAYS force-linked whole here, ahead of everything else.
+// libcompat[d].lib is like any other "Additional Dependencies" entry -- a project
+// must name it explicitly in its manifest's "libraries" list (it is NOT
+// auto-injected) -- except it is force-linked whole-archive, since a normal link
+// only pulls in symbols something else already references, and the whole point of
+// libcompat is to win a COMDAT tie-break against zig's compiler-rt even when
+// nothing in the title calls its functions directly.
+//
 // picolibc's copies (in libc.lib) are compiled -fno-builtin, but zig's own
 // compiler-rt (auto-pulled in via -rtlib=compiler-rt below, for
 // __divdi3/__alloca/etc) ALSO ships its own implementations of a surprisingly
@@ -31,13 +35,20 @@ import { OutputLike, runStreamed } from './processRunner';
 // fixing them one at a time as each is discovered.
 //
 // -Wl,--whole-archive/--no-whole-archive force-extracts every member of
-// libcompat.lib unconditionally, the same "already included before any
+// libcompat[d].lib unconditionally, the same "already included before any
 // archive/comdat candidate is even considered" guarantee a loose object gets --
 // just packaged as one ordinary-looking .lib instead of 32 loose .o files
 // cluttering the SDK's lib directory. Verified byte-identical (mod PE timestamp)
-// linked output vs. the older loose-object-list approach. This is invisible to a
-// title's own rxdk.project.json -- no project needs to know about it.
-const XDK_COMDAT_FIX_LIB = 'libcompat.lib';
+// linked output vs. the older loose-object-list approach.
+
+/** True for a resolved lib path whose base name (case-insensitive, minus ".lib")
+ * is "libcompat" or "libcompatd" -- the one dependency that needs --whole-archive,
+ * not a normal link. Matched by name, not a fixed path, since the caller resolves
+ * it like any other "Additional Dependencies" entry. */
+export function isWholeArchiveLib(resolvedPath: string): boolean {
+    const stem = path.basename(resolvedPath, '.lib').toLowerCase();
+    return stem === 'libcompat' || stem === 'libcompatd';
+}
 
 export interface LinkXdkOptions {
     zig: string;
@@ -46,7 +57,6 @@ export interface LinkXdkOptions {
     outExe: string;
     /** Link entry point. Default 'start'. */
     entry?: string;
-    libDir?: string;
     /** Emit debug info (-g) for PDB/symbol generation. Default true. */
     debugInfo?: boolean;
     output?: OutputLike;
@@ -60,19 +70,6 @@ export interface LinkXdkResult {
 export async function linkXdk(opts: LinkXdkOptions): Promise<LinkXdkResult> {
     const entry = opts.entry || 'start';
     const linkArgs: string[] = ['cc', ...opts.objs];
-
-    if (opts.libDir) {
-        const comdatFix = path.join(opts.libDir, XDK_COMDAT_FIX_LIB);
-        if (fs.existsSync(comdatFix)) {
-            linkArgs.push('-Wl,--whole-archive', comdatFix, '-Wl,--no-whole-archive');
-        } else {
-            opts.output?.appendLine(
-                `Warning: Missing ${comdatFix} -- SDK predates the compiler-rt comdat fix; ` +
-                    "picolibc's memmove/fabs/etc. may lose to zig's compiler-rt on real hardware. " +
-                    'Reinstall/update the RXDK SDK.'
-            );
-        }
-    }
 
     linkArgs.push(
         ...opts.libs,

@@ -1,17 +1,12 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { OutputLike, runStreamed } from './processRunner';
-import {
-    DEFAULT_RXDK_CONFIGURATION,
-    isRxdkConfiguration,
-    RxdkConfiguration,
-    RxdkProjectManifest,
-} from './projectTypes';
+import { RxdkProjectManifest } from './projectTypes';
 import { getXboxProjectOutDir } from './sdkPath';
 import { readProjectManifestAt } from './xboxSdkPaths';
 import { resolveZigExecutable } from './zigRuntime';
 import { resolveHostTool } from './hostTools';
-import { linkXdk } from './xdkLink';
+import { linkXdk, isWholeArchiveLib } from './xdkLink';
 import { buildXbe, buildDxt } from './imageBuild';
 import { packXiso, StageFileEntry } from './packXiso';
 import { optimizeCompileFlags, optimizeKeepsDebugInfo, RxdkOptimizeMode } from './optimizeMode';
@@ -54,38 +49,6 @@ const XDK_CLANG_WARNINGS = [
 
 function projectDefineArgs(manifest: RxdkProjectManifest): string[] {
     return (manifest.defines ?? []).filter((d) => d?.trim()).map((d) => `-D${d}`);
-}
-
-// Resolve the SDK library variant a project links, from its manifest's
-// `configuration` field (default "release"). An invalid value warns and falls
-// back to the default rather than failing the build.
-function resolveConfiguration(manifest: RxdkProjectManifest, output?: OutputLike): RxdkConfiguration {
-    const raw = manifest.configuration;
-    if (raw === undefined) {
-        return DEFAULT_RXDK_CONFIGURATION;
-    }
-    if (isRxdkConfiguration(raw)) {
-        return raw;
-    }
-    output?.appendLine(
-        `Warning: invalid configuration "${raw}" in rxdk.project.json (expected debug|release); using ${DEFAULT_RXDK_CONFIGURATION}`
-    );
-    return DEFAULT_RXDK_CONFIGURATION;
-}
-
-// Pick the lib directory to link from. A split SDK (lib/debug + lib/release)
-// resolves to the requested variant's subdir; a legacy flat SDK (libs directly
-// under sdkLib) resolves to sdkLib unchanged.
-function resolveSdkLibVariantDir(sdkLib: string, configuration: RxdkConfiguration): string {
-    const variantDir = path.join(sdkLib, configuration);
-    try {
-        if (fs.statSync(variantDir).isDirectory()) {
-            return variantDir;
-        }
-    } catch {
-        /* no split -- fall through to the flat layout */
-    }
-    return sdkLib;
 }
 
 function escapeRegExp(value: string): string {
@@ -655,19 +618,13 @@ export async function buildXboxProject(opts: BuildXboxProjectOptions): Promise<B
             throw new Error('Zig not found. Install Zig from the RXDK prerequisites panel, or add zig to PATH.');
         }
 
-        // The staged SDK ships each library in two variants side by side --
-        // lib/debug (Debug, -O0 -g) and lib/release (ReleaseSmall, -Os). The
-        // manifest's "configuration" field picks which one this project links
-        // (default "release": smaller, no debug info pulled into the title's own
-        // link). Old/flat SDKs with no such subdir fall back to sdkLib itself,
-        // so this stays backward compatible. libcompat.lib (whole-archive-linked
-        // below) must come from the SAME variant dir, so linkXdk's libDir is
-        // pointed here too.
-        const configuration = resolveConfiguration(manifest, opts.output);
-        const sdkLibDir = resolveSdkLibVariantDir(opts.sdkLib, configuration);
-        opts.output?.appendLine(`Linking SDK libraries (configuration: ${configuration})`);
+        // One flat sdk/lib dir, XDK-style: Debug and Release variants of a library
+        // live side by side, distinguished by a "d" suffix on the filename
+        // (libd3d8.lib / libd3d8d.lib) that the manifest's own "libraries" list
+        // names explicitly -- like a real "Additional Dependencies" list, this
+        // never appends the suffix on its own.
         const resolveLib = (name: string): string | undefined => {
-            const candidate = path.join(sdkLibDir, name);
+            const candidate = path.join(opts.sdkLib, name);
             return fs.existsSync(candidate) ? candidate : undefined;
         };
 
@@ -751,7 +708,11 @@ export async function buildXboxProject(opts: BuildXboxProjectOptions): Promise<B
             if (!resolved) {
                 throw new Error(`Missing library: ${libName}.lib under sdk/lib - run RXDK SDK install`);
             }
-            linkLibs.push(resolved);
+            if (isWholeArchiveLib(resolved)) {
+                linkLibs.push('-Wl,--whole-archive', resolved, '-Wl,--no-whole-archive');
+            } else {
+                linkLibs.push(resolved);
+            }
         }
 
         // Single-pass link. imagebld (build-78+) zero-fills the emitted .data so the XBE
@@ -759,7 +720,7 @@ export async function buildXboxProject(opts: BuildXboxProjectOptions): Promise<B
         // runtime fixup, so no per-title image_init bootstrap is needed.
         const exe = path.resolve(path.join(outDir, `${projectName}.exe`));
         const linkResult = await linkXdk({
-            zig, objs, libs: linkLibs, outExe: exe, entry, libDir: sdkLibDir,
+            zig, objs, libs: linkLibs, outExe: exe, entry,
             debugInfo: optimizeKeepsDebugInfo(optimize), output: opts.output,
         });
         if (linkResult.exitCode !== 0) {
