@@ -107,7 +107,25 @@ async function postStatuses(
     context: vscode.ExtensionContext,
     panel: vscode.WebviewPanel
 ): Promise<void> {
-    const items = await getPrerequisiteStatuses(context);
+    // Never let a throwing prerequisite check leave the panel stuck on "Checking prerequisites…":
+    // getPrerequisiteStatuses does several fs/registry/process probes, and if any of them throws
+    // (a malformed staged path, a spawn error, etc.) an unguarded await here would reject and the
+    // 'status' message would never be posted, freezing the banner. Post whatever we can, and on a
+    // hard failure post an explicit error status so the banner clears and the user sees why.
+    let items: PrerequisiteStatus[];
+    try {
+        items = await getPrerequisiteStatuses(context);
+    } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        console.error('RXDK: prerequisite status check failed', err);
+        panel.webview.postMessage({
+            type: 'status',
+            items: [],
+            allReady: false,
+            error: `Could not check prerequisites: ${message}. Click Refresh to retry.`,
+        });
+        return;
+    }
     panel.webview.postMessage({
         type: 'status',
         items: items.map(serializeStatus),
@@ -465,6 +483,12 @@ function buildHtml(webview: vscode.Webview): string {
       if (m.type === 'status') {
         hideInstallProgress();
         renderItems(m.items || []);
+        if (m.error) {
+          setStatus(m.error);
+          const banner = el('banner');
+          banner.className = 'banner';
+          banner.textContent = 'Could not check prerequisites.';
+        }
       } else if (m.type === 'installStarted') {
         setStatus('');
         showInstallProgress('Starting ' + m.id + '…', 0);
