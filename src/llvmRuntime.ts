@@ -95,6 +95,28 @@ export async function getLlvmVersionLine(): Promise<string | undefined> {
 
 export type LlvmInstallProgress = (update: { message: string; percent?: number }) => void;
 
+/**
+ * Restore the execute bit on the toolchain's binaries after extraction. No-op on Windows.
+ * Covers Linux and macOS: every regular file under bin/ and libexec/ (clang, clang++, lld,
+ * llvm-ar, llvm-lib, ld.lld, …) gets 0755 so it can be spawned. Missing dirs are ignored.
+ */
+function ensureUnixExecutables(root: string): void {
+    if (process.platform === 'win32') { return; }
+    for (const sub of ['bin', 'libexec']) {
+        const dir = path.join(root, sub);
+        let entries: fs.Dirent[];
+        try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { continue; }
+        for (const e of entries) {
+            if (!e.isFile()) { continue; }
+            const p = path.join(dir, e.name);
+            try {
+                const mode = fs.statSync(p).mode;
+                if ((mode & 0o111) !== 0o111) { fs.chmodSync(p, mode | 0o755); }
+            } catch { /* leave it to the caller to surface a spawn error */ }
+        }
+    }
+}
+
 async function extractArchive(archivePath: string, destDir: string, onProgress?: LlvmInstallProgress): Promise<void> {
     fs.mkdirSync(destDir, { recursive: true });
     const archiveBytes = fs.statSync(archivePath).size;
@@ -166,6 +188,11 @@ export async function installLlvm(output?: vscode.OutputChannel, onProgress?: Ll
     } else {
         throw new Error('LLVM archive did not contain bin/clang at the expected layout.');
     }
+
+    // GitHub-built .zip archives don't reliably carry the Unix execute bit, and tar/unzip
+    // then extract clang/lld/llvm-ar as 0644 -> EACCES at spawn. Restore +x on the toolchain
+    // binaries on every non-Windows host (Linux AND macOS).
+    ensureUnixExecutables(destRoot);
 
     fs.rmSync(extractDir, { recursive: true, force: true });
     try { fs.unlinkSync(archivePath); } catch { /* ignore */ }
