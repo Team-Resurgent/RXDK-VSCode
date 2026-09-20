@@ -2,14 +2,15 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 export function platformToolRid(): string {
+    const arm64 = process.arch === 'arm64';
     if (process.platform === 'win32') {
-        return 'win-x64';
+        return arm64 ? 'win-arm64' : 'win-x64';
     }
     if (process.platform === 'linux') {
-        return 'linux-x64';
+        return arm64 ? 'linux-arm64' : 'linux-x64';
     }
     if (process.platform === 'darwin') {
-        return process.arch === 'arm64' ? 'osx-arm64' : 'osx-x64';
+        return arm64 ? 'osx-arm64' : 'osx-x64';
     }
     return 'win-x64';
 }
