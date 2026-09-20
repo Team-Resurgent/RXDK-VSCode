@@ -26,9 +26,14 @@ function archiveDirName(): string | undefined {
 }
 
 export function getLlvmInstallRoot(): string {
+    // Under the shared RXDK data root (a sibling of sdk/tools/docs), honoring the RXDK override.
+    const over = process.env.RXDK?.trim();
+    if (over) {
+        return path.join(over, 'llvm');
+    }
     if (process.platform === 'win32') {
-        const localAppData = process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local');
-        return path.join(localAppData, 'RXDK', 'llvm');
+        const programData = process.env.PROGRAMDATA || 'C:\\ProgramData';
+        return path.join(programData, 'RXDK', 'llvm');
     }
     if (process.platform === 'darwin') {
         return path.join(os.homedir(), 'Library', 'Application Support', 'RXDK', 'llvm');
