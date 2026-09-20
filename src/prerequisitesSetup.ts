@@ -155,7 +155,7 @@ function serializeStatus(item: PrerequisiteStatus): Record<string, unknown> {
 const EXTENSION_MARKETPLACE_URL =
     'https://marketplace.visualstudio.com/items?itemName=TeamResurgent.rxdk-vscode';
 
-const ALLOWED_IDS: PrerequisiteId[] = ['dotnet', 'sdk', 'docs', 'zig', 'tools', 'samples', 'xbneighborhood'];
+const ALLOWED_IDS: PrerequisiteId[] = ['dotnet', 'sdk', 'docs', 'llvm', 'tools', 'samples', 'xbneighborhood'];
 
 async function installOne(
     context: vscode.ExtensionContext,
@@ -334,7 +334,7 @@ function buildHtml(webview: vscode.Webview): string {
   <div class="wrap">
     <header>
       <h1>RXDK setup &amp; updates</h1>
-      <p class="lead">Install the prerequisites below (.NET, RXDK-SDK, documentation, Zig, host tools) before using build, deploy, debug, or documentation. RXDK stays disabled until everything is ready. Already installed? Use <strong>Update</strong> to pull the latest SDK, docs, and tools.</p>
+      <p class="lead">Install the prerequisites below (.NET, RXDK-SDK, documentation, LLVM toolchain, host tools) before using build, deploy, debug, or documentation. RXDK stays disabled until everything is ready. Already installed? Use <strong>Update</strong> to pull the latest SDK, docs, and tools.</p>
     </header>
 
     <div class="banner" id="banner">Checking prerequisites…</div>

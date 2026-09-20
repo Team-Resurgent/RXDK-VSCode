@@ -14,15 +14,14 @@ import { launchProject, rebootConsole, LaunchResult } from './xboxLaunch';
 import { getStagedToolsRoot, resolveHostTool } from './hostTools';
 import { runStreamed, OutputLike } from './processRunner';
 import { readProjectManifestAt } from './xboxSdkPaths';
-import { resolveZigExecutable } from './zigRuntime';
 
 // The build/link/image pipeline is the shared C# engine (Rxdk.Cli), delivered in the RXDK-Tools
 // host-tools bundle -- the same engine VS20XX uses -- rather than a parallel TypeScript
 // reimplementation. This keeps both IDEs byte-for-byte identical.
 export type BuildProjectResult = { ok: true; outDir: string } | { ok: false; error: string };
 
-function configuredZigOverride(): string | undefined {
-    return vscode.workspace.getConfiguration('rxdk').get<string>('zigPath')?.trim() || undefined;
+function configuredLlvmOverride(): string | undefined {
+    return vscode.workspace.getConfiguration('rxdk').get<string>('llvmPath')?.trim() || undefined;
 }
 
 export type RxdkTaskKind = 'build' | 'deploy' | 'run' | 'build+deploy' | 'remove-dxt' | 'launch-xemu';
@@ -150,15 +149,15 @@ export async function runBuild(
         args.push('--configuration', selectedConfig);
     }
     // Point the engine at the extension's staged SDK/tools (per-platform), overriding its own
-    // defaults. Pass an absolute Zig path when we have one so the engine does not have to
-    // re-discover it (and so a PATH probe cannot throw when zig is not installed).
+    // defaults. Pass an explicit LLVM toolchain root only when the user configured one; otherwise
+    // the engine resolves the managed install (%LocalAppData%/RXDK/llvm) itself.
     const env: NodeJS.ProcessEnv = {
         RXDK_STAGED_SDK: getStagedSdkRoot(context),
         RXDK_STAGED_TOOLS: getStagedToolsRoot(),
     };
-    const zig = configuredZigOverride() ?? (await resolveZigExecutable());
-    if (zig && zig !== 'zig') {
-        env.RXDK_ZIG = zig;
+    const llvm = configuredLlvmOverride();
+    if (llvm) {
+        env.RXDK_LLVM = llvm;
     }
     const result = await runStreamed(cli, args, { output, env });
     if (result.exitCode !== 0) {

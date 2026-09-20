@@ -129,7 +129,7 @@ export class RxdkSidebarProvider implements vscode.TreeDataProvider<RxdkTreeItem
                     'Complete RXDK setup…',
                     vscode.TreeItemCollapsibleState.None,
                     'rxdk.setupPrerequisites',
-                    '.NET, RXDK-SDK, docs, Zig',
+                    '.NET, RXDK-SDK, docs, LLVM',
                     'warning'
                 ),
             ];
@@ -258,7 +258,7 @@ export class RxdkSidebarProvider implements vscode.TreeDataProvider<RxdkTreeItem
             const samplesVersion = samplesReady ? readSamplesVersion(this.context).split('\n')[0]?.trim() || '' : '';
             const items = [
                 // The setup page manages/updates every component (SDK, docs, samples,
-                // tools, Zig, .NET) in one place -- more sensible than a lone "fetch SDK".
+                // tools, LLVM, .NET) in one place -- more sensible than a lone "fetch SDK".
                 new RxdkTreeItem(
                     'Check for updates…',
                     vscode.TreeItemCollapsibleState.None,

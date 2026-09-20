@@ -1,6 +1,6 @@
-// Build type selector for RXDK projects, named after Zig's own optimize modes
-// (this extension shells out to `zig cc`/`zig c++` per-file rather than
-// `zig build -Doptimize=`, so these are hand-mapped to the closest matching
+// Build type selector for RXDK projects (Debug / ReleaseSafe / ReleaseFast / ReleaseSmall).
+// (this extension shells out to clang per-file rather than
+// `-Doptimize=`, so these are hand-mapped to the closest matching
 // raw clang flags rather than being the exact same knob).
 export type RxdkOptimizeMode = 'Debug' | 'ReleaseSafe' | 'ReleaseFast' | 'ReleaseSmall';
 

@@ -19,20 +19,20 @@ import {
     readSamplesVersion,
 } from './samplesStaging';
 import { getStagedToolsRoot, installHostTools, isHostToolsInstalled, readToolsVersion } from './hostTools';
-import { getZigVersionLine, installZig, isZigInstalled, ZIG_DOWNLOAD_PAGE, ZIG_VERSION } from './zigRuntime';
+import { getLlvmVersionLine, installLlvm, isLlvmInstalled, LLVM_RELEASE } from './llvmRuntime';
 import { installXboxNeighborhood, isXboxNeighborhoodShellRegistered } from './xboxNeighborhoodShell';
 import { fetchLatestRepoVersion, isVersionNewer, versionsMatch } from './latestVersions';
 
 const execFileAsync = promisify(execFile);
 
-export type PrerequisiteId = 'dotnet' | 'sdk' | 'docs' | 'zig' | 'tools' | 'samples' | 'xbneighborhood';
+export type PrerequisiteId = 'dotnet' | 'sdk' | 'docs' | 'llvm' | 'tools' | 'samples' | 'xbneighborhood';
 
 /** All prerequisites must be installed before RXDK is enabled. */
 export const MANDATORY_PREREQUISITE_IDS: readonly PrerequisiteId[] = [
     'dotnet',
     'sdk',
     'docs',
-    'zig',
+    'llvm',
     'tools',
 ];
 
@@ -80,7 +80,7 @@ export async function getPrerequisiteStatuses(
         dotnetReady,
         sdkReady,
         docsReady,
-        zigReady,
+        llvmReady,
         toolsReady,
         samplesReady,
         gitReady,
@@ -89,7 +89,7 @@ export async function getPrerequisiteStatuses(
         isDotNetRuntimeInstalled(),
         Promise.resolve(isStagedSdkPresent(context)),
         Promise.resolve(isSdkDocsPresent(context)),
-        isZigInstalled(),
+        isLlvmInstalled(),
         Promise.resolve(isHostToolsInstalled()),
         Promise.resolve(isSamplesPresent(context)),
         isGitAvailable(),
@@ -100,7 +100,7 @@ export async function getPrerequisiteStatuses(
     const docsPath = getStagedDocsRoot(context);
     const toolsPath = getStagedToolsRoot();
     const samplesPath = getStagedSamplesRoot(context);
-    const zigLine = zigReady ? await getZigVersionLine() : undefined;
+    const llvmLine = llvmReady ? await getLlvmVersionLine() : undefined;
 
     // Installed versions + newest published versions (best-effort; latest lookups are network calls
     // bounded by a short timeout and may resolve undefined offline). A "versioned" helper attaches
@@ -173,16 +173,14 @@ export async function getPrerequisiteStatuses(
             ...versioned(docsReady, readDocsVersion(context), latestDocs),
         },
         {
-            id: 'zig',
-            label: `Zig ${ZIG_VERSION}`,
-            description: 'Required for some RXDK build tooling and cross-compilation workflows.',
-            ready: zigReady,
+            id: 'llvm',
+            label: 'RXDK LLVM toolchain',
+            description: 'The Team-Resurgent clang/lld/llvm-ar fork that compiles + links Xbox titles.',
+            ready: llvmReady,
             required: true,
-            detail: zigReady ? (zigLine ?? 'Installed') : 'Not found',
+            detail: llvmReady ? (llvmLine ?? 'Installed') : 'Not found',
             canInstall: Boolean(process.platform === 'win32' || process.platform === 'linux' || process.platform === 'darwin'),
-            downloadUrl: ZIG_DOWNLOAD_PAGE,
-            // Zig is pinned to a specific version, so "installed" is always the current one.
-            ...(zigReady ? { version: ZIG_VERSION, latestVersion: ZIG_VERSION, updateAvailable: false } : {}),
+            downloadUrl: LLVM_RELEASE,
         },
         {
             id: 'tools',
@@ -303,8 +301,8 @@ export async function installPrerequisite(
             return fetchLatestSdk(context, output, (update) => progress?.report(update));
         case 'docs':
             return fetchLatestDocs(context, output, (update) => progress?.report(update));
-        case 'zig':
-            return installZig(output, (update) => progress?.report(update));
+        case 'llvm':
+            return installLlvm(output, (update) => progress?.report(update));
         case 'tools':
             return installHostTools(output, (update) => progress?.report(update));
         case 'samples':
