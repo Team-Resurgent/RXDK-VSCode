@@ -178,10 +178,14 @@ function xdvdfsAssetPrefix(): string {
     switch (platformToolRid()) {
         case 'linux-x64':
             return 'xdvdfs-linux-';
+        case 'linux-arm64':
+            return 'xdvdfs-linux-arm64-';
         case 'osx-x64':
             return 'xdvdfs-macos-x64-';
         case 'osx-arm64':
             return 'xdvdfs-macos-arm64-';
+        case 'win-arm64':
+            return 'xdvdfs-windows-arm64-';
         case 'win-x64':
         default:
             return 'xdvdfs-windows-';
