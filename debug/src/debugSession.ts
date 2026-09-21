@@ -11,7 +11,6 @@ import {
     Scope,
     Source,
     Variable,
-    InvalidatedEvent,
 } from '@vscode/debugadapter';
 import { DebugProtocol } from '@vscode/debugprotocol';
 import * as fs from 'fs';
@@ -23,7 +22,6 @@ interface XboxLaunchRequestArguments extends DebugProtocol.LaunchRequestArgument
     __workspaceFolder?: string;
     __extensionPath?: string;
     __titleOutputFile?: string;
-    __globalsFilter?: number;
     program?: string;
     xbePath: string;
     xbeDir?: string;
@@ -59,9 +57,6 @@ export class XboxDebugSession extends LoggingDebugSession {
     private extensionPath = '';
     private bridgePathOverride = '';
     private titleOutputFile = '';
-    // Globals-pane visibility level forwarded to the bridge: 0 = title mutable globals (default),
-    // 1 = + title const tables, 2 = + linked-library globals. Toggled live via a custom request.
-    private globalsFilter = 0;
     private configurationDone = false;
     private launchFinished = false;
     private startupFinished = false;
@@ -135,7 +130,6 @@ export class XboxDebugSession extends LoggingDebugSession {
                 process.cwd();
             this.extensionPath = args.__extensionPath || '';
             this.titleOutputFile = args.__titleOutputFile || '';
-            this.globalsFilter = args.__globalsFilter ?? 0;
             if (args.bridgePath) {
                 this.bridgePathOverride = args.bridgePath
                     .replace(/\$\{workspaceFolder\}/g, this.workspaceRoot)
@@ -212,14 +206,12 @@ export class XboxDebugSession extends LoggingDebugSession {
             __extensionPath?: string;
             program?: string;
             __titleOutputFile?: string;
-            __globalsFilter?: number;
             bridgePath?: string;
         }
     ): Promise<void> {
         try {
             this.titleOutputFile = args.__titleOutputFile || '';
             this.extensionPath = args.__extensionPath || '';
-            this.globalsFilter = args.__globalsFilter ?? 0;
             if (args.bridgePath) {
                 this.bridgePathOverride = args.bridgePath
                     .replace(/\$\{workspaceFolder\}/g, this.workspaceRoot)
@@ -457,7 +449,6 @@ export class XboxDebugSession extends LoggingDebugSession {
                     {
                         scope,
                         threadId: this.stoppedThreadId,
-                        ...(scope === 'globals' ? { globalsFilter: this.globalsFilter } : {}),
                     },
                     scope === 'globals' ? 30000 : 15000
                 );
@@ -480,23 +471,6 @@ export class XboxDebugSession extends LoggingDebugSession {
         }
         response.body = { variables };
         this.sendResponse(response);
-    }
-
-    protected customRequest(
-        command: string,
-        response: DebugProtocol.Response,
-        args: unknown
-    ): void {
-        if (command === 'setGlobalsFilter') {
-            const level = Number((args as { level?: number })?.level);
-            this.globalsFilter = Number.isFinite(level) ? Math.max(0, Math.min(2, level)) : 0;
-            this.sendResponse(response);
-            // Ask the client to re-fetch the Variables view so the new visibility takes effect
-            // without stepping. Scoped to variables; locals/registers are unaffected.
-            this.sendEvent(new InvalidatedEvent(['variables']));
-            return;
-        }
-        super.customRequest(command, response, args);
     }
 
     protected async evaluateRequest(

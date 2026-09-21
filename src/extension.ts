@@ -176,7 +176,6 @@ export function activate(context: vscode.ExtensionContext): void {
         vscode.commands.registerCommand('rxdk.launchXbwatson', guardPrerequisites(() => launchXbwatson(context, rxdkOutput))),
         vscode.commands.registerCommand('rxdk.launchXbNeighborhood', guardPrerequisites(() => launchXbNeighborhood(context, rxdkOutput))),
         vscode.commands.registerCommand('rxdk.openXboxNeighborhood', () => openXboxNeighborhood(rxdkOutput)),
-        vscode.commands.registerCommand('rxdk.cycleGlobalsScope', () => cycleGlobalsScope()),
         vscode.commands.registerCommand('rxdk.setBuildType', () => promptSetBuildType()),
         vscode.commands.registerCommand('rxdk.openSettings', () => openSettingsPanel(context))
     );
@@ -246,31 +245,7 @@ async function resolveXboxLaunchConfig(
         config.reboot = false;
     }
     config.__extensionPath = context.extensionPath;
-    config.__globalsFilter = globalsScopeLevel();
     return config;
-}
-
-const GLOBALS_SCOPE_ORDER = ['title', 'titleAndConstants', 'all'] as const;
-const GLOBALS_SCOPE_LABELS: Record<string, string> = {
-    title: 'Title globals only',
-    titleAndConstants: 'Title globals + constants',
-    all: 'All globals (incl. libraries)',
-};
-
-function globalsScopeLevel(): number {
-    const scope = vscode.workspace.getConfiguration('rxdk').get<string>('debugger.globalsScope') || 'title';
-    const level = GLOBALS_SCOPE_ORDER.indexOf(scope as (typeof GLOBALS_SCOPE_ORDER)[number]);
-    return level < 0 ? 0 : level;
-}
-
-// Advance the Globals-pane visibility to the next level. Updating the setting drives the live
-// refresh (see the onDidChangeConfiguration handler) and seeds __globalsFilter for future launches.
-async function cycleGlobalsScope(): Promise<void> {
-    const cfg = vscode.workspace.getConfiguration('rxdk');
-    const current = cfg.get<string>('debugger.globalsScope') || 'title';
-    const next = GLOBALS_SCOPE_ORDER[(GLOBALS_SCOPE_ORDER.indexOf(current as (typeof GLOBALS_SCOPE_ORDER)[number]) + 1) % GLOBALS_SCOPE_ORDER.length];
-    await cfg.update('debugger.globalsScope', next, vscode.ConfigurationTarget.Global);
-    vscode.window.setStatusBarMessage(`RXDK Globals: ${GLOBALS_SCOPE_LABELS[next]}`, 3000);
 }
 
 const BUILD_TYPE_DESCRIPTIONS: Record<RxdkOptimizeMode, string> = {
@@ -319,7 +294,7 @@ function registerDebugIntegration(context: vscode.ExtensionContext): void {
     // Debug through the shared C# Rxdk.Dap (the exact adapter VS20XX uses, delivered in the RXDK-Tools
     // host-tools bundle) so both IDEs share one debug codebase instead of a parallel TypeScript adapter.
     // Rxdk.Dap reads the same launch fields resolveXboxLaunchConfig sets (program/pdb/xbePath/
-    // bridgePath/consoleName/reboot/buildOnly, __globalsFilter, __titleOutputFile) and drives the same
+    // bridgePath/consoleName/reboot/buildOnly, __titleOutputFile) and drives the same
     // xboxdbg-bridge; framework-dependent, so inject DOTNET_ROOT + the staged roots. Registering a
     // factory overrides the static "program" (the legacy TS adapter) still declared in package.json.
     context.subscriptions.push(
@@ -363,22 +338,6 @@ function registerDebugIntegration(context: vscode.ExtensionContext): void {
         })
     );
 
-    // Changing the Globals-visibility setting (via Settings UI or the cycle command) refreshes a
-    // running session live, so users don't have to relaunch to see the new filter take effect.
-    context.subscriptions.push(
-        vscode.workspace.onDidChangeConfiguration((e) => {
-            if (!e.affectsConfiguration('rxdk.debugger.globalsScope')) {
-                return;
-            }
-            const session = vscode.debug.activeDebugSession;
-            if (session?.type === 'xbox') {
-                void session.customRequest('setGlobalsFilter', { level: globalsScopeLevel() }).then(
-                    undefined,
-                    () => undefined
-                );
-            }
-        })
-    );
 }
 
 function getTitleOutputChannel(): vscode.OutputChannel {
