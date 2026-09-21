@@ -5,6 +5,7 @@ import { execFile } from 'child_process';
 import { promisify } from 'util';
 import * as vscode from 'vscode';
 import { downloadFileToPath, formatBytes, formatDownloadProgress, getDirectorySize } from './downloadFile';
+import { readZipEntries } from './unzip';
 
 const execFileAsync = promisify(execFile);
 
@@ -138,8 +139,24 @@ async function extractArchive(archivePath: string, destDir: string, onProgress?:
     const timer = setInterval(report, 1000);
     report();
     try {
-        // tar handles .zip on Windows 10+ and everywhere modern; the xboxog assets are .zip.
-        await execFileAsync('tar', ['-xf', archivePath, '-C', destDir], { timeout: 900_000, windowsHide: true });
+        // The xboxog assets are .zip. `tar -xf` only reads a zip with bsdtar (Windows 10+/macOS);
+        // Linux ships GNU tar, which errors with "This does not look like a tar archive". Extract
+        // with the dependency-free JS reader so it works identically on every host (and needs no
+        // `unzip` on PATH). The toolchain is ~4k files / <500 MB, well within the reader's limits.
+        const destResolved = path.resolve(destDir);
+        const entries = readZipEntries(fs.readFileSync(archivePath));
+        let written = 0;
+        for (const entry of entries) {
+            const target = path.resolve(destDir, entry.name);
+            // Zip-slip guard: never let an archive path escape destDir.
+            if (target !== destResolved && !target.startsWith(destResolved + path.sep)) {
+                throw new Error(`Refusing to extract entry outside the target directory: ${entry.name}`);
+            }
+            fs.mkdirSync(path.dirname(target), { recursive: true });
+            fs.writeFileSync(target, entry.data);
+            // Yield periodically so the progress timer above can fire during the write loop.
+            if ((++written & 0x3f) === 0) { await new Promise((resolve) => setImmediate(resolve)); }
+        }
     } finally {
         finished = true;
         clearInterval(timer);
