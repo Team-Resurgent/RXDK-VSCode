@@ -38,18 +38,6 @@ const SECTIONS: Section[] = [
         title: 'Debugging',
         fields: [
             {
-                id: 'globalsScope',
-                label: 'Globals visibility',
-                desc: 'Which symbols appear in the debugger Globals pane.',
-                kind: 'enum',
-                config: 'rxdk.debugger.globalsScope',
-                options: [
-                    { value: 'title', label: 'Title globals only (recommended)' },
-                    { value: 'titleAndConstants', label: 'Title globals + constants' },
-                    { value: 'all', label: 'All globals (incl. libraries)' },
-                ],
-            },
-            {
                 id: 'showTitleOutput',
                 label: 'Reveal title output',
                 desc: 'Open the Output panel when the title prints via OutputDebugStringA.',
