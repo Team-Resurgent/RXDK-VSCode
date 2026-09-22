@@ -86,6 +86,13 @@ export async function getLlvmVersionLine(): Promise<string | undefined> {
     let root: string | undefined;
     try { root = resolveLlvmRoot(); } catch { return undefined; }
     if (!root) { return undefined; }
+    // The rolling toolchain has no semver, so the "version" is the build stamp recorded at install
+    // (the release asset's GitHub updated_at). Prefer it; fall back to clang --version.
+    try {
+        const marker = path.join(getLlvmInstallRoot(), 'VERSION');
+        const stamp = fs.readFileSync(marker, 'utf8').trim();
+        if (stamp) { return `Build ${stamp}`; }
+    } catch { /* fall through to clang --version */ }
     try {
         const { stdout } = await execFileAsync(path.join(root, 'bin', exeName('clang')), ['--version'], { windowsHide: true });
         return stdout.trim().split(/\r?\n/)[0];
