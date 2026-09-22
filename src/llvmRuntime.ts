@@ -242,6 +242,12 @@ export async function installLlvm(output?: vscode.OutputChannel, onProgress?: Ll
     if (!(await isLlvmInstalled())) {
         throw new Error('The RXDK LLVM toolchain was not detected after installation. Reload the window and try again.');
     }
+    // Record the build stamp so the version shows and update detection works (mirrors the engine's
+    // VERSION marker), from the release's per-target marker asset.
+    try {
+        const stamp = await getAvailableLlvmStamp();
+        if (stamp) { fs.writeFileSync(path.join(installRoot, 'VERSION'), stamp); }
+    } catch { /* best-effort; version display just falls back to clang --version */ }
     output?.appendLine('RXDK: LLVM toolchain ready');
     onProgress?.({ message: 'LLVM toolchain ready', percent: 100 });
     return true;
