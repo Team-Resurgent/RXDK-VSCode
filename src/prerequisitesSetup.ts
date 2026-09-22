@@ -409,7 +409,9 @@ function buildHtml(webview: vscode.Webview): string {
         } else if (item.updateAvailable) {
           actionBtn = '<button type="button" data-action="install" data-id="' + escapeHtml(item.id) + '"' +
               (item.canInstall ? '' : ' disabled') + '>Update</button>';
-        } else if (item.isToolchain) {
+        } else if (item.isToolchain || ['sdk', 'docs', 'tools', 'samples'].indexOf(item.id) !== -1) {
+          // Installed and current: still offer a Reinstall (re-pull) for the CLI-managed components
+          // and the versionless toolchain, so every component row has a consistent action.
           actionBtn = '<button type="button" data-action="install" data-id="' + escapeHtml(item.id) + '"' +
               (item.canInstall ? '' : ' disabled') + '>Reinstall</button>';
         } else {
