@@ -51,6 +51,9 @@ export interface PrerequisiteStatus {
     latestVersion?: string;
     /** True when installed and a newer version is available. */
     updateAvailable?: boolean;
+    /** True for the LLVM toolchain: it's the rolling "latest" release with no version to compare,
+     *  so the UI offers a reinstall (re-pull latest) even when it's already present. */
+    isToolchain?: boolean;
     /** True when the latest published version is newer than the loaded extension can use, so the
      *  update is withheld until the extension itself is updated. */
     blockedByExtension?: boolean;
@@ -178,6 +181,7 @@ export async function getPrerequisiteStatuses(
             description: 'The Team-Resurgent clang/lld/llvm-ar fork that compiles + links Xbox titles.',
             ready: llvmReady,
             required: true,
+            isToolchain: true,
             detail: llvmReady ? (llvmLine ?? 'Installed') : 'Not found',
             canInstall: Boolean(process.platform === 'win32' || process.platform === 'linux' || process.platform === 'darwin'),
             downloadUrl: LLVM_RELEASE,

@@ -146,6 +146,7 @@ function serializeStatus(item: PrerequisiteStatus): Record<string, unknown> {
         version: item.version ?? '',
         latestVersion: item.latestVersion ?? '',
         updateAvailable: Boolean(item.updateAvailable),
+        isToolchain: Boolean(item.isToolchain),
         blockedByExtension: Boolean(item.blockedByExtension),
         requiredExtensionVersion: item.requiredExtensionVersion ?? '',
     };
@@ -397,7 +398,8 @@ function buildHtml(webview: vscode.Webview): string {
               : (item.required === false ? 'Optional' : 'Required'));
         var versionHtml = item.version ? ' <span class="ver">' + escapeHtml(item.version) + '</span>' : '';
         // Actions: when gated, offer only "Update extension" (opens the marketplace); otherwise
-        // Install (missing) / Update (outdated); nothing when installed & current.
+        // Install (missing) / Update (outdated); Reinstall for the versionless LLVM toolchain even
+        // when ready (re-pull the rolling latest); nothing when a versioned component is current.
         var actionBtn;
         if (item.blockedByExtension) {
           actionBtn = '<button type="button" data-action="open" data-url="' + escapeHtml(EXTENSION_MARKETPLACE_URL) + '">Update extension</button>';
@@ -407,6 +409,9 @@ function buildHtml(webview: vscode.Webview): string {
         } else if (item.updateAvailable) {
           actionBtn = '<button type="button" data-action="install" data-id="' + escapeHtml(item.id) + '"' +
               (item.canInstall ? '' : ' disabled') + '>Update</button>';
+        } else if (item.isToolchain) {
+          actionBtn = '<button type="button" data-action="install" data-id="' + escapeHtml(item.id) + '"' +
+              (item.canInstall ? '' : ' disabled') + '>Reinstall</button>';
         } else {
           actionBtn = '';
         }
