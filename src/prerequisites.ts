@@ -19,7 +19,7 @@ import {
     readSamplesVersion,
 } from './samplesStaging';
 import { getStagedToolsRoot, installHostTools, isHostToolsInstalled, readToolsVersion } from './hostTools';
-import { getLlvmVersionLine, installLlvm, isLlvmInstalled, LLVM_RELEASE } from './llvmRuntime';
+import { getAvailableLlvmStamp, getInstalledLlvmStamp, getLlvmVersionLine, installLlvm, isLlvmInstalled, LLVM_RELEASE } from './llvmRuntime';
 import { installXboxNeighborhood, isXboxNeighborhoodShellRegistered } from './xboxNeighborhoodShell';
 import { fetchLatestRepoVersion, isVersionNewer, versionsMatch } from './latestVersions';
 
@@ -104,6 +104,10 @@ export async function getPrerequisiteStatuses(
     const toolsPath = getStagedToolsRoot();
     const samplesPath = getStagedSamplesRoot(context);
     const llvmLine = llvmReady ? await getLlvmVersionLine() : undefined;
+    // The LLVM toolchain versions on a build timestamp (no semver), so it gets its own installed-vs-
+    // available comparison here rather than the semver-gated `versioned()` helper below.
+    const llvmInstalledStamp = llvmReady ? getInstalledLlvmStamp() : undefined;
+    const llvmAvailableStamp = await getAvailableLlvmStamp();
 
     // Installed versions + newest published versions (best-effort; latest lookups are network calls
     // bounded by a short timeout and may resolve undefined offline). A "versioned" helper attaches
@@ -182,6 +186,12 @@ export async function getPrerequisiteStatuses(
             ready: llvmReady,
             required: true,
             isToolchain: true,
+            version: llvmInstalledStamp,
+            latestVersion: llvmAvailableStamp,
+            // A newer build stamp is published than the one installed -> offer Update (not just
+            // Reinstall). No extension-version gate: the toolchain is a rolling release, not semver.
+            updateAvailable: Boolean(
+                llvmReady && llvmInstalledStamp && llvmAvailableStamp && llvmInstalledStamp !== llvmAvailableStamp),
             detail: llvmReady ? (llvmLine ?? 'Installed') : 'Not found',
             canInstall: Boolean(process.platform === 'win32' || process.platform === 'linux' || process.platform === 'darwin'),
             downloadUrl: LLVM_RELEASE,

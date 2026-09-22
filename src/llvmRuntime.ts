@@ -6,6 +6,7 @@ import { promisify } from 'util';
 import * as vscode from 'vscode';
 import { downloadFileToPath, formatBytes, formatDownloadProgress, getDirectorySize } from './downloadFile';
 import { readZipEntries } from './unzip';
+import { fetchText } from './latestVersions';
 
 const execFileAsync = promisify(execFile);
 
@@ -80,6 +81,23 @@ export function resolveLlvmRoot(override?: string): string | undefined {
 
 export async function isLlvmInstalled(): Promise<boolean> {
     try { return resolveLlvmRoot() !== undefined; } catch { return false; }
+}
+
+/** The installed toolchain build stamp (the VERSION marker written at install), or undefined. */
+export function getInstalledLlvmStamp(): string | undefined {
+    try {
+        const stamp = fs.readFileSync(path.join(getLlvmInstallRoot(), 'VERSION'), 'utf8').trim();
+        return stamp || undefined;
+    } catch {
+        return undefined;
+    }
+}
+
+/** The build stamp available on the rolling release — the per-target `xboxog_version` marker asset.
+ *  Undefined when it can't be fetched (offline, or no marker), which just disables update detection. */
+export async function getAvailableLlvmStamp(): Promise<string | undefined> {
+    const text = await fetchText(`${LLVM_RELEASE}/xboxog_version`);
+    return text?.trim() || undefined;
 }
 
 export async function getLlvmVersionLine(): Promise<string | undefined> {

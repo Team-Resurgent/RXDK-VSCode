@@ -7,7 +7,7 @@ import * as https from 'https';
 
 const ORG = 'Team-Resurgent';
 
-function fetchText(url: string, timeoutMs = 4000): Promise<string | undefined> {
+export function fetchText(url: string, timeoutMs = 4000): Promise<string | undefined> {
     return new Promise((resolve) => {
         let settled = false;
         const done = (v?: string) => {
