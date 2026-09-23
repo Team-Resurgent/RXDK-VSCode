@@ -21,9 +21,9 @@ function exeName(base: string): string {
 
 function archiveDirName(): string | undefined {
     const arch = process.arch === 'arm64' ? 'arm64' : 'x64';
-    if (process.platform === 'win32') { return `xboxog-windows-${arch}`; }
-    if (process.platform === 'linux') { return `xboxog-linux-${arch}`; }
-    if (process.platform === 'darwin') { return `xboxog-macos-${arch}`; }
+    if (process.platform === 'win32') { return `xbox-windows-${arch}`; }
+    if (process.platform === 'linux') { return `xbox-linux-${arch}`; }
+    if (process.platform === 'darwin') { return `xbox-macos-${arch}`; }
     return undefined;
 }
 
@@ -93,10 +93,10 @@ export function getInstalledLlvmStamp(): string | undefined {
     }
 }
 
-/** The build stamp available on the rolling release — the per-target `xboxog_version` marker asset.
+/** The build stamp available on the rolling release — the `xbox_version` marker asset.
  *  Undefined when it can't be fetched (offline, or no marker), which just disables update detection. */
 export async function getAvailableLlvmStamp(): Promise<string | undefined> {
-    const text = await fetchText(`${LLVM_RELEASE}/xboxog_version`);
+    const text = await fetchText(`${LLVM_RELEASE}/xbox_version`);
     return text?.trim() || undefined;
 }
 
