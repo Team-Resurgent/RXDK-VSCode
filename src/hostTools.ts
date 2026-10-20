@@ -195,13 +195,34 @@ function xdvdfsAssetPrefix(): string {
 export type HostToolsInstallProgress = (update: { message: string; percent?: number }) => void;
 
 interface ExtractOptions {
-    /** Predicate over the archive-relative entry name; matched files land flat in destRoot. */
-    pick: (name: string) => boolean;
+    /** Maps an archive entry name to its path under destRoot, or undefined to leave it out. */
+    pick: (name: string) => string | undefined;
     label: string;
     output?: vscode.OutputChannel;
     onProgress?: HostToolsInstallProgress;
     /** [start, end] percent window this download+extract occupies. */
     phase: [number, number];
+}
+
+/**
+ * Where a file of the RXDK-Tools archive goes under the tools root: everything inside its tools/
+ * folder, keeping subfolders (tools/cmake/Platform/XboxOG.cmake lands in cmake/Platform/), or
+ * undefined for anything else.
+ */
+export function toolsArchiveTarget(entryName: string): string | undefined {
+    const match = /(^|\/)tools\/(.+)$/.exec(entryName.replace(/\\/g, '/'));
+    return match ? match[2] : undefined;
+}
+
+/** The path a picked archive entry is written to; an entry that would land outside destRoot is refused. */
+export function resolveExtractTarget(destRoot: string, relative: string): string {
+    const root = path.resolve(destRoot);
+    const target = path.resolve(root, ...relative.split('/'));
+    const rel = path.relative(root, target);
+    if (rel === '' || rel.startsWith('..') || path.isAbsolute(rel)) {
+        throw new Error(`Archive entry ${relative} would extract outside ${root}`);
+    }
+    return target;
 }
 
 async function downloadAndExtract(url: string, destRoot: string, opts: ExtractOptions): Promise<number> {
@@ -223,10 +244,12 @@ async function downloadAndExtract(url: string, destRoot: string, opts: ExtractOp
         const entries = readZipEntries(fs.readFileSync(tmp));
         let wrote = 0;
         for (const entry of entries) {
-            if (!opts.pick(entry.name)) {
+            const relative = opts.pick(entry.name);
+            if (relative === undefined) {
                 continue;
             }
-            const target = path.join(destRoot, path.posix.basename(entry.name));
+            const target = resolveExtractTarget(destRoot, relative);
+            fs.mkdirSync(path.dirname(target), { recursive: true });
             fs.writeFileSync(target, entry.data);
             ensureUnixExecutable(target);
             wrote++;
@@ -267,8 +290,8 @@ export async function installHostTools(
     }
     output?.appendLine(`RXDK: host tools ${toolsRelease.tag_name} → ${root}`);
     await downloadAndExtract(toolsAsset.browser_download_url, root, {
-        // Files directly under a tools/ dir inside the archive (dist/rxdk-managed-<rid>/tools/*).
-        pick: (name) => /(^|\/)tools\/[^/]+$/.test(name),
+        // Everything inside the archive's tools/ dir (dist/rxdk-managed-<rid>/tools/...).
+        pick: toolsArchiveTarget,
         label: 'RXDK-Tools',
         output,
         onProgress,
@@ -303,7 +326,7 @@ export async function installHostTools(
     output?.appendLine(`RXDK: xdvdfs ${xdvdfsRelease.tag_name} (${xdvdfsAsset.name})`);
     const xdvdfsName = hostToolExecutableName('xdvdfs');
     await downloadAndExtract(xdvdfsAsset.browser_download_url, root, {
-        pick: (name) => path.posix.basename(name) === xdvdfsName,
+        pick: (name) => (path.posix.basename(name) === xdvdfsName ? xdvdfsName : undefined),
         label: 'xdvdfs',
         output,
         onProgress,
